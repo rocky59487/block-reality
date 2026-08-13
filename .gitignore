@@ -1,0 +1,38 @@
+# Gradle / Java
+.gradle/
+build/
+out/
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# Minecraft / Forge
+run/
+runs/
+logs/
+saves/
+crash-reports/
+
+# Native
+*.so
+*.dll
+*.dylib
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local
+*.local
+local.properties
