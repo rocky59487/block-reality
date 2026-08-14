@@ -1,0 +1,33 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+license = "All rights reserved"
+issueTrackerURL = "https://github.com/rocky59487/block-reality/issues"
+
+[[mods]]
+modId = "blockreality"
+version = "0.0.1-demo"
+displayName = "Block Reality"
+authors = "rocky59487"
+description = '''
+Structural analysis for Minecraft, solved by a real finite element engine.
+
+Blocks placed in the world are extracted into beam members and solved by FrameCore in a
+separate process. The stress glasses show the result: tension and compression across the
+section depth, the neutral axis, and demand over capacity per member.
+
+The engine is optional. Without it the mod loads and plays normally, and says so.
+'''
+
+[[dependencies.blockreality]]
+    modId = "forge"
+    mandatory = true
+    versionRange = "[47,)"
+    ordering = "NONE"
+    side = "BOTH"
+
+[[dependencies.blockreality]]
+    modId = "minecraft"
+    mandatory = true
+    versionRange = "[1.20.1,1.21)"
+    ordering = "NONE"
+    side = "BOTH"

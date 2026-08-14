@@ -1,0 +1,13 @@
+// Pure-Java half of Block Reality. No Minecraft, no Forge, no ForgeGradle.
+//
+// It builds and tests in any plain JDK 17+ environment, which is what makes the
+// engine boundary reproducible for the paper: `gradle test` here drives the real
+// br-sidecar binary end to end without a game client.
+//
+// The Forge mod lives in ../forge and pulls these two projects in as a composite
+// build. The dependency direction is one-way by construction: nothing here can
+// see Minecraft.
+rootProject.name = 'blockreality-mod'
+
+include 'api'
+include 'core'

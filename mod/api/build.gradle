@@ -1,0 +1,3 @@
+// Zero dependencies. On purpose: anything compiled against this API cannot
+// reach the solver, the world, or a JSON library's version politics.
+dependencies { }

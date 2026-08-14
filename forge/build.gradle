@@ -1,0 +1,61 @@
+plugins {
+    id 'eclipse'
+    id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
+}
+
+version = '0.0.1-demo'
+group = 'com.blockreality'
+base { archivesName = 'blockreality' }
+
+java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+
+minecraft {
+    // Official Mojang mappings, matching the previous project's convention.
+    mappings channel: 'official', version: '1.20.1'
+    copyIdeResources = true
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'debug'
+            // Where to find the engine. Absent -> analysis disabled, game still runs;
+            // that path is exercised by SidecarLifecycleTest in the core project.
+            property 'br.sidecar', System.getenv('BR_SIDECAR') ?: ''
+            mods { blockreality { source sourceSets.main } }
+        }
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'debug'
+            property 'br.sidecar', System.getenv('BR_SIDECAR') ?: ''
+            mods { blockreality { source sourceSets.main } }
+        }
+    }
+}
+
+repositories { mavenCentral() }
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.1-47.4.13'
+
+    // The pure-Java half. jarJar so a user installing the mod gets it without a
+    // separate download; it has no transitive dependencies of its own.
+    implementation 'com.blockreality:core:0.0.1-demo'
+    implementation 'com.blockreality:api:0.0.1-demo'
+    jarJar(group: 'com.blockreality', name: 'core', version: '[0.0.1,0.1)')
+    jarJar(group: 'com.blockreality', name: 'api', version: '[0.0.1,0.1)')
+}
+
+tasks.named('jar') {
+    manifest {
+        attributes([
+                'Specification-Title'   : 'Block Reality',
+                'Specification-Vendor'  : 'blockreality',
+                'Specification-Version' : '1',
+                'Implementation-Title'  : project.name,
+                'Implementation-Version': project.version,
+                'Implementation-Vendor' : 'blockreality',
+        ])
+    }
+}
+
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }

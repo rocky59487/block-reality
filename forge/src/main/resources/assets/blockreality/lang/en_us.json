@@ -1,0 +1,28 @@
+{
+  "itemGroup.blockreality": "Block Reality",
+  "block.blockreality.steel_beam": "Structural Steel",
+  "item.blockreality.stress_glasses": "Stress Glasses",
+
+  "br.scan.mode.utilization": "Utilisation",
+  "br.scan.mode.stress": "Stress",
+  "br.scan.mode.material": "Material",
+
+  "br.hud.mode": "Lens: %s",
+  "br.hud.maxdc": "max D/C  %s",
+  "br.hud.members": "%s members",
+  "br.hud.peak": "full scale  %s MPa",
+  "br.hud.no_data": "No analysis yet",
+  "br.hud.mechanism": "Mechanism, not a structure — nothing is holding this up",
+  "br.hud.engine_unavailable": "Engine unavailable: %s",
+
+  "br.legend.stress.tension": "tension",
+  "br.legend.stress.zero": "zero",
+  "br.legend.stress.compression": "compression",
+  "br.legend.dc.safe": "safe",
+  "br.legend.dc.watch": "approaching limit",
+  "br.legend.dc.limit": "at or over capacity",
+
+  "br.load.added": "Test load applied (20 kN)",
+  "br.load.removed": "Test load removed",
+  "br.engine.unavailable": "Structural analysis unavailable: %s"
+}

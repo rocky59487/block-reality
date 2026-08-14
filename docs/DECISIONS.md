@@ -6,6 +6,24 @@
 
 ---
 
+## D-015 · api 與 core 完全不碰 Minecraft 型別
+
+**決定**：`mod/api` 與 `mod/core` 是**純 Java**，不 import 任何 `net.minecraft.*` / `net.minecraftforge.*`。幾何用自己的 `Vec3d` / `BlockKey` / `Aabb`，維度用字串 id。Forge 層在自己的邊界轉換，只轉一次。
+
+`API_ARCHITECTURE.md` §1 原本允許 api 使用 `BlockPos`、`ResourceKey<Level>` 這類 vanilla 值型別。**這條比它更嚴。**
+
+**理由**：`gradle test` 能在任何純 JDK 環境跑完整條線——包含**實際啟動 `br-sidecar` 子程序、送真的求解請求、把回來的應力場對閉合解**。論文的可重現性掛在這件事上：審稿人不需要 Minecraft 就能複現引擎邊界的數值。
+
+如果 api 依賴 `BlockPos`，那條線就要拖進整個 ForgeGradle 工具鏈——反編譯、re-obf、資產下載——而那是**沒有網路就跑不起來的**。
+
+代價很小：`BlockKey` 是三個 int 的 record，轉換集中在 `StructureManager.snapshot` 一個地方。
+
+由 `:api:checkApiPurity` 這個 build gate 強制。它會抓 impl import、Minecraft import 與世界寫入呼叫（`setBlock` / `destroyBlock` / `addFreshEntity`）。**已實測會失敗**——塞一個 `import net.minecraft.core.BlockPos;` 進去，建置立刻紅。一個不會失敗的 gate 不是 gate。
+
+**否證條件**：出現一個必須放在 api 層、又非得用 Minecraft 型別表達的資料型別。屆時把它下放到 Forge 層，而不是放寬 gate。
+
+---
+
 ## D-014 · 第三方 mod 只能做特效，不能寫世界
 
 **決定**：碎塊 SPI（`IFractureEffectHandler`）在 Block Reality **完成世界變更之後**才呼叫，收到的是一份**描述**，回傳值被忽略，例外被捕捉並停用該 handler。

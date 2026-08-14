@@ -1,0 +1,78 @@
+// Java 17 because that is what Forge 1.20.1 runs on. The core is compiled to the
+// same target so the Forge layer can consume it without a toolchain mismatch.
+subprojects {
+    apply plugin: 'java-library'
+
+    group = 'com.blockreality'
+    version = '0.0.1-demo'
+
+    java {
+        withSourcesJar()
+    }
+
+    repositories { mavenCentral() }
+
+    dependencies {
+        testImplementation platform('org.junit:junit-bom:5.10.2')
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        // --release 17 rather than a toolchain: it pins the bytecode AND the API surface
+        // against the JDK 17 signature data, so this compiles identically on any JDK 17+
+        // without every contributor needing that exact JDK installed. Forge 1.20.1 runs
+        // on 17, so 17 is the floor.
+        options.release = 17
+        options.compilerArgs << '-Xlint:all' << '-Xlint:-processing'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+        // Tests that drive the real sidecar need to know where the binary is.
+        // Absent -> those tests skip (Assumptions), the rest still run.
+        systemProperty 'br.sidecar', System.getProperty('br.sidecar',
+                System.getenv('BR_SIDECAR') ?: '')
+        testLogging { events 'passed', 'skipped', 'failed'; exceptionFormat 'full' }
+    }
+}
+
+// ---------------------------------------------------------------- api purity
+// API_ARCHITECTURE §1: the api source set must not reach into the implementation
+// and must not write the world. The packaging split is deferred; the discipline
+// is not. This gate is the whole enforcement mechanism, so it runs on `check`.
+project(':api') {
+    tasks.register('checkApiPurity') {
+        description = 'Fails if the api source set imports impl or writes the world.'
+        group = 'verification'
+        def srcDir = file('src/main/java')
+        inputs.dir(srcDir)
+        outputs.upToDateWhen { false }
+        doLast {
+            // Minecraft types are also banned here, which is stricter than
+            // API_ARCHITECTURE allows. See DECISIONS D-015.
+            def banned = [
+                    ~/import\s+com\.blockreality\.(impl|core|forge)\./,
+                    ~/import\s+net\.minecraft\./,
+                    ~/import\s+net\.minecraftforge\./,
+                    ~/\.setBlock\s*\(/,
+                    ~/\.destroyBlock\s*\(/,
+                    ~/addFreshEntity\s*\(/,
+            ]
+            def offences = []
+            srcDir.eachFileRecurse { f ->
+                if (!f.name.endsWith('.java')) return
+                f.eachLine { line, n ->
+                    // A mention inside a comment is documentation, not a call.
+                    if (line.trim().startsWith('*') || line.trim().startsWith('//')) return
+                    banned.each { p -> if (p.matcher(line).find()) offences << "${f.name}:${n}: ${line.trim()}" }
+                }
+            }
+            if (offences) {
+                throw new GradleException("api purity violated:\n  " + offences.join("\n  "))
+            }
+        }
+    }
+    tasks.named('check') { dependsOn 'checkApiPurity' }
+}
