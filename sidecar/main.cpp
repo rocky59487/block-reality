@@ -340,7 +340,14 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
         if (it != nodeId.end()) return it->second;
         const int id = static_cast<int>(m.nodes.size()) + 1;
         // MC (x, y, z) with y up  ->  FrameCore (x, z, y) with Z up.
-        frame::Node n(id, p.x * kBlockMm, p.z * kBlockMm, p.y * kBlockMm);
+        //
+        // Plus half a block: a Minecraft block coordinate names the block's CORNER, and
+        // the node belongs at its centre. The offset is a uniform translation of the whole
+        // model, so no force, stress or D/C changes by a bit — but the `world` positions
+        // this sidecar reports are what the overlay draws at, and without it every ribbon
+        // would hang half a block off the beam in all three axes.
+        const double h = kBlockMm / 2.0;
+        frame::Node n(id, p.x * kBlockMm + h, p.z * kBlockMm + h, p.y * kBlockMm + h);
         auto blk = grid.find(p);
         if (blk != grid.end() && blk->second.support) n.fixAll();
         m.nodes.push_back(n);

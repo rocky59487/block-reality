@@ -45,22 +45,46 @@ BR_SIDECAR=/abs/path/to/br-sidecar gradle runClient
 | 伺服器載入 client 類別 → crash | `client/` 全部 `@OnlyIn(Dist.CLIENT)`；封包用 FQN 不 import |
 | 靜默截斷 | 超過 64 根 member 會**寫 log** 說有幾根沒畫 |
 
-## 🔴 誠實邊界
+## 已驗證 / 未驗證
 
-**這個沙箱沒有 Minecraft，也沒有顯示卡。Forge 這半從未被編譯過，更沒有被執行過。**
+### ✅ 伺服器端：**在真的 Minecraft 裡跑過**
 
-- 純 Java 半（`../mod`）**有** 60 個測試在跑，其中 14 個實際驅動真的 FrameCore 二進位檔
-- Forge 半的正確性目前**只有程式碼層面的論證**：API 用法、事件時機、dist 分離、封包安全
-- 「應力渲染正確」在**資料層**是被測試釘住的（顏色、位置、符號、梯度、中性軸），
-  但**畫面上長什麼樣沒有人看過**
-- 第一次 `runClient` 要當成**未驗證程式碼的首次執行**，不是回歸測試
+沙箱裡開了 Forge 1.20.1 專用伺服器，用 RCON 驅動，實際擺方塊、實際跑 FrameCore。
 
-最可能出錯的地方，按可能性排序：
+| 測到的事 | 結果 |
+|---|---|
+| mod 載入、註冊、config、指令 | 無例外，log 裡 0 個 ERROR |
+| sidecar 自動找到並啟動 | `sidecar ready: FrameCore protocol 1, 5 materials, 5 sections` |
+| 5 格懸臂（自重） | 1 根構件、`L=4000mm`、**peak 9.24 MPa**、D/C 0.0264 |
+| 25 格懸臂（自重） | **peak 332.68 MPa**、D/C 0.9505 |
+| 全部落在石頭上 | `MECHANISM — fully constrained (no free DOF)` |
+| 完全懸空 | `MECHANISM — rank-deficient stiffness` |
+| 單獨一格 | `unassigned 1 blocks formed no member` |
+| 拿掉支承再算 | 立刻翻成 MECHANISM |
+| 關伺服器 | 乾淨結束，**沒有殘留 sidecar 程序** |
 
-1. `RenderLevelStageEvent` 的 `PoseStack` 與相機位移——世界空間對不上會整條偏移
-2. `RenderGuiOverlayEvent.Post` + `VanillaGuiOverlay.HOTBAR` 的 overlay type
-3. `NetworkRegistry.newSimpleChannel` 在 47.x 的 deprecation
-4. `BlockEvent.EntityPlaceEvent` 取得 `ServerLevel` 的 cast
+兩個應力值都可以手算對：`σ = wL²/2W`，`w = 6.1607 N/mm`、`W = 5.3333e6 mm³`
+→ 4 m 給 9.241、24 m 給 332.68。**兩個都命中。**
+
+### 🔴 客戶端渲染：**沒有人看過**
+
+沙箱沒有顯示卡，`runClient` 跑不起來。所以：
+
+- **編譯過了**（真的 Forge、真的 MC 1.20.1，只有 3 個 deprecation warning）
+- 應力渲染在**資料層**被 60 個測試釘住（顏色、位置、符號、梯度、中性軸）
+- 但**畫面上長什麼樣沒有人看過**
+
+最可能出問題的地方，按可能性排序：
+
+1. **看不到帶子** — 纖維在方塊**內部**（斷面 200×400 mm，離中心線只有 0.2 格），
+   所以渲染刻意**關掉深度測試**。這是寫程式時發現的：不關的話整條會埋在不透明方塊裡，
+   渲染完全正確但什麼都看不到
+2. `RenderLevelStageEvent` 的相機位移沒對上 → 整條偏移
+3. `RenderGuiOverlayEvent.Post` 的 overlay type → HUD 不出現
+
+> 另一個同類問題已經修掉了：sidecar 原本把節點放在方塊**角落**（`x·1000`），
+> 所以整個覆蓋層會偏半格。現在節點在方塊中心（`x·1000 + 500`）——這是均勻平移，
+> 力學結果一位元都沒變，但畫的位置對了。
 
 ## 還沒做（Demo v0 驗收清單剩下的）
 

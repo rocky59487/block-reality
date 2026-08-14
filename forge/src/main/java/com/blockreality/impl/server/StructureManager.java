@@ -6,6 +6,7 @@ import com.blockreality.core.RevisionGate;
 import com.blockreality.core.protocol.SolveRequest;
 import com.blockreality.core.sidecar.SidecarClient;
 import com.blockreality.core.sidecar.SidecarConfig;
+import com.blockreality.impl.BRConfig;
 import com.blockreality.impl.BlockRealityMod;
 import com.blockreality.impl.block.StructuralBlock;
 import com.blockreality.impl.net.BRNetwork;
@@ -14,8 +15,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -49,8 +53,6 @@ public final class StructureManager {
     /** Main-thread share of a tick. Background solving does not come out of this. */
     private static final long TICK_BUDGET_NS = 8_000_000L;
 
-    /** Don't re-solve more often than this; a player placing a row of blocks is one edit. */
-    private static final int MIN_TICKS_BETWEEN_SOLVES = 10;
 
     private static final Map<ResourceKey<Level>, StructureManager> BY_DIMENSION = new ConcurrentHashMap<>();
 
@@ -67,12 +69,92 @@ public final class StructureManager {
     private int ticksSinceSolve;
     private AnalysisResult latest;
 
+    private final SidecarLocator.Result location;
+
     private StructureManager(ResourceKey<Level> dimension) {
         this.dimension = dimension;
-        String exe = System.getProperty("br.sidecar", System.getenv("BR_SIDECAR"));
+        this.location = SidecarLocator.locate();
+        BlockRealityMod.LOG.info("[{}] {}", dimension.location(), SidecarLocator.describe(location));
+
+        // A path is still handed over when nothing was found, so the client reports
+        // "binary not found: <path>" rather than a bare null. It never starts.
+        Path exe = location.found().orElse(Path.of("br-sidecar"));
         this.sidecar = new SidecarClient(
-                SidecarConfig.of(Path.of(exe == null || exe.isBlank() ? "br-sidecar" : exe)),
+                new SidecarConfig(exe, BRConfig.INSTANCE.requestTimeoutMs.get(), 4, 2000),
                 msg -> BlockRealityMod.LOG.info("[{}] {}", dimension.location(), msg));
+    }
+
+    public SidecarLocator.Result engineLocation() { return location; }
+
+    public ResourceKey<Level> dimension() { return dimension; }
+
+    public int structuralBlockCount() { return structural.size(); }
+
+    public int loadedBlockCount() { return loaded.size(); }
+
+    /** Forces the next tick to re-analyse, for {@code /br resolve}. */
+    public void requestResolve() {
+        gate.bump();
+        dirty = true;
+        ticksSinceSolve = Integer.MAX_VALUE / 2;
+    }
+
+    /** Clears a disabled engine so the next tick tries again, for {@code /br reset}. */
+    public void resetEngine() {
+        sidecar.reset();
+        requestResolve();
+    }
+
+    /** All managers that currently exist, for {@code /br status}. */
+    public static java.util.Collection<StructureManager> all() { return BY_DIMENSION.values(); }
+
+    /**
+     * Re-reads loaded chunks around a point, for {@code /br scan}.
+     *
+     * <p>Bounded by a chunk radius rather than sweeping the world: an unbounded scan on a
+     * large save is a stall, and a command that freezes the server is not a diagnostic.
+     *
+     * @return how many structural blocks are now tracked in the scanned area
+     */
+    public int rescan(ServerLevel level, BlockPos centre, int chunkRadius) {
+        int cx = centre.getX() >> 4;
+        int cz = centre.getZ() >> 4;
+        int found = 0;
+        for (int dx = -chunkRadius; dx <= chunkRadius; dx++) {
+            for (int dz = -chunkRadius; dz <= chunkRadius; dz++) {
+                // hasChunk, not getChunk: scanning must never be the thing that generates
+                // terrain.
+                if (!level.hasChunk(cx + dx, cz + dz)) continue;
+                found += scanChunk(this, level.getChunk(cx + dx, cz + dz));
+            }
+        }
+        if (found > 0) markDirty();
+        return found;
+    }
+
+    private static int scanChunk(StructureManager m, net.minecraft.world.level.chunk.ChunkAccess access) {
+        if (!(access instanceof LevelChunk chunk)) return 0;
+        int found = 0;
+        LevelChunkSection[] sections = chunk.getSections();
+        for (int si = 0; si < sections.length; si++) {
+            LevelChunkSection section = sections[si];
+            if (section == null || section.hasOnlyAir()) continue;
+            if (!section.maybeHas(s -> s.getBlock() instanceof StructuralBlock)) continue;
+
+            int baseY = chunk.getMinBuildHeight() + (si << 4);
+            for (int x = 0; x < 16; x++) {
+                for (int y = 0; y < 16; y++) {
+                    for (int z = 0; z < 16; z++) {
+                        if (!(section.getBlockState(x, y, z).getBlock() instanceof StructuralBlock)) continue;
+                        m.structural.add(new BlockPos(
+                                chunk.getPos().getMinBlockX() + x, baseY + y,
+                                chunk.getPos().getMinBlockZ() + z));
+                        found++;
+                    }
+                }
+            }
+        }
+        return found;
     }
 
     public static StructureManager of(ServerLevel level) {
@@ -117,6 +199,25 @@ public final class StructureManager {
         m.markDirty();
     }
 
+    /**
+     * Adopts structural blocks that arrive without a place event.
+     *
+     * <p>Three cases need this, and the first is fatal without it: <strong>the tracked set
+     * is in memory only</strong>, so reloading a world would forget every structure ever
+     * built until each block was placed again. The others are {@code /setblock} and world
+     * edit tools, which bypass {@code EntityPlaceEvent} entirely.
+     *
+     * <p>Scanning a chunk block by block would be 98k lookups per chunk. Instead each
+     * section is asked whether its <em>palette</em> could contain a structural block —
+     * a handful of comparisons — and only matching sections are walked.
+     */
+    @SubscribeEvent
+    public static void onChunkLoad(ChunkEvent.Load e) {
+        if (!(e.getLevel() instanceof ServerLevel level)) return;
+        StructureManager m = BY_DIMENSION.computeIfAbsent(level.dimension(), StructureManager::new);
+        if (scanChunk(m, e.getChunk()) > 0) m.markDirty();
+    }
+
     @SubscribeEvent
     public static void onLevelUnload(LevelEvent.Unload e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
@@ -141,7 +242,9 @@ public final class StructureManager {
     // ------------------------------------------------------------------- loop
     private void tick(ServerLevel level) {
         ticksSinceSolve++;
-        if (!dirty || inFlight.get() || ticksSinceSolve < MIN_TICKS_BETWEEN_SOLVES) return;
+        if (!BRConfig.INSTANCE.analysisEnabled.get()) return;
+        if (!dirty || inFlight.get()
+                || ticksSinceSolve < BRConfig.INSTANCE.minTicksBetweenSolves.get()) return;
         if (structural.isEmpty()) { dirty = false; return; }
 
         long start = System.nanoTime();
@@ -176,6 +279,10 @@ public final class StructureManager {
         List<BlockPos> stale = new ArrayList<>();
 
         for (BlockPos pos : structural) {
+            // Never touch an unloaded chunk: getBlockState would force it to load, and a
+            // background structure could drag chunks in behind the player's back.
+            // Such blocks are skipped, NOT forgotten — they come back with their chunk.
+            if (!level.isLoaded(pos)) continue;
             BlockState state = level.getBlockState(pos);
             if (!(state.getBlock() instanceof StructuralBlock sb)) {
                 // Removed by something that raised no event — a command, another mod,
@@ -191,13 +298,12 @@ public final class StructureManager {
         for (BlockPos pos : loaded) {
             if (!structural.contains(pos)) continue;
             b.load(SolveRequest.PointLoad.downwards(
-                    new BlockKey(pos.getX(), pos.getY(), pos.getZ()), DEMO_LOAD_N));
+                    new BlockKey(pos.getX(), pos.getY(), pos.getZ()),
+                    BRConfig.INSTANCE.demoLoadNewtons.get()));
         }
         return b.build();
     }
 
-    /** 20 kN, the load used by the cantilever fixture the sidecar's tests are pinned to. */
-    private static final double DEMO_LOAD_N = 20_000;
 
     /**
      * Demo support rule: a structural block resting on something solid that is not itself

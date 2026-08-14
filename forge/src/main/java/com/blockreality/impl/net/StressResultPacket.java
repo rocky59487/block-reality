@@ -90,7 +90,7 @@ public final class StressResultPacket {
                 StressStation s = st.get(q);
                 writeVec(buf, s.centroidMm());
                 buf.writeBoolean(s.naOffsetYMm().isPresent());
-                buf.writeFloat((float) s.naOffsetYMm().orElse(0.0));
+                buf.writeFloat(s.naOffsetYMm().orElse(0.0).floatValue());
 
                 List<Fibre> fb = s.fibres();
                 int nFb = Math.min(fb.size(), MAX_FIBRES);

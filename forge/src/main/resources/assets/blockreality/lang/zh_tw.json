@@ -2,11 +2,9 @@
   "itemGroup.blockreality": "Block Reality",
   "block.blockreality.steel_beam": "結構鋼",
   "item.blockreality.stress_glasses": "應力眼鏡",
-
   "br.scan.mode.utilization": "利用率",
   "br.scan.mode.stress": "應力",
   "br.scan.mode.material": "材料",
-
   "br.hud.mode": "鏡頭：%s",
   "br.hud.maxdc": "最大 D/C  %s",
   "br.hud.members": "%s 根構件",
@@ -14,15 +12,16 @@
   "br.hud.no_data": "尚未分析",
   "br.hud.mechanism": "這是機構不是結構——沒有東西撐住它",
   "br.hud.engine_unavailable": "引擎無法使用：%s",
-
   "br.legend.stress.tension": "受拉",
   "br.legend.stress.zero": "零",
   "br.legend.stress.compression": "受壓",
   "br.legend.dc.safe": "安全",
   "br.legend.dc.watch": "接近極限",
   "br.legend.dc.limit": "達到或超過容量",
-
   "br.load.added": "已施加測試荷載（20 kN）",
   "br.load.removed": "已移除測試荷載",
-  "br.engine.unavailable": "結構分析無法使用：%s"
+  "br.engine.unavailable": "結構分析無法使用：%s",
+  "br.hud.engine_off": "設定檔停用了分析",
+  "br.hud.stale": "過期——計算之後世界已經改變",
+  "br.hint.first_use": "蹲下右鍵結構方塊可加測試荷載。/br status 顯示引擎狀態。"
 }

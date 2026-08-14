@@ -9,25 +9,44 @@ base { archivesName = 'blockreality' }
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
 
+// The pure-Java half is compiled from SOURCE, as extra source directories.
+//
+// The obvious alternative — a Gradle composite build with `includeBuild '../mod'` — was
+// tried and dropped. Dependency substitution across a composite works for compilation but
+// fights with ForgeGradle's reobf and with jarJar, which wants real published coordinates.
+// That is a lot of moving parts to debug on the morning you want to look at a beam.
+//
+// Reading the sources directly means one build, one classpath, and a mod jar that contains
+// everything by construction. The api/impl discipline is not weakened by this: it lives in
+// `../mod`, where `gradle check` runs `checkApiPurity` against the same files.
+sourceSets.main.java.srcDirs += [
+        '../mod/api/src/main/java',
+        '../mod/core/src/main/java',
+]
+
 minecraft {
     // Official Mojang mappings, matching the previous project's convention.
     mappings channel: 'official', version: '1.20.1'
     copyIdeResources = true
 
     runs {
-        client {
+        configureEach {
             workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            // Where to find the engine. Absent -> analysis disabled, game still runs;
-            // that path is exercised by SidecarLifecycleTest in the core project.
-            property 'br.sidecar', System.getenv('BR_SIDECAR') ?: ''
+            // Optional. The mod also finds the engine through the config file, the
+            // BR_SIDECAR environment variable, the game directory, or PATH — see
+            // SidecarLocator. Absent everywhere just means analysis is off.
+            if (System.getenv('BR_SIDECAR')) {
+                property 'br.sidecar', System.getenv('BR_SIDECAR')
+            }
             mods { blockreality { source sourceSets.main } }
         }
-        server {
-            workingDirectory project.file('run')
-            property 'forge.logging.console.level', 'debug'
-            property 'br.sidecar', System.getenv('BR_SIDECAR') ?: ''
-            mods { blockreality { source sourceSets.main } }
+        client { }
+        server { }
+        data {
+            args '--mod', 'blockreality', '--all', '--output', file('src/generated/resources/'),
+                 '--existing', file('src/main/resources/')
         }
     }
 }
@@ -36,13 +55,6 @@ repositories { mavenCentral() }
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.20.1-47.4.13'
-
-    // The pure-Java half. jarJar so a user installing the mod gets it without a
-    // separate download; it has no transitive dependencies of its own.
-    implementation 'com.blockreality:core:0.0.1-demo'
-    implementation 'com.blockreality:api:0.0.1-demo'
-    jarJar(group: 'com.blockreality', name: 'core', version: '[0.0.1,0.1)')
-    jarJar(group: 'com.blockreality', name: 'api', version: '[0.0.1,0.1)')
 }
 
 tasks.named('jar') {
@@ -58,4 +70,6 @@ tasks.named('jar') {
     }
 }
 
-tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

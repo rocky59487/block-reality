@@ -21,17 +21,31 @@ public final class AnalysisExecutor {
 
     private static final AtomicInteger COUNTER = new AtomicInteger();
 
-    private static final ExecutorService POOL = new ThreadPoolExecutor(
-            0, Math.max(1, Runtime.getRuntime().availableProcessors() / 4),
-            30, TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(),
-            r -> {
-                Thread t = new Thread(r, "br-analysis-" + COUNTER.incrementAndGet());
-                t.setDaemon(true);
-                // Below the game's own threads: a tick that needs CPU must win.
-                t.setPriority(Thread.NORM_PRIORITY - 1);
-                return t;
-            });
+    // Core == max, with core threads allowed to time out. An unbounded queue would
+    // otherwise make the maximum meaningless: ThreadPoolExecutor only grows past the core
+    // size once the queue is full, so `0, N` with a LinkedBlockingQueue silently runs
+    // everything on one thread. Stating the real number beats a comment that claims a
+    // parallelism the pool never provides.
+    private static final int THREADS = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
+
+    private static final ExecutorService POOL;
+
+    static {
+        ThreadPoolExecutor p = new ThreadPoolExecutor(
+                THREADS, THREADS,
+                30, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(),
+                r -> {
+                    Thread t = new Thread(r, "br-analysis-" + COUNTER.incrementAndGet());
+                    t.setDaemon(true);
+                    // Below the game's own threads: a tick that needs CPU must win.
+                    t.setPriority(Thread.NORM_PRIORITY - 1);
+                    return t;
+                });
+        // No threads at all until the first analysis, and none kept once building stops.
+        p.allowCoreThreadTimeOut(true);
+        POOL = p;
+    }
 
     private AnalysisExecutor() { }
 

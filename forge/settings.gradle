@@ -10,8 +10,3 @@ plugins {
 }
 
 rootProject.name = 'blockreality-forge'
-
-// Composite build: the pure-Java half is consumed as source, not as a published jar.
-// Editing a core class and running the client picks the change up with no publish step,
-// and the dependency stays one-way — nothing in ../mod can see Minecraft.
-includeBuild '../mod'

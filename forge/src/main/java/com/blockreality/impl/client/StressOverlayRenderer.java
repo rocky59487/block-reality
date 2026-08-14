@@ -74,6 +74,17 @@ public final class StressOverlayRenderer {
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
         RenderSystem.depthMask(false);
+
+        // DEPTH TEST OFF, and this is not a shortcut.
+        //
+        // A steel_rect_200x400 section puts its extreme fibres 0.2 and 0.1 blocks from the
+        // centreline — well inside the one-metre cube that represents the member. Drawn
+        // with depth testing on, every ribbon would be buried inside an opaque block and
+        // the overlay would render perfectly and show nothing at all.
+        //
+        // It is also what the tool is for: the stress glasses look INTO the structure.
+        // Section forces do not live on the surface.
+        RenderSystem.disableDepthTest();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         BufferBuilder buf = Tesselator.getInstance().getBuilder();
@@ -91,6 +102,7 @@ public final class StressOverlayRenderer {
 
         BufferUploader.drawWithShader(buf.end());
 
+        RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
         RenderSystem.enableCull();
         RenderSystem.disableBlend();

@@ -29,6 +29,11 @@ public final class BlockRealityMod {
     public BlockRealityMod() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 
+        // SERVER type, not COMMON: the analysis runs on the logical server, and a client
+        // joining someone else's world has no business overriding their engine path.
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                net.minecraftforge.fml.config.ModConfig.Type.SERVER, BRConfig.SPEC);
+
         BRContent.BLOCKS.register(bus);
         BRContent.ITEMS.register(bus);
         BRContent.TABS.register(bus);
@@ -36,6 +41,7 @@ public final class BlockRealityMod {
         bus.addListener(BRNetwork::onCommonSetup);
 
         MinecraftForge.EVENT_BUS.register(StructureManager.class);
+        MinecraftForge.EVENT_BUS.register(com.blockreality.impl.command.BRCommand.class);
         MinecraftForge.EVENT_BUS.addListener(BlockRealityMod::onServerStopping);
 
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
