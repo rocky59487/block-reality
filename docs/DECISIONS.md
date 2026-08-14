@@ -72,6 +72,8 @@
 
 **理由**：1m×1m 實心鋼柱在真實工程裡是誇張的巨柱，D/C 恆為 0.01，任何結構都不會失效，遊戲性歸零。FrameCore / ArchSim 的 `SectionLibrary` 本來就把 `Section` 與幾何分離（GB H 型鋼 / EU IPE、HEA、HEB / US W / Box / Pipe / Channel / Angle）。
 
+**補記（Drive digest 之後）**：這個機制**前身設計裡已經有了**——Node 報告 `B3-1 ShapeSelector` 從 10³ 體素造型自動輸出 `A / Ix / Iy / Wx / Wy`，`B3-2 CustomShape` 有內嵌體素編輯器。不需要新設計，要做的是補 `Iz` / `J` / 剪力面積 / 主軸方向，並刪除同報告 `C1-3` 的 `blockSectionModulus = 1/6`（那正是「方塊即斷面」假設的明確出處）。詳見 `docs/MEMBER_SEMANTICS.md` §3。
+
 **否證條件**：玩家對「一格 = 一個看不見的小斷面」產生認知落差且無法用視覺化解決。
 
 ---
