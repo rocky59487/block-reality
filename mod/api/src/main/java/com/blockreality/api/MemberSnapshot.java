@@ -14,10 +14,13 @@ import java.util.List;
  *
  * @param id        engine-side member index for this analysis, not a persistent identity
  * @param material  material token, e.g. {@code steel}
- * @param section   section token, e.g. {@code steel_h400} — never square (GATES.md)
+ * @param section   section token, e.g. {@code steel_rect_200x400} — never square (GATES.md)
  * @param lengthMm  member length, millimetres
  * @param dc        demand/capacity ratio; {@code > 1} means the member has failed
- * @param mode      which fibre governs {@code dc} — see {@link FailMode}
+ * @param governingFibre    which fibre governs {@code dc} — see {@link GoverningFibre}
+ * @param governingStation  index into {@code stations} of the section that governs;
+ *                          {@code -1} if none. The controlling section is often in the
+ *                          MIDDLE of a member, not at an end.
  * @param blocks    the blocks this member was extracted from
  * @param stations  sampled stress states along the length, ordered by {@code xMm}
  */
@@ -27,7 +30,8 @@ public record MemberSnapshot(
         String section,
         double lengthMm,
         double dc,
-        FailMode mode,
+        GoverningFibre governingFibre,
+        int governingStation,
         EndForces endI,
         EndForces endJ,
         List<BlockKey> blocks,

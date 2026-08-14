@@ -81,13 +81,24 @@ const std::map<std::string, MatSpec>& materialCatalogue() {
 // ------------------------------------------------------- section catalogue
 // Every entry is deliberately NON-SQUARE (GATES.md fixture rule): a square
 // section hides local-axis mix-ups, because -Y and -Z then give the same answer.
+//
+// NAMING: these are SOLID RECTANGLES and SOLID CIRCLES, and the tokens now say so.
+// They were previously called steel_h400 / rc_400x600, which claimed an I-section
+// and a reinforced-concrete composite that neither the geometry nor the material
+// model delivers — an H-section of the same depth has a very different Iz, Iy and
+// self-weight. A token that names a section the engine is not solving is a lie
+// that survives every test, because the tests use the token too (issue #13).
+//
+// Real H-sections and real RC composites need traceable A/Iy/Iz/J/mass data and,
+// for RC, a steel-plus-concrete section. Until then these are honestly named
+// fixture sections.
 const std::map<std::string, frame::Section>& sectionCatalogue() {
     static const std::map<std::string, frame::Section> kS = {
-        { "steel_h400", frame::Section::Rectangular(200.0, 400.0) },
-        { "steel_h300", frame::Section::Rectangular(150.0, 300.0) },
-        { "steel_h200", frame::Section::Rectangular(100.0, 200.0) },
-        { "rc_400x600", frame::Section::Rectangular(400.0, 600.0) },
-        { "rebar_d25",  frame::Section::Circular(12.5) },
+        { "steel_rect_200x400",    frame::Section::Rectangular(200.0, 400.0) },
+        { "steel_rect_150x300",    frame::Section::Rectangular(150.0, 300.0) },
+        { "steel_rect_100x200",    frame::Section::Rectangular(100.0, 200.0) },
+        { "concrete_rect_400x600", frame::Section::Rectangular(400.0, 600.0) },
+        { "rebar_round_d25",       frame::Section::Circular(12.5) },
     };
     return kS;
 }
@@ -139,17 +150,28 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
     std::vector<std::vector<BlockPos>> rawRuns;
     std::vector<std::string>           runMat, runSec;
 
+    // A run follows MATERIAL continuity: the steel really is continuous through a change
+    // of section, so breaking the run there would leave two members that do not touch,
+    // and the far one would float free as a mechanism.
+    //
+    // The section change is instead a NODE, handled below by the same splitting that
+    // handles junctions — which shares the boundary block between both segments and so
+    // keeps them connected. Comparing material alone was still a bug: the old code let a
+    // run keep the head block's section straight through the change, and solved a 200x400
+    // that became a 100x200 halfway along as 200x400 throughout, with ok:true (issue #13).
+    auto continues = [](const InBlock& a, const InBlock& b) { return a.mat == b.mat; };
+
     for (const BlockPos& axis : kAxes) {
         for (const auto& [pos, blk] : grid) {
             // Only start at a run head: the previous cell must not continue this run.
             auto prev = grid.find(sub(pos, axis));
-            if (prev != grid.end() && prev->second.mat == blk.mat) continue;
+            if (prev != grid.end() && continues(prev->second, blk)) continue;
 
             std::vector<BlockPos> run{ pos };
             BlockPos cur = add(pos, axis);
             for (;;) {
                 auto it = grid.find(cur);
-                if (it == grid.end() || it->second.mat != blk.mat) break;
+                if (it == grid.end() || !continues(it->second, blk)) break;
                 run.push_back(cur);
                 cur = add(cur, axis);
             }
@@ -174,6 +196,14 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
     for (const auto& [pos, blk] : grid)
         if (blk.support) nodeBlocks.insert(pos);
 
+    // A section change is a node too. The boundary block is shared by both segments, so
+    // the member stays continuous — which is what the physical steel does.
+    for (const auto& run : rawRuns) {
+        for (size_t k = 1; k < run.size(); ++k) {
+            if (grid.at(run[k]).section != grid.at(run[k - 1]).section) nodeBlocks.insert(run[k]);
+        }
+    }
+
     std::vector<RunSeg> out;
     for (size_t r = 0; r < rawRuns.size(); ++r) {
         const auto& run = rawRuns[r];
@@ -185,13 +215,18 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
                 RunSeg seg;
                 seg.blocks.assign(run.begin() + static_cast<long>(start),
                                   run.begin() + static_cast<long>(k) + 1);
-                seg.mat     = runMat[r];
-                seg.section = runSec[r];
+                seg.mat = runMat[r];
+                // The segment's section is the one its own first block declares, not the
+                // run head's. At the boundary block the two sections meet inside a single
+                // one-metre cube; the block is assigned to the segment that starts there.
+                // That is a real approximation of the 1 m grid, stated rather than hidden.
+                seg.section = grid.at(run[start]).section;
                 if (seg.blocks.size() >= 2) out.push_back(std::move(seg));
                 start = k;
             }
         }
     }
+    (void) runSec;
 
     std::set<BlockPos> covered;
     for (const auto& s : out)
@@ -238,7 +273,13 @@ struct SolveOut {
         std::string           mat, section;
         double                lengthMm = 0;
         double                dc = 0;
-        std::string           mode = "NONE";
+        // The GOVERNING FIBRE, not a load type and not a product failure event.
+        // ElasticAllowable takes the argmax of five ratios, so steel in pure bending
+        // reports the compression fibre — its compressive allowable is the lower one.
+        // Naming it `mode` invited a downstream reader to route a steel member into a
+        // concrete-crushing effect (issue #16), so the wire now says what it means.
+        std::string           governingFibre = "NONE";
+        int                   governingStation = -1;   // index into stations
         frame::MemberEndForces fi, fj;
         std::vector<BlockPos> blocks;
         std::vector<Station>  stations;
@@ -342,9 +383,23 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
     // bridge and rotates gravity into each member's local axes.
     frame::addSelfWeight(m);
 
+    // FAIL-CLOSED. A load whose block is not an analysis node used to be skipped with a
+    // `continue`, and the reply still said ok — so a load dropped in the middle of a long
+    // run silently vanished and the structure came back SAFER than it is. Silently
+    // reporting safe is the worst failure this program can have (issue #14).
+    //
+    // The right long-term answer is to split the member at the load point, or to carry it
+    // as a member load. Until one of those exists, the request is refused.
     for (size_t k = 0; k < pointLoads.size() && k < loadAt.size(); ++k) {
         auto it = nodeId.find(loadAt[k]);
-        if (it == nodeId.end()) continue;    // load on a block that is not a node: ignored
+        if (it == nodeId.end()) {
+            const BlockPos& p = loadAt[k];
+            out.ok    = false;
+            out.error = "load at (" + std::to_string(p.x) + "," + std::to_string(p.y) + ","
+                      + std::to_string(p.z) + ") is not on an analysis node; "
+                        "loads inside a member are not representable yet";
+            return out;
+        }
         frame::NodalLoad nl;
         nl.node = it->second;
         // Caller sends Minecraft axes; map into FrameCore's.
@@ -372,24 +427,6 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
     // are meaningless, so nothing is reported beyond the diagnostic.
     if (r.singular) return out;
 
-    frame::ElasticAllowable strength;
-    for (size_t k = 0; k < r.memberForces.size() && k < mo.size(); ++k) {
-        const frame::MemberForcePair& mf = r.memberForces[k];
-        const frame::Section&  sec = m.sections[m.members[k].secIdx];
-        const frame::Capacity& cap = m.materials[m.members[k].matIdx].cap;
-
-        const frame::DemandResult di = strength.checkSection(mf.endI, sec, cap);
-        const frame::DemandResult dj = strength.checkSection(mf.endJ, sec, cap);
-        const frame::DemandResult& worst = (dj.risk > di.risk) ? dj : di;
-
-        mo[k].dc   = worst.risk;
-        mo[k].mode = failModeName(worst.mode);
-        mo[k].fi   = mf.endI;
-        mo[k].fj   = mf.endJ;
-
-        if (worst.risk > out.maxDC) { out.maxDC = worst.risk; out.governing = mo[k].id; }
-    }
-
     // ---- fibre stress field: the data the stress overlay actually draws ----
     // Built here rather than taken from computeStressField.
     //
@@ -413,10 +450,20 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
     // — the straight line between the two verified end moments, plus the
     // parabola a uniform load adds, which vanishes at both ends by construction.
     // Shear is linear under a uniform load, so interpolating it is exact.
-    const int kStations = 11;
+    //
+    // D/C IS TAKEN FROM THESE STATIONS, NOT FROM THE TWO ENDS. Screening only the ends
+    // reports a simply supported beam under its own weight as unstressed: both end
+    // moments are zero while midspan carries wL^2/8. That is a "silently safe" answer,
+    // the most dangerous kind (issue #14). The uniform stations are joined by the
+    // ANALYTIC extremum of the moment diagram, so the controlling section is captured
+    // exactly rather than nearly.
+    const int kUniformStations = 11;
+    frame::ElasticAllowable strength;
+
     for (size_t k = 0; k < r.memberForces.size() && k < mo.size(); ++k) {
         const frame::Member&  mem = m.members[k];
         const frame::Section& sec = m.sections[mem.secIdx];
+        const frame::Capacity& cap = m.materials[mem.matIdx].cap;
         const frame::MemberForcePair& mf = r.memberForces[k];
 
         const int ii = m.nodeIndex(mem.i), ij = m.nodeIndex(mem.j);
@@ -439,8 +486,34 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
 
         auto& dst = mo[k];
         const double L = dst.lengthMm;
-        for (int q = 0; q < kStations; ++q) {
-            const double t = (kStations > 1) ? static_cast<double>(q) / (kStations - 1) : 0.0;
+        dst.fi = mf.endI;
+        dst.fj = mf.endJ;
+
+        // Uniform stations for the picture, plus the analytic moment extremum for the
+        // check. M(x) = M_i(1-t) + M_j t + (w/2) x (L-x), so dM/dx = 0 at
+        //     x* = L/2 + (M_j - M_i) / (w L)
+        // which lands at midspan for a symmetric simply supported beam and outside the
+        // member (hence discarded) for a cantilever.
+        std::vector<double> ts;
+        ts.reserve(kUniformStations + 2);
+        for (int q = 0; q < kUniformStations; ++q) {
+            ts.push_back(static_cast<double>(q) / (kUniformStations - 1));
+        }
+        auto addExtremum = [&](double mi, double mj, double w) {
+            if (std::fabs(w) < 1e-12 || L <= 0) return;
+            const double xs = L / 2.0 + (mj - mi) / (w * L);
+            const double t = xs / L;
+            if (t > 1e-9 && t < 1 - 1e-9) ts.push_back(t);
+        };
+        addExtremum(mf.endI.Mz, mf.endJ.Mz, wy);
+        addExtremum(mf.endI.My, mf.endJ.My, wz);
+        std::sort(ts.begin(), ts.end());
+        ts.erase(std::unique(ts.begin(), ts.end(),
+                             [](double a, double b) { return std::fabs(a - b) < 1e-9; }),
+                 ts.end());
+
+        for (size_t q = 0; q < ts.size(); ++q) {
+            const double t = ts[q];
             const double x = t * L;
 
             const double Nx  = mf.endI.N  * (1 - t) + mf.endJ.N  * t;
@@ -476,21 +549,49 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
             st.sigmaComp = std::max({ 0.0, -sTop, -sBot, -sPls, -sMin });
             st.tauShear  = (sec.A > 0) ? 1.5 * std::fabs(Vyx) / sec.A : 0.0;
 
-            // Neutral axis: sigma is linear across the depth, so where two opposing
-            // fibres differ in sign it crosses at cz (sTop + sBot) / (sTop - sBot),
-            // measured from the centroid. Reported only when it really falls inside
-            // the section — a fully tensile or fully compressive section has no
-            // neutral axis and inventing one would be a lie.
+            // Neutral axis. Stress is linear across the depth, so along the TOP_Y
+            // direction sigma(y) = axial + bendY * (y / cz), which is zero at
+            //     y0 = -cz * (sTop + sBot) / (sTop - sBot)
+            //
+            // The MINUS SIGN IS NOT OPTIONAL and was missing here. Add tension to a
+            // beam and the neutral axis moves DOWN, towards the compression face; the
+            // unsigned version moved it up. Pure bending has (sTop + sBot) == 0, so
+            // both versions agree, and the only test that existed checked |naY| != 0 —
+            // which the wrong sign passes (issue #15).
+            //
+            // Reported only when it really falls inside the section. A fully tensile or
+            // fully compressive section has no neutral axis, and inventing one would
+            // draw a line through a member that does not have one.
             if ((sTop > 0) != (sBot > 0) && std::fabs(sTop - sBot) > 1e-12) {
                 st.hasNaY    = true;
-                st.naOffsetY = sec.cz * (sTop + sBot) / (sTop - sBot);
+                st.naOffsetY = -sec.cz * (sTop + sBot) / (sTop - sBot);
             }
             if ((sPls > 0) != (sMin > 0) && std::fabs(sPls - sMin) > 1e-12) {
                 st.hasNaZ    = true;
-                st.naOffsetZ = sec.cy * (sPls + sMin) / (sPls - sMin);
+                st.naOffsetZ = -sec.cy * (sPls + sMin) / (sPls - sMin);
             }
+
+            // Capacity screen AT THIS STATION, from the same recovered section forces
+            // the overlay draws. One recovery, one set of numbers: the picture and the
+            // decision can no longer disagree.
+            frame::MemberEndForces fx;
+            fx.N  = Nx;
+            fx.Vy = Vyx;
+            fx.Vz = mf.endI.Vz * (1 - t) + mf.endJ.Vz * t;
+            fx.T  = mf.endI.T  * (1 - t) + mf.endJ.T  * t;
+            fx.My = Myx;
+            fx.Mz = Mzx;
+            const frame::DemandResult d = strength.checkSection(fx, sec, cap);
+            if (d.risk > dst.dc) {
+                dst.dc               = d.risk;
+                dst.governingFibre   = failModeName(d.mode);
+                dst.governingStation = static_cast<int>(q);
+            }
+
             dst.stations.push_back(std::move(st));
         }
+
+        if (dst.dc > out.maxDC) { out.maxDC = dst.dc; out.governing = dst.id; }
     }
 
     out.members = std::move(mo);
@@ -512,32 +613,90 @@ void writeBlocks(bjson::Writer& w, const char* key, const std::vector<BlockPos>&
     w.endArr();
 }
 
+// Fail-closed input parsing.
+//
+// The previous version defaulted a missing material to steel and a missing section to
+// the 200x400 rectangle, truncated any double to an int for coordinates, and let a
+// repeated coordinate overwrite the earlier one. Each of those turns a malformed request
+// into a DIFFERENT, PERFECTLY SOLVABLE STRUCTURE, and the reply still says ok — the
+// caller has no way to find out it asked one question and got the answer to another
+// (issue #18). Every one of them is now an error line.
+std::string errorLine(const std::string& msg, long long revision);
+
+bool readCoord(const bjson::Value& v, const char* key, int& out, std::string& err) {
+    if (!v.isFiniteNum(key)) { err = std::string("field '") + key + "' missing or not a finite number"; return false; }
+    const double d = v.num(key);
+    if (d != std::floor(d))  { err = std::string("field '") + key + "' is not an integer"; return false; }
+    if (d < -30000000.0 || d > 30000000.0) { err = std::string("field '") + key + "' out of world range"; return false; }
+    out = static_cast<int>(d);
+    return true;
+}
+
+bool readForce(const bjson::Value& v, const char* key, double& out, std::string& err) {
+    if (!v.has(key)) { out = 0; return true; }          // absent means zero, explicitly
+    if (!v.isFiniteNum(key)) { err = std::string("field '") + key + "' is not a finite number"; return false; }
+    out = v.num(key);
+    return true;
+}
+
 std::string handleSolve(const bjson::Value& req) {
-    const long long revision = req.i64("revision", 0);
+    // revision travels as an integer field and must round-trip exactly. Rejecting a
+    // non-integer here is cheap; a revision that silently changed value would defeat the
+    // one mechanism that keeps stale results from causing damage.
+    if (!req.isFiniteNum("revision")) return errorLine("'revision' missing or not a finite number", 0);
+    const double revd = req.num("revision");
+    if (revd != std::floor(revd) || revd < 0 || revd > 9.007199254740992e15) {
+        return errorLine("'revision' must be a non-negative integer", 0);
+    }
+    const long long revision = static_cast<long long>(revd);
+
+    const auto& matCat = materialCatalogue();
+    const auto& secCat = sectionCatalogue();
 
     std::vector<InBlock> blocks;
+    std::set<BlockPos>   seen;
+    std::string          err;
+
     for (const auto& bv : req.arr("blocks")) {
-        if (bv.t != bjson::Value::T::Obj) continue;
+        if (bv.t != bjson::Value::T::Obj) return errorLine("blocks[] entry is not an object", revision);
         InBlock b;
-        b.pos.x   = static_cast<int>(bv.num("x"));
-        b.pos.y   = static_cast<int>(bv.num("y"));
-        b.pos.z   = static_cast<int>(bv.num("z"));
-        b.mat     = bv.str("mat", "steel");
-        b.section = bv.str("section", "steel_h400");
+        if (!readCoord(bv, "x", b.pos.x, err)) return errorLine("block: " + err, revision);
+        if (!readCoord(bv, "y", b.pos.y, err)) return errorLine("block: " + err, revision);
+        if (!readCoord(bv, "z", b.pos.z, err)) return errorLine("block: " + err, revision);
+
+        if (!seen.insert(b.pos).second) {
+            return errorLine("duplicate block coordinate; the caller and the engine disagree "
+                             "about what is at that position", revision);
+        }
+        if (!bv.isStr("mat"))     return errorLine("block: 'mat' missing", revision);
+        if (!bv.isStr("section")) return errorLine("block: 'section' missing", revision);
+
+        b.mat     = bv.str("mat");
+        b.section = bv.str("section");
         b.support = bv.boolean("support", false);
+
+        if (!matCat.count(b.mat))     return errorLine("unknown material '" + b.mat + "'", revision);
+        if (!secCat.count(b.section)) return errorLine("unknown section '" + b.section + "'", revision);
+
         blocks.push_back(b);
     }
 
     std::vector<std::array<double, 6>> loads;
     std::vector<BlockPos>              loadAt;
     for (const auto& lv : req.arr("loads")) {
-        if (lv.t != bjson::Value::T::Obj) continue;
-        BlockPos p{ static_cast<int>(lv.num("x")),
-                    static_cast<int>(lv.num("y")),
-                    static_cast<int>(lv.num("z")) };
+        if (lv.t != bjson::Value::T::Obj) return errorLine("loads[] entry is not an object", revision);
+        BlockPos p;
+        if (!readCoord(lv, "x", p.x, err)) return errorLine("load: " + err, revision);
+        if (!readCoord(lv, "y", p.y, err)) return errorLine("load: " + err, revision);
+        if (!readCoord(lv, "z", p.z, err)) return errorLine("load: " + err, revision);
+
+        std::array<double, 6> f{};
+        static const char* kComp[6] = { "fx", "fy", "fz", "mx", "my", "mz" };
+        for (int i = 0; i < 6; ++i) {
+            if (!readForce(lv, kComp[i], f[i], err)) return errorLine("load: " + err, revision);
+        }
         loadAt.push_back(p);
-        loads.push_back({ lv.num("fx"), lv.num("fy"), lv.num("fz"),
-                          lv.num("mx"), lv.num("my"), lv.num("mz") });
+        loads.push_back(f);
     }
 
     SolveOut s = runSolve(blocks, loads, loadAt);
@@ -559,7 +718,11 @@ std::string handleSolve(const bjson::Value& req) {
     for (const auto& mm : s.members) {
         w.beginObj();
         w.kv("id", mm.id).kv("mat", mm.mat).kv("section", mm.section);
-        w.kv("lengthMm", mm.lengthMm).kv("dc", mm.dc).kv("mode", mm.mode);
+        w.kv("lengthMm", mm.lengthMm).kv("dc", mm.dc);
+        // Named for what it is. `failureType` (NONE / FRACTURE / CRUSHING / MECHANISM)
+        // and `handoffType` are deliberately NOT emitted yet: nothing here decides them,
+        // and absence is a safer default than a guess a downstream reader would act on.
+        w.kv("governingFibre", mm.governingFibre).kv("governingStation", mm.governingStation);
         writeForces(w, "i", mm.fi);
         writeForces(w, "j", mm.fj);
         writeBlocks(w, "blocks", mm.blocks);

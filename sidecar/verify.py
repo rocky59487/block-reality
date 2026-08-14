@@ -53,7 +53,7 @@ class Sidecar:
         self.p.wait(timeout=5)
 
 
-def beam_blocks(n, mat="steel", section="steel_h400", y=64):
+def beam_blocks(n, mat="steel", section="steel_rect_200x400", y=64):
     """n blocks along +X at height y; the first one is a support."""
     return [{"x": i, "y": y, "z": 0, "mat": mat, "section": section, "support": i == 0}
             for i in range(n)]
@@ -69,7 +69,7 @@ def main():
     check_true("ok", h.get("ok") is True)
     check_true("engine is FrameCore", h.get("engine") == "FrameCore", h.get("engine", ""))
     check_true("materials advertised", "steel" in h.get("materials", []))
-    check_true("sections advertised", "steel_h400" in h.get("sections", []))
+    check_true("sections advertised", "steel_rect_200x400" in h.get("sections", []))
 
     # ------------------------------------------- C1: cantilever vs closed form
     # 5 blocks -> one member, centre-to-centre length 4000 mm, root fixed.
@@ -79,7 +79,7 @@ def main():
     P = 20000.0                       # N, downward in Minecraft axes
     n = 5
     L = (n - 1) * BLOCK_MM
-    b, d = 200.0, 400.0               # steel_h400
+    b, d = 200.0, 400.0               # steel_rect_200x400
     A = b * d
     rho = 7850.0
     w = rho * A * 1e-9 * G            # N/mm
@@ -103,15 +103,21 @@ def main():
     Wy = d * b * b / 6.0
     dc_strong = (root / Wz) / 350.0
     dc_weak = (root / Wy) / 350.0
-    check_true("D/C matches a hand screen",
-               abs(mem["dc"] - dc_strong) < 1e-6 or abs(mem["dc"] - dc_weak) < 1e-6,
-               f"dc={mem['dc']:.6g} strong={dc_strong:.6g} weak={dc_weak:.6g}")
-    # The mode names the GOVERNING FIBRE, not the load type. ElasticAllowable
-    # takes the argmax of five ratios, and for steel the compressive allowable
-    # (350) is lower than the tensile one (500), so a pure bending stress reaches
-    # the compression limit first and reports CRUSH. That is the useful answer:
-    # it tells the player which side of the section runs out first.
-    check_true("mode is CRUSH (steel: comp 350 < tens 500)", mem["mode"] == "CRUSH", mem["mode"])
+    # ONE answer, not "either axis". Accepting the strong OR the weak value was the same
+    # mistake ENGINE_FINDINGS.md is about: such a gate cannot detect an axis swap, which
+    # is the single defect the non-square fixture rule exists to catch.
+    # The load is vertical and the member runs along +X, so the strong axis governs.
+    check("D/C vs hand screen (strong axis)", mem["dc"], dc_strong, 1e-6)
+    check_true("the two axes really do differ (fixture is non-square)",
+               abs(dc_strong - dc_weak) > 1e-9,
+               f"strong={dc_strong:.6g} weak={dc_weak:.6g}")
+    # This field names the GOVERNING FIBRE, not the load type and not a product failure
+    # event. ElasticAllowable takes the argmax of five ratios, and for steel the
+    # compressive allowable (350) is below the tensile one (500), so pure bending reaches
+    # the compression limit first. It does NOT mean concrete-style crushing, and nothing
+    # downstream may route on it alone.
+    check_true("governing fibre is the compression face (steel: 350 < 500)",
+               mem["governingFibre"] == "CRUSH", mem["governingFibre"])
     check_true("no unassigned blocks", len(r.get("unassigned", [])) == 0)
 
     # ------------------------------------------- C1b: mode tracks the material
@@ -120,12 +126,12 @@ def main():
     # it must flip to TENSION.
     print("\n[C1b] governing fibre follows the material")
     rc = sc.call({"op": "solve", "revision": 11,
-                  "blocks": beam_blocks(n, mat="concrete", section="rc_400x600")})
+                  "blocks": beam_blocks(n, mat="concrete", section="concrete_rect_400x600")})
     check_true("ok", rc.get("ok") is True, rc.get("error", ""))
-    check_true("concrete governs in TENSION", rc["members"][0]["mode"] == "TENSION",
-               rc["members"][0]["mode"])
+    check_true("concrete governs in TENSION", rc["members"][0]["governingFibre"] == "TENSION",
+               rc["members"][0]["governingFibre"])
     # Hand screen: self weight only, sigma = (w L^2 / 2) / Wz, D/C = sigma / Rtens.
-    cb, cd = 400.0, 600.0                      # rc_400x600
+    cb, cd = 400.0, 600.0                      # concrete_rect_400x600
     wc = 2350.0 * (cb * cd) * 1e-9 * G         # N/mm
     dc_expect = ((wc * L * L / 2.0) / (cb * cd * cd / 6.0)) / 3.0
     check("concrete D/C vs hand screen", rc["members"][0]["dc"], dc_expect, 1e-6)
@@ -175,6 +181,22 @@ def main():
                f"{tip_top['sigma']:.4g} MPa")
     check_true("no neutral axis at an unstressed tip", "naY" not in st_tip)
 
+    # ----------------------------------- EVERY station, not just the two ends.
+    # Checking only the root and the tip left nine stations free to be wrong while the
+    # gate still printed ALL PASS, and the README claimed "machine precision at every
+    # station" on the strength of a printout rather than an assertion.
+    #     sigma_top(x) = [P (L-x) + w (L-x)^2 / 2] / W
+    W = b * d * d / 6.0
+    worst_rel = 0.0
+    for st in mem["stations"]:
+        a = L - st["x"]
+        expect = (P * a + w * a * a / 2.0) / W
+        got = fibre_by_dir(st, True)["sigma"]
+        rel = abs(got - expect) / max(abs(expect), 1e-30)
+        worst_rel = max(worst_rel, rel if abs(expect) > 1e-12 else abs(got))
+    check_true(f"all {len(mem['stations'])} stations vs closed form",
+               worst_rel < 1e-9, f"worst rel={worst_rel:.2e}")
+
     # ---------------------------------- C1d: axial force moves the neutral axis
     # Push the member along its own axis as well: the stress diagram shifts, the
     # neutral axis moves off the centroid, and if the axial part is big enough
@@ -186,8 +208,20 @@ def main():
     ax_root = rax["members"][0]["stations"][0]
     ax_top = fibre_by_dir(ax_root, True)
     ax_bot = fibre_by_dir(ax_root, False)
-    check_true("axial shifts NA off the centroid", abs(ax_root.get("naY", 0.0)) > 1e-3,
-               f"naY={ax_root.get('naY')}")
+
+    # SIGNED oracle, not just "it moved". sigma(y) = axial + bendY * (y / cz) along the
+    # TOP_Y direction, so the crossing is at y0 = -cz (sTop + sBot) / (sTop - sBot).
+    # The previous check only asserted |naY| > 1e-3, which a sign error passes — and
+    # there was one. A neutral axis drawn on the wrong side of the centroid is worse
+    # than none, because it looks authoritative.
+    cz = d / 2.0
+    na_expect = -cz * (ax_top["sigma"] + ax_bot["sigma"]) / (ax_top["sigma"] - ax_bot["sigma"])
+    check("neutral axis position (signed)", ax_root.get("naY", 9e9), na_expect, 1e-9)
+    # And the direction is physical: compression added on top pushes the neutral axis up,
+    # tension pushes it down. Here fx is -400000 (compression), so it must sit ABOVE the
+    # centroid, on the same side as the tensile face.
+    check_true("compression axial puts the NA above the centroid",
+               ax_root.get("naY", 0.0) > 0, f"naY={ax_root.get('naY')}")
     check_true("fibres no longer equal and opposite",
                abs(abs(ax_top["sigma"]) - abs(ax_bot["sigma"])) > 1e-6)
     # Superposition: the axial term is the same on both faces, so their mean is N/A.
@@ -233,7 +267,7 @@ def main():
     print("\n[C5] single block is not a member")
     r5 = sc.call({"op": "solve", "revision": 6,
                   "blocks": [{"x": 0, "y": 64, "z": 0, "mat": "steel",
-                              "section": "steel_h400", "support": True}]})
+                              "section": "steel_rect_200x400", "support": True}]})
     check_true("ok", r5.get("ok") is True)
     check_true("no members", len(r5.get("members", [])) == 0)
 
@@ -241,9 +275,9 @@ def main():
     # An L shape shares its corner block, so it must become two members joined
     # at one node -- not one bent member and not two disconnected ones.
     print("\n[C6] L junction -> two members, shared node")
-    lshape = [{"x": i, "y": 64, "z": 0, "mat": "steel", "section": "steel_h400",
+    lshape = [{"x": i, "y": 64, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
                "support": i == 0} for i in range(4)]
-    lshape += [{"x": 3, "y": 64, "z": k, "mat": "steel", "section": "steel_h400",
+    lshape += [{"x": 3, "y": 64, "z": k, "mat": "steel", "section": "steel_rect_200x400",
                 "support": False} for k in range(1, 4)]
     r6 = sc.call({"op": "solve", "revision": 7, "blocks": lshape})
     check_true("ok", r6.get("ok") is True, r6.get("error", ""))
@@ -252,15 +286,114 @@ def main():
     check_true("no unassigned blocks", len(r6.get("unassigned", [])) == 0,
                str(r6.get("unassigned", [])))
 
+    # ------------------- C8: the interior governs — the case end-only screening missed
+    # Screening only endI and endJ cannot see a member whose worst section is in the
+    # middle. Such a member came back essentially unstressed: silently safe, the most
+    # dangerous kind of wrong.
+    #
+    # Constructing that case needs care. The obvious fixture — a beam supported at both
+    # ends — does NOT work here: supports are fixAll and extraction puts nodes only at
+    # run ends, so a two-node member with both ends fixed has no free DOF at all and the
+    # engine correctly answers "fully constrained". (Recorded as a real limitation of the
+    # current extraction, not worked around.)
+    #
+    # A cantilever with an UPWARD tip load does work, and is a sharper test:
+    #     M(a) = -P a + w a^2 / 2         a = L - x
+    # With P = w L / 2 the moment is exactly zero at BOTH ends and peaks at midspan:
+    #     a* = P / w = L/2   ->   M* = -w L^2 / 8
+    # So end-only screening reports ~0 while the real peak is w L^2 / 8.
+    print("\n[C8] the interior governs: both ends ~0, midspan carries w L^2 / 8")
+    n8 = 9
+    L8 = (n8 - 1) * BLOCK_MM
+    P8 = w * L8 / 2.0                      # upward, so +fy
+    r_ss = sc.call({"op": "solve", "revision": 20,
+                    "blocks": beam_blocks(n8),
+                    "loads": [{"x": n8 - 1, "y": 64, "z": 0, "fy": P8}]})
+    check_true("ok", r_ss.get("ok") is True, r_ss.get("error", ""))
+    check_true("not singular", r_ss.get("singular") is False, r_ss.get("diagnostic", ""))
+    m8 = r_ss["members"][0]
+
+    W8 = b * d * d / 6.0
+    check_true("both ends carry ~no moment",
+               abs(m8["i"]["Mz"]) < 1e-3 and abs(m8["j"]["Mz"]) < 1e-3,
+               f"Mi={m8['i']['Mz']:.4g} Mj={m8['j']['Mz']:.4g}")
+
+    sigma_mid_expect = (w * L8 * L8 / 8.0) / W8
+    mid = min(m8["stations"], key=lambda s: abs(s["x"] - L8 / 2.0))
+    mid_top = fibre_by_dir(mid, True)
+    check("midspan sigma vs closed form", abs(mid_top["sigma"]), sigma_mid_expect, 1e-6)
+
+    # The analytic extremum lands exactly at midspan, so it must be one of the stations.
+    check_true("the extremum station exists", abs(mid["x"] - L8 / 2.0) < 1e-6,
+               f"nearest station x={mid['x']}")
+    check_true("a governing station is reported", m8.get("governingStation", -1) >= 0,
+               str(m8.get("governingStation")))
+
+    # THE REGRESSION: D/C must come from the worst station, not from the two ends.
+    check("D/C from the interior", m8["dc"], sigma_mid_expect / 350.0, 1e-6)
+    check_true("end-only screening would have said ~0",
+               m8["dc"] > 100 * (abs(m8["i"]["Mz"]) / W8) / 350.0 + 1e-6,
+               f"dc={m8['dc']:.6g}")
+
+    # -------------------------------- C9: fail-closed input, not silent defaults
+    # Each of these used to be quietly turned into a DIFFERENT solvable structure,
+    # with ok:true on the reply.
+    print("\n[C9] malformed input is refused, not reinterpreted")
+
+    def rejects(tag, req):
+        rr = sc.call(req)
+        check_true(tag, rr.get("ok") is False, str(rr)[:120])
+
+    good = {"x": 0, "y": 64, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+            "support": True}
+    nxt = {"x": 1, "y": 64, "z": 0, "mat": "steel", "section": "steel_rect_200x400"}
+
+    rejects("missing material", {"op": "solve", "revision": 30,
+                                "blocks": [{k: v for k, v in good.items() if k != "mat"}, nxt]})
+    rejects("missing section", {"op": "solve", "revision": 31,
+                               "blocks": [{k: v for k, v in good.items() if k != "section"}, nxt]})
+    rejects("unknown section", {"op": "solve", "revision": 32,
+                                "blocks": [dict(good, section="steel_h400"), nxt]})
+    rejects("non-integer coordinate", {"op": "solve", "revision": 33,
+                                       "blocks": [dict(good, x=0.5), nxt]})
+    rejects("duplicate coordinate", {"op": "solve", "revision": 34,
+                                     "blocks": [good, dict(good, support=False), nxt]})
+    rejects("missing revision", {"op": "solve", "blocks": [good, nxt]})
+    rejects("non-integer revision", {"op": "solve", "revision": 1.5, "blocks": [good, nxt]})
+
+    # A load in the middle of a member has nowhere to go in this model. It must be
+    # refused, not dropped — dropping it reports the structure as SAFER than it is.
+    rejects("load inside a member",
+            {"op": "solve", "revision": 35,
+             "blocks": beam_blocks(5),
+             "loads": [{"x": 2, "y": 64, "z": 0, "fy": -P}]})
+
+    rejects("non-finite load",
+            {"op": "solve", "revision": 36, "blocks": beam_blocks(5),
+             "loads": [{"x": 4, "y": 64, "z": 0, "fy": 1e999}]})
+
+    # ------------------------------------------------- C10: section change splits
+    # A run whose section changes halfway must not be solved as one member with the
+    # head block's section.
+    print("\n[C10] a section change splits the run")
+    mixed = [{"x": i, "y": 64, "z": 0, "mat": "steel",
+              "section": "steel_rect_200x400" if i < 3 else "steel_rect_100x200",
+              "support": i == 0} for i in range(6)]
+    r10 = sc.call({"op": "solve", "revision": 40, "blocks": mixed})
+    check_true("ok", r10.get("ok") is True, r10.get("error", ""))
+    secs = sorted(m["section"] for m in r10.get("members", []))
+    check_true("two members, one per section", secs == ["steel_rect_100x200", "steel_rect_200x400"],
+               str(secs))
+
     # ------------------------------------------------- C7: bad input is safe
     # Unknown ids and malformed lines must produce an error line, never a crash
     # and never a silent default.
     print("\n[C7] fail-safe on bad input")
     r7 = sc.call({"op": "solve", "revision": 8,
                   "blocks": [{"x": 0, "y": 64, "z": 0, "mat": "unobtainium",
-                              "section": "steel_h400", "support": True},
+                              "section": "steel_rect_200x400", "support": True},
                              {"x": 1, "y": 64, "z": 0, "mat": "unobtainium",
-                              "section": "steel_h400"}]})
+                              "section": "steel_rect_200x400"}]})
     check_true("unknown material rejected", r7.get("ok") is False, str(r7))
     check_true("error names the material", "unobtainium" in r7.get("error", ""),
                r7.get("error", ""))

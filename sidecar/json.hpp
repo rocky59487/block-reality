@@ -45,6 +45,19 @@ struct Value {
         auto it = o.find(k);
         return (it != o.end() && it->second.t == T::Bool) ? it->second.b : dflt;
     }
+    // Presence and type are asked separately from value. The protocol layer has to be
+    // able to REJECT a missing or wrong-typed field, because substituting a default
+    // silently changes which structure gets solved — and the reply still says ok.
+    bool has(const char* k) const { return o.find(k) != o.end(); }
+    bool isFiniteNum(const char* k) const {
+        auto it = o.find(k);
+        return it != o.end() && it->second.t == T::Num && std::isfinite(it->second.n);
+    }
+    bool isStr(const char* k) const {
+        auto it = o.find(k);
+        return it != o.end() && it->second.t == T::Str;
+    }
+
     const Array& arr(const char* k) const {
         static const Array kEmpty;
         auto it = o.find(k);

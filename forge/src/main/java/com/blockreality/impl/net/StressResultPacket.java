@@ -2,7 +2,7 @@ package com.blockreality.impl.net;
 
 import com.blockreality.api.AnalysisResult;
 import com.blockreality.api.EndForces;
-import com.blockreality.api.FailMode;
+import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.Fibre;
 import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.StressStation;
@@ -80,7 +80,8 @@ public final class StressResultPacket {
             MemberSnapshot m = p.members.get(i);
             buf.writeVarInt(m.id());
             buf.writeFloat((float) m.dc());
-            buf.writeByte(m.mode().ordinal());
+            buf.writeByte(m.governingFibre().ordinal());
+            buf.writeVarInt(Math.max(-1, m.governingStation()));
 
             List<StressStation> st = m.stations();
             int nSt = Math.min(st.size(), MAX_STATIONS);
@@ -116,9 +117,10 @@ public final class StressResultPacket {
         for (int i = 0; i < nMembers; i++) {
             int id = buf.readVarInt();
             double dc = finite(buf.readFloat());
-            int modeOrdinal = buf.readByte() & 0xFF;
-            FailMode mode = modeOrdinal < FailMode.values().length
-                    ? FailMode.values()[modeOrdinal] : FailMode.NONE;
+            int fibreOrdinal = buf.readByte() & 0xFF;
+            GoverningFibre fibre = fibreOrdinal < GoverningFibre.values().length
+                    ? GoverningFibre.values()[fibreOrdinal] : GoverningFibre.NONE;
+            int governingStation = buf.readVarInt();
 
             int nSt = clamp(buf.readVarInt(), MAX_STATIONS);
             List<StressStation> stations = new ArrayList<>(nSt);
@@ -142,7 +144,7 @@ public final class StressResultPacket {
                 stations.add(new StressStation(0, centre, fibres, tens, comp, 0,
                         hasNa ? Optional.of(na) : Optional.empty(), Optional.empty()));
             }
-            members.add(new MemberSnapshot(id, "", "", 0, dc, mode,
+            members.add(new MemberSnapshot(id, "", "", 0, dc, fibre, governingStation,
                     EndForces.ZERO, EndForces.ZERO, List.of(), stations));
         }
         return new StressResultPacket(revision, singular, maxDc, members);

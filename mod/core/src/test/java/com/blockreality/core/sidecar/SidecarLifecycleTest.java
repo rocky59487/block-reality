@@ -62,8 +62,8 @@ class SidecarLifecycleTest {
 
     private static SolveRequest anyRequest(long rev) {
         return SolveRequest.builder(new WorldRevision(rev))
-                .block(new BlockKey(0, 64, 0), "steel", "steel_h400", true)
-                .block(new BlockKey(1, 64, 0), "steel", "steel_h400", false)
+                .block(new BlockKey(0, 64, 0), "steel", "steel_rect_200x400", true)
+                .block(new BlockKey(1, 64, 0), "steel", "steel_rect_200x400", false)
                 .build();
     }
 

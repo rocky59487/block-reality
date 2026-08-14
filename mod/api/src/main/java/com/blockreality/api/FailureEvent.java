@@ -21,7 +21,7 @@ public record FailureEvent(
         BlockKey at,
         Vec3d normal,
         float severity,
-        FailMode mode,
+        GoverningFibre mode,
         long transactionId) {
 
     public enum Kind {

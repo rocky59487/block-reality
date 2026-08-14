@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class SidecarEngineTest {
 
-    // steel_h400 is Rectangular(b=200, d=400): non-square by the GATES.md fixture rule,
+    // steel_rect_200x400 is Rectangular(b=200, d=400): non-square by the GATES.md fixture rule,
     // which is what exposed both FrameCore issues in ENGINE_FINDINGS.md.
     private static final double B_MM = 200, D_MM = 400;
     private static final double W_MM3 = B_MM * D_MM * D_MM / 6.0;      // 5.3333e6
@@ -63,7 +63,7 @@ class SidecarEngineTest {
     private static SolveRequest cantilever(long rev, boolean supported) {
         SolveRequest.Builder b = SolveRequest.builder(new WorldRevision(rev));
         for (int x = 0; x <= 4; x++) {
-            b.block(new BlockKey(x, 64, 0), "steel", "steel_h400", supported && x == 0);
+            b.block(new BlockKey(x, 64, 0), "steel", "steel_rect_200x400", supported && x == 0);
         }
         return b.load(SolveRequest.PointLoad.downwards(new BlockKey(4, 64, 0), P_N)).build();
     }
@@ -75,7 +75,7 @@ class SidecarEngineTest {
         assertEquals("FrameCore", cat.engine());
         assertTrue(cat.isCompatible());
         assertTrue(cat.hasMaterial("steel"));
-        assertTrue(cat.hasSection("steel_h400"));
+        assertTrue(cat.hasSection("steel_rect_200x400"));
     }
 
     @Test
@@ -150,7 +150,7 @@ class SidecarEngineTest {
         // MEMBER_SEMANTICS §1: L/h = 1 is not a beam. It comes back unassigned rather
         // than as a member with a made-up length.
         SolveRequest r = SolveRequest.builder(new WorldRevision(3))
-                .block(new BlockKey(0, 64, 0), "steel", "steel_h400", true)
+                .block(new BlockKey(0, 64, 0), "steel", "steel_rect_200x400", true)
                 .build();
         AnalysisResult a = client.solve(r);
         assertTrue(a.ok());
@@ -189,7 +189,7 @@ class SidecarEngineTest {
     @Test
     void overloadingTheMemberPushesDemandOverCapacity() {
         SolveRequest.Builder b = SolveRequest.builder(new WorldRevision(4));
-        for (int x = 0; x <= 4; x++) b.block(new BlockKey(x, 64, 0), "steel", "steel_h400", x == 0);
+        for (int x = 0; x <= 4; x++) b.block(new BlockKey(x, 64, 0), "steel", "steel_rect_200x400", x == 0);
         AnalysisResult r = client.solve(
                 b.load(SolveRequest.PointLoad.downwards(new BlockKey(4, 64, 0), 2_000_000)).build());
 
@@ -197,6 +197,81 @@ class SidecarEngineTest {
         assertTrue(r.maxDc() > 1.0, "expected failure, got D/C " + r.maxDc());
         assertTrue(r.members().get(0).isOverloaded());
         assertEquals(r.members().get(0).id(), r.governing());
+    }
+
+    @Test
+    void theWorstSectionCanBeInTheMiddleAndTheScreenMustSeeIt() {
+        // Screening only the two ends reports this member as unstressed. With an upward
+        // tip load of w L / 2 the moment is exactly zero at BOTH ends and peaks at
+        // midspan at w L^2 / 8 — so an end-only D/C says "safe" about the one section
+        // that is actually working. Silently safe is the worst answer this system can
+        // give, which is why it has its own test on this side of the boundary too.
+        final int n = 9;
+        final double L = (n - 1) * 1000.0;
+        SolveRequest.Builder b = SolveRequest.builder(new WorldRevision(11));
+        for (int x = 0; x < n; x++) {
+            b.block(new BlockKey(x, 64, 0), "steel", "steel_rect_200x400", x == 0);
+        }
+        AnalysisResult r = client.solve(b.load(new SolveRequest.PointLoad(
+                new BlockKey(n - 1, 64, 0), 0, W_N_PER_MM * L / 2.0, 0, 0, 0, 0)).build());
+
+        assertTrue(r.isUsable(), r.diagnostic());
+        MemberSnapshot m = r.members().get(0);
+
+        double expected = (W_N_PER_MM * L * L / 8.0) / W_MM3;
+        assertEquals(expected, m.peakMagnitudeMpa(), 1e-6 * expected);
+        assertEquals(expected / 350.0, m.dc(), 1e-6 * expected / 350.0);
+        assertTrue(m.governingStation() >= 0, "the governing station must be reported");
+
+        StressStation gov = m.stations().get(m.governingStation());
+        assertTrue(gov.xMm() > 0.1 * L && gov.xMm() < 0.9 * L,
+                "the governing section is interior, at x=" + gov.xMm());
+    }
+
+    @Test
+    void aLoadInsideAMemberIsRefusedRatherThanDropped() {
+        // There is no node in the middle of a run, so this load cannot be represented.
+        // Dropping it would answer a question about a lighter structure than the one
+        // that was asked about, with ok:true on the reply.
+        SolveRequest.Builder b = SolveRequest.builder(new WorldRevision(12));
+        for (int x = 0; x <= 4; x++) {
+            b.block(new BlockKey(x, 64, 0), "steel", "steel_rect_200x400", x == 0);
+        }
+        AnalysisResult r = client.solve(
+                b.load(SolveRequest.PointLoad.downwards(new BlockKey(2, 64, 0), P_N)).build());
+
+        assertFalse(r.ok(), "a load that cannot be placed must fail the request");
+        assertTrue(r.diagnostic().contains("not on an analysis node"), r.diagnostic());
+    }
+
+    @Test
+    void anUnknownSectionIsRefusedRatherThanDefaulted() {
+        SolveRequest r = SolveRequest.builder(new WorldRevision(13))
+                .block(new BlockKey(0, 64, 0), "steel", "steel_h400", true)
+                .block(new BlockKey(1, 64, 0), "steel", "steel_h400", false)
+                .build();
+        AnalysisResult a = client.solve(r);
+        assertFalse(a.ok(), "the old token must not silently resolve to anything");
+        assertTrue(a.diagnostic().contains("unknown section"), a.diagnostic());
+    }
+
+    @Test
+    void aSectionChangeSplitsTheMemberButKeepsItConnected() {
+        // The steel is physically continuous through a change of section, so the two
+        // segments must share a node. Breaking the run outright would leave the far
+        // segment floating, and carrying the head block's section through would solve
+        // a member that is not there.
+        SolveRequest.Builder b = SolveRequest.builder(new WorldRevision(14));
+        for (int x = 0; x < 6; x++) {
+            b.block(new BlockKey(x, 64, 0), "steel",
+                    x < 3 ? "steel_rect_200x400" : "steel_rect_100x200", x == 0);
+        }
+        AnalysisResult r = client.solve(b.build());
+
+        assertTrue(r.isUsable(), r.diagnostic());
+        assertEquals(2, r.members().size());
+        assertEquals(List.of("steel_rect_100x200", "steel_rect_200x400"),
+                r.members().stream().map(MemberSnapshot::section).sorted().toList());
     }
 
     @Test

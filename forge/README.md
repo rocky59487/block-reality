@@ -49,7 +49,7 @@ BR_SIDECAR=/abs/path/to/br-sidecar gradle runClient
 
 **這個沙箱沒有 Minecraft，也沒有顯示卡。Forge 這半從未被編譯過，更沒有被執行過。**
 
-- 純 Java 半（`../mod`）**有** 56 個測試在跑，其中 10 個實際驅動真的 FrameCore 二進位檔
+- 純 Java 半（`../mod`）**有** 60 個測試在跑，其中 14 個實際驅動真的 FrameCore 二進位檔
 - Forge 半的正確性目前**只有程式碼層面的論證**：API 用法、事件時機、dist 分離、封包安全
 - 「應力渲染正確」在**資料層**是被測試釘住的（顏色、位置、符號、梯度、中性軸），
   但**畫面上長什麼樣沒有人看過**

@@ -1,7 +1,7 @@
 package com.blockreality.core.render;
 
 import com.blockreality.api.EndForces;
-import com.blockreality.api.FailMode;
+import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.Fibre;
 import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.StressStation;
@@ -35,7 +35,7 @@ class StressRibbonBuilderTest {
             st.add(new StressStation(t * 4000, centre, f, Math.max(0, sigma), Math.max(0, sigma), 0,
                     sigma != 0 ? Optional.of(0.0) : Optional.empty(), Optional.empty()));
         }
-        return new MemberSnapshot(1, "steel", "steel_h400", 4000, 0.5, FailMode.CRUSH,
+        return new MemberSnapshot(1, "steel", "steel_rect_200x400", 4000, 0.5, GoverningFibre.CRUSH, 0,
                 EndForces.ZERO, EndForces.ZERO, List.of(new BlockKey(0, 64, 0)), st);
     }
 

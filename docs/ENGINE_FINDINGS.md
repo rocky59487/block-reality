@@ -132,17 +132,48 @@ M(x) = M_i·(1−t) + M_j·t + (w/2)·x·(L−x)          t = x/L
 
 ---
 
+## 發現 3 · 兩端支承、無內部節點的構件沒有自由度
+
+**這一條不是 FrameCore 的問題，是我們這側擷取的限制**，但它是在 v4 上量到的，放在一起。
+
+寫 issue #14 的迴歸 fixture（簡支梁自重、跨中控制）時撞到：支承是 `fixAll`，而擷取只在
+run 端點與交會處產生節點。所以「兩端都支承的一根梁」在模型上是**兩個節點、兩個都完全
+固定**——自由度是零，引擎正確地回報：
+
+```
+singular: true
+diagnostic: "fully constrained (no free DOF)"
+```
+
+已記在 `sidecar/README.md` 的已知邊界。fixture 改用「向上端點荷載的懸臂」製造內部控制
+斷面（`P = wL/2` 讓兩端彎矩恰為零、跨中 `wL²/8`），而不是繞過這個限制。
+
+修對它需要在構件內部產生節點，與 issue #14 的「荷載點必須切出節點」是同一件事。
+
+---
+
 ## 誠實邊界
 
-- 兩件都是**在 v4.0.0 這個凍結版本上量到的**，未回報上游，也未修改 FrameCore 原始碼——sidecar 只是不走那兩條路徑。
+- 前兩件都是**在 v4.0.0 這個凍結版本上量到的**，未回報上游，也未修改 FrameCore 原始碼——sidecar 只是不走那兩條路徑。
 - 發現 1 的裁決依據是撓度（`rel = 2.2e-16`），這是與命名慣例無關的物理量。
 - 發現 2 的裁決依據是自由端內力矩必為零，以及端力自身的一致性。
 - **`ElasticAllowable` 的 D/C 未受影響**，`verify.py` C1 的 D/C 手算對照仍然成立。
 - 未檢查 `My` 方向（`PLUS_Z` / `MINUS_Z` 纖維）的符號——目前所有 fixture 都是單軸受彎。**雙軸受彎的 fixture 是下一輪要補的。**
+- **end-J 的元素端作用量符號契約尚未凍結。** 目前所有 fixture 的 `M_j` 不是零就是由對稱
+  決定，所以逐站內插用的「兩端同一 section convention」這個假設**在數值上還沒被檢驗過**
+  （issue #15.3）。要檢驗它需要一個兩端彎矩都非零的 fixture，而發現 3 說明那需要先有
+  內部節點。**這是下一刀第一件事。**
 - 未檢查殼元素的應力場。
+
+## 上一版的一處更正
+
+這份文件的 11 站表格當時是**印出來的**，不是斷言出來的——`verify.py` 只核對根部與自由端。
+數字沒有錯，但「全站機器精度」這個宣稱當時**沒有 gate 撐著**（issue #15.2）。
+現在 `verify.py` 與 Java 端各有一個逐站斷言，實測 `worst rel = 1.69e-16`。
 
 ## 重現
 
 ```bash
-python3 sidecar/verify.py sidecar/build/br-sidecar     # C1c 覆蓋發現 1 與 2
+python3 sidecar/verify.py sidecar/build/br-sidecar          # C1c/C1d 覆蓋發現 1、2 與中性軸符號
+cd mod && gradle test -Dbr.sidecar=../sidecar/build/br-sidecar
 ```

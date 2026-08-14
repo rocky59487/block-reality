@@ -3,7 +3,7 @@ package com.blockreality.core.protocol;
 import com.blockreality.api.AnalysisResult;
 import com.blockreality.api.EndForces;
 import com.blockreality.api.EngineCatalogue;
-import com.blockreality.api.FailMode;
+import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.Fibre;
 import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.StressStation;
@@ -128,7 +128,8 @@ public final class ProtocolCodec {
                 m.str("section", ""),
                 m.num("lengthMm", 0),
                 m.num("dc", 0),
-                FailMode.fromWire(m.str("mode", "NONE")),
+                GoverningFibre.fromWire(m.str("governingFibre", "NONE")),
+                m.i32("governingStation", -1),
                 decodeForces(m.objField("i")),
                 decodeForces(m.objField("j")),
                 decodeBlocks(m.arr("blocks")),

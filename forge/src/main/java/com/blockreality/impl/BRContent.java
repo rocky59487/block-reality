@@ -37,13 +37,13 @@ public final class BRContent {
      * Structural steel. Its material and section tokens are what the engine is told;
      * the block itself carries no mechanics.
      *
-     * <p>{@code steel_h400} is 200x400 — non-square, per the GATES.md fixture rule. A
+     * <p>{@code steel_rect_200x400} is 200x400 — non-square, per the GATES.md fixture rule. A
      * square section hides local-axis mistakes because the two bending directions then
      * give the same answer, and that is precisely how both FrameCore issues in
      * ENGINE_FINDINGS.md survived seventy-odd fixtures.
      */
     public static final RegistryObject<Block> STEEL_BEAM = BLOCKS.register("steel_beam",
-            () -> new StructuralBlock("steel", "steel_h400",
+            () -> new StructuralBlock("steel", "steel_rect_200x400",
                     BlockBehaviour.Properties.of()
                             .mapColor(MapColor.METAL)
                             .strength(3.0f, 6.0f)
