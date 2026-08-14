@@ -160,9 +160,7 @@ INTACT_COMPOSITE → IRRECOVERABLY_DAMAGED → CHIPPING → EXPOSED_STEEL → RE
 
 ---
 
-## 7. ⚠️ 與 D-010 的架構衝突（需裁決）
-
-**這是本次收割發現的最重要問題。**
+## 7. ✅ 與 D-010 的架構衝突（已裁決為 B — D-011）
 
 `DECISIONS.md` D-010 規定：**member 由鋼筋／鋼骨的共線 run 擷取**——也就是 member 是**從方塊拓撲推導出來的**，每次重新擷取。
 
@@ -191,7 +189,7 @@ INTACT_COMPOSITE → IRRECOVERABLY_DAMAGED → CHIPPING → EXPOSED_STEEL → RE
 
 自由模式（`DECISIONS.md` D-003 的長期目標）在 B 之下也做得到：推導只負責**建立**與**更新** member，不負責每幀重新發明它們。
 
-**待裁決。** 這個決定影響持久化格式、擷取實作、切割與回收的全部語意，而且**改起來很貴**。
+**已裁決**（D-011）。這個決定影響持久化格式、擷取實作、切割與回收的全部語意，而且**改起來很貴**。
 
 ---
 
@@ -203,7 +201,7 @@ INTACT_COMPOSITE → IRRECOVERABLY_DAMAGED → CHIPPING → EXPOSED_STEEL → RE
 | 失效事件形狀（`FRACTURE`/`CRUSHING` + 法向 + 嚴重度） | `ENGINE_BOUNDARY.md` | ✅ 已補 |
 | 下行加 `DAMAGE` 與 `MATERIAL` 通道 | `ENGINE_BOUNDARY.md` | ✅ 已補 |
 | member 生命週期狀態機 | `MEMBER_SEMANTICS.md` | ✅ 已補 |
-| 損傷／身分衝突 | 本檔 §7 | ⏳ 待裁決 |
+| 損傷／身分衝突 | 本檔 §7 → **D-011** | ✅ 已裁決（B：持久物件） |
 
 ---
 
