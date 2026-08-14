@@ -23,6 +23,9 @@
 #include "FrameCore/SelfWeight.h"
 #include "FrameCore/Material.h"
 #include "FrameCore/Section.h"
+#include "FrameCore/StressField.h"
+#include "FrameCore/StressKernel.h"
+#include "FrameCore/MemberGeometry.h"
 
 #include <iostream>
 #include <string>
@@ -88,6 +91,20 @@ const std::map<std::string, frame::Section>& sectionCatalogue() {
     };
     return kS;
 }
+
+// FrameCore Z is up, Minecraft Y is up. One conversion, used everywhere.
+struct McVec { double x, y, z; };
+inline McVec fcToMc(const frame::Vec3& v) { return McVec{ v.x, v.z, v.y }; }
+
+// SIGN CONVENTION — converted exactly once, here.
+// FrameCore's fibre kernel is COMPRESSION-POSITIVE. Everything this sidecar
+// emits is TENSION-POSITIVE, the convention used in engineering teaching and in
+// every textbook a reader of the paper will have seen:
+//     sigma > 0  ->  tension
+//     sigma < 0  ->  compression
+// The renderer must never flip it again (TEACHING_PORT: convert once at the
+// engine boundary, the UI does not re-convert).
+inline double toTensionPositive(double compressionPositive) { return -compressionPositive; }
 
 const char* failModeName(frame::FailMode m) {
     switch (m) {
@@ -194,6 +211,28 @@ struct SolveOut {
     double      maxDC = 0;
     int         governing = -1;
 
+    // One fibre of the section at one station along the member. `dir` is the unit
+    // vector, IN MINECRAFT AXES, from the member centreline out to that fibre, so
+    // the renderer never has to reconstruct FrameCore's local frame — the single
+    // most common source of sign errors in this kind of bridge.
+    struct Fibre {
+        std::string name;      // TOP_Y | BOT_Y | PLUS_Z | MINUS_Z
+        McVec       dir{ 0, 0, 0 };
+        double      offsetMm = 0;   // distance from centreline to the fibre
+        double      sigma    = 0;   // MPa, TENSION-POSITIVE
+    };
+    struct Station {
+        double             xMm = 0;         // arc length from end i
+        McVec              worldMm{ 0, 0, 0 };
+        std::vector<Fibre> fibres;
+        double             sigmaTens = 0;   // worst tensile magnitude at a corner
+        double             sigmaComp = 0;   // worst compressive magnitude at a corner
+        double             tauShear  = 0;
+        bool               hasNaY = false;  // neutral axis crosses the local-y depth
+        double             naOffsetY = 0;   // offset from centreline where sigma = 0
+        bool               hasNaZ = false;
+        double             naOffsetZ = 0;
+    };
     struct MemberOut {
         int                   id = 0;
         std::string           mat, section;
@@ -202,6 +241,7 @@ struct SolveOut {
         std::string           mode = "NONE";
         frame::MemberEndForces fi, fj;
         std::vector<BlockPos> blocks;
+        std::vector<Station>  stations;
     };
     std::vector<MemberOut> members;
     std::vector<BlockPos>  unassigned;
@@ -349,6 +389,110 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
 
         if (worst.risk > out.maxDC) { out.maxDC = worst.risk; out.governing = mo[k].id; }
     }
+
+    // ---- fibre stress field: the data the stress overlay actually draws ----
+    // Built here rather than taken from computeStressField.
+    //
+    // Two reasons, both measured (see verify.py C1c):
+    //
+    //  1. StressKernel::memberFiberSigma pairs Mz with cy and My with cz, while
+    //     the rest of the engine pairs them the other way: ElasticAllowable
+    //     screens against Wz = Iz/cz, and a cantilever's tip deflection is
+    //     exactly P L^3 / (3 E Iz) to machine precision. On a square section
+    //     cy == cz and the difference is invisible; on a 200x400 section the
+    //     kernel returns half the extreme-fibre stress.
+    //
+    //  2. computeStressField's station moments carry the distributed-load
+    //     curvature with the wrong sign: on a cantilever it reconstructs a
+    //     non-zero moment at the free tip, where the member's own end forces
+    //     (which ARE correct) report zero.
+    //
+    // The member end forces are trustworthy, so the diagram is rebuilt from them
+    // by textbook superposition:
+    //     M(x) = M_i (1-t) + M_j t + (w/2) x (L-x)          t = x/L
+    // — the straight line between the two verified end moments, plus the
+    // parabola a uniform load adds, which vanishes at both ends by construction.
+    // Shear is linear under a uniform load, so interpolating it is exact.
+    const int kStations = 11;
+    for (size_t k = 0; k < r.memberForces.size() && k < mo.size(); ++k) {
+        const frame::Member&  mem = m.members[k];
+        const frame::Section& sec = m.sections[mem.secIdx];
+        const frame::MemberForcePair& mf = r.memberForces[k];
+
+        const int ii = m.nodeIndex(mem.i), ij = m.nodeIndex(mem.j);
+        if (ii < 0 || ij < 0) continue;
+        const frame::Vec3& pi = m.nodes[ii].pos;
+        const frame::Vec3& pj = m.nodes[ij].pos;
+
+        frame::Vec3 ax, ay, az;
+        frame::memberLocalAxes(pi, pj, mem.refVec, ax, ay, az);
+        const McVec dTopY  = fcToMc(ay);
+        const McVec dBotY  = McVec{ -dTopY.x, -dTopY.y, -dTopY.z };
+        const McVec dPlusZ = fcToMc(az);
+        const McVec dMinZ  = McVec{ -dPlusZ.x, -dPlusZ.y, -dPlusZ.z };
+
+        // Self-weight was added as a member UDL in local axes; read it back so the
+        // parabolic term uses the same numbers the solver did.
+        double wy = 0, wz = 0;
+        for (const frame::MemberUDL& u : m.memberUDLs)
+            if (u.member == mem.id) { wy = u.w_local.y; wz = u.w_local.z; }
+
+        auto& dst = mo[k];
+        const double L = dst.lengthMm;
+        for (int q = 0; q < kStations; ++q) {
+            const double t = (kStations > 1) ? static_cast<double>(q) / (kStations - 1) : 0.0;
+            const double x = t * L;
+
+            const double Nx  = mf.endI.N  * (1 - t) + mf.endJ.N  * t;
+            const double Vyx = mf.endI.Vy * (1 - t) + mf.endJ.Vy * t;
+            const double Mzx = mf.endI.Mz * (1 - t) + mf.endJ.Mz * t + (wy / 2.0) * x * (L - x);
+            const double Myx = mf.endI.My * (1 - t) + mf.endJ.My * t + (wz / 2.0) * x * (L - x);
+
+            SolveOut::Station st;
+            st.xMm = x;
+            const frame::Vec3 wp{ pi.x + (pj.x - pi.x) * t,
+                                  pi.y + (pj.y - pi.y) * t,
+                                  pi.z + (pj.z - pi.z) * t };
+            st.worldMm = fcToMc(wp);
+
+            // FrameCore's N is compression-positive; the axial term is negated for
+            // the tension-positive output. The bending sign is pinned by physics
+            // and locked by C1c: a cantilever pushed down must read TENSION on top.
+            const double axial = toTensionPositive(Nx / sec.A);
+            const double bendY = (sec.Iz > 0) ? Mzx * sec.cz / sec.Iz : 0.0;  // varies along local y
+            const double bendZ = (sec.Iy > 0) ? Myx * sec.cy / sec.Iy : 0.0;  // varies along local z
+
+            const double sTop = axial + bendY;
+            const double sBot = axial - bendY;
+            const double sPls = axial + bendZ;
+            const double sMin = axial - bendZ;
+
+            st.fibres.push_back({ "TOP_Y",   dTopY,  sec.cz, sTop });
+            st.fibres.push_back({ "BOT_Y",   dBotY,  sec.cz, sBot });
+            st.fibres.push_back({ "PLUS_Z",  dPlusZ, sec.cy, sPls });
+            st.fibres.push_back({ "MINUS_Z", dMinZ,  sec.cy, sMin });
+
+            st.sigmaTens = std::max({ 0.0, sTop, sBot, sPls, sMin });
+            st.sigmaComp = std::max({ 0.0, -sTop, -sBot, -sPls, -sMin });
+            st.tauShear  = (sec.A > 0) ? 1.5 * std::fabs(Vyx) / sec.A : 0.0;
+
+            // Neutral axis: sigma is linear across the depth, so where two opposing
+            // fibres differ in sign it crosses at cz (sTop + sBot) / (sTop - sBot),
+            // measured from the centroid. Reported only when it really falls inside
+            // the section — a fully tensile or fully compressive section has no
+            // neutral axis and inventing one would be a lie.
+            if ((sTop > 0) != (sBot > 0) && std::fabs(sTop - sBot) > 1e-12) {
+                st.hasNaY    = true;
+                st.naOffsetY = sec.cz * (sTop + sBot) / (sTop - sBot);
+            }
+            if ((sPls > 0) != (sMin > 0) && std::fabs(sPls - sMin) > 1e-12) {
+                st.hasNaZ    = true;
+                st.naOffsetZ = sec.cy * (sPls + sMin) / (sPls - sMin);
+            }
+            dst.stations.push_back(std::move(st));
+        }
+    }
+
     out.members = std::move(mo);
     return out;
 }
@@ -419,6 +563,26 @@ std::string handleSolve(const bjson::Value& req) {
         writeForces(w, "i", mm.fi);
         writeForces(w, "j", mm.fj);
         writeBlocks(w, "blocks", mm.blocks);
+
+        w.key("stations").beginArr();
+        for (const auto& st : mm.stations) {
+            w.beginObj();
+            w.kv("x", st.xMm);
+            w.key("world").beginArr().val(st.worldMm.x).val(st.worldMm.y).val(st.worldMm.z).endArr();
+            w.key("fibres").beginArr();
+            for (const auto& f : st.fibres) {
+                w.beginObj();
+                w.kv("name", f.name).kv("offsetMm", f.offsetMm).kv("sigma", f.sigma);
+                w.key("dir").beginArr().val(f.dir.x).val(f.dir.y).val(f.dir.z).endArr();
+                w.endObj();
+            }
+            w.endArr();
+            w.kv("sigmaTens", st.sigmaTens).kv("sigmaComp", st.sigmaComp).kv("tau", st.tauShear);
+            if (st.hasNaY) w.kv("naY", st.naOffsetY);
+            if (st.hasNaZ) w.kv("naZ", st.naOffsetZ);
+            w.endObj();
+        }
+        w.endArr();
         w.endObj();
     }
     w.endArr();

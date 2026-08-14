@@ -130,6 +130,70 @@ def main():
     dc_expect = ((wc * L * L / 2.0) / (cb * cd * cd / 6.0)) / 3.0
     check("concrete D/C vs hand screen", rc["members"][0]["dc"], dc_expect, 1e-6)
 
+    # ------------------------------ C1c: fibre signs — the whole point of the overlay
+    # A cantilever pushed DOWN at the tip sags: the top face stretches and the
+    # bottom face is squashed. The overlay must be able to show that, so the sign
+    # of each fibre has to be right in WORLD axes, not just in the engine's local
+    # frame. Every fibre carries its own Minecraft-space direction, so this test
+    # reads the geometry the same way the renderer will.
+    print("\n[C1c] top tension / bottom compression (tension-positive)")
+    st_root = mem["stations"][0]
+    st_tip = mem["stations"][-1]
+    check_true("11 stations", len(mem["stations"]) == 11, str(len(mem["stations"])))
+
+    def fibre_by_dir(station, want_up):
+        for f in station["fibres"]:
+            dy = f["dir"][1]
+            if (dy > 0.5 and want_up) or (dy < -0.5 and not want_up):
+                return f
+        return None
+
+    top = fibre_by_dir(st_root, True)
+    bot = fibre_by_dir(st_root, False)
+    check_true("a fibre points up", top is not None)
+    check_true("a fibre points down", bot is not None)
+    check_true("TOP fibre is in TENSION (sigma > 0)", top["sigma"] > 0, f"{top['sigma']:.4g} MPa")
+    check_true("BOTTOM fibre is in COMPRESSION (sigma < 0)", bot["sigma"] < 0, f"{bot['sigma']:.4g} MPa")
+
+    # Pure bending is antisymmetric about the centroid: the two opposing fibres
+    # must be equal and opposite once the (tiny) axial term is out of the way.
+    check("|sigma_top| == |sigma_bot|", abs(top["sigma"]), abs(bot["sigma"]), 1e-9)
+
+    # And the magnitude is the textbook M*c/I.
+    sigma_expect = m_expect * (d / 2.0) / (b * d ** 3 / 12.0)
+    check("sigma_top vs M*c/I", top["sigma"], sigma_expect, 1e-6)
+
+    # Neutral axis of a beam with no axial force sits on the centroid.
+    check_true("neutral axis reported", "naY" in st_root, str(sorted(st_root.keys())))
+    check_true("neutral axis at centroid", abs(st_root.get("naY", 9e9)) < 1e-6,
+               f"naY={st_root.get('naY')}")
+
+    # Bending vanishes at a free tip, so the fibres must too. This catches a
+    # renderer that paints a whole member one colour: the tip has to fade out.
+    tip_top = fibre_by_dir(st_tip, True)
+    check_true("tip fibre ~ 0", abs(tip_top["sigma"]) < 1e-6 * abs(top["sigma"]) + 1e-9,
+               f"{tip_top['sigma']:.4g} MPa")
+    check_true("no neutral axis at an unstressed tip", "naY" not in st_tip)
+
+    # ---------------------------------- C1d: axial force moves the neutral axis
+    # Push the member along its own axis as well: the stress diagram shifts, the
+    # neutral axis moves off the centroid, and if the axial part is big enough
+    # the whole section goes one way and there is no neutral axis at all.
+    print("\n[C1d] axial force shifts the neutral axis")
+    rax = sc.call({"op": "solve", "revision": 12,
+                   "blocks": beam_blocks(n),
+                   "loads": [{"x": n - 1, "y": 64, "z": 0, "fy": -P, "fx": -400000.0}]})
+    ax_root = rax["members"][0]["stations"][0]
+    ax_top = fibre_by_dir(ax_root, True)
+    ax_bot = fibre_by_dir(ax_root, False)
+    check_true("axial shifts NA off the centroid", abs(ax_root.get("naY", 0.0)) > 1e-3,
+               f"naY={ax_root.get('naY')}")
+    check_true("fibres no longer equal and opposite",
+               abs(abs(ax_top["sigma"]) - abs(ax_bot["sigma"])) > 1e-6)
+    # Superposition: the axial term is the same on both faces, so their mean is N/A.
+    mean_sigma = (ax_top["sigma"] + ax_bot["sigma"]) / 2.0
+    check("mean fibre stress == N/A", mean_sigma, -400000.0 / A, 1e-4)
+
     # ------------------------------------------------- C2: D/C scales with load
     # Doubling the tip load must not double D/C exactly (self weight is fixed),
     # but the moment must rise by exactly P*L.
