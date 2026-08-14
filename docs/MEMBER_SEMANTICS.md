@@ -251,6 +251,37 @@ L 型轉角同理。
 
 ---
 
+## 9.5 ⚠️ member 身分 vs 純推導（Issue #3/#4/#6/#8 帶出的衝突）
+
+§7 規定 member 由共線 run **推導**。但 Issue 群要求 member 有**持久身分**——`memberId`、跟著走的 `DamageRecord[]`、切割時的 lineage 與原子性退役、質量守恆。
+
+**純推導模型下 member 沒有身分，損傷無處可掛，切割沒有語意。**
+
+完整分析與三個選項見 `docs/DEMO_V0.md` §7。**傾向選項 B（member 是持久物件，方塊是它的視覺表現）**，因為 #8 的質量守恆與 transaction 需要一個能「原子性退役」的實體。
+
+D-010 的核心洞見在 B 之下仍成立——**鋼筋/鋼骨的放置決定 member 何時誕生，但誕生之後它有自己的身分**。
+
+⏳ **待裁決。影響持久化格式、擷取實作、切割與回收的全部語意。**
+
+### member 生命週期（Issue #3）
+
+```
+STRUCTURAL → DETACHING → DYNAMIC → RESTING → REINSTALLED / DISMANTLED
+```
+
+| 狀態 | 意義 |
+|---|---|
+| `STRUCTURAL` | 仍在 FEA 模型內承載 |
+| `DETACHING` | 裂面張開，承諾軌確認斷裂 |
+| `DYNAMIC` | 伺服器權威的剛體，能墜落碰撞翻滾並造成傷害 |
+| `RESTING` | 速度低於門檻，可互動 |
+| `REINSTALLED` | 重新定位固定 → 新 `worldRevision` → 重新分析成功才恢復承載 |
+| `DISMANTLED` | 破壞／拆解，依材料規則處理 |
+
+**關鍵**：`REINSTALLED` 之前不提供結構剛度——完成定位與連接前只是一個施工物件。
+
+---
+
 ## 10. 仍未決
 
 | # | 問題 | 影響 |
