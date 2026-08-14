@@ -6,6 +6,38 @@
 
 ---
 
+## D-014 · 第三方 mod 只能做特效，不能寫世界
+
+**決定**：碎塊 SPI（`IFractureEffectHandler`）在 Block Reality **完成世界變更之後**才呼叫，收到的是一份**描述**，回傳值被忽略，例外被捕捉並停用該 handler。
+
+`CRUSHING` 走 handler；`FRACTURE` 產生持久剛體 member，是 Block Reality 自己的生命週期，不外包。
+
+**理由**：Issue #2 已定壓碎碎片是**純視覺**——不造成傷害、不成為持久物件、不可回收、不污染存檔。所以 handler 本來就只需要描述。**權限剛好等於需求，沒有多給。**
+
+反面代價明確：第三方無法做「依真實方塊形狀的物理碎裂」。接受——因為那個效果不值得換來「第三方 bug 可以損壞玩家存檔」。
+
+**否證條件**：出現一個第三方碎裂效果，其品質差異大到玩家明顯有感，且無法用描述式契約達成。屆時評估分兩級（設定檔白名單授權接管方塊）。
+
+---
+
+## D-013 · 力學引擎跑在獨立 process
+
+**決定**：FrameCore 以 **sidecar 子程序**形式執行，走 `frame_capi_v2` 的 stdio 協定。不用 JNI / Panama 載進 JVM。
+
+**理由**：引擎是 C++。同 process 時**一次 segfault = 整個伺服器死 + 存檔可能損壞**——這對要給別人裝的 mod 是不可接受的失敗模式。
+
+而分析本來就是背景跑的（D-008：建築尺度約 100ms），**IPC 成本相對 100ms 可忽略**。走 stdio 而非 TCP，避開埠衝突與防火牆。
+
+**失敗語意全部 fail-safe**：sidecar 沒安裝 → mod 正常載入、分析停用、明確提示（不是 crash）；分析中 crash → 該次請求失敗、**member 狀態完全不變**、指數退避重啟；版本不符 → fail closed 拒絕綁定。
+
+**最重要的不變式：分析失敗絕不改動世界。結果只在成功時套用。**
+
+**代價**：要管子程序的啟動、關閉、僵屍清理，三個作業系統都要測。防僵屍用「子程序監看 stdin EOF」。
+
+**否證條件**：實測 IPC 往返成本佔單次分析比例超過 20%，或子程序管理在某平台無法可靠實作。屆時評估 in-process 作為 opt-in（PFSF-CORE 的 JNI 載入骨架可照抄形狀）。
+
+---
+
 ## D-012 · 材料表以 `DefaultMaterial` 為基底
 
 **決定**：以 `block-realityapi-fast-design` 的 `DefaultMaterial`（12 種）為權威材料表，補上 `教學/08-system-integration.md` 的材料分項係數 `γ_m`。衝突值以 `DefaultMaterial` 為準。
