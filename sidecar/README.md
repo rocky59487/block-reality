@@ -5,14 +5,35 @@
 ## 建置
 
 ```bash
-sudo apt-get install -y libeigen3-dev libmetis-dev libopenblas-dev liblapacke-dev
+sudo apt-get install -y libeigen3-dev cmake g++
 
-cmake -S sidecar -B sidecar/build -DCMAKE_BUILD_TYPE=Release \
+cmake -S sidecar -B sidecar/build -DCMAKE_BUILD_TYPE=Release -DBR_STATIC_RUNTIME=ON \
       -DFRAMECORE_DIR=/path/to/architect_simulator/Plugins/FrameSolver/Source/FrameCore
 cmake --build sidecar/build --parallel
 ```
 
 FrameCore 以**原始碼**引用，不 vendor 進本倉庫。
+
+**依賴只有 Eigen**（header-only）。FrameCore 的 supernodal lane 由 `FRAMECORE_SUPERNODAL`
+在編譯期關掉（`-DBR_SUPERNODAL=ON` 可以開回來，那時才需要 METIS / OpenBLAS / LAPACKE）。
+
+這不是降級：`SolveOptions::useSupernodalPrimary` 本來就是 `false`，每次求解走的一直都是
+Eigen `SimplicialLDLT`。**實測開與關的輸出到最後一位都相同**，68 項 gate 兩邊全過。
+少掉三個原生依賴換來的是：可以交叉編譯出一顆自足的 Windows 執行檔。
+
+### Windows（在 Linux 上交叉編譯）
+
+```bash
+sudo apt-get install -y g++-mingw-w64-x86-64
+
+cmake -S sidecar -B sidecar/build-win -DCMAKE_BUILD_TYPE=Release -DBR_STATIC_RUNTIME=ON \
+      -DCMAKE_TOOLCHAIN_FILE=$PWD/sidecar/toolchain-mingw64.cmake \
+      -DFRAMECORE_DIR=/path/to/Plugins/FrameSolver/Source/FrameCore
+cmake --build sidecar/build-win --parallel
+```
+
+產出的 `br-sidecar.exe` 只 import `KERNEL32.dll` 與 `msvcrt.dll`——兩個都是系統的，
+沒有要附帶的 runtime DLL。**Wine 實測 68 項全過，數字與 Linux 版逐位元相同。**
 
 ## 驗證
 

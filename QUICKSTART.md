@@ -1,15 +1,58 @@
-# 明天早上的十分鐘
+# 明天早上
 
-三步。每一步都有「怎麼知道成功了」。
+**什麼都不用建，`dist/` 裡已經是成品。**
 
 ---
 
-## 1 · 建引擎（C++）
+## 0 · 一鍵（最快）
+
+### 裝進現有的 Minecraft 實例
+
+```
+Windows：  dist\install.bat "%APPDATA%\.minecraft"
+Linux ：   dist/install.sh  ~/.minecraft
+```
+
+PrismLauncher 的話指到 `instances\<名字>\.minecraft`。
+
+它會把 mod 放進 `mods\`、把引擎放進遊戲目錄。**Minecraft 1.20.1 + Forge 47.x**，開起來就有了。
+
+### 或者直接跑開發環境
+
+```
+Windows：  run.bat
+Linux ：   ./run.sh
+```
+
+自動把引擎放到 `forge/run/` 再叫 `gradlew runClient`。**Gradle 用 wrapper，不用先裝。**
+只需要 PATH 上有 JDK 17。
+
+`dist/` 裡有什麼：
+
+| | |
+|---|---|
+| `blockreality-0.0.1-demo.jar` | Forge mod（api + core + impl 全在裡面，117 KB） |
+| `br-sidecar.exe` | Windows 引擎，**只 import KERNEL32 與 msvcrt**，沒有要額外附的 DLL |
+| `br-sidecar` | Linux 引擎，只依賴 libc/libm |
+| `install.bat` / `install.sh` | 上面那兩行 |
+
+> **沒有 FrameCore.dll 這種東西。** FrameCore 是**靜態連進 `br-sidecar`** 的，而
+> `br-sidecar` 是**獨立程序**不是 mod 載入的函式庫（D-013）。這樣 C++ 這側如果 segfault，
+> 代價是一次分析失敗，不是整個伺服器加存檔。
+
+---
+
+## 1 · 自己重建引擎（想改 C++ 才需要）
+
+**依賴只剩 Eigen**（header-only）。METIS / OpenBLAS / LAPACKE 都不用了——
+FrameCore 的 supernodal lane 由 `FRAMECORE_SUPERNODAL` 在編譯期關掉，而
+`useSupernodalPrimary` 本來就是 `false`，所以每次求解走的一直都是 Eigen LDLT。
+**實測開與關的數字到最後一位都相同**，68 項 gate 兩邊都全過。
 
 ```bash
-sudo apt-get install -y libeigen3-dev libmetis-dev libopenblas-dev liblapacke-dev cmake g++
+sudo apt-get install -y libeigen3-dev cmake g++
 
-cmake -S sidecar -B sidecar/build -DCMAKE_BUILD_TYPE=Release \
+cmake -S sidecar -B sidecar/build -DCMAKE_BUILD_TYPE=Release -DBR_STATIC_RUNTIME=ON \
       -DFRAMECORE_DIR=/path/to/architect_simulator/Plugins/FrameSolver/Source/FrameCore
 cmake --build sidecar/build --parallel
 ```
@@ -21,6 +64,14 @@ python3 sidecar/verify.py sidecar/build/br-sidecar
 ```
 
 最後一行要是 `ALL PASS`（68 項）。**這一步失敗就不要往下走**——後面看到的任何東西都不可信。
+
+一次把全部（Linux + Windows + jar）打包好：
+
+```bash
+scripts/package.sh /path/to/Plugins/FrameSolver/Source/FrameCore
+```
+
+Windows 那顆要 `apt-get install -y g++-mingw-w64-x86-64`；沒裝就只出 Linux 版。
 
 ---
 
@@ -40,8 +91,7 @@ gradle test -Dbr.sidecar=../sidecar/build/br-sidecar
 ## 3 · 進遊戲
 
 ```bash
-cd forge
-gradle runClient
+./run.sh          # 或 Windows 的 run.bat
 ```
 
 引擎路徑**不用設環境變數**。`SidecarLocator` 依序找：
@@ -52,11 +102,7 @@ gradle runClient
 4. `<遊戲目錄>/br-sidecar` 或 `<遊戲目錄>/blockreality/br-sidecar`
 5. `PATH`
 
-最省事：**把 `br-sidecar` 複製到 `forge/run/`**。
-
-```bash
-cp sidecar/build/br-sidecar forge/run/
-```
+`run.bat` / `run.sh` 已經幫你放好第 4 項了。
 
 ---
 
@@ -126,6 +172,9 @@ rcon.port=25575
 **伺服器端已經在真的 Minecraft 裡跑過**（Forge 專用伺服器 + RCON，見 `forge/README.md`）：
 mod 載入、指令、sidecar 自動尋找與啟動、真的 FrameCore 求解、機構偵測、乾淨關閉，
 log 裡 0 個 ERROR、沒有殘留程序。上面那些應力數字都是實測並手算對過的。
+
+**Windows 引擎已經實際跑過** — 用 Wine 跑完整 68 項 gate 全過，而且輸出跟 Linux 版
+**逐位元相同**（`dc=0.069260057139999998`、`σ_top=24.241019999999999`）。
 
 **客戶端渲染沒有人看過。** 沙箱沒有顯示卡，`runClient` 跑不起來。
 

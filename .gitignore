@@ -36,3 +36,7 @@ Thumbs.db
 # Local
 *.local
 local.properties
+
+# CMake out-of-source build trees
+sidecar/build*/
+dist/**/CMakeFiles/

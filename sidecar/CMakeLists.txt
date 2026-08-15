@@ -41,20 +41,50 @@ target_include_directories(br-sidecar PRIVATE
     "${FRAMECORE_DIR}/Public"
     "${FRAMECORE_DIR}/Private")
 
-# FrameCore's supernodal Cholesky lane needs METIS + BLAS/LAPACKE. It is opt-in
-# at runtime (SolveOptions::useSupernodalPrimary defaults to false) but the
-# translation units reference the symbols unconditionally, so they must link.
-find_library(METIS_LIB    metis)
-find_library(OPENBLAS_LIB NAMES openblas blas)
-find_library(LAPACKE_LIB  lapacke)
-foreach(_lib METIS_LIB OPENBLAS_LIB LAPACKE_LIB)
-    if(NOT ${_lib})
-        message(FATAL_ERROR "${_lib} not found. Install libmetis-dev libopenblas-dev liblapacke-dev")
-    endif()
-endforeach()
-target_link_libraries(br-sidecar PRIVATE ${METIS_LIB} ${OPENBLAS_LIB} ${LAPACKE_LIB})
+# ------------------------------------------------- supernodal Cholesky lane
+# FrameCore's supernodal lane needs METIS + OpenBLAS + LAPACKE. It is gated at
+# COMPILE time by FRAMECORE_SUPERNODAL, which defaults to 1 in a standalone build.
+#
+# This sidecar defaults it OFF, and that is not a downgrade:
+# SolveOptions::useSupernodalPrimary is false, so every solve already went through
+# Eigen's SimplicialLDLT. Compiling the lane out therefore changes no number — the
+# gate proves it, 68/68 identical either way — while removing all three native
+# dependencies. What is left is Eigen, which is header-only.
+#
+# That is what makes a portable binary possible: nothing to install, nothing to
+# ship alongside, and a Windows cross-build that needs only a compiler.
+#
+# Turn it back on with -DBR_SUPERNODAL=ON when a structure is large enough for the
+# supernodal path to be worth its dependencies (D-008 says building scale is not).
+option(BR_SUPERNODAL "Compile FrameCore's supernodal Cholesky lane (needs METIS + OpenBLAS + LAPACKE)" OFF)
 
-# Build:
+if(BR_SUPERNODAL)
+    target_compile_definitions(br-sidecar PRIVATE FRAMECORE_SUPERNODAL=1)
+    find_library(METIS_LIB    metis)
+    find_library(OPENBLAS_LIB NAMES openblas blas)
+    find_library(LAPACKE_LIB  lapacke)
+    foreach(_lib METIS_LIB OPENBLAS_LIB LAPACKE_LIB)
+        if(NOT ${_lib})
+            message(FATAL_ERROR "${_lib} not found. Install libmetis-dev libopenblas-dev liblapacke-dev, "
+                                "or build with -DBR_SUPERNODAL=OFF (the default).")
+        endif()
+    endforeach()
+    target_link_libraries(br-sidecar PRIVATE ${METIS_LIB} ${OPENBLAS_LIB} ${LAPACKE_LIB})
+else()
+    target_compile_definitions(br-sidecar PRIVATE FRAMECORE_SUPERNODAL=0)
+endif()
+
+# Static-link the toolchain runtime so the binary runs on a machine that has no
+# matching libstdc++/libgcc. A structural engine that fails to start because the
+# user's distribution ships a different GCC is not a shippable artifact.
+if(BR_STATIC_RUNTIME)
+    target_link_options(br-sidecar PRIVATE -static-libstdc++ -static-libgcc)
+    if(MINGW)
+        target_link_options(br-sidecar PRIVATE -static)
+    endif()
+endif()
+
+# Build (portable, no dependencies but Eigen):
 #   cmake -S sidecar -B sidecar/build -DCMAKE_BUILD_TYPE=Release \
 #         -DFRAMECORE_DIR=/path/to/Plugins/FrameSolver/Source/FrameCore
 #   cmake --build sidecar/build --parallel
