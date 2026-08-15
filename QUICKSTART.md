@@ -1,40 +1,43 @@
 # 明天早上
 
-**什麼都不用建，`dist/` 裡已經是成品。**
+**什麼都不用建。** `blockreality-0.0.1-demo.zip` 就是 release，`dist/` 是它的內容。
 
 ---
 
-## 0 · 一鍵（最快）
+## 0 · 一鍵
 
-### 裝進現有的 Minecraft 實例
+### A · 已經有 Minecraft 1.20.1 + Forge 47.x
 
-```
-Windows：  dist\install.bat "%APPDATA%\.minecraft"
-Linux ：   dist/install.sh  ~/.minecraft
-```
+解開 zip，**直接雙擊 `install.bat`**（Linux 是 `./install.sh`）。
 
-PrismLauncher 的話指到 `instances\<名字>\.minecraft`。
+**不用給參數**——它會自己找 `.minecraft`、PrismLauncher、MultiMC、Modrinth、
+CurseForge 的實例。找到剛好一個就直接裝；**找到好幾個會列出來要你指定**，
+而不是亂猜一個。
 
-它會把 mod 放進 `mods\`、把引擎放進遊戲目錄。**Minecraft 1.20.1 + Forge 47.x**，開起來就有了。
+裝完就好了，用你平常的啟動器開遊戲。
 
-### 或者直接跑開發環境
+### B · 什麼都沒有，只想看它動
 
 ```
 Windows：  run.bat
 Linux ：   ./run.sh
 ```
 
-自動把引擎放到 `forge/run/` 再叫 `gradlew runClient`。**Gradle 用 wrapper，不用先裝。**
-只需要 PATH 上有 JDK 17。
+**這會直接開起遊戲。** 只需要 PATH 上有 JDK 17——Gradle 用 wrapper，
+Minecraft 與 Forge 由 ForgeGradle 第一次執行時自己抓（要幾分鐘，只有一次）。
 
-`dist/` 裡有什麼：
+> 為什麼不能做成「解壓縮就能玩」的完整包：**Minecraft 與 Forge 不能轉散布**，
+> 所以任何可以交出去的檔案裡都不可能含有它們。B 這條是唯一存在的一鍵開遊戲路徑。
+
+zip 裡有什麼（2.3 MB）：
 
 | | |
 |---|---|
 | `blockreality-0.0.1-demo.jar` | Forge mod（api + core + impl 全在裡面，117 KB） |
 | `br-sidecar.exe` | Windows 引擎，**只 import KERNEL32 與 msvcrt**，沒有要額外附的 DLL |
 | `br-sidecar` | Linux 引擎，只依賴 libc/libm |
-| `install.bat` / `install.sh` | 上面那兩行 |
+| `install.bat` / `install.sh` | 會自己找實例的安裝器 |
+| `START-HERE.txt` | 同樣的說明，英文，放在 zip 裡 |
 
 > **沒有 FrameCore.dll 這種東西。** FrameCore 是**靜態連進 `br-sidecar`** 的，而
 > `br-sidecar` 是**獨立程序**不是 mod 載入的函式庫（D-013）。這樣 C++ 這側如果 segfault，
