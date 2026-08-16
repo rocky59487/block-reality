@@ -90,6 +90,11 @@ public final class StressHud {
         y += 12;
         g.drawString(mc.font, Component.translatable("br.hud.members",
                 ClientStressState.members().size()), x, y, 0xAAAAAA);
+        y += 11;
+        // Without this the contour is only ordinal. With it, a colour can be read as MPa.
+        g.drawString(mc.font, Component.translatable("br.hud.scale",
+                String.format(Locale.ROOT, "%.2f", ClientStressState.colourScaleMpa())),
+                x, y, 0xAAAAAA);
         y += 14;
 
         Optional<MemberSnapshot> focus = ClientStressState.focusedMember();

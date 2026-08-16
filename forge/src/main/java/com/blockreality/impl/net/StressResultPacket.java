@@ -5,7 +5,9 @@ import com.blockreality.api.EndForces;
 import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.Fibre;
 import com.blockreality.api.MemberSnapshot;
+import com.blockreality.api.StressFieldSpec;
 import com.blockreality.api.StressStation;
+import com.blockreality.api.geom.BlockKey;
 import com.blockreality.api.WorldRevision;
 import com.blockreality.api.geom.Vec3d;
 import com.blockreality.impl.BlockRealityMod;
@@ -35,8 +37,11 @@ public final class StressResultPacket {
 
     /** Above this many members the rest are dropped — and the drop is logged, never silent. */
     private static final int MAX_MEMBERS = 64;
-    private static final int MAX_STATIONS = 32;
-    private static final int MAX_FIBRES = 8;
+    /** Blocks per member. A member longer than this is drawn short rather than dropped. */
+    private static final int MAX_BLOCKS = 256;
+
+    /** Stations the client regenerates for the picker and the section diagram. */
+    private static final int STATIONS = 11;
 
     private final long revision;
     private final boolean singular;
@@ -70,6 +75,11 @@ public final class StressResultPacket {
     public List<MemberSnapshot> members() { return members; }
 
     // ---------------------------------------------------------------- encode
+    //
+    // The FIELD travels, not samples of it. Thirty-odd numbers per member replace eleven
+    // stations of four fibres each — about a seventh of the bytes — and the client can
+    // then evaluate the exact stress at any point of any block face, which is what a
+    // surface contour needs and what interpolating between samples could never give.
     public static void encode(StressResultPacket p, FriendlyByteBuf buf) {
         buf.writeVarLong(p.revision);
         buf.writeBoolean(p.singular);
@@ -81,29 +91,48 @@ public final class StressResultPacket {
             buf.writeVarInt(m.id());
             buf.writeFloat((float) m.dc());
             buf.writeByte(m.governingFibre().ordinal());
-            buf.writeVarInt(Math.max(-1, m.governingStation()));
+            buf.writeUtf(m.section(), 48);
 
-            List<StressStation> st = m.stations();
-            int nSt = Math.min(st.size(), MAX_STATIONS);
-            buf.writeVarInt(nSt);
-            for (int q = 0; q < nSt; q++) {
-                StressStation s = st.get(q);
-                writeVec(buf, s.centroidMm());
-                buf.writeBoolean(s.naOffsetYMm().isPresent());
-                buf.writeFloat(s.naOffsetYMm().orElse(0.0).floatValue());
-
-                List<Fibre> fb = s.fibres();
-                int nFb = Math.min(fb.size(), MAX_FIBRES);
-                buf.writeVarInt(nFb);
-                for (int k = 0; k < nFb; k++) {
-                    Fibre f = fb.get(k);
-                    buf.writeUtf(f.name(), 16);
-                    writeVec(buf, f.direction());
-                    buf.writeFloat((float) f.offsetMm());
-                    buf.writeFloat((float) f.sigmaMpa());
-                }
+            List<BlockKey> blocks = m.blocks();
+            int nb = Math.min(blocks.size(), MAX_BLOCKS);
+            buf.writeVarInt(nb);
+            for (int k = 0; k < nb; k++) {
+                BlockKey b = blocks.get(k);
+                buf.writeVarInt(b.x());
+                buf.writeVarInt(b.y());
+                buf.writeVarInt(b.z());
             }
+
+            boolean hasField = m.field().isPresent();
+            buf.writeBoolean(hasField);
+            if (hasField) writeField(buf, m.field().get());
         }
+    }
+
+    private static void writeField(FriendlyByteBuf buf, StressFieldSpec f) {
+        writeVec(buf, f.originMm());
+        writeVec(buf, f.ax());
+        writeVec(buf, f.ay());
+        writeVec(buf, f.az());
+        buf.writeFloat((float) f.lengthMm());
+        buf.writeFloat((float) f.area());
+        buf.writeFloat((float) f.iy());
+        buf.writeFloat((float) f.iz());
+        buf.writeFloat((float) f.cy());
+        buf.writeFloat((float) f.cz());
+        buf.writeFloat((float) f.wy());
+        buf.writeFloat((float) f.wz());
+        writeForces(buf, f.endI());
+        writeForces(buf, f.endJ());
+    }
+
+    private static void writeForces(FriendlyByteBuf buf, EndForces e) {
+        buf.writeFloat((float) e.n());
+        buf.writeFloat((float) e.vy());
+        buf.writeFloat((float) e.vz());
+        buf.writeFloat((float) e.t());
+        buf.writeFloat((float) e.my());
+        buf.writeFloat((float) e.mz());
     }
 
     // ---------------------------------------------------------------- decode
@@ -120,34 +149,45 @@ public final class StressResultPacket {
             int fibreOrdinal = buf.readByte() & 0xFF;
             GoverningFibre fibre = fibreOrdinal < GoverningFibre.values().length
                     ? GoverningFibre.values()[fibreOrdinal] : GoverningFibre.NONE;
-            int governingStation = buf.readVarInt();
+            String section = buf.readUtf(48);
 
-            int nSt = clamp(buf.readVarInt(), MAX_STATIONS);
-            List<StressStation> stations = new ArrayList<>(nSt);
-            for (int q = 0; q < nSt; q++) {
-                Vec3d centre = readVec(buf);
-                boolean hasNa = buf.readBoolean();
-                double na = finite(buf.readFloat());
-
-                int nFb = clamp(buf.readVarInt(), MAX_FIBRES);
-                List<Fibre> fibres = new ArrayList<>(nFb);
-                double tens = 0, comp = 0;
-                for (int k = 0; k < nFb; k++) {
-                    String name = buf.readUtf(16);
-                    Vec3d dir = readVec(buf);
-                    double off = finite(buf.readFloat());
-                    double sigma = finite(buf.readFloat());
-                    fibres.add(new Fibre(name, dir, off, sigma));
-                    tens = Math.max(tens, sigma);
-                    comp = Math.max(comp, -sigma);
-                }
-                stations.add(new StressStation(0, centre, fibres, tens, comp, 0,
-                        hasNa ? Optional.of(na) : Optional.empty(), Optional.empty()));
+            int nb = clamp(buf.readVarInt(), MAX_BLOCKS);
+            List<BlockKey> blocks = new ArrayList<>(nb);
+            for (int k = 0; k < nb; k++) {
+                blocks.add(new BlockKey(buf.readVarInt(), buf.readVarInt(), buf.readVarInt()));
             }
-            members.add(new MemberSnapshot(id, "", "", 0, dc, fibre, governingStation,
-                    EndForces.ZERO, EndForces.ZERO, List.of(), stations));
+
+            Optional<StressFieldSpec> field = buf.readBoolean()
+                    ? Optional.of(readField(buf)) : Optional.empty();
+
+            // Stations are REGENERATED from the field rather than sent. Handing a client
+            // that can evaluate exactly an approximation of the same thing would be
+            // strictly worse and strictly bigger.
+            List<StressStation> stations = field.map(f -> f.stations(STATIONS)).orElse(List.of());
+
+            members.add(new MemberSnapshot(id, "", section, field.map(StressFieldSpec::lengthMm).orElse(0.0),
+                    dc, fibre, 0, EndForces.ZERO, EndForces.ZERO, blocks, stations, field));
         }
         return new StressResultPacket(revision, singular, maxDc, members);
+    }
+
+    private static StressFieldSpec readField(FriendlyByteBuf buf) {
+        Vec3d origin = readVec(buf), ax = readVec(buf), ay = readVec(buf), az = readVec(buf);
+        double len = finite(buf.readFloat());
+        double a = finite(buf.readFloat());
+        double iy = finite(buf.readFloat());
+        double iz = finite(buf.readFloat());
+        double cy = finite(buf.readFloat());
+        double cz = finite(buf.readFloat());
+        double wy = finite(buf.readFloat());
+        double wz = finite(buf.readFloat());
+        return new StressFieldSpec(origin, ax, ay, az, len, a, iy, iz, cy, cz, wy, wz,
+                readForces(buf), readForces(buf));
+    }
+
+    private static EndForces readForces(FriendlyByteBuf buf) {
+        return new EndForces(finite(buf.readFloat()), finite(buf.readFloat()), finite(buf.readFloat()),
+                finite(buf.readFloat()), finite(buf.readFloat()), finite(buf.readFloat()));
     }
 
     /** Out-of-range counts are clamped, never rejected: a rejection here disconnects a player. */

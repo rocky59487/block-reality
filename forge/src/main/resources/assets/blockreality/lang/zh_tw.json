@@ -40,5 +40,6 @@
   "br.fibre.bending": "彎曲",
   "br.fibre.torsion": "扭轉",
   "br.fibre.shell_vm": "殼 von Mises",
-  "br.fibre.none": "無"
+  "br.fibre.none": "無",
+  "br.hud.scale": "等值圖滿刻度  ±%s MPa"
 }

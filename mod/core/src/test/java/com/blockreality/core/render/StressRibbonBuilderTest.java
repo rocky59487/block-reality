@@ -36,7 +36,7 @@ class StressRibbonBuilderTest {
                     sigma != 0 ? Optional.of(0.0) : Optional.empty(), Optional.empty()));
         }
         return new MemberSnapshot(1, "steel", "steel_rect_200x400", 4000, 0.5, GoverningFibre.CRUSH, 0,
-                EndForces.ZERO, EndForces.ZERO, List.of(new BlockKey(0, 64, 0)), st);
+                EndForces.ZERO, EndForces.ZERO, List.of(new BlockKey(0, 64, 0)), st, java.util.Optional.empty());
     }
 
     @Test

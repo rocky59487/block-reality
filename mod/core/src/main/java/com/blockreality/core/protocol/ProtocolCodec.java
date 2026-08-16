@@ -6,6 +6,7 @@ import com.blockreality.api.EngineCatalogue;
 import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.Fibre;
 import com.blockreality.api.MemberSnapshot;
+import com.blockreality.api.StressFieldSpec;
 import com.blockreality.api.StressStation;
 import com.blockreality.api.WorldRevision;
 import com.blockreality.api.geom.BlockKey;
@@ -133,7 +134,21 @@ public final class ProtocolCodec {
                 decodeForces(m.objField("i")),
                 decodeForces(m.objField("j")),
                 decodeBlocks(m.arr("blocks")),
-                stations);
+                stations,
+                decodeField(m, m.objField("i"), m.objField("j")));
+    }
+
+    private static Optional<StressFieldSpec> decodeField(JsonValue m, JsonValue fi, JsonValue fj) {
+        JsonValue f = m.objField("field");
+        if (!f.isObject()) return Optional.empty();
+        return Optional.of(new StressFieldSpec(
+                decodeVec(f.arr("origin")), decodeVec(f.arr("ax")),
+                decodeVec(f.arr("ay")), decodeVec(f.arr("az")),
+                m.num("lengthMm", 0),
+                f.num("A", 0), f.num("Iy", 0), f.num("Iz", 0),
+                f.num("cy", 0), f.num("cz", 0),
+                f.num("wy", 0), f.num("wz", 0),
+                decodeForces(fi), decodeForces(fj)));
     }
 
     private static EndForces decodeForces(JsonValue f) {

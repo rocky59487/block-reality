@@ -3,6 +3,7 @@ package com.blockreality.api;
 import com.blockreality.api.geom.BlockKey;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * One structural member as the engine sees it, for one analysis.
@@ -35,7 +36,9 @@ public record MemberSnapshot(
         EndForces endI,
         EndForces endJ,
         List<BlockKey> blocks,
-        List<StressStation> stations) {
+        List<StressStation> stations,
+        /** The evaluable stress field. Absent only for a member the engine could not describe. */
+        Optional<StressFieldSpec> field) {
 
     public MemberSnapshot {
         blocks = List.copyOf(blocks);

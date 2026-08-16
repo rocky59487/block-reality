@@ -30,7 +30,7 @@ class MemberPickTest {
         }
         return new MemberSnapshot(id, "steel", "steel_rect_200x400", (x1 - x0) * 1000,
                 0.5, GoverningFibre.CRUSH, 0, EndForces.ZERO, EndForces.ZERO,
-                List.of(new BlockKey(0, (int) y, (int) z)), st);
+                List.of(new BlockKey(0, (int) y, (int) z)), st, java.util.Optional.empty());
     }
 
     @Test

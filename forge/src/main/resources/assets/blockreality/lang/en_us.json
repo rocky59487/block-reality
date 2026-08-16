@@ -40,5 +40,6 @@
   "br.fibre.bending": "bending",
   "br.fibre.torsion": "torsion",
   "br.fibre.shell_vm": "shell von Mises",
-  "br.fibre.none": "none"
+  "br.fibre.none": "none",
+  "br.hud.scale": "contour full scale  ±%s MPa"
 }

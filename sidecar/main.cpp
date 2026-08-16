@@ -283,6 +283,19 @@ struct SolveOut {
         frame::MemberEndForces fi, fj;
         std::vector<BlockPos> blocks;
         std::vector<Station>  stations;
+
+        // The stress FIELD, not samples of it. With the member's local frame, its
+        // section properties and the uniform load, the client can evaluate
+        //     sigma(x, y, z) = -N/A + Mz*y/Iz - My*z/Iy
+        // exactly at any point, which is what a surface contour needs. Sending eleven
+        // stations instead would force the renderer to interpolate between samples of a
+        // function it could simply evaluate.
+        McVec originMm{ 0, 0, 0 };            // node i, Minecraft world mm
+        McVec axisX{ 1, 0, 0 };               // member axis, unit, Minecraft space
+        McVec axisY{ 0, 1, 0 };               // local y ("top") direction
+        McVec axisZ{ 0, 0, 1 };               // local z direction
+        double A = 0, Iy = 0, Iz = 0, cy = 0, cz = 0;
+        double wy = 0, wz = 0;                // uniform load in local axes, N/mm
     };
     std::vector<MemberOut> members;
     std::vector<BlockPos>  unassigned;
@@ -524,6 +537,18 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
         dst.fi = mf.endI;
         dst.fj = fj;                      // the wire reports both ends as section forces
 
+        dst.originMm = fcToMc(pi);
+        dst.axisX = fcToMc(ax);
+        dst.axisY = dTopY;
+        dst.axisZ = dPlusZ;
+        dst.A  = sec.A;
+        dst.Iy = sec.Iy;
+        dst.Iz = sec.Iz;
+        dst.cy = sec.cy;
+        dst.cz = sec.cz;
+        dst.wy = wy;
+        dst.wz = wz;
+
         // Uniform stations for the picture, plus the analytic moment extremum for the
         // check. M(x) = M_i(1-t) + M_j t + (w/2) x (L-x), so dM/dx = 0 at
         //     x* = L/2 + (M_j - M_i) / (w L)
@@ -566,14 +591,24 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
             // FrameCore's N is compression-positive; the axial term is negated for
             // the tension-positive output. The bending sign is pinned by physics
             // and locked by C1c: a cantilever pushed down must read TENSION on top.
+            // sigma(x, y, z) = -N/A + Mz*y/Iz - My*z/Iy      (tension-positive)
+            //
+            // THE TWO BENDING TERMS CARRY OPPOSITE SIGNS. That is not a typo: with a
+            // right-handed local triad, +Mz puts +y in tension while +My puts +z in
+            // COMPRESSION. Measured, not assumed — a cantilever pushed along local -z
+            // deflects that way and must therefore be in tension on +z, while
+            // +My*cy/Iy comes out negative there (probe in ENGINE_FINDINGS finding 5).
+            //
+            // Every fixture until now bent about one axis only, so the My term was
+            // always zero and its sign never mattered.
             const double axial = toTensionPositive(Nx / sec.A);
             const double bendY = (sec.Iz > 0) ? Mzx * sec.cz / sec.Iz : 0.0;  // varies along local y
             const double bendZ = (sec.Iy > 0) ? Myx * sec.cy / sec.Iy : 0.0;  // varies along local z
 
             const double sTop = axial + bendY;
             const double sBot = axial - bendY;
-            const double sPls = axial + bendZ;
-            const double sMin = axial - bendZ;
+            const double sPls = axial - bendZ;
+            const double sMin = axial + bendZ;
 
             st.fibres.push_back({ "TOP_Y",   dTopY,  sec.cz, sTop });
             st.fibres.push_back({ "BOT_Y",   dBotY,  sec.cz, sBot });
@@ -638,6 +673,10 @@ void writeForces(bjson::Writer& w, const char* key, const frame::MemberEndForces
     w.key(key).beginObj();
     w.kv("N", f.N).kv("Vy", f.Vy).kv("Vz", f.Vz).kv("T", f.T).kv("My", f.My).kv("Mz", f.Mz);
     w.endObj();
+}
+
+void writeVec(bjson::Writer& w, const char* key, const McVec& v) {
+    w.key(key).beginArr().val(v.x).val(v.y).val(v.z).endArr();
 }
 
 void writeBlocks(bjson::Writer& w, const char* key, const std::vector<BlockPos>& v) {
@@ -760,6 +799,16 @@ std::string handleSolve(const bjson::Value& req) {
         w.kv("governingFibre", mm.governingFibre).kv("governingStation", mm.governingStation);
         writeForces(w, "i", mm.fi);
         writeForces(w, "j", mm.fj);
+
+        // Everything a client needs to evaluate the stress field itself.
+        w.key("field").beginObj();
+        writeVec(w, "origin", mm.originMm);
+        writeVec(w, "ax", mm.axisX);
+        writeVec(w, "ay", mm.axisY);
+        writeVec(w, "az", mm.axisZ);
+        w.kv("A", mm.A).kv("Iy", mm.Iy).kv("Iz", mm.Iz).kv("cy", mm.cy).kv("cz", mm.cz);
+        w.kv("wy", mm.wy).kv("wz", mm.wz);
+        w.endObj();
         writeBlocks(w, "blocks", mm.blocks);
 
         w.key("stations").beginArr();

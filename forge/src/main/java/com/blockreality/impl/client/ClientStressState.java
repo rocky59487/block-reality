@@ -140,9 +140,25 @@ public final class ClientStressState {
         rebuild();
     }
 
+    // Occupied cells and the colour scale are computed once per packet, not per frame:
+    // a frame draws tens of thousands of vertices and must not also be rebuilding sets.
+    private static java.util.Set<Long> occupied = java.util.Set.of();
+    private static double colourScaleMpa = 1;
+
+    public static java.util.Set<Long> occupiedCells() { return occupied; }
+
+    /**
+     * The stress that maps to full saturation, shared by every member so the contour is
+     * comparable across the structure — which is the whole point of a contour plot. It is
+     * also the number the legend prints, so the colours can be read back as MPa.
+     */
+    public static double colourScaleMpa() { return colourScaleMpa; }
+
     private static void rebuild() {
         if (members.isEmpty()) {
             ribbons = List.of();
+            occupied = java.util.Set.of();
+            colourScaleMpa = 1;
             return;
         }
         // Each member is scaled to its OWN peak, which is the opposite of what a shared
@@ -150,6 +166,14 @@ public final class ClientStressState {
         // Cross-member comparison is carried by the utilisation colour on the axis line;
         // the fibre ribbons only ever show one member at a time, so their job is to make
         // that member's internal distribution as legible as possible.
+        occupied = StressSurfaceRenderer.cellsOf(members);
+
+        double peak = 0;
+        for (MemberSnapshot m : members) {
+            if (m.field().isPresent()) peak = Math.max(peak, m.field().get().peakMagnitudeMpa(21));
+        }
+        colourScaleMpa = peak > 0 ? peak : 1;
+
         List<StressRibbon> out = new java.util.ArrayList<>(members.size());
         for (MemberSnapshot m : members) {
             out.add(StressRibbonBuilder.build(m, palette, StressRibbonBuilder.memberPeak(m)));
