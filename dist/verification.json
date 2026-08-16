@@ -1,0 +1,404 @@
+{
+  "identity": {
+    "engine": {
+      "name": "FrameCore",
+      "commit": "6b40c08f0e2c077bf041b0259870077420b9d6b8",
+      "committed": "2026-08-11T21:24:40+08:00",
+      "worktree_clean": true,
+      "supernodal_lane": "compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT"
+    },
+    "binary": {
+      "path": "/workspace/block-reality/dist/br-sidecar",
+      "sha256": "9e5bf343968738c73d32d0b8286aab707ce7ebcb8bbab2e9570da810e99b7bc8"
+    },
+    "sources": {
+      "sidecar/main.cpp": "5cc6ef6db4359599e117be01c298ce9703bc73b4dfbe1506e7f748feecd67b53",
+      "sidecar/json.hpp": "2cfb778e3eafb848228a50efc794aa189010789c347a3baf7430601091380f1e",
+      "sidecar/verify.py": "9ca9ca4fcb6e2b6a90d43c327a4e544c7a0583fa528bef8b3b470da2e2e1dd8e",
+      "sidecar/CMakeLists.txt": "e9351f417fa6d3e0c33d42d0095b5d3ab25b433794258cb51732a474b701f700",
+      "scripts/evidence.py": "4a0ad88ef582cb5aceeb6bd6b580666c1b98d1f5c3367cff1d8a624ba5186a81"
+    },
+    "host": {
+      "platform": "Linux-6.18.5-fc-v20-x86_64-with-glibc2.39",
+      "python": "3.11.15"
+    }
+  },
+  "handshake": {
+    "ok": true,
+    "op": "hello",
+    "engine": "FrameCore",
+    "protocol": 1,
+    "materials": [
+      "brick",
+      "concrete",
+      "rebar",
+      "steel",
+      "timber"
+    ],
+    "sections": [
+      "concrete_rect_400x600",
+      "rebar_round_d25",
+      "steel_rect_100x200",
+      "steel_rect_150x300",
+      "steel_rect_200x400"
+    ]
+  },
+  "accuracy": {
+    "cases": [
+      {
+        "case": "V1  cantilever, tip load + self weight",
+        "checks": [
+          {
+            "quantity": "sigma_top(x=0mm)",
+            "expected": 24.241020000000002,
+            "got": 24.24102,
+            "rel": 1.4655792861853587e-16,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=400mm)",
+            "expected": 20.985226200000003,
+            "got": 20.9852262,
+            "rel": 1.6929594396273414e-16,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=800mm)",
+            "expected": 17.9142528,
+            "got": 17.9142528,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=1200mm)",
+            "expected": 15.0280998,
+            "got": 15.0280998,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=1600mm)",
+            "expected": 12.3267672,
+            "got": 12.3267672,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=2000mm)",
+            "expected": 9.810255,
+            "got": 9.810255,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=2400mm)",
+            "expected": 7.4785632,
+            "got": 7.4785632,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=2800mm)",
+            "expected": 5.331691800000001,
+            "got": 5.3316918,
+            "rel": 1.665847263902473e-16,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=3200mm)",
+            "expected": 3.3696408000000004,
+            "got": 3.3696408,
+            "rel": 1.3179126091127058e-16,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=3600mm)",
+            "expected": 1.5924102000000002,
+            "got": 1.5924102,
+            "rel": 1.3943932595070748e-16,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=4000mm)",
+            "expected": 0.0,
+            "got": 0,
+            "rel": null,
+            "abs": 0.0
+          },
+          {
+            "quantity": "D/C",
+            "expected": 0.06926005714285716,
+            "got": 0.06926005714,
+            "rel": 4.125262195466585e-11,
+            "abs": null
+          },
+          {
+            "quantity": "member length (mm)",
+            "expected": 4000.0,
+            "got": 4000,
+            "rel": 0.0,
+            "abs": null
+          }
+        ]
+      },
+      {
+        "case": "V2  cantilever, self weight only",
+        "checks": [
+          {
+            "quantity": "sigma_top(x=0mm)",
+            "expected": 9.24102,
+            "got": 9.24102,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=400mm)",
+            "expected": 7.4852262000000005,
+            "got": 7.4852262,
+            "rel": 1.186575256336442e-16,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=800mm)",
+            "expected": 5.9142528,
+            "got": 5.9142528,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=1200mm)",
+            "expected": 4.5280998,
+            "got": 4.5280998,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=1600mm)",
+            "expected": 3.3267672,
+            "got": 3.3267672,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=2000mm)",
+            "expected": 2.310255,
+            "got": 2.310255,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=2400mm)",
+            "expected": 1.4785632,
+            "got": 1.4785632,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=2800mm)",
+            "expected": 0.8316918,
+            "got": 0.8316918,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=3200mm)",
+            "expected": 0.3696408,
+            "got": 0.3696408,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=3600mm)",
+            "expected": 0.0924102,
+            "got": 0.0924102,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "sigma_top(x=4000mm)",
+            "expected": 0.0,
+            "got": 0,
+            "rel": null,
+            "abs": 0.0
+          }
+        ]
+      },
+      {
+        "case": "V3  interior-governing cantilever (both ends zero)",
+        "checks": [
+          {
+            "quantity": "moment at end i (N.mm)",
+            "expected": 0.0,
+            "got": -1.490116119e-08,
+            "rel": null,
+            "abs": 1.490116119e-08
+          },
+          {
+            "quantity": "moment at end j (N.mm)",
+            "expected": 0.0,
+            "got": 0,
+            "rel": null,
+            "abs": 0.0
+          },
+          {
+            "quantity": "peak |sigma| at midspan (MPa)",
+            "expected": 9.24102,
+            "got": 9.24102,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "D/C from the interior",
+            "expected": 0.02640291428571429,
+            "got": 0.02640291429,
+            "rel": 1.6231960717883691e-10,
+            "abs": null
+          }
+        ]
+      },
+      {
+        "case": "V4  fixed-fixed with midspan node (moment reverses)",
+        "checks": [
+          {
+            "quantity": "support moment (N.mm)",
+            "expected": 45178320.0,
+            "got": 45178320,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "midspan moment (N.mm)",
+            "expected": -28749840.0,
+            "got": -28749840,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "adjacent members agree at the shared node",
+            "expected": 0.0,
+            "got": 0,
+            "rel": null,
+            "abs": 0.0
+          }
+        ]
+      },
+      {
+        "case": "V5  axial tension",
+        "checks": [
+          {
+            "quantity": "mean fibre stress = N/A (MPa)",
+            "expected": 1.25,
+            "got": 1.25,
+            "rel": 0.0,
+            "abs": null
+          }
+        ]
+      },
+      {
+        "case": "V6  concrete section, tension governs",
+        "checks": [
+          {
+            "quantity": "D/C against Rtens = 3 MPa",
+            "expected": 0.6147600000000001,
+            "got": 0.61476,
+            "rel": 1.805945449647271e-16,
+            "abs": null
+          }
+        ]
+      }
+    ],
+    "nonzero_references": {
+      "comparisons": 28,
+      "worst_relative_error": 1.6231960717883691e-10,
+      "rms_relative_error": 3.1650679124392926e-11
+    },
+    "zero_references": {
+      "comparisons": 5,
+      "worst_absolute_residual": 1.490116119e-08,
+      "note": "quantities whose exact value is zero; compared absolutely"
+    }
+  },
+  "properties": [
+    {
+      "property": "P1  unsupported structure reported as a mechanism",
+      "holds": true
+    },
+    {
+      "property": "P2  a single block is not a beam",
+      "holds": true
+    },
+    {
+      "property": "P3  an unrepresentable load is refused, not dropped",
+      "holds": true
+    },
+    {
+      "property": "P4  a missing material is refused, not defaulted",
+      "holds": true
+    },
+    {
+      "property": "P5  an unknown section is refused",
+      "holds": true
+    },
+    {
+      "property": "P6  repeated solves are bit-identical",
+      "holds": true
+    }
+  ],
+  "determinism": {
+    "checked": true,
+    "identical": 6,
+    "cases": 6,
+    "note": "byte-for-byte comparison of the full reply line"
+  },
+  "performance": [
+    {
+      "blocks": 3,
+      "members": 1,
+      "median_ms": 0.324,
+      "min_ms": 0.226,
+      "max_ms": 0.421
+    },
+    {
+      "blocks": 6,
+      "members": 3,
+      "median_ms": 0.84,
+      "min_ms": 0.668,
+      "max_ms": 1.253
+    },
+    {
+      "blocks": 15,
+      "members": 9,
+      "median_ms": 2.06,
+      "min_ms": 1.83,
+      "max_ms": 2.674
+    },
+    {
+      "blocks": 30,
+      "members": 19,
+      "median_ms": 3.692,
+      "min_ms": 3.63,
+      "max_ms": 3.876
+    },
+    {
+      "blocks": 60,
+      "members": 39,
+      "median_ms": 7.869,
+      "min_ms": 7.399,
+      "max_ms": 8.888
+    },
+    {
+      "blocks": 150,
+      "members": 99,
+      "median_ms": 20.801,
+      "min_ms": 20.109,
+      "max_ms": 24.269
+    },
+    {
+      "blocks": 300,
+      "members": 199,
+      "median_ms": 42.101,
+      "min_ms": 38.763,
+      "max_ms": 47.664
+    }
+  ]
+}

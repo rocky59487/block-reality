@@ -53,6 +53,29 @@ else
     echo "    apt-get install -y g++-mingw-w64-x86-64"
 fi
 
+# -------------------------------------------------------------- evidence
+# The release carries its own verification record: engine commit, binary hash,
+# every benchmark against its closed form, cross-platform determinism and timing.
+# It runs BEFORE packaging and its exit status gates the release, so a build whose
+# numbers moved cannot be shipped with a stale table claiming they did not.
+echo "==> generating verification evidence"
+EVIDENCE_ARGS=("$DIST/br-sidecar")
+# Wine is not always on PATH even when installed; the distro package puts it under
+# /usr/lib/wine. Without it the determinism section is simply absent, never faked.
+WINE=$(command -v wine64 || command -v wine || echo /usr/lib/wine/wine64)
+if [[ -f "$DIST/br-sidecar.exe" && -x "$WINE" ]]; then
+    cat > "$ROOT/.br-winewrap" <<WRAP
+#!/bin/sh
+export WINEDEBUG=-all
+exec "$WINE" "$DIST/br-sidecar.exe" "\$@"
+WRAP
+    chmod +x "$ROOT/.br-winewrap"
+    EVIDENCE_ARGS+=(--windows "$ROOT/.br-winewrap")
+fi
+FRAMECORE_DIR="$FRAMECORE_DIR" python3 "$ROOT/scripts/evidence.py" "${EVIDENCE_ARGS[@]}"
+rm -f "$ROOT/.br-winewrap"
+cp "$ROOT/evidence/VERIFICATION.md" "$ROOT/evidence/verification.json" "$DIST/"
+
 # ------------------------------------------------------------------------- mod
 echo "==> building the mod jar"
 (cd "$ROOT/forge" && ./gradlew --no-daemon build -x test -q)
