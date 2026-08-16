@@ -234,15 +234,15 @@ one warm-up; the cold process start is excluded because it happens once.
 
 | blocks | members | median (ms) | min | max | ms/member |
 |---:|---:|---:|---:|---:|---:|
-| 3 | 1 | 0.442 | 0.383 | 0.493 | 0.442 |
-| 6 | 3 | 1.22 | 0.994 | 1.293 | 0.407 |
-| 15 | 9 | 3.415 | 3.267 | 3.926 | 0.379 |
-| 30 | 19 | 6.674 | 6.149 | 8.537 | 0.351 |
-| 60 | 39 | 13.28 | 11.955 | 13.789 | 0.341 |
-| 150 | 99 | 35.475 | 34.692 | 39.49 | 0.358 |
-| 300 | 199 | 70.786 | 65.891 | 85.161 | 0.356 |
+| 3 | 1 | 0.462 | 0.403 | 0.526 | 0.462 |
+| 6 | 3 | 1.125 | 1.03 | 1.29 | 0.375 |
+| 15 | 9 | 2.948 | 2.866 | 3.889 | 0.328 |
+| 30 | 19 | 6.449 | 5.766 | 11.115 | 0.339 |
+| 60 | 39 | 13.296 | 11.924 | 16.11 | 0.341 |
+| 150 | 99 | 36.893 | 35.605 | 40.618 | 0.373 |
+| 300 | 199 | 69.02 | 67.451 | 91.652 | 0.347 |
 
-At 199 members the whole round trip is 70.8 ms,
+At 199 members the whole round trip is 69.0 ms,
 against a Minecraft tick of 50 ms — and the solve does not run on the tick
 thread, so this is latency to a result rather than time taken from the game.
 

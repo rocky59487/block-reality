@@ -11,25 +11,25 @@ binary named below; none is transcribed by hand.
 | commit | `6b40c08f0e2c077bf041b0259870077420b9d6b8` (2026-08-11T21:24:40+08:00) |
 | worktree clean | True |
 | solver lane | compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT |
-| binary sha256 | `9e5bf343968738c73d32d0b8286aab707ce7ebcb8bbab2e9570da810e99b7bc8` |
+| binary sha256 | `1ce74526c3a9f5336cac8546bc0a6ce0cf9351c8c12a4123cdbeaad30b6138e9` |
 | host | Linux-6.18.5-fc-v20-x86_64-with-glibc2.39 |
 
 Source hashes:
 
 | file | sha256 |
 |---|---|
-| `sidecar/main.cpp` | `5cc6ef6db4359599e117be01c298ce9703bc73b4dfbe1506e7f748feecd67b53` |
+| `sidecar/main.cpp` | `78d1d72e98f53d72229e10d0717a0eff4c98044e248939dd586fdf9edd31ccdb` |
 | `sidecar/json.hpp` | `2cfb778e3eafb848228a50efc794aa189010789c347a3baf7430601091380f1e` |
-| `sidecar/verify.py` | `9ca9ca4fcb6e2b6a90d43c327a4e544c7a0583fa528bef8b3b470da2e2e1dd8e` |
+| `sidecar/verify.py` | `651bbcd140217ef992368533a60425575aad442b89e8335c8b4ad9ea1e95394f` |
 | `sidecar/CMakeLists.txt` | `e9351f417fa6d3e0c33d42d0095b5d3ab25b433794258cb51732a474b701f700` |
-| `scripts/evidence.py` | `4a0ad88ef582cb5aceeb6bd6b580666c1b98d1f5c3367cff1d8a624ba5186a81` |
+| `scripts/evidence.py` | `4dd94fe7b1f38227425ec678d40cc5b2e7fa2f6f02ea80159516af7c3abce958` |
 
 ## Accuracy against closed-form solutions
 
-**28 comparisons against non-zero references: worst relative
-error 1.623e-10, RMS 3.165e-11.**
+**31 comparisons against non-zero references: worst relative
+error 1.623e-10, RMS 3.008e-11.**
 
-**5 comparisons against exactly-zero references: worst absolute
+**10 comparisons against exactly-zero references: worst absolute
 residual 1.490e-08 N·mm.**
 
 The two are reported separately on purpose. A quantity whose exact value is zero
@@ -101,6 +101,24 @@ non-zero comparisons are several orders of magnitude better than that.
 |---|---:|---:|---:|
 | D/C against Rtens = 3 MPa | 0.61476 | 0.61476 | 1.81e-16 rel |
 
+### V7  plate self weight and equilibrium
+
+| quantity | closed form | engine | error |
+|---|---:|---:|---:|
+| total applied weight (N) | -295085 | -295085 | 0.00e+00 rel |
+| vertical reaction balances it (N) | 0 | 0 | 0.00e+00 abs |
+| horizontal equilibrium, x (N) | 0 | 0 | 0.00e+00 abs |
+| membrane force under transverse load (N/mm) | 0 | 0 | 0.00e+00 abs |
+| facets from an n x n slab | 64 | 64 | 0.00e+00 rel |
+
+### V8  column bearing on a slab (shared node)
+
+| quantity | closed form | engine | error |
+|---|---:|---:|---:|
+| columns carry the whole structure (N) | 0 | 0 | 0.00e+00 abs |
+| one connected structure | 1 | 1 | 0.00e+00 rel |
+| mechanisms | 0 | 0 | 0.00e+00 abs |
+
 ## Properties
 
 Behaviours with no closed form: each is either right or wrong.
@@ -113,10 +131,98 @@ Behaviours with no closed form: each is either right or wrong.
 | P4  a missing material is refused, not defaulted | yes |
 | P5  an unknown section is refused | yes |
 | P6  repeated solves are bit-identical | yes |
+| P7  a mechanism is confined to the structure that is one | yes |
+| P8  a slab meshes as plate facets and yields no members | yes |
+| P9  a solid of plate blocks is refused, not meshed | yes |
+| P10 support-moment recovery never lowers a demand | yes |
+
+## Plate element: mesh convergence
+
+MITC4 flat shells against Timoshenko & Woinowsky-Krieger's clamped square
+plate under a uniform load, the load being the slab's own weight
+(q = 0.0046107 N/mm²). One block is one element, so the mesh
+density is set by how large the slab is.
+
+Two coefficients are used and only one of them needed correcting. The
+tabulated centre coefficient 0.0231 is quoted for ν = 0.3; at the centre of a
+square clamped plate the two curvatures are equal by symmetry, so M = D·κ·(1+ν)
+and it rescales to **0.021323** for this plate's ν = 0.2.
+The edge coefficient **0.0513** needs no correction, because the tangential
+curvature vanishes along a clamped edge and M_edge = −D·w,nn carries no ν.
+Using 0.0231 directly makes the error appear to *grow* as the mesh is refined,
+which reads as a divergent element and is really a wrong reference.
+
+Both coefficients are tabulated to three significant figures. Where the
+agreement below reaches a fraction of a per cent, the reference is the less
+precise of the two numbers being compared — see the thickness control below,
+which is what establishes that rather than assuming it.
+
+| elements per side | span | span error | support (raw corner) | support (recovered) | reference |
+|---:|---:|---:|---:|---:|---:|
+| 4 | -1680.5 | 6.83% | 1400.4  (63.0%) | 2137.8  (43.5%) | 3784.5 |
+| 6 | -3625.1 | 2.42% | 4368.1  (48.7%) | 6536.5  (23.2%) | 8515.0 |
+| 8 | -6348.5 | 0.90% | 9110.7  (39.8%) | 12967.2  (14.3%) | 15137.9 |
+| 10 | -9858.8 | 0.28% | 15700.5  (33.6%) | 21345.6  (9.8%) | 23652.9 |
+| 12 | -14148.0 | 0.07% | 24153.9  (29.1%) | 31658.1  (7.1%) | 34060.2 |
+| 14 | -19217.1 | 0.27% | 34482.4  (25.6%) | 43888.6  (5.3%) | 46359.7 |
+| 16 | -25065.9 | 0.41% | 46692.0  (22.9%) | 58029.4  (4.2%) | 60551.4 |
+| 20 | -39103.3 | 0.57% | 76768.1  (18.9%) | 92024.0  (2.7%) | 94611.6 |
+
+Moments are per unit width, N·mm/mm.
+
+### The span moment, and what the residual actually is
+
+The span error falls steeply, passes through zero at about twelve elements and
+then settles at a few tenths of a per cent on the other side. It does not keep
+shrinking, so something other than mesh density is setting the floor, and
+saying "converges cleanly" and stopping there would be describing the first
+half of the table only.
+
+The obvious suspect is transverse shear: MITC4 is a Reissner–Mindlin element
+and Timoshenko's coefficient is thin-plate. That suspect is testable, because
+shear deformation scales with t/a and discretisation does not — so the same
+meshes were run at two thicknesses.
+
+| elements per side | t = 200 mm | t/a | t = 150 mm | t/a |
+|---:|---:|---:|---:|---:|
+| 8 | +0.896% | 0.0250 | +0.873% | 0.0187 |
+| 12 | -0.065% | 0.0167 | -0.080% | 0.0125 |
+| 16 | -0.408% | 0.0125 | -0.417% | 0.0094 |
+| 20 | -0.566% | 0.0100 | -0.572% | 0.0075 |
+
+The two columns track each other to within a hundredth of a per cent while
+t/a changes by a factor of three. **The residual is not shear deformation.**
+What is left is the element's own converged answer differing from the
+tabulated coefficient by well under one per cent — and that coefficient is a
+truncated series quoted to three significant figures. At this level the
+reference is the less precise of the two numbers being compared, which is
+the honest place to stop rather than tune anything to close the gap.
+
+### Why the support column has two numbers
+
+The span moment is the quantity that governs a slab's field reinforcement, and
+the table above is it. The support moment is a different story: MITC4's per-corner
+moments are not superconvergent, and at a clamped edge the raw corner value is
+badly low — the *unsafe* direction, and precisely the silently-safe answer this
+project treats as the worst class of error.
+
+It is therefore recovered by extrapolating from the two interior element
+centres normal to the edge, M_edge ≈ 1.5·M₁ − 0.5·M₂, the textbook
+interior-to-boundary recovery. Both figures are printed so the size of the
+correction is visible rather than taken on trust. The recovery is applied only
+where it is defensible — an edge whose two corner nodes are fully fixed, with a
+neighbouring facet in the same local frame — and it is taken as the *worse* of
+the two, so a failure to recover can never make a plate look safer.
+
+**Honest boundary.** The recovered support moment is still several per cent low
+on a coarse mesh, and the mesh is coarse whenever the slab is small: a 4 m slab
+is four elements across and nothing recovers that well. Read the span moment as
+quantitative and the support moment as indicative until the plate spans at least
+a dozen blocks.
 
 ## Cross-platform determinism
 
-**6/6 cases byte-for-byte identical** between the
+**8/8 cases byte-for-byte identical** between the
 native Linux binary and the Windows cross-build. Comparison is of the whole
 reply line, not of selected fields.
 
@@ -128,15 +234,15 @@ one warm-up; the cold process start is excluded because it happens once.
 
 | blocks | members | median (ms) | min | max | ms/member |
 |---:|---:|---:|---:|---:|---:|
-| 3 | 1 | 0.324 | 0.226 | 0.421 | 0.324 |
-| 6 | 3 | 0.84 | 0.668 | 1.253 | 0.280 |
-| 15 | 9 | 2.06 | 1.83 | 2.674 | 0.229 |
-| 30 | 19 | 3.692 | 3.63 | 3.876 | 0.194 |
-| 60 | 39 | 7.869 | 7.399 | 8.888 | 0.202 |
-| 150 | 99 | 20.801 | 20.109 | 24.269 | 0.210 |
-| 300 | 199 | 42.101 | 38.763 | 47.664 | 0.212 |
+| 3 | 1 | 0.462 | 0.403 | 0.526 | 0.462 |
+| 6 | 3 | 1.125 | 1.03 | 1.29 | 0.375 |
+| 15 | 9 | 2.948 | 2.866 | 3.889 | 0.328 |
+| 30 | 19 | 6.449 | 5.766 | 11.115 | 0.339 |
+| 60 | 39 | 13.296 | 11.924 | 16.11 | 0.341 |
+| 150 | 99 | 36.893 | 35.605 | 40.618 | 0.373 |
+| 300 | 199 | 69.02 | 67.451 | 91.652 | 0.347 |
 
-At 199 members the whole round trip is 42.1 ms,
+At 199 members the whole round trip is 69.0 ms,
 against a Minecraft tick of 50 ms — and the solve does not run on the tick
 thread, so this is latency to a result rather than time taken from the game.
 

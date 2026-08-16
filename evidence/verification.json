@@ -8,7 +8,7 @@
       "supernodal_lane": "compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT"
     },
     "binary": {
-      "path": "/workspace/block-reality/sidecar/build/br-sidecar",
+      "path": "/workspace/block-reality/dist/br-sidecar",
       "sha256": "1ce74526c3a9f5336cac8546bc0a6ce0cf9351c8c12a4123cdbeaad30b6138e9"
     },
     "sources": {
@@ -584,51 +584,51 @@
     {
       "blocks": 3,
       "members": 1,
-      "median_ms": 0.442,
-      "min_ms": 0.383,
-      "max_ms": 0.493
+      "median_ms": 0.462,
+      "min_ms": 0.403,
+      "max_ms": 0.526
     },
     {
       "blocks": 6,
       "members": 3,
-      "median_ms": 1.22,
-      "min_ms": 0.994,
-      "max_ms": 1.293
+      "median_ms": 1.125,
+      "min_ms": 1.03,
+      "max_ms": 1.29
     },
     {
       "blocks": 15,
       "members": 9,
-      "median_ms": 3.415,
-      "min_ms": 3.267,
-      "max_ms": 3.926
+      "median_ms": 2.948,
+      "min_ms": 2.866,
+      "max_ms": 3.889
     },
     {
       "blocks": 30,
       "members": 19,
-      "median_ms": 6.674,
-      "min_ms": 6.149,
-      "max_ms": 8.537
+      "median_ms": 6.449,
+      "min_ms": 5.766,
+      "max_ms": 11.115
     },
     {
       "blocks": 60,
       "members": 39,
-      "median_ms": 13.28,
-      "min_ms": 11.955,
-      "max_ms": 13.789
+      "median_ms": 13.296,
+      "min_ms": 11.924,
+      "max_ms": 16.11
     },
     {
       "blocks": 150,
       "members": 99,
-      "median_ms": 35.475,
-      "min_ms": 34.692,
-      "max_ms": 39.49
+      "median_ms": 36.893,
+      "min_ms": 35.605,
+      "max_ms": 40.618
     },
     {
       "blocks": 300,
       "members": 199,
-      "median_ms": 70.786,
-      "min_ms": 65.891,
-      "max_ms": 85.161
+      "median_ms": 69.02,
+      "min_ms": 67.451,
+      "max_ms": 91.652
     }
   ]
 }
