@@ -32,8 +32,30 @@ subprojects {
         useJUnitPlatform()
         // Tests that drive the real sidecar need to know where the binary is.
         // Absent -> those tests skip (Assumptions), the rest still run.
-        systemProperty 'br.sidecar', System.getProperty('br.sidecar',
-                System.getenv('BR_SIDECAR') ?: '')
+        //
+        // A RELATIVE path is resolved against the repository root, not against whatever
+        // directory the forked test JVM happens to start in. It used to be passed through
+        // verbatim, so `-Dbr.sidecar=../sidecar/build/br-sidecar` — the exact line in the
+        // README — resolved to nothing and every engine-backed test SKIPPED while the
+        // build still reported success. A suite that goes green by not running is the
+        // worst kind of green, and it is the same failure class the sidecar's fail-closed
+        // parsing exists to prevent.
+        def requested = System.getProperty('br.sidecar', System.getenv('BR_SIDECAR') ?: '')
+        def resolved = ''
+        if (requested) {
+            def f = new File(requested)
+            f = f.isAbsolute() ? f : new File(rootProject.projectDir, requested)
+            // Asked for explicitly and not usable: FAIL, never skip. Silence here would
+            // mean the engine tests quietly stopped being run.
+            if (!f.canExecute()) {
+                throw new GradleException("br.sidecar='" + requested + "' resolved to " +
+                        f.canonicalPath + ", which is not an executable file. Build it with " +
+                        "`cmake --build sidecar/build`, or unset the property to skip the " +
+                        "engine-backed tests deliberately.")
+            }
+            resolved = f.canonicalPath
+        }
+        systemProperty 'br.sidecar', resolved
         testLogging { events 'passed', 'skipped', 'failed'; exceptionFormat 'full' }
     }
 }

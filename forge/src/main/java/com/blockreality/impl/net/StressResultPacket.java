@@ -5,6 +5,8 @@ import com.blockreality.api.EndForces;
 import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.Fibre;
 import com.blockreality.api.MemberSnapshot;
+import com.blockreality.api.ShellFieldSpec;
+import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.StressFieldSpec;
 import com.blockreality.api.StressStation;
 import com.blockreality.api.geom.BlockKey;
@@ -39,6 +41,9 @@ public final class StressResultPacket {
     private static final int MAX_MEMBERS = 64;
     /** Blocks per member. A member longer than this is drawn short rather than dropped. */
     private static final int MAX_BLOCKS = 256;
+    /** Facets sent. A floor meshes into one facet per 2x2 block square, so this fills up
+     *  far faster than members do — and, like members, the drop is logged. */
+    private static final int MAX_SHELLS = 512;
 
     /** Stations the client regenerates for the picker and the section diagram. */
     private static final int STATIONS = 11;
@@ -46,13 +51,21 @@ public final class StressResultPacket {
     private final long revision;
     private final boolean singular;
     private final double maxDc;
+    private final int islands;
+    private final int singularIslands;
     private final List<MemberSnapshot> members;
+    private final List<ShellSnapshot> shells;
 
-    private StressResultPacket(long revision, boolean singular, double maxDc, List<MemberSnapshot> members) {
+    private StressResultPacket(long revision, boolean singular, double maxDc,
+                               int islands, int singularIslands,
+                               List<MemberSnapshot> members, List<ShellSnapshot> shells) {
         this.revision = revision;
         this.singular = singular;
         this.maxDc = maxDc;
+        this.islands = islands;
+        this.singularIslands = singularIslands;
         this.members = members;
+        this.shells = shells;
     }
 
     public static StressResultPacket of(AnalysisResult r) {
@@ -63,7 +76,15 @@ public final class StressResultPacket {
                     m.size(), MAX_MEMBERS);
             m = m.subList(0, MAX_MEMBERS);
         }
-        return new StressResultPacket(r.revision().value(), r.singular(), r.maxDc(), m);
+        List<ShellSnapshot> s = r.shells();
+        if (s.size() > MAX_SHELLS) {
+            BlockRealityMod.LOG.warn(
+                    "stress overlay truncated: {} plate facets solved, {} sent — the rest are not drawn",
+                    s.size(), MAX_SHELLS);
+            s = s.subList(0, MAX_SHELLS);
+        }
+        return new StressResultPacket(r.revision().value(), r.singular(), r.maxDc(),
+                r.islands(), r.singularIslands(), m, s);
     }
 
     public long revision() { return revision; }
@@ -72,7 +93,13 @@ public final class StressResultPacket {
 
     public double maxDc() { return maxDc; }
 
+    public int islands() { return islands; }
+
+    public int singularIslands() { return singularIslands; }
+
     public List<MemberSnapshot> members() { return members; }
+
+    public List<ShellSnapshot> shells() { return shells; }
 
     // ---------------------------------------------------------------- encode
     //
@@ -84,6 +111,8 @@ public final class StressResultPacket {
         buf.writeVarLong(p.revision);
         buf.writeBoolean(p.singular);
         buf.writeFloat((float) p.maxDc);
+        buf.writeVarInt(Math.max(0, p.islands));
+        buf.writeVarInt(Math.max(0, p.singularIslands));
         buf.writeVarInt(Math.min(p.members.size(), MAX_MEMBERS));
 
         for (int i = 0; i < p.members.size() && i < MAX_MEMBERS; i++) {
@@ -106,6 +135,57 @@ public final class StressResultPacket {
             boolean hasField = m.field().isPresent();
             buf.writeBoolean(hasField);
             if (hasField) writeField(buf, m.field().get());
+        }
+
+        buf.writeVarInt(Math.min(p.shells.size(), MAX_SHELLS));
+        for (int i = 0; i < p.shells.size() && i < MAX_SHELLS; i++) {
+            ShellSnapshot s = p.shells.get(i);
+            buf.writeVarInt(s.id());
+            buf.writeUtf(s.plate(), 48);
+            buf.writeFloat((float) s.thicknessMm());
+            buf.writeFloat((float) s.dc());
+            buf.writeFloat((float) s.dcRaw());
+            buf.writeBoolean(s.governingTopFace());
+            buf.writeBoolean(s.edgeRecovered());
+
+            List<BlockKey> blocks = s.blocks();
+            int nb = Math.min(blocks.size(), 4);
+            buf.writeVarInt(nb);
+            for (int k = 0; k < nb; k++) {
+                BlockKey b = blocks.get(k);
+                buf.writeVarInt(b.x());
+                buf.writeVarInt(b.y());
+                buf.writeVarInt(b.z());
+            }
+
+            boolean hasField = s.field().isPresent() && s.field().get().isComplete();
+            buf.writeBoolean(hasField);
+            if (hasField) writeShellField(buf, s.field().get());
+        }
+    }
+
+    // The four corner positions travel, not a centre and a size: the corners ARE the
+    // element, and reconstructing them from a centre would bake in the assumption that
+    // every facet is an axis-aligned square. That happens to be true of what the extractor
+    // produces today and it is not something the wire should quietly depend on.
+    private static void writeShellField(FriendlyByteBuf buf, ShellFieldSpec f) {
+        for (Vec3d c : f.cornersMm()) writeVec(buf, c);
+        writeVec(buf, f.ex());
+        writeVec(buf, f.ey());
+        writeVec(buf, f.normal());
+        buf.writeFloat((float) f.thicknessMm());
+        buf.writeFloat((float) f.nxx());
+        buf.writeFloat((float) f.nyy());
+        buf.writeFloat((float) f.nxy());
+        buf.writeFloat((float) f.mxx());
+        buf.writeFloat((float) f.myy());
+        buf.writeFloat((float) f.mxy());
+        buf.writeFloat((float) f.qx());
+        buf.writeFloat((float) f.qy());
+        for (ShellFieldSpec.Moments m : f.cornerM()) {
+            buf.writeFloat((float) m.mxx());
+            buf.writeFloat((float) m.myy());
+            buf.writeFloat((float) m.mxy());
         }
     }
 
@@ -140,6 +220,8 @@ public final class StressResultPacket {
         long revision = Math.max(0, buf.readVarLong());
         boolean singular = buf.readBoolean();
         double maxDc = finite(buf.readFloat());
+        int islands = clamp(buf.readVarInt(), Integer.MAX_VALUE);
+        int singularIslands = clamp(buf.readVarInt(), Integer.MAX_VALUE);
         int nMembers = clamp(buf.readVarInt(), MAX_MEMBERS);
 
         List<MemberSnapshot> members = new ArrayList<>(nMembers);
@@ -168,7 +250,48 @@ public final class StressResultPacket {
             members.add(new MemberSnapshot(id, "", section, field.map(StressFieldSpec::lengthMm).orElse(0.0),
                     dc, fibre, 0, EndForces.ZERO, EndForces.ZERO, blocks, stations, field));
         }
-        return new StressResultPacket(revision, singular, maxDc, members);
+
+        int nShells = clamp(buf.readVarInt(), MAX_SHELLS);
+        List<ShellSnapshot> shells = new ArrayList<>(nShells);
+        for (int i = 0; i < nShells; i++) {
+            int id = buf.readVarInt();
+            String plate = buf.readUtf(48);
+            double t = finite(buf.readFloat());
+            double dc = finite(buf.readFloat());
+            double dcRaw = finite(buf.readFloat());
+            boolean top = buf.readBoolean();
+            boolean recovered = buf.readBoolean();
+
+            int nb = clamp(buf.readVarInt(), 4);
+            List<BlockKey> blocks = new ArrayList<>(nb);
+            for (int k = 0; k < nb; k++) {
+                blocks.add(new BlockKey(buf.readVarInt(), buf.readVarInt(), buf.readVarInt()));
+            }
+
+            Optional<ShellFieldSpec> field = buf.readBoolean()
+                    ? Optional.of(readShellField(buf, t)) : Optional.empty();
+            shells.add(new ShellSnapshot(id, "", plate, t, dc, dcRaw, top, recovered, blocks, field));
+        }
+
+        return new StressResultPacket(revision, singular, maxDc, islands, singularIslands,
+                members, shells);
+    }
+
+    private static ShellFieldSpec readShellField(FriendlyByteBuf buf, double fallbackT) {
+        List<Vec3d> corners = new ArrayList<>(4);
+        for (int k = 0; k < 4; k++) corners.add(readVec(buf));
+        Vec3d ex = readVec(buf), ey = readVec(buf), n = readVec(buf);
+        double t = finite(buf.readFloat());
+        double nxx = finite(buf.readFloat()), nyy = finite(buf.readFloat()), nxy = finite(buf.readFloat());
+        double mxx = finite(buf.readFloat()), myy = finite(buf.readFloat()), mxy = finite(buf.readFloat());
+        double qx = finite(buf.readFloat()), qy = finite(buf.readFloat());
+        List<ShellFieldSpec.Moments> corner = new ArrayList<>(4);
+        for (int k = 0; k < 4; k++) {
+            corner.add(new ShellFieldSpec.Moments(finite(buf.readFloat()),
+                    finite(buf.readFloat()), finite(buf.readFloat())));
+        }
+        return new ShellFieldSpec(corners, ex, ey, n, t > 0 ? t : fallbackT,
+                nxx, nyy, nxy, mxx, myy, mxy, qx, qy, corner);
     }
 
     private static StressFieldSpec readField(FriendlyByteBuf buf) {

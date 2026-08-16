@@ -95,17 +95,28 @@ public final class BRCommand {
         }
         if (!r.ok()) {
             line(src, "  last result     FAILED — " + r.diagnostic(), ChatFormatting.RED);
-        } else if (r.singular()) {
+        } else if (r.allSingular()) {
             // Not a failure and not a safe structure: nothing is holding it up.
             line(src, "  last result     MECHANISM — " + r.diagnostic(), ChatFormatting.YELLOW);
         } else {
-            line(src, String.format(Locale.ROOT, "  last result     %d members, max D/C %.4f%s",
-                            r.members().size(), r.maxDc(),
-                            r.maxDc() > 1.0 ? "  (OVER CAPACITY)" : ""),
+            line(src, String.format(Locale.ROOT,
+                            "  last result     %d members, %d plate facets, max D/C %.4f  (%s)%s",
+                            r.members().size(), r.shells().size(), r.maxDc(),
+                            r.governingKind().isEmpty() ? "-" : r.governingKind() + " #" + r.governing(),
+                            r.maxDc() > 1.0 ? "  OVER CAPACITY" : ""),
                     r.maxDc() > 1.0 ? ChatFormatting.RED : ChatFormatting.GREEN);
+            line(src, String.format(Locale.ROOT, "  structures      %d solved, %d unrestrained",
+                            r.islands(), r.singularIslands()),
+                    r.singularIslands() > 0 ? ChatFormatting.YELLOW : ChatFormatting.GRAY);
+            // The engine's own force balance, recomputed from geometry rather than read
+            // back out of the load vector. It is here because a number that is only
+            // checked in the test suite is a number nobody checks in the field.
+            line(src, String.format(Locale.ROOT, "  equilibrium     residual %.3e",
+                            r.equilibriumResidual()),
+                    r.equilibriumResidual() > 1e-8 ? ChatFormatting.YELLOW : ChatFormatting.GRAY);
             if (!r.unassigned().isEmpty()) {
                 line(src, "  unassigned      " + r.unassigned().size()
-                        + " blocks formed no member", ChatFormatting.YELLOW);
+                        + " blocks formed no element", ChatFormatting.YELLOW);
             }
         }
         return 1;
@@ -117,7 +128,8 @@ public final class BRCommand {
             line(src, "No usable analysis. Try /br status.", ChatFormatting.YELLOW);
             return 0;
         }
-        line(src, "members  " + r.members().size(), ChatFormatting.AQUA);
+        line(src, "members  " + r.members().size()
+                + "     plate facets  " + r.shells().size(), ChatFormatting.AQUA);
         for (MemberSnapshot m : r.members()) {
             String gov = m.governingStation() >= 0 && m.governingStation() < m.stations().size()
                     ? String.format(Locale.ROOT, " at x=%.0fmm", m.stations().get(m.governingStation()).xMm())
@@ -127,6 +139,17 @@ public final class BRCommand {
                             m.id(), m.material(), m.section(), m.lengthMm(), m.dc(),
                             m.governingFibre(), gov, m.peakMagnitudeMpa()),
                     m.isOverloaded() ? ChatFormatting.RED : ChatFormatting.GRAY);
+        }
+        // Plates print dcRaw alongside dc. The two differ only where the support-moment
+        // recovery fired, and seeing both is the only way to tell a recovered demand from
+        // a raw one without reading the source.
+        for (com.blockreality.api.ShellSnapshot sh : r.shells()) {
+            line(src, String.format(Locale.ROOT,
+                            "  P%d  %s  t=%.0fmm  D/C=%.4f (raw %.4f%s)  %s face  peak %.2f MPa",
+                            sh.id(), sh.plate(), sh.thicknessMm(), sh.dc(), sh.dcRaw(),
+                            sh.edgeRecovered() ? ", edge recovered" : "",
+                            sh.governingTopFace() ? "top" : "bottom", sh.peakMpa()),
+                    sh.dc() > 1.0 ? ChatFormatting.RED : ChatFormatting.GRAY);
         }
         return 1;
     }

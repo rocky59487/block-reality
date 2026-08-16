@@ -41,5 +41,13 @@
   "br.fibre.torsion": "torsion",
   "br.fibre.shell_vm": "shell von Mises",
   "br.fibre.none": "none",
-  "br.hud.scale": "contour full scale  ±%s MPa"
+  "br.hud.scale": "contour full scale  ±%s MPa",
+  "block.blockreality.concrete_slab": "Concrete Slab",
+  "br.hud.plates": "%s plate facets",
+  "br.hud.islands": "%s structures",
+  "br.hud.island_mechanism": "%s of %s structures are unrestrained",
+  "br.hud.focus_plate": "Plate #%s  %s  t = %s mm",
+  "br.hud.plate_dc": "D/C %s   surface von Mises",
+  "br.hud.plate_faces": "top %s MPa   bottom %s MPa",
+  "br.hud.plate_recovered": "support moment recovered at this edge"
 }

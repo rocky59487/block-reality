@@ -1,12 +1,14 @@
 package com.blockreality.impl.client;
 
 import com.blockreality.api.MemberSnapshot;
+import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.ScanMode;
 import com.blockreality.api.StressFieldSpec;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.api.geom.Vec3d;
 import com.blockreality.api.render.Rgb;
 import com.blockreality.api.render.StressPalette;
+import com.blockreality.core.render.ShellMesh;
 import com.blockreality.impl.BRContent;
 import com.blockreality.impl.BlockRealityMod;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -117,6 +119,10 @@ public final class StressSurfaceRenderer {
         double scale = ClientStressState.colourScaleMpa();
         int focus = ClientStressState.focusedMemberId();
 
+        // Plate facets first: a floor is usually the largest thing on screen, and drawing
+        // it before the beams means a beam bearing on it is never hidden behind its slab.
+        drawPlates(buf, m, cam, occupied, mode, scale, alpha(focus, -1));
+
         for (MemberSnapshot member : members) {
             if (member.field().isEmpty() || member.blocks().isEmpty()) continue;
             StressFieldSpec f = member.field().get();
@@ -128,7 +134,7 @@ public final class StressSurfaceRenderer {
             // answers "which member is in trouble" instead of "what is happening inside
             // this one". Both are contours; they map different quantities.
             Rgb flat = mode == ScanMode.UTILIZATION ? StressPalette.utilization(member.dc()) : null;
-            float alpha = (focus < 0 || member.id() == focus) ? ALPHA : ALPHA * 0.45f;
+            float alpha = alpha(focus, member.id());
 
             for (BlockKey b : member.blocks()) {
                 drawBlock(buf, m, b, f, occupied, flat, scale, alpha);
@@ -142,6 +148,96 @@ public final class StressSurfaceRenderer {
         RenderSystem.disableBlend();
         pose.popPose();
     }
+
+    private static float alpha(int focus, int id) {
+        return (focus < 0 || id == focus) ? ALPHA : ALPHA * 0.45f;
+    }
+
+    /**
+     * The plate contour, drawn on the blocks rather than on the mesh.
+     *
+     * <p>Three things are going on, and the third is the one that makes it read as an
+     * engineering plot rather than as a coloured floor.
+     *
+     * <ul>
+     *   <li>The facet that owns a point is found geometrically ({@link ShellMesh}), so a
+     *       block belonging to no facet — a slab's outer ring, which really is half a block
+     *       beyond the last node — is CLAMPED to the boundary value rather than left blank
+     *       or extrapolated into a stress nothing is carrying.
+     *   <li>The two faces of a plate carry equal and opposite bending stress. The top face
+     *       of a block is painted from the plate's top surface and the underside from its
+     *       bottom, so walking under a floor shows the other half of the answer — which for
+     *       a slab in bending is the difference between tension and compression.
+     *   <li><strong>The side faces show the through-thickness gradient.</strong> Stress
+     *       varies linearly across the plate, so a vertical face is shaded from the bottom
+     *       fibre to the top one and the neutral surface appears as the neutral band, at
+     *       its real height. That is a picture of the actual stress distribution, and it is
+     *       free: it is the same field evaluated at a different z.
+     * </ul>
+     */
+    private static void drawPlates(BufferBuilder buf, Matrix4f m, Vec3 cam,
+                                   Set<Long> occupied, ScanMode mode, double scale, float alpha) {
+        List<ShellSnapshot> shells = ClientStressState.shells();
+        if (shells.isEmpty()) return;
+
+        for (BlockKey b : ClientStressState.plateBlocks()) {
+            if (Math.abs(b.x() - cam.x) > DRAW_DISTANCE || Math.abs(b.z() - cam.z) > DRAW_DISTANCE) continue;
+
+            // One facet lookup per block, not per vertex: the block is a metre across and
+            // the mesh is a metre wide, so every vertex of it resolves to the same facet.
+            var hit = ShellMesh.locate(shells, new Vec3d(b.x() * 1000.0 + 500,
+                                                         b.y() * 1000.0 + 500,
+                                                         b.z() * 1000.0 + 500));
+            if (hit.isEmpty()) continue;
+            ShellMesh.Hit h = hit.get();
+            Rgb flat = mode == ScanMode.UTILIZATION ? StressPalette.utilization(h.shell().dc()) : null;
+
+            for (int[] face : FACES) {
+                if (occupied.contains(key(b.x() + face[0], b.y() + face[1], b.z() + face[2]))) continue;
+
+                double cx = b.x() + 0.5 + face[0] * (0.5 + LIFT);
+                double cy = b.y() + 0.5 + face[1] * (0.5 + LIFT);
+                double cz = b.z() + 0.5 + face[2] * (0.5 + LIFT);
+
+                for (int i = 0; i < GRID; i++) {
+                    for (int j = 0; j < GRID; j++) {
+                        double u0 = -0.5 + (double) i / GRID, u1 = -0.5 + (double) (i + 1) / GRID;
+                        double v0 = -0.5 + (double) j / GRID, v1 = -0.5 + (double) (j + 1) / GRID;
+                        emitPlate(buf, m, cx, cy, cz, face, u0, v0, h, flat, scale, alpha);
+                        emitPlate(buf, m, cx, cy, cz, face, u1, v0, h, flat, scale, alpha);
+                        emitPlate(buf, m, cx, cy, cz, face, u1, v1, h, flat, scale, alpha);
+                        emitPlate(buf, m, cx, cy, cz, face, u0, v1, h, flat, scale, alpha);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void emitPlate(BufferBuilder buf, Matrix4f m,
+                                  double cx, double cy, double cz, int[] face,
+                                  double u, double v, ShellMesh.Hit h,
+                                  Rgb flat, double scale, float alpha) {
+        double x = cx + face[3] * u + face[6] * v;
+        double y = cy + face[4] * u + face[7] * v;
+        double z = cz + face[5] * u + face[8] * v;
+
+        Rgb c = flat;
+        if (c == null) {
+            Vec3d p = new Vec3d(x * 1000, y * 1000, z * 1000);
+            double[] par = h.field().paramAt(p);
+            // Where in the thickness this vertex stands. The block is a magnified plate,
+            // so its half-height maps to the plate's half-thickness: the top face reads the
+            // top fibre, the underside the bottom one, and a side face sweeps between them.
+            double zf = clamp(h.field().offNormalMm(p) / 500.0);
+            double sigma = h.field().signedPrincipal(clamp(par[0]), clamp(par[1]), zf);
+            c = ClientStressState.palette().signedStress(sigma, scale);
+        }
+        buf.vertex(m, (float) x, (float) y, (float) z)
+           .color(c.r() / 255f, c.g() / 255f, c.b() / 255f, alpha)
+           .endVertex();
+    }
+
+    private static double clamp(double v) { return v < -1 ? -1 : Math.min(v, 1); }
 
     private static void drawBlock(BufferBuilder buf, Matrix4f m, BlockKey b, StressFieldSpec f,
                                   Set<Long> occupied, Rgb flat, double scale, float alpha) {
@@ -192,10 +288,15 @@ public final class StressSurfaceRenderer {
         return ((long) (x & 0x3FFFFFF) << 38) | ((long) (z & 0x3FFFFFF) << 12) | (y & 0xFFF);
     }
 
-    static Set<Long> cellsOf(List<MemberSnapshot> members) {
+    static Set<Long> cellsOf(List<MemberSnapshot> members, List<ShellSnapshot> shells) {
         Set<Long> set = new HashSet<>();
         for (MemberSnapshot m : members) {
             for (BlockKey b : m.blocks()) set.add(key(b.x(), b.y(), b.z()));
+        }
+        // Plate blocks occupy cells too. Without them the underside of a floor would be
+        // drawn where a beam is buried in it, and the two surfaces would fight.
+        for (ShellSnapshot s : shells) {
+            for (BlockKey b : s.blocks()) set.add(key(b.x(), b.y(), b.z()));
         }
         return set;
     }

@@ -11,7 +11,8 @@ import java.util.List;
  * silent version skew between a Java manifest and a native contract — cost that project
  * real debugging time.
  */
-public record EngineCatalogue(String engine, int protocol, List<String> materials, List<String> sections) {
+public record EngineCatalogue(String engine, int protocol, List<String> materials,
+                              List<String> sections, List<String> plates) {
 
     /** The protocol version this build of the mod speaks. */
     public static final int SUPPORTED_PROTOCOL = 1;
@@ -19,6 +20,7 @@ public record EngineCatalogue(String engine, int protocol, List<String> material
     public EngineCatalogue {
         materials = List.copyOf(materials);
         sections = List.copyOf(sections);
+        plates = List.copyOf(plates);
     }
 
     public boolean isCompatible() { return protocol == SUPPORTED_PROTOCOL; }
@@ -26,4 +28,10 @@ public record EngineCatalogue(String engine, int protocol, List<String> material
     public boolean hasMaterial(String id) { return materials.contains(id); }
 
     public boolean hasSection(String id) { return sections.contains(id); }
+
+    /** A plate token names a shell facet, not a beam section; the two never overlap. */
+    public boolean hasPlate(String id) { return plates.contains(id); }
+
+    /** Either kind of token — what a block is allowed to declare. */
+    public boolean hasElementToken(String id) { return hasSection(id) || hasPlate(id); }
 }

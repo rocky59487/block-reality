@@ -41,5 +41,13 @@
   "br.fibre.torsion": "扭轉",
   "br.fibre.shell_vm": "殼 von Mises",
   "br.fibre.none": "無",
-  "br.hud.scale": "等值圖滿刻度  ±%s MPa"
+  "br.hud.scale": "等值圖滿刻度  ±%s MPa",
+  "block.blockreality.concrete_slab": "混凝土樓板",
+  "br.hud.plates": "%s 片板元素",
+  "br.hud.islands": "%s 棟結構",
+  "br.hud.island_mechanism": "%s／%s 棟結構沒有東西撐住",
+  "br.hud.focus_plate": "板 #%s  %s  厚 %s mm",
+  "br.hud.plate_dc": "D/C %s   表面 von Mises",
+  "br.hud.plate_faces": "上表面 %s MPa   下表面 %s MPa",
+  "br.hud.plate_recovered": "此邊界的支承彎矩經外推還原"
 }

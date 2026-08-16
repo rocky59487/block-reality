@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "blockreality:steel_beam"
+    "blockreality:steel_beam",
+    "blockreality:concrete_slab"
   ]
 }

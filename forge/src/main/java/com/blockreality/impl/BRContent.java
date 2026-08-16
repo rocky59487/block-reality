@@ -53,6 +53,31 @@ public final class BRContent {
     public static final RegistryObject<Item> STEEL_BEAM_ITEM = ITEMS.register("steel_beam",
             () -> new BlockItem(STEEL_BEAM.get(), new Item.Properties()));
 
+    /**
+     * A concrete floor slab. Its token is a <em>plate</em> token, and that is what makes it
+     * a different element rather than a differently coloured beam.
+     *
+     * <p>The alternative — letting the engine infer "this looks like a floor" from the
+     * shape — is what the extractor used to be forced into, and it gets it wrong in an
+     * expensive way. A flat field of beam-token blocks extracts as a GRILLAGE: every block
+     * belongs to one run along X and another along Z, so its weight is applied twice and
+     * its stiffness counted twice, with nothing in the answer saying so. A token that names
+     * the element makes the two cases distinguishable by construction.
+     *
+     * <p>{@code concrete_slab_200} is 200 mm thick inside a one-metre cube, which is D-004
+     * again: the dimension is the engineering one, not the block's.
+     */
+    public static final RegistryObject<Block> CONCRETE_SLAB = BLOCKS.register("concrete_slab",
+            () -> new StructuralBlock("concrete", "concrete_slab_200",
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.STONE)
+                            .strength(2.0f, 6.0f)
+                            .sound(SoundType.STONE)
+                            .requiresCorrectToolForDrops()));
+
+    public static final RegistryObject<Item> CONCRETE_SLAB_ITEM = ITEMS.register("concrete_slab",
+            () -> new BlockItem(CONCRETE_SLAB.get(), new Item.Properties()));
+
     /** The diagnostic instrument. It informs; it never blocks construction (DEMO_V0 §6). */
     public static final RegistryObject<Item> STRESS_GLASSES = ITEMS.register("stress_glasses",
             () -> new StressGlassesItem(new Item.Properties().stacksTo(1)));
@@ -63,6 +88,7 @@ public final class BRContent {
                     .icon(() -> STRESS_GLASSES.get().getDefaultInstance())
                     .displayItems((params, out) -> {
                         out.accept(STEEL_BEAM_ITEM.get());
+                        out.accept(CONCRETE_SLAB_ITEM.get());
                         out.accept(STRESS_GLASSES.get());
                     })
                     .build());

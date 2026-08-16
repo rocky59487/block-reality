@@ -1,11 +1,14 @@
 package com.blockreality.impl.client;
 
 import com.blockreality.api.MemberSnapshot;
+import com.blockreality.api.ShellSnapshot;
+import com.blockreality.api.geom.BlockKey;
 import com.blockreality.api.StressStation;
 import com.blockreality.api.geom.Vec3d;
 import com.blockreality.api.ScanMode;
 import com.blockreality.api.render.StressPalette;
 import com.blockreality.core.render.MemberPick;
+import com.blockreality.core.render.ShellMesh;
 import com.blockreality.core.render.SectionDiagram;
 import com.blockreality.core.render.StressRibbon;
 import com.blockreality.core.render.StressRibbonBuilder;
@@ -40,6 +43,10 @@ public final class ClientStressState {
     private static boolean singular;
     private static double maxDc;
     private static List<MemberSnapshot> members = List.of();
+    private static List<ShellSnapshot> shells = List.of();
+    private static List<BlockKey> plateBlocks = List.of();
+    private static int islands;
+    private static int singularIslands;
     private static List<StressRibbon> ribbons = List.of();
     private static String engineStatus = "";
     private static String engineDetail = "";
@@ -52,6 +59,15 @@ public final class ClientStressState {
 
     public static List<MemberSnapshot> members() { return members; }
 
+    public static List<ShellSnapshot> shells() { return shells; }
+
+    /** Every block that belongs to a facet, deduplicated — a block can be in four. */
+    public static List<BlockKey> plateBlocks() { return plateBlocks; }
+
+    public static int islands() { return islands; }
+
+    public static int singularIslands() { return singularIslands; }
+
     public static long revision() { return revision; }
 
     public static boolean singular() { return singular; }
@@ -62,7 +78,7 @@ public final class ClientStressState {
 
     public static String engineDetail() { return engineDetail; }
 
-    public static boolean hasData() { return revision >= 0 && !members.isEmpty(); }
+    public static boolean hasData() { return revision >= 0 && (!members.isEmpty() || !shells.isEmpty()); }
 
     // ------------------------------------------------------------------- focus
     private static int focusedMemberId = -1;
@@ -87,6 +103,23 @@ public final class ClientStressState {
         });
     }
 
+    /**
+     * The facet the camera is on, when it is not on a member.
+     *
+     * <p>Members win when both are hit. A beam buried in a floor is the more specific
+     * answer, and it is also the smaller target — losing it to the slab behind it would
+     * make it unselectable.
+     */
+    public static Optional<ShellSnapshot> focusedShell() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || shells.isEmpty() || focusedMemberId >= 0) return Optional.empty();
+        var hit = mc.hitResult;
+        if (!(hit instanceof net.minecraft.world.phys.BlockHitResult bhr)) return Optional.empty();
+        BlockKey k = new BlockKey(bhr.getBlockPos().getX(), bhr.getBlockPos().getY(), bhr.getBlockPos().getZ());
+        for (ShellSnapshot s : shells) if (s.blocks().contains(k)) return Optional.of(s);
+        return Optional.empty();
+    }
+
     public static Optional<SectionDiagram> focusedSection() {
         return focusedStation().flatMap(SectionDiagram::of);
     }
@@ -107,10 +140,21 @@ public final class ClientStressState {
         revision = p.revision();
         singular = p.singular();
         maxDc = p.maxDc();
+        islands = p.islands();
+        singularIslands = p.singularIslands();
         members = p.members();
+        shells = p.shells();
         engineStatus = "";
         rebuild();
     }
+
+    /**
+     * True when some structure in the world is a mechanism but others are not.
+     *
+     * <p>The HUD has to say this differently from "nothing is holding anything up": with
+     * ten buildings and one unsupported shed, nine sets of numbers on screen are real.
+     */
+    public static boolean partialMechanism() { return singular && hasData(); }
 
     public static void acceptStatus(EngineStatusPacket p) {
         engineStatus = p.status();
@@ -155,7 +199,11 @@ public final class ClientStressState {
     public static double colourScaleMpa() { return colourScaleMpa; }
 
     private static void rebuild() {
-        if (members.isEmpty()) {
+        java.util.LinkedHashSet<BlockKey> plate = new java.util.LinkedHashSet<>();
+        for (ShellSnapshot s : shells) plate.addAll(s.blocks());
+        plateBlocks = List.copyOf(plate);
+
+        if (members.isEmpty() && shells.isEmpty()) {
             ribbons = List.of();
             occupied = java.util.Set.of();
             colourScaleMpa = 1;
@@ -166,12 +214,17 @@ public final class ClientStressState {
         // Cross-member comparison is carried by the utilisation colour on the axis line;
         // the fibre ribbons only ever show one member at a time, so their job is to make
         // that member's internal distribution as legible as possible.
-        occupied = StressSurfaceRenderer.cellsOf(members);
+        occupied = StressSurfaceRenderer.cellsOf(members, shells);
 
+        // One scale for beams AND plates. That is only defensible because both report the
+        // same quantity: a beam's fibre stress and a plate's largest signed principal
+        // stress are both tension-positive MPa on the material's surface. Two scales would
+        // make a lightly loaded floor look exactly as alarming as an overstressed beam.
         double peak = 0;
         for (MemberSnapshot m : members) {
             if (m.field().isPresent()) peak = Math.max(peak, m.field().get().peakMagnitudeMpa(21));
         }
+        peak = Math.max(peak, ShellMesh.peakMpa(shells));
         colourScaleMpa = peak > 0 ? peak : 1;
 
         List<StressRibbon> out = new java.util.ArrayList<>(members.size());

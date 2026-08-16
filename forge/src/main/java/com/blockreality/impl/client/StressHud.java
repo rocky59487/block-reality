@@ -1,6 +1,7 @@
 package com.blockreality.impl.client;
 
 import com.blockreality.api.MemberSnapshot;
+import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.ScanMode;
 import com.blockreality.api.StressStation;
 import com.blockreality.api.render.Rgb;
@@ -77,11 +78,20 @@ public final class StressHud {
             g.drawString(mc.font, Component.translatable("br.hud.no_data"), x, y, 0xAAAAAA);
             return;
         }
-        if (ClientStressState.singular()) {
+        if (ClientStressState.singular() && !ClientStressState.hasData()) {
             // Not a failure and not a safe structure: nothing is holding it up, so there
             // are no stresses. Reporting "0 MPa" here would be a lie.
             g.drawString(mc.font, Component.translatable("br.hud.mechanism"), x, y, 0xFFCC00);
             return;
+        }
+        if (ClientStressState.partialMechanism()) {
+            // Some structure in the world is unrestrained and others are not. Returning
+            // here — as this did before the engine started solving each building
+            // separately — blanked the overlay for every sound building in sight.
+            g.drawString(mc.font, Component.translatable("br.hud.island_mechanism",
+                    ClientStressState.singularIslands(), ClientStressState.islands()),
+                    x, y, 0xFFCC00);
+            y += 12;
         }
 
         g.drawString(mc.font, Component.translatable("br.hud.maxdc",
@@ -91,6 +101,11 @@ public final class StressHud {
         g.drawString(mc.font, Component.translatable("br.hud.members",
                 ClientStressState.members().size()), x, y, 0xAAAAAA);
         y += 11;
+        if (!ClientStressState.shells().isEmpty()) {
+            g.drawString(mc.font, Component.translatable("br.hud.plates",
+                    ClientStressState.shells().size()), x, y, 0xAAAAAA);
+            y += 11;
+        }
         // Without this the contour is only ordinal. With it, a colour can be read as MPa.
         g.drawString(mc.font, Component.translatable("br.hud.scale",
                 String.format(Locale.ROOT, "%.2f", ClientStressState.colourScaleMpa())),
@@ -98,14 +113,59 @@ public final class StressHud {
         y += 14;
 
         Optional<MemberSnapshot> focus = ClientStressState.focusedMember();
-        if (focus.isEmpty()) {
-            g.drawString(mc.font, Component.translatable("br.hud.aim"), x, y, 0xAAAAAA);
-            y += 14;
-            drawUtilizationLegend(g, mc, x, y);
+        if (focus.isPresent()) {
+            y = drawFocus(g, mc, x, y, focus.get());
             return;
         }
 
-        y = drawFocus(g, mc, x, y, focus.get());
+        Optional<ShellSnapshot> plate = ClientStressState.focusedShell();
+        if (plate.isPresent()) {
+            y = drawPlateFocus(g, mc, x, y, plate.get());
+            return;
+        }
+
+        g.drawString(mc.font, Component.translatable("br.hud.aim"), x, y, 0xAAAAAA);
+        y += 14;
+        drawUtilizationLegend(g, mc, x, y);
+    }
+
+    /**
+     * Everything about the one plate facet being looked at.
+     *
+     * <p>Deliberately not the member readout with different words. A plate has no fibres
+     * and no neutral <em>axis</em>: it has two faces carrying equal and opposite bending,
+     * and a demand governed by a von Mises value that is a combination of three stress
+     * components rather than a single one. Printing "governing fibre" over a plate would
+     * be borrowing a beam's vocabulary for something that does not have one.
+     */
+    private static int drawPlateFocus(GuiGraphics g, Minecraft mc, int x, int y, ShellSnapshot s) {
+        g.drawString(mc.font, Component.translatable("br.hud.focus_plate",
+                s.id(), s.plate(), String.format(Locale.ROOT, "%.0f", s.thicknessMm())),
+                x, y, 0x9FE8FF);
+        y += 11;
+
+        g.drawString(mc.font, Component.translatable("br.hud.plate_dc",
+                String.format(Locale.ROOT, "%.3f", s.dc())),
+                x, y, s.dc() > 1.0 ? 0xFF6B6B : 0xFFFFFF);
+        y += 11;
+
+        if (s.field().isPresent()) {
+            var f = s.field().get();
+            g.drawString(mc.font, Component.translatable("br.hud.plate_faces",
+                    String.format(Locale.ROOT, "%+.2f", f.signedPrincipal(0, 0, +1)),
+                    String.format(Locale.ROOT, "%+.2f", f.signedPrincipal(0, 0, -1))),
+                    x, y, 0xFFFFFF);
+            y += 11;
+        }
+
+        // Said out loud, because the recovered number is the one the demand is based on
+        // and it is NOT what the element reported at its corner. A reader who compares the
+        // two should be told which they are looking at.
+        if (s.edgeRecovered()) {
+            g.drawString(mc.font, Component.translatable("br.hud.plate_recovered"), x, y, 0xC8860D);
+            y += 11;
+        }
+        return y;
     }
 
     /** Everything about the one member being looked at. */

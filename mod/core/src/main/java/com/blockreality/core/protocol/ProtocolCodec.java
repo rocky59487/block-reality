@@ -6,6 +6,8 @@ import com.blockreality.api.EngineCatalogue;
 import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.Fibre;
 import com.blockreality.api.MemberSnapshot;
+import com.blockreality.api.ShellFieldSpec;
+import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.StressFieldSpec;
 import com.blockreality.api.StressStation;
 import com.blockreality.api.WorldRevision;
@@ -77,8 +79,12 @@ public final class ProtocolCodec {
         for (JsonValue m : v.arr("materials")) mats.add(m.asStr(""));
         List<String> secs = new ArrayList<>();
         for (JsonValue s : v.arr("sections")) secs.add(s.asStr(""));
+        // Plates arrive as objects because a plate carries a dimension the token alone
+        // does not give the client: its thickness.
+        List<String> plates = new ArrayList<>();
+        for (JsonValue s : v.arr("plates")) plates.add(s.str("id", ""));
         return Optional.of(new EngineCatalogue(
-                v.str("engine", "unknown"), v.i32("protocol", -1), mats, secs));
+                v.str("engine", "unknown"), v.i32("protocol", -1), mats, secs, plates));
     }
 
     /**
@@ -107,6 +113,9 @@ public final class ProtocolCodec {
         List<MemberSnapshot> members = new ArrayList<>();
         for (JsonValue m : v.arr("members")) members.add(decodeMember(m));
 
+        List<ShellSnapshot> shells = new ArrayList<>();
+        for (JsonValue s : v.arr("shells")) shells.add(decodeShell(s));
+
         List<BlockKey> unassigned = decodeBlocks(v.arr("unassigned"));
 
         return new AnalysisResult(
@@ -116,8 +125,55 @@ public final class ProtocolCodec {
                 diagnostic,
                 v.num("maxDC", 0),
                 v.i32("governing", -1),
+                v.str("governingKind", ""),
+                v.i32("islands", 0),
+                v.i32("singularIslands", 0),
+                v.objField("equilibrium").num("residual", 0),
                 members,
+                shells,
                 unassigned);
+    }
+
+    private static ShellSnapshot decodeShell(JsonValue s) {
+        return new ShellSnapshot(
+                s.i32("id", -1),
+                s.str("mat", ""),
+                s.str("plate", ""),
+                s.num("t", 0),
+                s.num("dc", 0),
+                s.num("dcRaw", 0),
+                !"BOT".equals(s.str("face", "TOP")),
+                s.bool("edgeRecovered", false),
+                decodeBlocks(s.arr("blocks")),
+                decodeShellField(s));
+    }
+
+    private static Optional<ShellFieldSpec> decodeShellField(JsonValue s) {
+        List<JsonValue> world = s.arr("world");
+        List<JsonValue> mc = s.arr("Mc");
+        // A facet without four corners or four corner moments is not describable, and an
+        // incomplete one drawn anyway would be a plausible-looking picture of nothing.
+        if (world.size() < 4 || mc.size() < 4) return Optional.empty();
+
+        List<Vec3d> corners = new ArrayList<>(4);
+        for (int k = 0; k < 4; k++) corners.add(decodeVec(world.get(k).asArr()));
+
+        List<ShellFieldSpec.Moments> moments = new ArrayList<>(4);
+        for (int k = 0; k < 4; k++) {
+            List<JsonValue> t = mc.get(k).asArr();
+            moments.add(t.size() < 3 ? ShellFieldSpec.Moments.ZERO
+                    : new ShellFieldSpec.Moments(t.get(0).asNum(0), t.get(1).asNum(0), t.get(2).asNum(0)));
+        }
+
+        JsonValue n = s.objField("N"), m = s.objField("M"), q = s.objField("Q");
+        return Optional.of(new ShellFieldSpec(
+                corners,
+                decodeVec(s.arr("ex")), decodeVec(s.arr("ey")), decodeVec(s.arr("n")),
+                s.num("t", 0),
+                n.num("xx", 0), n.num("yy", 0), n.num("xy", 0),
+                m.num("xx", 0), m.num("yy", 0), m.num("xy", 0),
+                q.num("x", 0), q.num("y", 0),
+                moments));
     }
 
     private static MemberSnapshot decodeMember(JsonValue m) {

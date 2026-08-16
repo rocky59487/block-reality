@@ -58,7 +58,11 @@ public final class RevisionGate {
      */
     public Display displayState(AnalysisResult r) {
         if (!r.ok()) return Display.UNAVAILABLE;
-        if (r.singular()) return Display.MECHANISM;
+        // MECHANISM means there is NOTHING to draw, not merely that something in the world
+        // is unrestrained. The engine solves each structure separately, so one unsupported
+        // shed leaves every other building with real numbers — and blanking the overlay for
+        // all of them was the whole reason a second structure appeared to kill the mod.
+        if (r.allSingular()) return Display.MECHANISM;
         return isStale(r) ? Display.STALE : Display.CURRENT;
     }
 
