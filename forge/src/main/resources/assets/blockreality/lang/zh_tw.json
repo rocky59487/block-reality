@@ -23,5 +23,22 @@
   "br.engine.unavailable": "結構分析無法使用：%s",
   "br.hud.engine_off": "設定檔停用了分析",
   "br.hud.stale": "過期——計算之後世界已經改變",
-  "br.hint.first_use": "蹲下右鍵結構方塊可加測試荷載。/br status 顯示引擎狀態。"
+  "br.hint.first_use": "蹲下右鍵結構方塊可加測試荷載。/br status 顯示引擎狀態。",
+  "br.hud.aim": "看向一根構件以顯示斷面",
+  "br.hud.focus": "構件 #%s  %s",
+  "br.hud.focus_dc": "D/C %s   控制纖維：%s",
+  "br.hud.at_x": "斷面位置 x = %s m",
+  "br.section.top": "上緣  %s  %s MPa",
+  "br.section.bottom": "下緣  %s  %s MPa",
+  "br.section.tension": "受拉",
+  "br.section.compression": "受壓",
+  "br.section.zero": "零",
+  "br.section.neutral": "中性軸",
+  "br.fibre.crush": "受壓面",
+  "br.fibre.tension": "受拉面",
+  "br.fibre.shear": "剪力",
+  "br.fibre.bending": "彎曲",
+  "br.fibre.torsion": "扭轉",
+  "br.fibre.shell_vm": "殼 von Mises",
+  "br.fibre.none": "無"
 }

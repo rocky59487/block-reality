@@ -23,5 +23,22 @@
   "br.engine.unavailable": "Structural analysis unavailable: %s",
   "br.hud.engine_off": "Analysis disabled in config",
   "br.hud.stale": "stale — world changed since this was computed",
-  "br.hint.first_use": "Sneak-right-click a structural block to add a test load. /br status shows the engine."
+  "br.hint.first_use": "Sneak-right-click a structural block to add a test load. /br status shows the engine.",
+  "br.hud.aim": "Look at a member for its section",
+  "br.hud.focus": "member #%s  %s",
+  "br.hud.focus_dc": "D/C %s   governing fibre: %s",
+  "br.hud.at_x": "section at x = %s m",
+  "br.section.top": "top    %s  %s MPa",
+  "br.section.bottom": "bottom %s  %s MPa",
+  "br.section.tension": "TENSION",
+  "br.section.compression": "COMPRESSION",
+  "br.section.zero": "zero",
+  "br.section.neutral": "neutral axis",
+  "br.fibre.crush": "compression face",
+  "br.fibre.tension": "tension face",
+  "br.fibre.shear": "shear",
+  "br.fibre.bending": "bending",
+  "br.fibre.torsion": "torsion",
+  "br.fibre.shell_vm": "shell von Mises",
+  "br.fibre.none": "none"
 }

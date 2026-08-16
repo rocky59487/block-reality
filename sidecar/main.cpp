@@ -491,10 +491,38 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
         for (const frame::MemberUDL& u : m.memberUDLs)
             if (u.member == mem.id) { wy = u.w_local.y; wz = u.w_local.z; }
 
+        // ---- end J into the SAME section convention as end I -------------------
+        //
+        // FrameCore reports end J as an ELEMENT END ACTION: what the element applies at
+        // its own end. Its sign therefore flips with the element's direction, and it is
+        // NOT the section force there. Measured, not assumed (probe in ENGINE_FINDINGS):
+        //
+        //   fixed-fixed beam under self weight, split at midspan into two members
+        //     member 1:  endI.Mz = +3.2857e7   endJ.Mz = +1.64285e7
+        //     member 2:  endI.Mz = -1.64285e7  endJ.Mz = -3.2857e7
+        //
+        //   The two members meet at midspan and report OPPOSITE signs for the same
+        //   section. Negating end J makes them agree, and makes the magnitudes match
+        //   the closed form wL^2/12 at the supports and wL^2/24 at midspan.
+        //
+        //   N is already a section force and must NOT be flipped: a bar in uniform
+        //   tension reads -100000 at BOTH ends. T, Vy, Vz, My, Mz are all end actions.
+        //
+        // Without this the reconstructed diagram never changes sign along a member. A
+        // cantilever hid it completely, because its free end carries no moment at all —
+        // which is why every fixture passed while a beam held at both ends came out
+        // reading tension along its whole length, supports and midspan alike.
+        frame::MemberEndForces fj = mf.endJ;
+        fj.Vy = -fj.Vy;
+        fj.Vz = -fj.Vz;
+        fj.T  = -fj.T;
+        fj.My = -fj.My;
+        fj.Mz = -fj.Mz;
+
         auto& dst = mo[k];
         const double L = dst.lengthMm;
         dst.fi = mf.endI;
-        dst.fj = mf.endJ;
+        dst.fj = fj;                      // the wire reports both ends as section forces
 
         // Uniform stations for the picture, plus the analytic moment extremum for the
         // check. M(x) = M_i(1-t) + M_j t + (w/2) x (L-x), so dM/dx = 0 at
@@ -512,8 +540,8 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
             const double t = xs / L;
             if (t > 1e-9 && t < 1 - 1e-9) ts.push_back(t);
         };
-        addExtremum(mf.endI.Mz, mf.endJ.Mz, wy);
-        addExtremum(mf.endI.My, mf.endJ.My, wz);
+        addExtremum(mf.endI.Mz, fj.Mz, wy);
+        addExtremum(mf.endI.My, fj.My, wz);
         std::sort(ts.begin(), ts.end());
         ts.erase(std::unique(ts.begin(), ts.end(),
                              [](double a, double b) { return std::fabs(a - b) < 1e-9; }),
@@ -523,10 +551,10 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
             const double t = ts[q];
             const double x = t * L;
 
-            const double Nx  = mf.endI.N  * (1 - t) + mf.endJ.N  * t;
-            const double Vyx = mf.endI.Vy * (1 - t) + mf.endJ.Vy * t;
-            const double Mzx = mf.endI.Mz * (1 - t) + mf.endJ.Mz * t + (wy / 2.0) * x * (L - x);
-            const double Myx = mf.endI.My * (1 - t) + mf.endJ.My * t + (wz / 2.0) * x * (L - x);
+            const double Nx  = mf.endI.N  * (1 - t) + fj.N  * t;
+            const double Vyx = mf.endI.Vy * (1 - t) + fj.Vy * t;
+            const double Mzx = mf.endI.Mz * (1 - t) + fj.Mz * t + (wy / 2.0) * x * (L - x);
+            const double Myx = mf.endI.My * (1 - t) + fj.My * t + (wz / 2.0) * x * (L - x);
 
             SolveOut::Station st;
             st.xMm = x;
@@ -584,8 +612,8 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
             frame::MemberEndForces fx;
             fx.N  = Nx;
             fx.Vy = Vyx;
-            fx.Vz = mf.endI.Vz * (1 - t) + mf.endJ.Vz * t;
-            fx.T  = mf.endI.T  * (1 - t) + mf.endJ.T  * t;
+            fx.Vz = mf.endI.Vz * (1 - t) + fj.Vz * t;
+            fx.T  = mf.endI.T  * (1 - t) + fj.T  * t;
             fx.My = Myx;
             fx.Mz = Mzx;
             const frame::DemandResult d = strength.checkSection(fx, sec, cap);

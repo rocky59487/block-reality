@@ -275,6 +275,50 @@ class SidecarEngineTest {
     }
 
     @Test
+    void aBeamHeldAtBothEndsHogsAtTheSupportAndSagsBetween() {
+        // The bug this pins: FrameCore reports end J as an element END ACTION, whose sign
+        // flips with the member's direction, so interpolating between end I and a raw
+        // end J produces a diagram that never changes sign. A beam held at both ends came
+        // out reading tension along its entire length.
+        //
+        // A cantilever cannot catch it — its free end carries no moment, so the wrong term
+        // is multiplied by zero. This needs moment at BOTH ends, hence the interior node,
+        // hence the stub.
+        final int n = 9;
+        final double L = (n - 1) * 1000.0;
+        SolveRequest.Builder b = SolveRequest.builder(new WorldRevision(21));
+        for (int x = 0; x < n; x++) {
+            b.block(new BlockKey(x, 64, 0), "steel", "steel_rect_200x400", x == 0 || x == n - 1);
+        }
+        b.block(new BlockKey(4, 65, 0), "steel", "steel_rect_200x400", false);
+        b.block(new BlockKey(4, 66, 0), "steel", "steel_rect_200x400", false);
+
+        AnalysisResult r = client.solve(b.build());
+        assertTrue(r.isUsable(), r.diagnostic());
+
+        List<MemberSnapshot> halves = r.members().stream()
+                .filter(m -> m.blocks().get(0).y() == 64 && m.blocks().get(m.blocks().size() - 1).y() == 64)
+                .sorted(java.util.Comparator.comparingInt(m -> m.blocks().get(0).x()))
+                .toList();
+        assertEquals(2, halves.size());
+        MemberSnapshot left = halves.get(0);
+
+        double first = left.stations().get(0).fibre("TOP_Y").orElseThrow().sigmaMpa();
+        double last = left.stations().get(left.stations().size() - 1).fibre("TOP_Y").orElseThrow().sigmaMpa();
+        assertTrue(first > 0, "hogging at the support puts the top in tension, got " + first);
+        assertTrue(last < 0, "sagging between supports puts the top in compression, got " + last);
+
+        // Two members meeting at one node must report the same section moment there.
+        assertEquals(left.endJ().mz(), halves.get(1).endI().mz(), 1e-9);
+
+        // Closed form for what this is: fixed-fixed under self weight plus the stub's
+        // weight as a central point load.
+        double pStub = W_N_PER_MM * 2000.0;
+        assertEquals(W_N_PER_MM * L * L / 12.0 + pStub * L / 8.0, left.endI().mz(), 1e-3);
+        assertEquals(-(W_N_PER_MM * L * L / 24.0 + pStub * L / 8.0), left.endJ().mz(), 1e-3);
+    }
+
+    @Test
     void repeatedSolvesAtTheSameRevisionAreIdentical() {
         // Determinism is a precondition for the two-track precision split: the display
         // and commit tracks must not disagree because the solver wandered.

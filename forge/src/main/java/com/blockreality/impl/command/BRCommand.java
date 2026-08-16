@@ -2,6 +2,7 @@ package com.blockreality.impl.command;
 
 import com.blockreality.api.AnalysisResult;
 import com.blockreality.api.MemberSnapshot;
+import com.blockreality.api.StressStation;
 import com.blockreality.core.sidecar.SidecarClient;
 import com.blockreality.impl.server.SidecarLocator;
 import com.blockreality.impl.server.StructureManager;
@@ -42,6 +43,10 @@ public final class BRCommand {
         d.register(Commands.literal("br")
                 .then(Commands.literal("status").executes(c -> status(c.getSource())))
                 .then(Commands.literal("members").executes(c -> members(c.getSource())))
+                .then(Commands.literal("section")
+                        .then(Commands.argument("member", IntegerArgumentType.integer(1))
+                                .executes(c -> section(c.getSource(),
+                                        IntegerArgumentType.getInteger(c, "member")))))
                 .then(Commands.literal("resolve")
                         // Available to everyone: it only asks for a recomputation.
                         .executes(c -> resolve(c.getSource())))
@@ -124,6 +129,53 @@ public final class BRCommand {
                     m.isOverloaded() ? ChatFormatting.RED : ChatFormatting.GRAY);
         }
         return 1;
+    }
+
+    /**
+     * The whole stress profile of one member, as text.
+     *
+     * <p>Exists so the picture can be checked against something. "The colours look wrong"
+     * and "the colours are wrong" are different claims, and only numbers with the words
+     * TENSION and COMPRESSION printed next to them can tell them apart.
+     */
+    private static int section(CommandSourceStack src, int memberId) {
+        AnalysisResult r = managerFor(src).latest();
+        if (r == null || !r.isUsable()) {
+            line(src, "No usable analysis. Try /br status.", ChatFormatting.YELLOW);
+            return 0;
+        }
+        var found = r.member(memberId);
+        if (found.isEmpty()) {
+            line(src, "No member #" + memberId + ". Try /br members.", ChatFormatting.YELLOW);
+            return 0;
+        }
+        MemberSnapshot m = found.get();
+        line(src, String.format(Locale.ROOT, "member #%d  %s %s  L=%.0fmm  D/C=%.4f",
+                m.id(), m.material(), m.section(), m.lengthMm(), m.dc()), ChatFormatting.AQUA);
+        line(src, "  tension is positive; a cantilever hogs (top tension), a beam on two "
+                + "supports sags (top compression) — both are correct", ChatFormatting.DARK_GRAY);
+        line(src, "     x(m)      top        bottom     neutral axis", ChatFormatting.GRAY);
+
+        for (StressStation s : m.stations()) {
+            var top = s.fibre("TOP_Y");
+            var bot = s.fibre("BOT_Y");
+            if (top.isEmpty() || bot.isEmpty()) continue;
+            double t = top.get().sigmaMpa();
+            double b = bot.get().sigmaMpa();
+            String na = s.naOffsetYMm().map(v -> String.format(Locale.ROOT, "%+.1fmm", v)).orElse("none");
+            line(src, String.format(Locale.ROOT, "  %6.2f  %+8.3f %-4s %+8.3f %-4s  %s",
+                            s.xMm() / 1000.0,
+                            t, t > 0 ? "TEN" : t < 0 ? "COM" : "-",
+                            b, b > 0 ? "TEN" : b < 0 ? "COM" : "-",
+                            na),
+                    s.xMm() == governingX(m) ? ChatFormatting.WHITE : ChatFormatting.GRAY);
+        }
+        return 1;
+    }
+
+    private static double governingX(MemberSnapshot m) {
+        int i = m.governingStation();
+        return i >= 0 && i < m.stations().size() ? m.stations().get(i).xMm() : -1;
     }
 
     private static int scan(CommandSourceStack src, int chunkRadius) {

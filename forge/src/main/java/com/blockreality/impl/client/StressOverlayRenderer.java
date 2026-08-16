@@ -2,6 +2,7 @@ package com.blockreality.impl.client;
 
 import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.ScanMode;
+import com.blockreality.api.StressStation;
 import com.blockreality.api.geom.Vec3d;
 import com.blockreality.api.render.Rgb;
 import com.blockreality.api.render.StressPalette;
@@ -31,15 +32,23 @@ import java.util.List;
 /**
  * Draws the stress field in the world.
  *
- * <p>The interesting property of this class is how little it knows. It receives positions
- * in blocks and colours in RGB and pushes vertices. It performs no sign conversion, no
- * axis transform, no normalisation, no unit conversion and no palette lookup — those all
- * happened once, upstream, where they are unit-tested. Both FrameCore issues in
- * ENGINE_FINDINGS.md were axis-pairing errors, and the defence against making a third one
- * here is to leave this file no axes to pair.
+ * <h2>One member in detail, everything else in one colour</h2>
+ * The first version drew four stress ribbons for every member at once. On a single beam
+ * that is informative; on an actual building it is a haze that answers no question, and
+ * the ribbons are 0.2 blocks from the centreline so they overlap into mush at any distance.
  *
- * <p>Drawn at {@code AFTER_TRANSLUCENT_BLOCKS} with depth writes off, so the overlay sits
- * over the world without punching holes in what is behind it.
+ * <p>So the overlay now works the way a diagnostic instrument does. Every member gets
+ * <strong>one</strong> line along its axis, coloured by how close it is to capacity — that
+ * scales to hundreds of members and answers "where is the problem". The member under the
+ * crosshair additionally gets its full section detail, and the HUD draws its section
+ * diagram in words and numbers. That answers "what is happening here", for one member at a
+ * time, which is the only scale at which the question is meaningful.
+ *
+ * <p>The lines are billboarded — widened perpendicular to the view — so a member stays
+ * visible edge-on instead of vanishing when you line up with it.
+ *
+ * <p>The renderer still performs no engineering: no sign conversion, no axis transform, no
+ * normalisation, no palette decision. Those happened upstream, once each, under test.
  */
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(modid = BlockRealityMod.MOD_ID, value = Dist.CLIENT)
@@ -47,10 +56,17 @@ public final class StressOverlayRenderer {
 
     private StressOverlayRenderer() { }
 
-    /** Half-width of a ribbon, in blocks. Wide enough to read, narrow enough to see past. */
-    private static final float HALF_WIDTH = 0.09f;
+    /** Half-width of a member axis line, blocks. */
+    private static final float AXIS_HALF_WIDTH = 0.06f;
 
-    private static final float ALPHA = 0.85f;
+    /** Half-width of a fibre ribbon on the focused member. */
+    private static final float FIBRE_HALF_WIDTH = 0.05f;
+
+    /** Members further than this are not drawn at all. */
+    private static final double DRAW_DISTANCE = 128.0;
+
+    private static final float ALPHA = 0.9f;
+    private static final float CONTEXT_ALPHA = 0.35f;
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
@@ -61,10 +77,14 @@ public final class StressOverlayRenderer {
         if (player == null || !holdingGlasses(player)) return;
         if (!ClientStressState.hasData()) return;
 
+        List<MemberSnapshot> members = ClientStressState.members();
         List<StressRibbon> ribbons = ClientStressState.ribbons();
-        if (ribbons.isEmpty()) return;
+        if (members.isEmpty()) return;
 
         Vec3 cam = event.getCamera().getPosition();
+        Vec3d eye = new Vec3d(cam.x, cam.y, cam.z);
+        int focus = ClientStressState.focusedMemberId();
+
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
         pose.translate(-cam.x, -cam.y, -cam.z);
@@ -75,15 +95,12 @@ public final class StressOverlayRenderer {
         RenderSystem.disableCull();
         RenderSystem.depthMask(false);
 
-        // DEPTH TEST OFF, and this is not a shortcut.
-        //
-        // A steel_rect_200x400 section puts its extreme fibres 0.2 and 0.1 blocks from the
-        // centreline — well inside the one-metre cube that represents the member. Drawn
-        // with depth testing on, every ribbon would be buried inside an opaque block and
-        // the overlay would render perfectly and show nothing at all.
-        //
-        // It is also what the tool is for: the stress glasses look INTO the structure.
-        // Section forces do not live on the surface.
+        // DEPTH TEST OFF, and this is not a shortcut. A steel_rect_200x400 section puts its
+        // extreme fibres 0.2 blocks from the centreline — well inside the one-metre cube
+        // that represents the member. With depth testing on, everything here would be
+        // buried inside opaque blocks and the overlay would render perfectly and show
+        // nothing at all. It is also what the tool is for: the glasses look INTO the
+        // structure, and section forces do not live on the surface.
         RenderSystem.disableDepthTest();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
@@ -91,12 +108,25 @@ public final class StressOverlayRenderer {
         buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         ScanMode mode = ClientStressState.mode();
-        for (int i = 0; i < ribbons.size(); i++) {
-            StressRibbon r = ribbons.get(i);
-            if (mode == ScanMode.UTILIZATION) {
-                drawUtilization(buf, m, r, ClientStressState.members().get(i));
-            } else {
-                drawSignedStress(buf, m, r);
+
+        for (int i = 0; i < members.size(); i++) {
+            MemberSnapshot member = members.get(i);
+            List<StressStation> st = member.stations();
+            if (st.isEmpty()) continue;
+            if (distanceTo(eye, st) > DRAW_DISTANCE) continue;
+
+            boolean focused = member.id() == focus;
+
+            // Every member, every mode: one line, one colour, utilisation.
+            // Even in the stress lens this is the layer that says "look over there".
+            Rgb axisColour = StressPalette.utilization(member.dc());
+            float alpha = focused ? 1.0f : (mode == ScanMode.UTILIZATION ? ALPHA : CONTEXT_ALPHA);
+            float width = focused ? AXIS_HALF_WIDTH * 1.8f : AXIS_HALF_WIDTH;
+            drawAxis(buf, m, eye, st, axisColour, alpha, width);
+
+            // The focused member, in the stress lens, also gets its section detail.
+            if (focused && mode != ScanMode.UTILIZATION && i < ribbons.size()) {
+                drawFibres(buf, m, eye, ribbons.get(i));
             }
         }
 
@@ -109,59 +139,49 @@ public final class StressOverlayRenderer {
         pose.popPose();
     }
 
-    /**
-     * The signed-stress lens: every fibre drawn in its own colour, so a bent member shows
-     * tension on one face and compression on the other rather than a single hue.
-     */
-    private static void drawSignedStress(BufferBuilder buf, Matrix4f m, StressRibbon r) {
-        for (StressRibbon.Band b : r.bands()) {
-            quad(buf, m, b.from(), b.to(), b.fibreDir(), b.fromColour(), b.toColour(), ALPHA);
-        }
-        drawNeutralAxis(buf, m, r);
-    }
-
-    /** The utilisation lens: one colour per member, keyed on D/C. */
-    private static void drawUtilization(BufferBuilder buf, Matrix4f m, StressRibbon r, MemberSnapshot member) {
-        Rgb c = StressPalette.utilization(member.dc());
-        for (StressRibbon.Band b : r.bands()) {
-            quad(buf, m, b.from(), b.to(), b.fibreDir(), c, c, ALPHA);
+    /** One billboarded line down the member's centreline. */
+    private static void drawAxis(BufferBuilder buf, Matrix4f m, Vec3d eye,
+                                 List<StressStation> stations, Rgb colour, float alpha, float halfWidth) {
+        for (int q = 0; q + 1 < stations.size(); q++) {
+            Vec3d a = blocks(stations.get(q).centroidMm());
+            Vec3d b = blocks(stations.get(q + 1).centroidMm());
+            billboardQuad(buf, m, eye, a, b, colour, colour, alpha, halfWidth);
         }
     }
 
-    /**
-     * The neutral axis, where the section changes sign.
-     *
-     * <p>Stations with no neutral axis leave a gap in the line, and that gap is
-     * information: it marks where the whole section went into tension or compression.
-     */
-    private static void drawNeutralAxis(BufferBuilder buf, Matrix4f m, StressRibbon r) {
-        List<Vec3d> pts = r.neutralAxis();
+    /** The four extreme fibres of the focused member, each in its own signed colour. */
+    private static void drawFibres(BufferBuilder buf, Matrix4f m, Vec3d eye, StressRibbon ribbon) {
+        for (StressRibbon.Band b : ribbon.bands()) {
+            billboardQuad(buf, m, eye, b.from(), b.to(),
+                    b.fromColour(), b.toColour(), ALPHA, FIBRE_HALF_WIDTH);
+        }
         Rgb grey = ClientStressState.palette().zeroColour();
-        for (int i = 0; i + 1 < pts.size(); i++) {
-            quad(buf, m, pts.get(i), pts.get(i + 1), new Vec3d(0, 1, 0), grey, grey, 0.55f);
+        List<Vec3d> na = ribbon.neutralAxis();
+        for (int i = 0; i + 1 < na.size(); i++) {
+            billboardQuad(buf, m, eye, na.get(i), na.get(i + 1), grey, grey, 0.6f, 0.02f);
         }
     }
 
     /**
-     * One flat quad from {@code a} to {@code b}, widened perpendicular to both the member
-     * axis and the fibre direction.
+     * A quad from {@code a} to {@code b}, widened perpendicular to both the segment and the
+     * direction to the camera.
      *
-     * <p>Using the fibre direction rather than a fixed world axis is what makes this work
-     * for a vertical column as well as a horizontal beam: the strip always lies flat
-     * against the face it belongs to.
+     * <p>Billboarding rather than using a fixed offset: a flat ribbon disappears when you
+     * view it edge-on, which for a horizontal beam is exactly where a player stands.
      */
-    private static void quad(BufferBuilder buf, Matrix4f m, Vec3d a, Vec3d b, Vec3d fibreDir,
-                             Rgb ca, Rgb cb, float alpha) {
-        Vec3d axis = new Vec3d(b.x() - a.x(), b.y() - a.y(), b.z() - a.z());
+    private static void billboardQuad(BufferBuilder buf, Matrix4f m, Vec3d eye,
+                                      Vec3d a, Vec3d b, Rgb ca, Rgb cb, float alpha, float halfWidth) {
+        Vec3d axis = sub(b, a);
         if (axis.length() < 1e-9) return;
 
-        Vec3d w = cross(axis, fibreDir).normalised();
+        Vec3d toEye = sub(eye, a);
+        Vec3d w = cross(axis, toEye).normalised();
         if (w.length() < 1e-9) {
-            // Degenerate only if the fibre direction is parallel to the member, which the
-            // engine never produces. Skip rather than draw a zero-area quad.
-            return;
+            // Looking exactly down the segment. Any perpendicular will do.
+            w = cross(axis, new Vec3d(0, 1, 0)).normalised();
+            if (w.length() < 1e-9) w = new Vec3d(1, 0, 0);
         }
-        w = w.scaled(HALF_WIDTH);
+        w = w.scaled(halfWidth);
 
         vertex(buf, m, a.x() - w.x(), a.y() - w.y(), a.z() - w.z(), ca, alpha);
         vertex(buf, m, a.x() + w.x(), a.y() + w.y(), a.z() + w.z(), ca, alpha);
@@ -169,10 +189,23 @@ public final class StressOverlayRenderer {
         vertex(buf, m, b.x() - w.x(), b.y() - w.y(), b.z() - w.z(), cb, alpha);
     }
 
+    private static double distanceTo(Vec3d eye, List<StressStation> stations) {
+        Vec3d p = blocks(stations.get(0).centroidMm());
+        return sub(p, eye).length();
+    }
+
     private static void vertex(BufferBuilder buf, Matrix4f m, double x, double y, double z, Rgb c, float a) {
         buf.vertex(m, (float) x, (float) y, (float) z)
            .color(c.r() / 255f, c.g() / 255f, c.b() / 255f, a)
            .endVertex();
+    }
+
+    private static Vec3d blocks(Vec3d mm) {
+        return new Vec3d(mm.x() / 1000.0, mm.y() / 1000.0, mm.z() / 1000.0);
+    }
+
+    private static Vec3d sub(Vec3d a, Vec3d b) {
+        return new Vec3d(a.x() - b.x(), a.y() - b.y(), a.z() - b.z());
     }
 
     private static Vec3d cross(Vec3d a, Vec3d b) {

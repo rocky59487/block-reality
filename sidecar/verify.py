@@ -335,6 +335,65 @@ def main():
                m8["dc"] > 100 * (abs(m8["i"]["Mz"]) / W8) / 350.0 + 1e-6,
                f"dc={m8['dc']:.6g}")
 
+    # ------- C8b: the moment must CHANGE SIGN along a beam held at both ends
+    # The bug this exists for: FrameCore reports end J as an element END ACTION, whose
+    # sign flips with the member's direction, not as a section force. Interpolating
+    # between end I and a raw end J therefore produces a diagram that never changes
+    # sign — a beam held at both ends came out reading tension along its whole length,
+    # supports and midspan alike.
+    #
+    # A cantilever cannot catch this. Its free end carries no moment at all, so the
+    # wrong term is multiplied by zero. It needs a member with moment at BOTH ends,
+    # which needs an interior node, which is why this fixture has a stub at midspan.
+    print("\n[C8b] hogging at the support, sagging at midspan")
+    n9 = 9
+    L9 = (n9 - 1) * BLOCK_MM
+    ff = [{"x": i, "y": 64, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+           "support": i == 0 or i == n9 - 1} for i in range(n9)]
+    # A vertical stub at midspan: two blocks make a run, the shared block becomes a node,
+    # and the beam gains the interior degree of freedom it needs to bend.
+    ff += [{"x": 4, "y": 65, "z": 0, "mat": "steel", "section": "steel_rect_200x400"},
+           {"x": 4, "y": 66, "z": 0, "mat": "steel", "section": "steel_rect_200x400"}]
+    r8b = sc.call({"op": "solve", "revision": 21, "blocks": ff})
+    check_true("ok", r8b.get("ok") is True, r8b.get("error", ""))
+    check_true("not singular", r8b.get("singular") is False, r8b.get("diagnostic", ""))
+
+    # The half-span member that starts at a support.
+    span = None
+    for mem in r8b.get("members", []):
+        blocks = mem["blocks"]
+        if blocks[0] == [0, 64, 0] or blocks[-1] == [0, 64, 0]:
+            span = mem
+    check_true("found the member at the support", span is not None)
+
+    if span is not None:
+        sig = [fibre_by_dir(st, True)["sigma"] for st in span["stations"]]
+        check_true("top fibre changes sign along the member",
+                   any(a > 0 for a in sig) and any(a < 0 for a in sig),
+                   f"top sigma from {sig[0]:.3f} to {sig[-1]:.3f}")
+        # Hogging at the built-in end puts the TOP in tension there; between the
+        # supports the beam sags and the top goes into compression.
+        check_true("support end is in tension on top", sig[0] > 0, f"{sig[0]:.4g}")
+        check_true("the far end is in compression on top", sig[-1] < 0, f"{sig[-1]:.4g}")
+
+    # Both halves report the SAME section moment at the node they share. This is the
+    # invariant the end-action bug broke, and it needs no closed form to state.
+    halves = [mm for mm in r8b["members"] if mm["blocks"][0][1] == 64 and mm["blocks"][-1][1] == 64]
+    check_true("two half-span members", len(halves) == 2, str(len(halves)))
+    if len(halves) == 2:
+        a, bb = sorted(halves, key=lambda mm: mm["blocks"][0][0])
+        check("adjacent members agree at the shared node", a["j"]["Mz"], bb["i"]["Mz"], 1e-12)
+
+        # Closed form for what this actually is: a fixed-fixed beam under its own weight
+        # PLUS the hanging stub's weight as a central point load.
+        #   M_support = w L^2 / 12 + P L / 8      (hogging, positive here)
+        #   M_midspan = -(w L^2 / 24 + P L / 8)   (sagging)
+        p_stub = w * 2 * BLOCK_MM                       # the stub is a 2 m run
+        m_support = w * L9 * L9 / 12.0 + p_stub * L9 / 8.0
+        m_mid = -(w * L9 * L9 / 24.0 + p_stub * L9 / 8.0)
+        check("support moment vs closed form", a["i"]["Mz"], m_support, 1e-6)
+        check("midspan moment vs closed form", a["j"]["Mz"], m_mid, 1e-6)
+
     # -------------------------------- C9: fail-closed input, not silent defaults
     # Each of these used to be quietly turned into a DIFFERENT solvable structure,
     # with ok:true on the reply.
