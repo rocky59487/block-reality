@@ -85,7 +85,7 @@ cd mod
 gradle test -Dbr.sidecar=../sidecar/build/br-sidecar
 ```
 
-74 個測試，0 failures。其中 18 個會**實際啟動 `br-sidecar` 子程序**跑真的 FrameCore。
+82 個測試，0 failures。其中 18 個會**實際啟動 `br-sidecar` 子程序**跑真的 FrameCore。
 
 沒帶 `-Dbr.sidecar` 那 18 個會 skip 而不是假裝通過。
 
@@ -198,7 +198,7 @@ log 裡 0 個 ERROR、沒有殘留程序。上面那些應力數字都是實測�
 **客戶端渲染沒有人看過。** 沙箱沒有顯示卡，`runClient` 跑不起來。
 
 - 編譯過了（真的 Forge、真的 MC 1.20.1）
-- 應力渲染在**資料層**被 74 個測試釘住（顏色、位置、符號、梯度、中性軸）
+- 應力渲染在**資料層**被 82 個測試釘住（顏色、位置、符號、梯度、中性軸）
 - 但**畫面上長什麼樣是未知的**
 
 最可能出問題的地方，按可能性排序：
