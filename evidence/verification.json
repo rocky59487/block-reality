@@ -8,15 +8,15 @@
       "supernodal_lane": "compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT"
     },
     "binary": {
-      "path": "/workspace/block-reality/dist/br-sidecar",
-      "sha256": "9e5bf343968738c73d32d0b8286aab707ce7ebcb8bbab2e9570da810e99b7bc8"
+      "path": "/workspace/block-reality/sidecar/build/br-sidecar",
+      "sha256": "1ce74526c3a9f5336cac8546bc0a6ce0cf9351c8c12a4123cdbeaad30b6138e9"
     },
     "sources": {
-      "sidecar/main.cpp": "5cc6ef6db4359599e117be01c298ce9703bc73b4dfbe1506e7f748feecd67b53",
+      "sidecar/main.cpp": "78d1d72e98f53d72229e10d0717a0eff4c98044e248939dd586fdf9edd31ccdb",
       "sidecar/json.hpp": "2cfb778e3eafb848228a50efc794aa189010789c347a3baf7430601091380f1e",
-      "sidecar/verify.py": "9ca9ca4fcb6e2b6a90d43c327a4e544c7a0583fa528bef8b3b470da2e2e1dd8e",
+      "sidecar/verify.py": "651bbcd140217ef992368533a60425575aad442b89e8335c8b4ad9ea1e95394f",
       "sidecar/CMakeLists.txt": "e9351f417fa6d3e0c33d42d0095b5d3ab25b433794258cb51732a474b701f700",
-      "scripts/evidence.py": "4a0ad88ef582cb5aceeb6bd6b580666c1b98d1f5c3367cff1d8a624ba5186a81"
+      "scripts/evidence.py": "4dd94fe7b1f38227425ec678d40cc5b2e7fa2f6f02ea80159516af7c3abce958"
     },
     "host": {
       "platform": "Linux-6.18.5-fc-v20-x86_64-with-glibc2.39",
@@ -41,6 +41,20 @@
       "steel_rect_100x200",
       "steel_rect_150x300",
       "steel_rect_200x400"
+    ],
+    "plates": [
+      {
+        "id": "concrete_slab_150",
+        "t": 150
+      },
+      {
+        "id": "concrete_slab_200",
+        "t": 200
+      },
+      {
+        "id": "steel_plate_20",
+        "t": 20
+      }
     ]
   },
   "accuracy": {
@@ -305,15 +319,81 @@
             "abs": null
           }
         ]
+      },
+      {
+        "case": "V7  plate self weight and equilibrium",
+        "checks": [
+          {
+            "quantity": "total applied weight (N)",
+            "expected": -295084.8,
+            "got": -295084.8,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "vertical reaction balances it (N)",
+            "expected": 0.0,
+            "got": 0.0,
+            "rel": null,
+            "abs": 0.0
+          },
+          {
+            "quantity": "horizontal equilibrium, x (N)",
+            "expected": 0.0,
+            "got": 0,
+            "rel": null,
+            "abs": 0.0
+          },
+          {
+            "quantity": "membrane force under transverse load (N/mm)",
+            "expected": 0.0,
+            "got": 0,
+            "rel": null,
+            "abs": 0.0
+          },
+          {
+            "quantity": "facets from an n x n slab",
+            "expected": 64.0,
+            "got": 64.0,
+            "rel": 0.0,
+            "abs": null
+          }
+        ]
+      },
+      {
+        "case": "V8  column bearing on a slab (shared node)",
+        "checks": [
+          {
+            "quantity": "columns carry the whole structure (N)",
+            "expected": 0.0,
+            "got": 0.0,
+            "rel": null,
+            "abs": 0.0
+          },
+          {
+            "quantity": "one connected structure",
+            "expected": 1.0,
+            "got": 1.0,
+            "rel": 0.0,
+            "abs": null
+          },
+          {
+            "quantity": "mechanisms",
+            "expected": 0.0,
+            "got": 0.0,
+            "rel": null,
+            "abs": 0.0
+          }
+        ]
       }
     ],
     "nonzero_references": {
-      "comparisons": 28,
+      "comparisons": 31,
       "worst_relative_error": 1.6231960717883691e-10,
-      "rms_relative_error": 3.1650679124392926e-11
+      "rms_relative_error": 3.0080233405166376e-11
     },
     "zero_references": {
-      "comparisons": 5,
+      "comparisons": 10,
       "worst_absolute_residual": 1.490116119e-08,
       "note": "quantities whose exact value is zero; compared absolutely"
     }
@@ -342,63 +422,213 @@
     {
       "property": "P6  repeated solves are bit-identical",
       "holds": true
+    },
+    {
+      "property": "P7  a mechanism is confined to the structure that is one",
+      "holds": true
+    },
+    {
+      "property": "P8  a slab meshes as plate facets and yields no members",
+      "holds": true
+    },
+    {
+      "property": "P9  a solid of plate blocks is refused, not meshed",
+      "holds": true
+    },
+    {
+      "property": "P10 support-moment recovery never lowers a demand",
+      "holds": true
     }
   ],
+  "plate_convergence": {
+    "rows": [
+      {
+        "elements_per_side": 4,
+        "span_mm": 4000.0,
+        "span_moment": -1680.521755,
+        "span_reference": -1573.028972307692,
+        "span_rel_error": 0.06833490328827967,
+        "support_reference": 3784.4625599999995,
+        "support_corner_raw": 1400.434796,
+        "support_raw_rel_error": 0.6299514729510232,
+        "support_recovered": 2137.834566,
+        "support_rel_error": 0.43510220220014534
+      },
+      {
+        "elements_per_side": 6,
+        "span_mm": 6000.0,
+        "span_moment": -3625.119242,
+        "span_reference": -3539.315187692307,
+        "span_rel_error": 0.024243123247703415,
+        "support_reference": 8515.04076,
+        "support_corner_raw": 4368.083968,
+        "support_raw_rel_error": 0.4870154951554219,
+        "support_recovered": 6536.46083,
+        "support_rel_error": 0.23236294291091567
+      },
+      {
+        "elements_per_side": 8,
+        "span_mm": 8000.0,
+        "span_moment": -6348.488612,
+        "span_reference": -6292.115889230768,
+        "span_rel_error": 0.008959263268770508,
+        "support_reference": 15137.850239999998,
+        "support_corner_raw": 9110.735699,
+        "support_raw_rel_error": 0.39814864366104324,
+        "support_recovered": 12967.19755,
+        "support_rel_error": 0.14339240087501337
+      },
+      {
+        "elements_per_side": 10,
+        "span_mm": 10000.0,
+        "span_moment": -9858.837814,
+        "span_reference": -9831.431076923074,
+        "span_rel_error": 0.0027876650776972804,
+        "support_reference": 23652.890999999996,
+        "support_corner_raw": 15700.46983,
+        "support_raw_rel_error": 0.3362134958470826,
+        "support_recovered": 21345.57902,
+        "support_rel_error": 0.09754883578502076
+      },
+      {
+        "elements_per_side": 12,
+        "span_mm": 12000.0,
+        "span_moment": -14148.03005,
+        "span_reference": -14157.260750769228,
+        "span_rel_error": 0.0006520117790955652,
+        "support_reference": 34060.16304,
+        "support_corner_raw": 24153.90714,
+        "support_raw_rel_error": 0.2908458156341227,
+        "support_recovered": 31658.12733,
+        "support_rel_error": 0.07052331802343598
+      },
+      {
+        "elements_per_side": 14,
+        "span_mm": 14000.0,
+        "span_moment": -19217.05113,
+        "span_reference": -19269.604910769227,
+        "span_rel_error": 0.0027272889616878635,
+        "support_reference": 46359.666359999996,
+        "support_corner_raw": 34482.36017,
+        "support_raw_rel_error": 0.25619913003187533,
+        "support_recovered": 43888.59231,
+        "support_rel_error": 0.05330223972733517
+      },
+      {
+        "elements_per_side": 16,
+        "span_mm": 16000.0,
+        "span_moment": -25065.87914,
+        "span_reference": -25168.46355692307,
+        "span_rel_error": 0.004075910978477337,
+        "support_reference": 60551.40095999999,
+        "support_corner_raw": 46692.00646,
+        "support_raw_rel_error": 0.22888643830314437,
+        "support_recovered": 58029.41871,
+        "support_rel_error": 0.04165027084453429
+      },
+      {
+        "elements_per_side": 20,
+        "span_mm": 20000.0,
+        "span_moment": -39103.33445,
+        "span_reference": -39325.7243076923,
+        "span_rel_error": 0.005655073405699339,
+        "support_reference": 94611.56399999998,
+        "support_corner_raw": 76768.06186,
+        "support_raw_rel_error": 0.1885974756743265,
+        "support_recovered": 92024.04386,
+        "support_rel_error": 0.027348878198440722
+      }
+    ],
+    "gate": true,
+    "thickness_control": [
+      {
+        "elements_per_side": 8,
+        "t200_signed_error": 0.008959263268770508,
+        "t200_thickness_over_span": 0.025,
+        "t150_signed_error": 0.008726009883236447,
+        "t150_thickness_over_span": 0.01875
+      },
+      {
+        "elements_per_side": 12,
+        "t200_signed_error": -0.0006520117790955652,
+        "t200_thickness_over_span": 0.016666666666666666,
+        "t150_signed_error": -0.0008004639905555772,
+        "t150_thickness_over_span": 0.0125
+      },
+      {
+        "elements_per_side": 16,
+        "t200_signed_error": -0.004075910978477337,
+        "t200_thickness_over_span": 0.0125,
+        "t150_signed_error": -0.004167864413037996,
+        "t150_thickness_over_span": 0.009375
+      },
+      {
+        "elements_per_side": 20,
+        "t200_signed_error": -0.005655073405699339,
+        "t200_thickness_over_span": 0.01,
+        "t150_signed_error": -0.0057175867700840766,
+        "t150_thickness_over_span": 0.0075
+      }
+    ],
+    "centre_coefficient": 0.02132307692307692,
+    "edge_coefficient": 0.0513,
+    "q_n_per_mm2": 0.0046107
+  },
   "determinism": {
     "checked": true,
-    "identical": 6,
-    "cases": 6,
+    "identical": 8,
+    "cases": 8,
     "note": "byte-for-byte comparison of the full reply line"
   },
   "performance": [
     {
       "blocks": 3,
       "members": 1,
-      "median_ms": 0.324,
-      "min_ms": 0.226,
-      "max_ms": 0.421
+      "median_ms": 0.442,
+      "min_ms": 0.383,
+      "max_ms": 0.493
     },
     {
       "blocks": 6,
       "members": 3,
-      "median_ms": 0.84,
-      "min_ms": 0.668,
-      "max_ms": 1.253
+      "median_ms": 1.22,
+      "min_ms": 0.994,
+      "max_ms": 1.293
     },
     {
       "blocks": 15,
       "members": 9,
-      "median_ms": 2.06,
-      "min_ms": 1.83,
-      "max_ms": 2.674
+      "median_ms": 3.415,
+      "min_ms": 3.267,
+      "max_ms": 3.926
     },
     {
       "blocks": 30,
       "members": 19,
-      "median_ms": 3.692,
-      "min_ms": 3.63,
-      "max_ms": 3.876
+      "median_ms": 6.674,
+      "min_ms": 6.149,
+      "max_ms": 8.537
     },
     {
       "blocks": 60,
       "members": 39,
-      "median_ms": 7.869,
-      "min_ms": 7.399,
-      "max_ms": 8.888
+      "median_ms": 13.28,
+      "min_ms": 11.955,
+      "max_ms": 13.789
     },
     {
       "blocks": 150,
       "members": 99,
-      "median_ms": 20.801,
-      "min_ms": 20.109,
-      "max_ms": 24.269
+      "median_ms": 35.475,
+      "min_ms": 34.692,
+      "max_ms": 39.49
     },
     {
       "blocks": 300,
       "members": 199,
-      "median_ms": 42.101,
-      "min_ms": 38.763,
-      "max_ms": 47.664
+      "median_ms": 70.786,
+      "min_ms": 65.891,
+      "max_ms": 85.161
     }
   ]
 }

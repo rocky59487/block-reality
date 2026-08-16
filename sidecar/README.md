@@ -18,7 +18,7 @@ FrameCore 以**原始碼**引用，不 vendor 進本倉庫。
 在編譯期關掉（`-DBR_SUPERNODAL=ON` 可以開回來，那時才需要 METIS / OpenBLAS / LAPACKE）。
 
 這不是降級：`SolveOptions::useSupernodalPrimary` 本來就是 `false`，每次求解走的一直都是
-Eigen `SimplicialLDLT`。**實測開與關的輸出到最後一位都相同**，78 項 gate 兩邊全過。
+Eigen `SimplicialLDLT`。**實測開與關的輸出到最後一位都相同**，117 項 gate 兩邊全過。
 少掉三個原生依賴換來的是：可以交叉編譯出一顆自足的 Windows 執行檔。
 
 ### Windows（在 Linux 上交叉編譯）
@@ -33,7 +33,7 @@ cmake --build sidecar/build-win --parallel
 ```
 
 產出的 `br-sidecar.exe` 只 import `KERNEL32.dll` 與 `msvcrt.dll`——兩個都是系統的，
-沒有要附帶的 runtime DLL。**Wine 實測 78 項全過，數字與 Linux 版逐位元相同。**
+沒有要附帶的 runtime DLL。**Wine 實測 117 項全過，數字與 Linux 版逐位元相同。**
 
 ## 驗證
 
@@ -41,7 +41,7 @@ cmake --build sidecar/build-win --parallel
 python3 sidecar/verify.py sidecar/build/br-sidecar
 ```
 
-78 項，全部對閉合解或不依賴求解器正確性的不變量。
+117 項，全部對閉合解或不依賴求解器正確性的不變量。
 
 ## 協定
 
@@ -51,17 +51,32 @@ python3 sidecar/verify.py sidecar/build/br-sidecar
 ```jsonc
 // 握手
 {"op":"hello"}
-→ {"ok":true,"engine":"FrameCore","protocol":1,"materials":[...],"sections":[...]}
+→ {"ok":true,"engine":"FrameCore","protocol":1,"materials":[...],
+   "sections":[...],                       // 樑斷面 token
+   "plates":[{"id":"concrete_slab_200","t":200}]}   // 板 token，附厚度
 
 // 求解
 {"op":"solve","revision":7,
  "blocks":[{"x":0,"y":64,"z":0,"mat":"steel","section":"steel_rect_200x400","support":true}],
  "loads":[{"x":4,"y":64,"z":0,"fy":-20000}]}
-→ {"ok":true,"revision":7,"singular":false,"maxDC":0.069,"governing":1,
+→ {"ok":true,"revision":7,"singular":false,
+   "islands":2,"singularIslands":1,        // 每一棟各自求解；singular = 至少有一棟是機構
+   "equilibrium":{"applied":[..],"reaction":[..],"residual":3.9e-16},
+   "maxDC":0.069,"governing":1,"governingKind":"member",   // member 與 shell 各自從 1 編號
    "members":[{"id":1,"lengthMm":4000,"dc":0.069,
                "governingFibre":"CRUSH","governingStation":0,
                "i":{"N":..,"Vy":..,"Vz":..,"T":..,"My":..,"Mz":..},"j":{...},
                "blocks":[[0,64,0],[1,64,0],...]}],
+   "shells":[{"id":1,"plate":"concrete_slab_200","t":200,
+              "dc":1.44,"dcRaw":1.12,"edgeRecovered":true,"face":"TOP","corner":0,
+              "world":[[..],[..],[..],[..]],          // 四角節點，MC 世界 mm
+              "ex":[..],"ey":[..],"n":[..],           // facet 局部座標（見下方警告）
+              "N":{"xx":..,"yy":..,"xy":..},          // 膜力，N/mm
+              "M":{"xx":..,"yy":..,"xy":..},          // 彎矩，N*mm/mm，元素中心
+              "Q":{"x":..,"y":..},                    // 橫向剪力，回收但**不篩選**
+              "Mc":[[..],[..],[..],[..]],             // 逐角彎矩，D/C 與等值圖用的那份
+              "McRaw":[...],                          // 還原前的原值，僅在有還原時出現
+              "vmTop":..,"vmBot":..}],
    "unassigned":[]}
 
 {"op":"bye"}   // 或直接關 stdin
@@ -78,6 +93,20 @@ python3 sidecar/verify.py sidecar/build/br-sidecar
 | 材料值取自 `DefaultMaterial`，鋼 E 釘 200 GPa | D-012 |
 | 奇異 → 只回診斷，不回數字 | 機構不是結構 |
 | 壞輸入 → error line，永不 crash、永不靜默預設 | `ENGINE_BOUNDARY` fail-safe |
+| 板 token 的 2×2 方塊方陣 → 一片 MITC4 facet，節點在方塊中心 | D-016、D-005 |
+| 板 token 與斷面 token 不重疊；認不得的 token 拒絕 | D-016 |
+| 不成 facet 的板方塊（孤塊、單格寬帶、**疊兩層的實心**）→ `unassigned` | D-016 |
+| run 可以**支承於**它撞上的板方塊，共用該節點 | D-016 |
+| 連通分量各自求解；機構只屬於那一棟 | D-017 |
+| 荷載落點在分割**之前**對全體節點驗過 | issue #14 |
+| 固端邊的支承彎矩由內部元素中心外推還原，取較大者 | 發現 6 |
+
+### ⚠️ `ex` / `ey` / `n` 在 Minecraft 空間裡是**左手系**
+
+它們在**引擎裡**是右手正交系。Minecraft 的軸映射 `(x,y,z) → (x,z,y)` 交換兩軸，是一個
+**反射**，所以同樣三個向量讀在 Minecraft 空間就滿足 `ex × ey = −n`。
+
+拿它們把點投影到 facet 上完全沒問題（客戶端就是這樣用的）。**不要用它們的外積去重建法向。**
 | **缺 mat / 缺 section / 未知 token / 非整數座標 / 重複座標 / 缺 revision / 非有限數 → 全部拒絕** | issue #18 |
 | **落在構件中間、無法映射到節點的荷載 → 拒絕整筆請求，不丟棄** | issue #14 |
 | **斷面改變 → 該處成為節點，構件分段但仍連續** | issue #13 |

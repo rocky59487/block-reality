@@ -89,6 +89,8 @@ wire 上每根構件送的是：局部座標系（origin + ax/ay/az）、斷面�
 |---|---|
 | mod 載入、註冊、config、指令 | 無例外，log 裡 0 個 ERROR |
 | sidecar 自動找到並啟動 | `sidecar ready: FrameCore protocol 1, 5 materials, 5 sections` |
+| 樓板變成板元素 | `/br status` 出現 `36 plate facets`，且 `members` 為 0 |
+| 多棟建築互不影響 | `/br status` 的 `structures  N solved, M unrestrained` |
 | 5 格懸臂（自重） | 1 根構件、`L=4000mm`、**peak 9.24 MPa**、D/C 0.0264 |
 | 25 格懸臂（自重） | **peak 332.68 MPa**、D/C 0.9505 |
 | 全部落在石頭上 | `MECHANISM — fully constrained (no free DOF)` |
@@ -105,7 +107,7 @@ wire 上每根構件送的是：局部座標系（origin + ax/ay/az）、斷面�
 沙箱沒有顯示卡，`runClient` 跑不起來。所以：
 
 - **編譯過了**（真的 Forge、真的 MC 1.20.1，只有 3 個 deprecation warning）
-- 應力渲染在**資料層**被 82 個測試釘住（顏色、位置、符號、梯度、中性軸）
+- 應力渲染在**資料層**被 104 個測試釘住（顏色、位置、符號、梯度、中性軸、板的表面應力與 facet 定位）
 - 但**畫面上長什麼樣沒有人看過**
 
 最可能出問題的地方，按可能性排序：

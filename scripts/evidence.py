@@ -36,6 +36,54 @@ RHO = 7850.0
 W = RHO * A * 1e-9 * G           # 6.16068 N/mm
 FY_ALLOW_COMP = 350.0
 
+# concrete_slab_200 — the MITC4 plate fixture
+PLATE_T = 200.0
+PLATE_E = 30000.0
+PLATE_NU = 0.20
+PLATE_RHO = 2350.0
+G_MM = 9810.0                                        # SelfWeight.h works in mm/s^2
+Q_PLATE = PLATE_RHO * PLATE_T * G_MM * 1e-12         # N/mm^2, the slab's own weight
+
+# Timoshenko & Woinowsky-Krieger, clamped square plate under a uniform load.
+#
+# The tabulated CENTRE coefficient 0.0231 is quoted for nu = 0.3. At the centre of a
+# square clamped plate the two curvatures are equal by symmetry, so M = D*k*(1+nu) and the
+# coefficient rescales as (1+nu)/1.3. Using 0.0231 directly against a nu = 0.2 plate makes
+# the error appear to GROW as the mesh is refined, which reads as a divergent element and
+# is really a wrong reference.
+#
+# The EDGE coefficient needs no such correction: the tangential curvature vanishes along a
+# clamped edge, so M_edge = -D*w,nn carries no nu.
+#
+# Both coefficients are tabulated to three significant figures, so an agreement better
+# than about 0.2% is comparing against the table's own rounding, not against the theory.
+PLATE_C_CENTRE = 0.0231 / 1.3 * (1 + PLATE_NU)
+PLATE_C_EDGE = 0.0513
+
+
+def slab(n, y=64, mat="concrete", plate="concrete_slab_200", clamped=True):
+    """n x n plate blocks; the perimeter is clamped, so the meshed span is (n-1) metres."""
+    return [{"x": i, "y": y, "z": j, "mat": mat, "section": plate,
+             "support": clamped and (i in (0, n - 1) or j in (0, n - 1))}
+            for i in range(n) for j in range(n)]
+
+
+def corner_moment(res, wx, wz, comp, key="Mc", tol=1e-6):
+    """A per-corner moment component at a world position, or None.
+
+    `Mc` is the field the demand and the contour use, so it carries the recovered value at
+    a clamped edge; `McRaw` is the element's own corner output, present only where the
+    recovery fired. Asking for the raw one and silently getting the corrected one is how a
+    comparison quietly becomes a comparison of a number with itself.
+    """
+    for sh in res.get("shells", []):
+        if key not in sh:
+            continue
+        for k, w in enumerate(sh["world"]):
+            if abs(w[0] - wx) < tol and abs(w[2] - wz) < tol:
+                return sh[key][k][comp]
+    return None
+
 
 class Sidecar:
     def __init__(self, exe):
@@ -163,6 +211,44 @@ def cases():
                lambda r: r["members"][0]["dc"])]
     out.append(("V6  concrete section, tension governs", req, checks))
 
+    # V7 plate self weight is conserved exactly. The load a shell applies is lumped to its
+    # four corners by the engine; this asks whether the TOTAL is still q times the meshed
+    # area, and whether the reactions balance it. Both are exact statements, so they belong
+    # here with the machine-precision references rather than in the convergence study.
+    n7 = 9
+    a7 = (n7 - 1) * BLOCK_MM
+    req = {"op": "solve", "revision": 7, "blocks": slab(n7)}
+    checks = [
+        ("total applied weight (N)", -Q_PLATE * a7 * a7,
+         lambda r: r["equilibrium"]["applied"][1]),
+        ("vertical reaction balances it (N)", 0.0,
+         lambda r: r["equilibrium"]["applied"][1] + r["equilibrium"]["reaction"][1]),
+        ("horizontal equilibrium, x (N)", 0.0,
+         lambda r: r["equilibrium"]["applied"][0] + r["equilibrium"]["reaction"][0]),
+        ("membrane force under transverse load (N/mm)", 0.0,
+         lambda r: max(abs(sh["N"]["xx"]) for sh in r["shells"])),
+        ("facets from an n x n slab", float((n7 - 1) ** 2),
+         lambda r: float(len(r["shells"]))),
+    ]
+    out.append(("V7  plate self weight and equilibrium", req, checks))
+
+    # V8 a column bearing on a slab shares its node. If it did not, this is a mechanism —
+    # so the axial force adding up to the whole weight IS the connection, as a number.
+    blocks = [{"x": i, "y": 68, "z": j, "mat": "concrete", "section": "concrete_slab_200",
+               "support": False} for i in range(3) for j in range(3)]
+    for ci, cj in ((0, 0), (0, 2), (2, 0), (2, 2)):
+        for h in range(64, 68):
+            blocks.append({"x": ci, "y": h, "z": cj, "mat": "steel",
+                           "section": "steel_rect_200x400", "support": h == 64})
+    req = {"op": "solve", "revision": 8, "blocks": blocks}
+    checks = [
+        ("columns carry the whole structure (N)", 0.0,
+         lambda r: sum(-m["i"]["N"] for m in r["members"]) - r["equilibrium"]["applied"][1]),
+        ("one connected structure", 1.0, lambda r: float(r["islands"])),
+        ("mechanisms", 0.0, lambda r: float(r["singularIslands"])),
+    ]
+    out.append(("V8  column bearing on a slab (shared node)", req, checks))
+
     return out
 
 
@@ -195,7 +281,135 @@ def properties(sc):
     b = sc.call({"op": "solve", "revision": 25, "blocks": beam(5)})
     out.append(("P6  repeated solves are bit-identical", json.dumps(a) == json.dumps(b)))
 
+    # P7 one unrestrained structure must not silence the others. This is the property a
+    # player reported as "the mod stops working once there are several buildings": a single
+    # global stiffness matrix made every building share one factorisation, and one
+    # rank-deficient structure anywhere made it fail for all of them.
+    solo = sc.call({"op": "solve", "revision": 26, "blocks": beam(5)})
+    floating = [{"x": i + 100, "y": 64, "z": 0, "mat": "steel",
+                 "section": "steel_rect_200x400"} for i in range(5)]
+    both = sc.call({"op": "solve", "revision": 27, "blocks": beam(5) + floating})
+    out.append(("P7  a mechanism is confined to the structure that is one",
+                both.get("ok") is True and both.get("islands") == 2
+                and both.get("singularIslands") == 1
+                and bool(both.get("members"))
+                and both.get("maxDC") == solo.get("maxDC")))
+
+    # P8 a flat field of PLATE blocks is one plate, not a grillage. The same shape in BEAM
+    # blocks is a grillage, and the token is what tells them apart — geometry never guesses.
+    sl = sc.call({"op": "solve", "revision": 28, "blocks": slab(7)})
+    gr = sc.call({"op": "solve", "revision": 29,
+                  "blocks": [dict(b, mat="steel", section="steel_rect_200x400")
+                             for b in slab(7)]})
+    out.append(("P8  a slab meshes as plate facets and yields no members",
+                len(sl.get("shells", [])) == 36 and not sl.get("members")
+                and bool(gr.get("members")) and not gr.get("shells")))
+
+    # P9 plate blocks stacked two deep are a SOLID, not a shell. Meshing it as three
+    # intersecting sheets would triple its mass and its stiffness.
+    solid = sc.call({"op": "solve", "revision": 30,
+                     "blocks": [{"x": i, "y": 64 + h, "z": j, "mat": "concrete",
+                                 "section": "concrete_slab_200", "support": False}
+                                for i in range(3) for j in range(3) for h in range(2)]})
+    out.append(("P9  a solid of plate blocks is refused, not meshed",
+                not solid.get("shells") and len(solid.get("unassigned", [])) == 18))
+
+    # P10 the support-moment recovery may only ever RAISE a reported demand. If it could
+    # lower one, a failure to recover would make a plate look safer than it is.
+    rec = sc.call({"op": "solve", "revision": 31, "blocks": slab(13)})
+    out.append(("P10 support-moment recovery never lowers a demand",
+                any(sh["edgeRecovered"] for sh in rec["shells"])
+                and all(sh["dc"] >= sh["dcRaw"] - 1e-12 for sh in rec["shells"])))
+
     return out
+
+
+# ------------------------------------------------------------------ convergence
+def plate_convergence(sc):
+    """Mesh convergence of the MITC4 plate against Timoshenko's clamped square plate.
+
+    Two quantities behave very differently and both are reported, because reporting only
+    the good one would be the kind of selective evidence this document exists to avoid.
+
+      * The SPAN moment converges cleanly and is the quantity that governs a slab's field
+        reinforcement.
+      * The SUPPORT moment does not. MITC4's per-corner moments are not superconvergent,
+        and at a clamped edge they are badly LOW — the unsafe direction. It is therefore
+        recovered by extrapolating from the two interior element centres, and both the raw
+        and recovered figures are given so the reader can see the size of the correction
+        rather than take it on trust.
+    """
+    rows = []
+    for n in (5, 7, 9, 11, 13, 15, 17, 21):
+        r = sc.call({"op": "solve", "revision": 100 + n, "blocks": slab(n)})
+        a = (n - 1) * BLOCK_MM
+        c = (n - 1) / 2.0 * BLOCK_MM + BLOCK_MM / 2.0
+
+        span_ref = PLATE_C_CENTRE * Q_PLATE * a * a
+        span = corner_moment(r, c, c, 0)
+
+        edge_ref = PLATE_C_EDGE * Q_PLATE * a * a
+        # The clamping moment on an edge running along x is Myy — across the edge, not
+        # along it. Taking Mxx there reads a quantity that is near zero and calls it an
+        # 87% error.
+        rec = None
+        for sh in r["shells"]:
+            if not sh.get("edgeRecovered"):
+                continue
+            for k, w in enumerate(sh["world"]):
+                if abs(w[0] - c) < BLOCK_MM and abs(w[2] - BLOCK_MM / 2.0) < 1e-6:
+                    rec = sh["Mc"][k][1]
+        raw = corner_moment(r, c, BLOCK_MM / 2.0, 1, key="McRaw")
+
+        rows.append({
+            "elements_per_side": n - 1,
+            "span_mm": a,
+            "span_moment": span,
+            "span_reference": -span_ref,
+            "span_rel_error": abs(abs(span) - span_ref) / span_ref if span is not None else None,
+            "support_reference": edge_ref,
+            "support_corner_raw": raw,
+            "support_raw_rel_error": abs(abs(raw) - edge_ref) / edge_ref if raw is not None else None,
+            "support_recovered": rec,
+            "support_rel_error": abs(abs(rec) - edge_ref) / edge_ref if rec is not None else None,
+        })
+
+    # Is the residual at fine meshes DISCRETISATION or is it the reference?
+    #
+    # MITC4 is a Reissner-Mindlin element and the Timoshenko coefficient is thin-plate, so
+    # transverse shear is the obvious suspect. It is also testable: shear deformation
+    # scales with t/a, discretisation does not. The same meshes are therefore run at two
+    # thicknesses. If the signed errors track each other, the residual is not shear — and
+    # then it is either the element or the tabulated coefficient's own precision.
+    control = []
+    for n in (9, 13, 17, 21):
+        a = (n - 1) * BLOCK_MM
+        c = (n - 1) / 2.0 * BLOCK_MM + BLOCK_MM / 2.0
+        row = {"elements_per_side": n - 1}
+        for token, t in (("concrete_slab_200", 200.0), ("concrete_slab_150", 150.0)):
+            q = PLATE_RHO * t * G_MM * 1e-12
+            r = sc.call({"op": "solve", "revision": 200 + n * 4 + int(t),
+                         "blocks": slab(n, plate=token)})
+            got = corner_moment(r, c, c, 0)
+            ref = PLATE_C_CENTRE * q * a * a
+            row[f"t{int(t)}_signed_error"] = (abs(got) - ref) / ref
+            row[f"t{int(t)}_thickness_over_span"] = t / a
+        control.append(row)
+
+    finest = rows[-1]
+    twelve = [x for x in rows if x["elements_per_side"] >= 12]
+    # The span gate is two-sided: an error that grew without bound in EITHER direction is a
+    # failure, and a one-sided bound would not notice the second kind.
+    gate = (all(abs(x["span_rel_error"]) < 0.01 for x in twelve)
+            and all(x["support_rel_error"] < x["support_raw_rel_error"] for x in rows)
+            and finest["support_rel_error"] < 0.06
+            # thickness independence: the two thicknesses must agree to well inside the
+            # residual itself, or the diagnosis below is wrong.
+            and all(abs(x["t200_signed_error"] - x["t150_signed_error"]) < 0.001
+                    for x in control))
+    return {"rows": rows, "gate": gate, "thickness_control": control,
+            "centre_coefficient": PLATE_C_CENTRE, "edge_coefficient": PLATE_C_EDGE,
+            "q_n_per_mm2": Q_PLATE}
 
 
 # ---------------------------------------------------------------- performance
@@ -321,6 +535,7 @@ def main():
     worst_abs = max(absresid) if absresid else 0.0
 
     props = properties(sc)
+    convergence = plate_convergence(sc)
 
     # Cross-platform determinism over the whole fixture set, not one case.
     determinism = {"checked": False}
@@ -357,6 +572,7 @@ def main():
             },
         },
         "properties": [{"property": p, "holds": ok} for p, ok in props],
+        "plate_convergence": convergence,
         "determinism": determinism,
         "performance": perf,
     }
@@ -367,10 +583,16 @@ def main():
     write_markdown(os.path.join(outdir, "VERIFICATION.md"), doc)
 
     ok = worst_rel < 1e-9 and worst_abs < 1e-3 and all(ok for _, ok in props) \
+        and convergence["gate"] \
         and (not determinism["checked"] or determinism["identical"] == determinism["cases"])
     print(f"worst relative error {worst_rel:.3e} over {len(rels)} non-zero references")
     print(f"worst absolute residual {worst_abs:.3e} over {len(absresid)} zero references")
     print(f"properties {sum(1 for _, o in props if o)}/{len(props)}")
+    fin = convergence["rows"][-1]
+    print(f"plate convergence: span {fin['span_rel_error'] * 100:.2f}%, "
+          f"support {fin['support_rel_error'] * 100:.1f}% "
+          f"(raw {fin['support_raw_rel_error'] * 100:.1f}%) at "
+          f"{fin['elements_per_side']} elements — gate {'PASS' if convergence['gate'] else 'FAIL'}")
     if determinism["checked"]:
         print(f"determinism {determinism['identical']}/{determinism['cases']} identical across platforms")
     print("evidence/verification.json and evidence/VERIFICATION.md written")
@@ -438,6 +660,81 @@ def write_markdown(path, doc):
     for p in doc["properties"]:
         L.append(f"| {p['property']} | {'yes' if p['holds'] else 'NO'} |")
     L.append("")
+
+    cv = doc.get("plate_convergence")
+    if cv:
+        L.append("## Plate element: mesh convergence\n")
+        L.append("MITC4 flat shells against Timoshenko & Woinowsky-Krieger's clamped square")
+        L.append("plate under a uniform load, the load being the slab's own weight")
+        L.append(f"(q = {cv['q_n_per_mm2']:.6g} N/mm²). One block is one element, so the mesh")
+        L.append("density is set by how large the slab is.\n")
+        L.append("Two coefficients are used and only one of them needed correcting. The")
+        L.append(f"tabulated centre coefficient 0.0231 is quoted for ν = 0.3; at the centre of a")
+        L.append("square clamped plate the two curvatures are equal by symmetry, so M = D·κ·(1+ν)")
+        L.append(f"and it rescales to **{cv['centre_coefficient']:.6f}** for this plate's ν = 0.2.")
+        L.append("The edge coefficient **0.0513** needs no correction, because the tangential")
+        L.append("curvature vanishes along a clamped edge and M_edge = −D·w,nn carries no ν.")
+        L.append("Using 0.0231 directly makes the error appear to *grow* as the mesh is refined,")
+        L.append("which reads as a divergent element and is really a wrong reference.\n")
+        L.append("Both coefficients are tabulated to three significant figures. Where the")
+        L.append("agreement below reaches a fraction of a per cent, the reference is the less")
+        L.append("precise of the two numbers being compared — see the thickness control below,")
+        L.append("which is what establishes that rather than assuming it.\n")
+        L.append("| elements per side | span | span error | support (raw corner) | support (recovered) | reference |")
+        L.append("|---:|---:|---:|---:|---:|---:|")
+        for r in cv["rows"]:
+            L.append("| {} | {:.1f} | {:.2f}% | {:.1f}  ({:.1f}%) | {:.1f}  ({:.1f}%) | {:.1f} |".format(
+                r["elements_per_side"], r["span_moment"], r["span_rel_error"] * 100,
+                r["support_corner_raw"], r["support_raw_rel_error"] * 100,
+                r["support_recovered"], r["support_rel_error"] * 100,
+                r["support_reference"]))
+        L.append("")
+        L.append("Moments are per unit width, N·mm/mm.\n")
+        L.append("### The span moment, and what the residual actually is\n")
+        L.append("The span error falls steeply, passes through zero at about twelve elements and")
+        L.append("then settles at a few tenths of a per cent on the other side. It does not keep")
+        L.append("shrinking, so something other than mesh density is setting the floor, and")
+        L.append("saying \"converges cleanly\" and stopping there would be describing the first")
+        L.append("half of the table only.\n")
+        L.append("The obvious suspect is transverse shear: MITC4 is a Reissner–Mindlin element")
+        L.append("and Timoshenko's coefficient is thin-plate. That suspect is testable, because")
+        L.append("shear deformation scales with t/a and discretisation does not — so the same")
+        L.append("meshes were run at two thicknesses.\n")
+        ctrl = cv.get("thickness_control") or []
+        if ctrl:
+            L.append("| elements per side | t = 200 mm | t/a | t = 150 mm | t/a |")
+            L.append("|---:|---:|---:|---:|---:|")
+            for r in ctrl:
+                L.append("| {} | {:+.3f}% | {:.4f} | {:+.3f}% | {:.4f} |".format(
+                    r["elements_per_side"],
+                    r["t200_signed_error"] * 100, r["t200_thickness_over_span"],
+                    r["t150_signed_error"] * 100, r["t150_thickness_over_span"]))
+            L.append("")
+            L.append("The two columns track each other to within a hundredth of a per cent while")
+            L.append("t/a changes by a factor of three. **The residual is not shear deformation.**")
+            L.append("What is left is the element's own converged answer differing from the")
+            L.append("tabulated coefficient by well under one per cent — and that coefficient is a")
+            L.append("truncated series quoted to three significant figures. At this level the")
+            L.append("reference is the less precise of the two numbers being compared, which is")
+            L.append("the honest place to stop rather than tune anything to close the gap.\n")
+        L.append("### Why the support column has two numbers\n")
+        L.append("The span moment is the quantity that governs a slab's field reinforcement, and")
+        L.append("the table above is it. The support moment is a different story: MITC4's per-corner")
+        L.append("moments are not superconvergent, and at a clamped edge the raw corner value is")
+        L.append("badly low — the *unsafe* direction, and precisely the silently-safe answer this")
+        L.append("project treats as the worst class of error.\n")
+        L.append("It is therefore recovered by extrapolating from the two interior element")
+        L.append("centres normal to the edge, M_edge ≈ 1.5·M₁ − 0.5·M₂, the textbook")
+        L.append("interior-to-boundary recovery. Both figures are printed so the size of the")
+        L.append("correction is visible rather than taken on trust. The recovery is applied only")
+        L.append("where it is defensible — an edge whose two corner nodes are fully fixed, with a")
+        L.append("neighbouring facet in the same local frame — and it is taken as the *worse* of")
+        L.append("the two, so a failure to recover can never make a plate look safer.\n")
+        L.append("**Honest boundary.** The recovered support moment is still several per cent low")
+        L.append("on a coarse mesh, and the mesh is coarse whenever the slab is small: a 4 m slab")
+        L.append("is four elements across and nothing recovers that well. Read the span moment as")
+        L.append("quantitative and the support moment as indicative until the plate spans at least")
+        L.append("a dozen blocks.\n")
 
     det = doc["determinism"]
     L.append("## Cross-platform determinism\n")

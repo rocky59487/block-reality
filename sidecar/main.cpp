@@ -470,7 +470,12 @@ struct SolveOut {
         double      Nxx = 0, Nyy = 0, Nxy = 0;
         double      Mxx = 0, Myy = 0, Mxy = 0;
         double      Qx = 0, Qy = 0;
-        std::array<std::array<double, 3>, 4> Mc{};   // per-corner {Mxx, Myy, Mxy}
+        // Per-corner {Mxx, Myy, Mxy}. `Mc` is what the demand and the contour are based
+        // on, so it carries the recovered edge values where recovery fired; `McRaw` is
+        // always the element's own output. Both travel: a document that quotes the size of
+        // a correction has to be able to show the number before it as well as after.
+        std::array<std::array<double, 3>, 4> Mc{};
+        std::array<std::array<double, 3>, 4> McRaw{};
         double      vmTop = 0, vmBot = 0;     // von Mises at the centre, both faces
         double      dcRaw = 0;                // before support-moment recovery
         bool        edgeRecovered = false;    // a clamped edge was extrapolated to
@@ -964,7 +969,8 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         dst.Mxx = f.Mxx; dst.Myy = f.Myy; dst.Mxy = f.Mxy;
         dst.Qx  = f.Qx;  dst.Qy  = f.Qy;
         for (int c = 0; c < 4; ++c) {
-            dst.Mc[static_cast<size_t>(c)] = { f.MxxC[c], f.MyyC[c], f.MxyC[c] };
+            dst.Mc[static_cast<size_t>(c)]    = { f.MxxC[c], f.MyyC[c], f.MxyC[c] };
+            dst.McRaw[static_cast<size_t>(c)] = { f.MxxC[c], f.MyyC[c], f.MxyC[c] };
         }
 
         // The facet frame, rebuilt exactly as MITC4ShellElement::prepare builds it, so the
@@ -1418,6 +1424,11 @@ std::string handleSolve(const bjson::Value& req) {
         w.key("Mc").beginArr();
         for (const auto& c : sh.Mc) w.beginArr().val(c[0]).val(c[1]).val(c[2]).endArr();
         w.endArr();
+        if (sh.edgeRecovered) {
+            w.key("McRaw").beginArr();
+            for (const auto& c : sh.McRaw) w.beginArr().val(c[0]).val(c[1]).val(c[2]).endArr();
+            w.endArr();
+        }
         w.kv("vmTop", sh.vmTop).kv("vmBot", sh.vmBot);
         w.kv("dcRaw", sh.dcRaw).kv("edgeRecovered", sh.edgeRecovered);
         w.endObj();
