@@ -50,7 +50,7 @@ zip 裡有什麼（2.3 MB）：
 **依賴只剩 Eigen**（header-only）。METIS / OpenBLAS / LAPACKE 都不用了——
 FrameCore 的 supernodal lane 由 `FRAMECORE_SUPERNODAL` 在編譯期關掉，而
 `useSupernodalPrimary` 本來就是 `false`，所以每次求解走的一直都是 Eigen LDLT。
-**實測開與關的數字到最後一位都相同**，68 項 gate 兩邊都全過。
+**實測開與關的數字到最後一位都相同**，78 項 gate 兩邊都全過。
 
 ```bash
 sudo apt-get install -y libeigen3-dev cmake g++
@@ -66,7 +66,7 @@ cmake --build sidecar/build --parallel
 python3 sidecar/verify.py sidecar/build/br-sidecar
 ```
 
-最後一行要是 `ALL PASS`（68 項）。**這一步失敗就不要往下走**——後面看到的任何東西都不可信。
+最後一行要是 `ALL PASS`（78 項）。**這一步失敗就不要往下走**——後面看到的任何東西都不可信。
 
 一次把全部（Linux + Windows + jar）打包好：
 
@@ -85,9 +85,9 @@ cd mod
 gradle test -Dbr.sidecar=../sidecar/build/br-sidecar
 ```
 
-60 個測試，0 failures。其中 14 個會**實際啟動 `br-sidecar` 子程序**跑真的 FrameCore。
+74 個測試，0 failures。其中 18 個會**實際啟動 `br-sidecar` 子程序**跑真的 FrameCore。
 
-沒帶 `-Dbr.sidecar` 那 14 個會 skip 而不是假裝通過。
+沒帶 `-Dbr.sidecar` 那 18 個會 skip 而不是假裝通過。
 
 ---
 
@@ -192,13 +192,13 @@ rcon.port=25575
 mod 載入、指令、sidecar 自動尋找與啟動、真的 FrameCore 求解、機構偵測、乾淨關閉，
 log 裡 0 個 ERROR、沒有殘留程序。上面那些應力數字都是實測並手算對過的。
 
-**Windows 引擎已經實際跑過** — 用 Wine 跑完整 68 項 gate 全過，而且輸出跟 Linux 版
+**Windows 引擎已經實際跑過** — 用 Wine 跑完整 78 項 gate 全過，而且輸出跟 Linux 版
 **逐位元相同**（`dc=0.069260057139999998`、`σ_top=24.241019999999999`）。
 
 **客戶端渲染沒有人看過。** 沙箱沒有顯示卡，`runClient` 跑不起來。
 
 - 編譯過了（真的 Forge、真的 MC 1.20.1）
-- 應力渲染在**資料層**被 60 個測試釘住（顏色、位置、符號、梯度、中性軸）
+- 應力渲染在**資料層**被 74 個測試釘住（顏色、位置、符號、梯度、中性軸）
 - 但**畫面上長什麼樣是未知的**
 
 最可能出問題的地方，按可能性排序：

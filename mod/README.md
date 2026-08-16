@@ -19,7 +19,7 @@ gradle test -Dbr.sidecar=../sidecar/build/br-sidecar   # 加上真引擎的端�
 gradle check                                           # 再跑 api 純度 gate
 ```
 
-沒帶 `-Dbr.sidecar` 時，需要引擎的那 14 個測試會 **skip**（不是假裝通過）。
+沒帶 `-Dbr.sidecar` 時，需要引擎的那 18 個測試會 **skip**（不是假裝通過）。
 
 ## 這裡驗證了什麼
 

@@ -18,7 +18,7 @@ FrameCore 以**原始碼**引用，不 vendor 進本倉庫。
 在編譯期關掉（`-DBR_SUPERNODAL=ON` 可以開回來，那時才需要 METIS / OpenBLAS / LAPACKE）。
 
 這不是降級：`SolveOptions::useSupernodalPrimary` 本來就是 `false`，每次求解走的一直都是
-Eigen `SimplicialLDLT`。**實測開與關的輸出到最後一位都相同**，68 項 gate 兩邊全過。
+Eigen `SimplicialLDLT`。**實測開與關的輸出到最後一位都相同**，78 項 gate 兩邊全過。
 少掉三個原生依賴換來的是：可以交叉編譯出一顆自足的 Windows 執行檔。
 
 ### Windows（在 Linux 上交叉編譯）
@@ -33,7 +33,7 @@ cmake --build sidecar/build-win --parallel
 ```
 
 產出的 `br-sidecar.exe` 只 import `KERNEL32.dll` 與 `msvcrt.dll`——兩個都是系統的，
-沒有要附帶的 runtime DLL。**Wine 實測 68 項全過，數字與 Linux 版逐位元相同。**
+沒有要附帶的 runtime DLL。**Wine 實測 78 項全過，數字與 Linux 版逐位元相同。**
 
 ## 驗證
 
@@ -41,7 +41,7 @@ cmake --build sidecar/build-win --parallel
 python3 sidecar/verify.py sidecar/build/br-sidecar
 ```
 
-68 項，全部對閉合解或不依賴求解器正確性的不變量。
+78 項，全部對閉合解或不依賴求解器正確性的不變量。
 
 ## 協定
 
