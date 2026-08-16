@@ -468,6 +468,188 @@ def main():
     r9 = sc.call({"op": "hello"})
     check_true("still alive after bad input", r9.get("ok") is True)
 
+    # ============================================================ ISLANDS =====
+    # A world is not one structure. Before this, one unsupported beam anywhere in the
+    # dimension made the single global stiffness matrix rank-deficient and EVERY building
+    # reported nothing — measured, and the reason the mod appeared to die as soon as a
+    # second structure existed.
+    print("\n[S0] separate buildings are separate problems")
+    alone = sc.call({"op": "solve", "revision": 40, "blocks": beam_blocks(5), "loads": []})
+    floating = [{"x": i + 100, "y": 64, "z": 0, "mat": "steel",
+                 "section": "steel_rect_200x400"} for i in range(5)]
+    both = sc.call({"op": "solve", "revision": 41,
+                    "blocks": beam_blocks(5) + floating, "loads": []})
+    check_true("the sound building still solves", both.get("ok") is True and both.get("members"),
+               f"members={len(both.get('members', []))}")
+    check("D/C unchanged by a neighbour", both.get("maxDC", 0), alone.get("maxDC", 0), 0)
+    check_true("both islands counted", both.get("islands") == 2, str(both.get("islands")))
+    check_true("only the mechanism is a mechanism", both.get("singularIslands") == 1,
+               str(both.get("singularIslands")))
+
+    # And a load in the middle of a member must STILL be refused, per island or not: the
+    # check is global, so no island may quietly decide the load is "not mine".
+    bad_load = sc.call({"op": "solve", "revision": 42,
+                        "blocks": beam_blocks(5) + floating,
+                        "loads": [{"x": 2, "y": 64, "z": 0, "fy": -1000.0}]})
+    check_true("interior load still refused with many islands", bad_load.get("ok") is False,
+               bad_load.get("error", ""))
+
+    # ============================================================= PLATES =====
+    # MITC4 flat shells. Every reference below is Timoshenko's clamped square plate under
+    # a uniform load, computed here rather than read back from the engine.
+    T_E, T_NU, T_RHO, T_T = 30000.0, 0.20, 2350.0, 200.0
+    G_MM = 9810.0
+    q_plate = T_RHO * T_T * G_MM * 1e-12          # N/mm^2, the slab's own weight
+
+    # The tabulated centre coefficient 0.0231 is for nu = 0.3. At the centre of a square
+    # clamped plate the two curvatures are equal by symmetry, so M = D*k*(1+nu) and the
+    # coefficient rescales as (1+nu)/1.3. The EDGE coefficient does not: the tangential
+    # curvature vanishes along a clamped edge, so M_edge = -D*w,nn is nu-free.
+    C_CENTRE = 0.0231 / 1.3 * (1 + T_NU)
+    C_EDGE = 0.0513
+
+    def slab(n, y=64, mat="concrete", plate="concrete_slab_200", clamped=True):
+        return [{"x": i, "y": y, "z": j, "mat": mat, "section": plate,
+                 "support": clamped and (i in (0, n - 1) or j in (0, n - 1))}
+                for i in range(n) for j in range(n)]
+
+    def corner_moment(res, wx, wz, comp):
+        """Per-corner moment component at a given world position, or None."""
+        for sh in res.get("shells", []):
+            for k, w in enumerate(sh["world"]):
+                if abs(w[0] - wx) < 1e-6 and abs(w[2] - wz) < 1e-6:
+                    return sh["Mc"][k][comp]
+        return None
+
+    print("\n[S1] a slab is a plate, not a grid of beams")
+    n = 7
+    r_slab = sc.call({"op": "solve", "revision": 50, "blocks": slab(n), "loads": []})
+    check_true("ok", r_slab.get("ok") is True, r_slab.get("error", ""))
+    check_true("no members extracted from a slab", len(r_slab.get("members", [])) == 0,
+               f"members={len(r_slab.get('members', []))}")
+    check_true("one facet per 2x2 block square",
+               len(r_slab.get("shells", [])) == (n - 1) ** 2,
+               f"shells={len(r_slab.get('shells', []))} expected={(n - 1) ** 2}")
+    check_true("nothing left unassigned", len(r_slab.get("unassigned", [])) == 0,
+               str(r_slab.get("unassigned", [])[:4]))
+    # Beam tokens in the same shape are the counter-example: that IS a grillage, and it
+    # double-counts every block. The token is what tells the two cases apart.
+    r_grid = sc.call({"op": "solve", "revision": 51,
+                      "blocks": [{"x": i, "y": 64, "z": j, "mat": "steel",
+                                  "section": "steel_rect_200x400",
+                                  "support": i in (0, n - 1) or j in (0, n - 1)}
+                                 for i in range(n) for j in range(n)], "loads": []})
+    check_true("beam tokens still extract as members", len(r_grid.get("members", [])) > 0,
+               f"members={len(r_grid.get('members', []))}")
+    check_true("and produce no facets", len(r_grid.get("shells", [])) == 0)
+
+    print("\n[S2] shell self weight is conserved, and equilibrium closes")
+    eq = r_slab["equilibrium"]
+    a_mesh = (n - 1) * BLOCK_MM                      # the MESHED span, centre to centre
+    check("applied weight = q * meshed area", eq["applied"][1], -q_plate * a_mesh * a_mesh, 1e-12)
+    check_true("equilibrium residual at machine precision", eq["residual"] < 1e-10,
+               f"residual={eq['residual']:.3e}")
+    check("horizontal equilibrium x", eq["applied"][0] + eq["reaction"][0], 0.0, 1e-30)
+    check("horizontal equilibrium z", eq["applied"][2] + eq["reaction"][2], 0.0, 1e-30)
+
+    print("\n[S3] facet frame is orthonormal and points the way it says")
+    sh0 = r_slab["shells"][0]
+    for name in ("ex", "ey", "n"):
+        v = sh0[name]
+        check(f"|{name}| = 1", math.sqrt(sum(c * c for c in v)), 1.0, 1e-12)
+    check("ex . ey = 0", sum(a * b for a, b in zip(sh0["ex"], sh0["ey"])), 0.0, 1e-30)
+    check_true("a floor's normal is up", sh0["n"] == [0, 1, 0], str(sh0["n"]))
+    # A floor carries no in-plane force under gravity alone. Anything else would mean the
+    # membrane and bending blocks are coupled where they must not be.
+    check("no membrane force under transverse load", sh0["N"]["xx"], 0.0, 1e-30)
+
+    print("\n[S4] clamped plate: span moment vs Timoshenko, and it converges")
+    prev_err = None
+    for nn in (9, 13):
+        rr = sc.call({"op": "solve", "revision": 60 + nn, "blocks": slab(nn), "loads": []})
+        aa = (nn - 1) * BLOCK_MM
+        c = (nn - 1) / 2.0 * BLOCK_MM + BLOCK_MM / 2.0
+        got = corner_moment(rr, c, c, 0)
+        ref = C_CENTRE * q_plate * aa * aa
+        err = abs(abs(got) - ref) / ref
+        check_true(f"span moment within 1% at {nn - 1} elements", err < 0.01,
+                   f"got={got:.1f} ref={-ref:.1f} err={err * 100:.2f}%")
+        if prev_err is not None:
+            check_true("and it got better with more elements", err < prev_err,
+                       f"{prev_err * 100:.2f}% -> {err * 100:.2f}%")
+        prev_err = err
+
+    print("\n[S5] support moment is recovered, not read")
+    # Corner-sampled MITC4 moments are not superconvergent and are badly LOW at a clamped
+    # edge — an under-report of the moment that governs the support is a silently-safe
+    # answer. The recovery extrapolates from the two interior element centres. This checks
+    # that it fires, that it moves towards the reference, and that it never lowers a D/C.
+    for nn, tol in ((9, 0.20), (17, 0.06)):
+        rr = sc.call({"op": "solve", "revision": 70 + nn, "blocks": slab(nn), "loads": []})
+        aa = (nn - 1) * BLOCK_MM
+        c = (nn - 1) / 2.0 * BLOCK_MM + BLOCK_MM / 2.0
+        ref = C_EDGE * q_plate * aa * aa
+        edge = [sh for sh in rr["shells"] if sh["edgeRecovered"]]
+        check_true(f"recovery fired at {nn - 1} elements", len(edge) > 0, f"{len(edge)} facets")
+        got = None
+        for sh in edge:
+            for k, w in enumerate(sh["world"]):
+                if abs(w[0] - c) < BLOCK_MM and abs(w[2] - BLOCK_MM / 2.0) < 1e-6:
+                    got = sh["Mc"][k][1]
+        err = abs(abs(got) - ref) / ref
+        check_true(f"support moment within {tol * 100:.0f}% at {nn - 1} elements", err < tol,
+                   f"got={got:.1f} ref={ref:.1f} err={err * 100:.1f}%")
+        check_true("recovery never lowers a demand",
+                   all(sh["dc"] >= sh["dcRaw"] - 1e-12 for sh in rr["shells"]))
+
+    print("\n[S6] plate blocks that cannot form a facet are reported, not dropped")
+    lone = sc.call({"op": "solve", "revision": 80,
+                    "blocks": [{"x": 0, "y": 64, "z": 0, "mat": "concrete",
+                                "section": "concrete_slab_200", "support": True}], "loads": []})
+    check_true("a lone plate block is unassigned", len(lone.get("unassigned", [])) == 1,
+               str(lone.get("unassigned")))
+    strip = sc.call({"op": "solve", "revision": 81,
+                     "blocks": [{"x": i, "y": 64, "z": 0, "mat": "concrete",
+                                 "section": "concrete_slab_200", "support": i == 0}
+                                for i in range(5)], "loads": []})
+    check_true("a one-block-wide strip is unassigned",
+               len(strip.get("unassigned", [])) == 5 and not strip.get("shells"),
+               f"unassigned={len(strip.get('unassigned', []))}")
+    # Two sheets stacked is a SOLID. Meshing it as three intersecting sheets would triple
+    # its mass and stiffness — the grillage bug wearing a different hat.
+    solid = sc.call({"op": "solve", "revision": 82,
+                     "blocks": [{"x": i, "y": 64 + h, "z": j, "mat": "concrete",
+                                 "section": "concrete_slab_200", "support": False}
+                                for i in range(3) for j in range(3) for h in range(2)],
+                     "loads": []})
+    check_true("a solid block of plate is refused, not meshed",
+               len(solid.get("shells", [])) == 0 and len(solid.get("unassigned", [])) == 18,
+               f"shells={len(solid.get('shells', []))} unassigned={len(solid.get('unassigned', []))}")
+
+    print("\n[S7] a column bears on the slab it holds up")
+    # Four columns under the corners of a 3x3 slab. The slab itself carries no support, so
+    # the ONLY way this is not a mechanism is if each column's top node IS a slab node.
+    bl = [{"x": i, "y": 68, "z": j, "mat": "concrete", "section": "concrete_slab_200"}
+          for i in range(3) for j in range(3)]
+    for (ci, cj) in ((0, 0), (0, 2), (2, 0), (2, 2)):
+        for h in range(64, 68):
+            bl.append({"x": ci, "y": h, "z": cj, "mat": "steel",
+                       "section": "steel_rect_200x400", "support": h == 64})
+    r_col = sc.call({"op": "solve", "revision": 90, "blocks": bl, "loads": []})
+    check_true("ok", r_col.get("ok") is True, r_col.get("error", ""))
+    check_true("not a mechanism", r_col.get("singular") is False, r_col.get("diagnostic", ""))
+    check_true("one connected structure", r_col.get("islands") == 1, str(r_col.get("islands")))
+    check_true("four columns and four facets",
+               len(r_col.get("members", [])) == 4 and len(r_col.get("shells", [])) == 4,
+               f"members={len(r_col.get('members', []))} shells={len(r_col.get('shells', []))}")
+    eqc = r_col["equilibrium"]
+    check_true("columns and slab both weigh in", eqc["residual"] < 1e-9,
+               f"residual={eqc['residual']:.3e}")
+    # The columns must actually carry the slab: their axial force at the base has to add up
+    # to the whole weight of the structure. This is the connection, stated as a number.
+    check("columns carry the total weight",
+          sum(-mm["i"]["N"] for mm in r_col["members"]), eqc["applied"][1], 1e-9)
+
     sc.close()
 
     print()

@@ -103,6 +103,31 @@ const std::map<std::string, frame::Section>& sectionCatalogue() {
     return kS;
 }
 
+// --------------------------------------------------------- plate catalogue
+// A PLATE token declares a shell facet, not a beam section. The token decides which
+// element a block becomes — geometry never guesses.
+//
+// Guessing was the alternative, and it is worse than it looks. A floor built out of
+// beam-token blocks extracts as a GRILLAGE: every block belongs to one run along X and
+// one along Z, so its self weight is applied twice and its bending stiffness is counted
+// twice — once about each axis, by two elements that also each carry the full section.
+// Nothing in the reply says so. Letting the token name the element makes the two cases
+// distinguishable by construction: a slab block is a slab and a beam block is a beam,
+// even when they sit in the same plane.
+//
+// Thickness is a real engineering dimension, decoupled from the one-metre cube exactly
+// as a beam section is (D-004): a 1 m block declares a 200 mm slab.
+const std::map<std::string, double>& plateCatalogue() {
+    static const std::map<std::string, double> kP = {
+        { "concrete_slab_200", 200.0 },
+        { "concrete_slab_150", 150.0 },
+        { "steel_plate_20",     20.0 },
+    };
+    return kP;
+}
+
+inline bool isPlate(const std::string& token) { return plateCatalogue().count(token) > 0; }
+
 // FrameCore Z is up, Minecraft Y is up. One conversion, used everywhere.
 struct McVec { double x, y, z; };
 inline McVec fcToMc(const frame::Vec3& v) { return McVec{ v.x, v.z, v.y }; }
@@ -143,9 +168,105 @@ const std::array<BlockPos, 3> kAxes = { BlockPos{ 1, 0, 0 }, BlockPos{ 0, 1, 0 }
 BlockPos add(const BlockPos& a, const BlockPos& d) { return BlockPos{ a.x + d.x, a.y + d.y, a.z + d.z }; }
 BlockPos sub(const BlockPos& a, const BlockPos& d) { return BlockPos{ a.x - d.x, a.y - d.y, a.z - d.z }; }
 
+// ------------------------------------------------------------ sheet extraction
+// A shell facet is a 2x2 square of plate blocks lying in one plane, with its four
+// corner nodes at those blocks' CENTRES — the same node convention members use, so a
+// slab and the column bearing on it can share a node rather than merely touch.
+//
+// An N x M slab therefore meshes into (N-1) x (M-1) facets covering N x M nodes. The
+// modelled plate is half a block short of the visible slab at each edge, which is the
+// SAME centre-to-centre convention a member already has (a 5-block beam is 4 m long).
+// One convention, stated once, rather than two that disagree at the joint.
+struct QuadSeg {
+    BlockPos    c[4];             // corner blocks, ordered CCW about +normal
+    std::string mat;
+    std::string plate;
+    int         normalAxis = 1;   // 0 = MC x, 1 = MC y, 2 = MC z
+};
+
+// The plane a plate block belongs to is DERIVED, not declared: a sheet is one block
+// thick, so its normal is the axis along which the block has no plate neighbour.
+//
+// Anything but exactly one such axis is refused rather than resolved:
+//   * three free axes  — a lone block, no plane to lie in;
+//   * two free axes    — a one-block-wide strip, which cannot close a 2x2 square;
+//   * zero free axes   — plate blocks stacked into a SOLID. A solid is not a shell, and
+//                        meshing it as three intersecting sheets would triple its mass
+//                        and its stiffness. That is the grillage bug in another costume.
+// Each refused block comes back as `unassigned`, so the game side can say why nothing
+// appeared instead of leaving a floor that silently carries no load.
+int sheetNormalAxis(const std::map<BlockPos, InBlock>& grid, const BlockPos& p, const InBlock& b) {
+    int free = 0, axis = -1;
+    for (int a = 0; a < 3; ++a) {
+        bool neighbour = false;
+        for (int s = -1; s <= 1; s += 2) {
+            BlockPos q = p;
+            (a == 0 ? q.x : a == 1 ? q.y : q.z) += s;
+            auto it = grid.find(q);
+            if (it != grid.end() && it->second.mat == b.mat && it->second.section == b.section) {
+                neighbour = true;
+                break;
+            }
+        }
+        if (!neighbour) { ++free; axis = a; }
+    }
+    return free == 1 ? axis : -1;
+}
+
+std::vector<QuadSeg> extractSheets(const std::map<BlockPos, InBlock>& grid,
+                                   std::set<BlockPos>&                shellNodes,
+                                   std::vector<BlockPos>&             unassigned) {
+    std::map<BlockPos, int> normalOf;
+    for (const auto& [pos, blk] : grid) {
+        if (!isPlate(blk.section)) continue;
+        const int n = sheetNormalAxis(grid, pos, blk);
+        if (n >= 0) normalOf[pos] = n;
+    }
+
+    std::vector<QuadSeg> out;
+    for (const auto& [pos, n] : normalOf) {
+        const InBlock& b = grid.at(pos);
+        const BlockPos U = kAxes[(n + 1) % 3];
+        const BlockPos V = kAxes[(n + 2) % 3];
+        const BlockPos q[4] = { pos, add(pos, U), add(add(pos, U), V), add(pos, V) };
+
+        bool complete = true;
+        for (const BlockPos& c : q) {
+            auto it = normalOf.find(c);
+            if (it == normalOf.end() || it->second != n) { complete = false; break; }
+            const InBlock& cb = grid.at(c);
+            if (cb.mat != b.mat || cb.section != b.section) { complete = false; break; }
+        }
+        if (!complete) continue;
+
+        QuadSeg s;
+        for (int k = 0; k < 4; ++k) s.c[k] = q[k];
+        s.mat        = b.mat;
+        s.plate      = b.section;
+        s.normalAxis = n;
+        out.push_back(s);
+        for (const BlockPos& c : q) shellNodes.insert(c);
+    }
+
+    // A plate block that closed no square is reported, never quietly ignored.
+    for (const auto& [pos, blk] : grid) {
+        if (!isPlate(blk.section)) continue;
+        if (!shellNodes.count(pos)) unassigned.push_back(pos);
+    }
+    return out;
+}
+
 // Pass 1: maximal runs along each axis. Pass 2: any block used by more than one
 // run, or carrying a support, becomes a node and splits the runs through it.
+//
+// Plate blocks take no part in run finding — they are already shells. A run may,
+// however, BEAR ON one: if the block immediately beyond a run's end is a plate block
+// that carries a shell node, the run is extended into it and the two elements share
+// that node. That is how a column supports a floor, and it is the only coupling
+// offered: a beam merely running ALONGSIDE a slab is not attached to it, because
+// nothing in the geometry says it should be.
 std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
+                                const std::set<BlockPos>&          shellNodes,
                                 std::vector<BlockPos>&             unassigned) {
     std::vector<std::vector<BlockPos>> rawRuns;
     std::vector<std::string>           runMat, runSec;
@@ -159,22 +280,38 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
     // keeps them connected. Comparing material alone was still a bug: the old code let a
     // run keep the head block's section straight through the change, and solved a 200x400
     // that became a 100x200 halfway along as 200x400 throughout, with ok:true (issue #13).
-    auto continues = [](const InBlock& a, const InBlock& b) { return a.mat == b.mat; };
+    auto continues = [&](const InBlock& a, const InBlock& b) {
+        return !isPlate(a.section) && !isPlate(b.section) && a.mat == b.mat;
+    };
+    auto isFrame = [&](const std::map<BlockPos, InBlock>::const_iterator& it) {
+        return it != grid.end() && !isPlate(it->second.section);
+    };
 
     for (const BlockPos& axis : kAxes) {
         for (const auto& [pos, blk] : grid) {
+            if (isPlate(blk.section)) continue;
             // Only start at a run head: the previous cell must not continue this run.
             auto prev = grid.find(sub(pos, axis));
-            if (prev != grid.end() && continues(prev->second, blk)) continue;
+            if (isFrame(prev) && continues(prev->second, blk)) continue;
 
             std::vector<BlockPos> run{ pos };
             BlockPos cur = add(pos, axis);
             for (;;) {
                 auto it = grid.find(cur);
-                if (it == grid.end() || !continues(it->second, blk)) break;
+                if (!isFrame(it) || !continues(it->second, blk)) break;
                 run.push_back(cur);
                 cur = add(cur, axis);
             }
+            // Bearing: extend into an adjacent plate block at either end so the run ENDS
+            // on the shell node instead of one block short of it. Without this a steel
+            // column under a concrete slab stops at its own top block, the slab hangs on
+            // nothing, and the whole model is a mechanism — while every member in it still
+            // reports a believable stress.
+            const BlockPos before = sub(run.front(), axis);
+            if (shellNodes.count(before)) run.insert(run.begin(), before);
+            const BlockPos beyond = add(run.back(), axis);
+            if (shellNodes.count(beyond)) run.push_back(beyond);
+
             // A single block is L/h = 1 — not a valid beam element. Skipped here and
             // reported back so the game side can tell the player why nothing appeared.
             if (run.size() >= 2) {
@@ -197,10 +334,15 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
         if (blk.support) nodeBlocks.insert(pos);
 
     // A section change is a node too. The boundary block is shared by both segments, so
-    // the member stays continuous — which is what the physical steel does.
+    // the member stays continuous — which is what the physical steel does. A bearing
+    // plate block is skipped here: it is not a change of beam section, it is the end of
+    // the beam, and it is already a node because it is a shell corner.
     for (const auto& run : rawRuns) {
         for (size_t k = 1; k < run.size(); ++k) {
-            if (grid.at(run[k]).section != grid.at(run[k - 1]).section) nodeBlocks.insert(run[k]);
+            const InBlock& a = grid.at(run[k - 1]);
+            const InBlock& b = grid.at(run[k]);
+            if (isPlate(a.section) || isPlate(b.section)) continue;
+            if (a.section != b.section) nodeBlocks.insert(run[k]);
         }
     }
 
@@ -220,8 +362,15 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
                 // run head's. At the boundary block the two sections meet inside a single
                 // one-metre cube; the block is assigned to the segment that starts there.
                 // That is a real approximation of the 1 m grid, stated rather than hidden.
-                seg.section = grid.at(run[start]).section;
-                if (seg.blocks.size() >= 2) out.push_back(std::move(seg));
+                //
+                // A bearing plate block declares a PLATE token, which names no beam
+                // section, so the search walks past it to the first block that does.
+                seg.section.clear();
+                for (const BlockPos& p : seg.blocks) {
+                    const std::string& s = grid.at(p).section;
+                    if (!isPlate(s)) { seg.section = s; break; }
+                }
+                if (seg.blocks.size() >= 2 && !seg.section.empty()) out.push_back(std::move(seg));
                 start = k;
             }
         }
@@ -231,8 +380,10 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
     std::set<BlockPos> covered;
     for (const auto& s : out)
         for (const BlockPos& p : s.blocks) covered.insert(p);
-    for (const auto& [pos, blk] : grid)
+    for (const auto& [pos, blk] : grid) {
+        if (isPlate(blk.section)) continue;       // plate blocks are answered by the sheet pass
         if (!covered.count(pos)) unassigned.push_back(pos);
+    }
 
     return out;
 }
@@ -297,52 +448,104 @@ struct SolveOut {
         double A = 0, Iy = 0, Iz = 0, cy = 0, cz = 0;
         double wy = 0, wz = 0;                // uniform load in local axes, N/mm
     };
+
+    // One MITC4 facet, with everything a client needs to evaluate its surface stress.
+    //
+    // A shell's state is a 2-D stress TENSOR, not a scalar, so what travels is the
+    // tensor: membrane resultants (N/mm) and bending resultants (N*mm/mm) from which
+    //     sigma = N/t  +/-  6M/t^2
+    // gives the top and bottom faces. Bending is sent PER CORNER as well as at the
+    // centre, because the field varies across a facet and the centre value alone would
+    // flatten the very peaks a design check exists to find.
+    struct ShellOut {
+        int         id = 0;
+        std::string mat, plate;
+        double      t  = 0;
+        double      dc = 0;
+        bool        governingTop = true;      // which face carries the worst von Mises
+        int         governingCorner = -1;     // -1 = centre, 0..3 = corner
+        std::array<BlockPos, 4> blocks{};
+        std::array<McVec, 4>    world{};      // corner node positions, Minecraft mm
+        McVec       ex{ 1, 0, 0 }, ey{ 0, 0, 1 }, normal{ 0, 1, 0 };   // facet local frame
+        double      Nxx = 0, Nyy = 0, Nxy = 0;
+        double      Mxx = 0, Myy = 0, Mxy = 0;
+        double      Qx = 0, Qy = 0;
+        std::array<std::array<double, 3>, 4> Mc{};   // per-corner {Mxx, Myy, Mxy}
+        double      vmTop = 0, vmBot = 0;     // von Mises at the centre, both faces
+        double      dcRaw = 0;                // before support-moment recovery
+        bool        edgeRecovered = false;    // a clamped edge was extrapolated to
+    };
+
     std::vector<MemberOut> members;
+    std::vector<ShellOut>  shells;
     std::vector<BlockPos>  unassigned;
+    std::string            governingKind;     // "member" | "shell" | ""
+
+    // A world holds many structures, and they are solved one at a time. `singular` stays
+    // true if ANY of them is a mechanism, but the others still report their results.
+    int islands         = 0;
+    int singularIslands = 0;
+
+    // Global force equilibrium, summed over every island that solved, in Minecraft axes.
+    // `applied` is recomputed from geometry and density — NOT read back from whatever the
+    // assembly happened to put into the load vector — so it is an INDEPENDENT statement of
+    // what should have been carried. A solver that lost a load, double-counted a mass or
+    // mis-rotated gravity moves the residual off zero, and the residual ships in every
+    // single reply rather than only in the test suite.
+    double appliedN[3]  = { 0, 0, 0 };
+    double reactionN[3] = { 0, 0, 0 };
 };
 
-SolveOut runSolve(const std::vector<InBlock>& blocks,
-                  const std::vector<std::array<double, 6>>& pointLoads,
-                  const std::vector<BlockPos>&              loadAt) {
-    SolveOut out;
-
-    std::map<BlockPos, InBlock> grid;
-    for (const auto& b : blocks) grid[b.pos] = b;
-
-    std::vector<RunSeg> segs = extractRuns(grid, out.unassigned);
-    if (segs.empty()) {
-        out.ok    = true;                 // not an error: nothing structural was placed
-        out.error = "no members extracted";
-        return out;
-    }
-
+// Solve ONE island — one connected structure — and append its results to `out`.
+//
+// Returns false only on a FATAL error (an unknown token, an invalid model): those mean
+// the request itself cannot be answered. A MECHANISM is not fatal and not global; it is
+// a property of the one structure that is a mechanism, recorded on `out` and left behind
+// while the rest of the world is still solved.
+bool solveIsland(const std::map<BlockPos, InBlock>& grid,
+                 const std::vector<RunSeg>&                segs,
+                 const std::vector<QuadSeg>&               quads,
+                 const std::vector<std::array<double, 6>>& pointLoads,
+                 const std::vector<BlockPos>&              loadAt,
+                 int& nextMember, int& nextShell,
+                 SolveOut& out) {
     frame::FrameModel m;
 
     // Materials and sections are referenced by index, so build the tables first
     // and remember where each id landed.
     std::map<std::string, int> matIdx, secIdx;
+    auto materialFor = [&](const std::string& id) -> bool {
+        if (matIdx.count(id)) return true;
+        auto it = materialCatalogue().find(id);
+        if (it == materialCatalogue().end()) return false;
+        const MatSpec& ms = it->second;
+        frame::Material fm(ms.E, ms.E / (2.0 * (1.0 + ms.nu)), ms.rho);
+        fm.nu  = ms.nu;
+        fm.cap = frame::Capacity::make(ms.rcomp, ms.rtens, ms.rshear);
+        matIdx[id] = static_cast<int>(m.materials.size());
+        m.materials.push_back(fm);
+        return true;
+    };
+
     for (const auto& seg : segs) {
-        if (!matIdx.count(seg.mat)) {
-            auto it = materialCatalogue().find(seg.mat);
-            if (it == materialCatalogue().end()) {
-                out.error = "unknown material: " + seg.mat;
-                return out;
-            }
-            const MatSpec& ms = it->second;
-            frame::Material fm(ms.E, ms.E / (2.0 * (1.0 + ms.nu)), ms.rho);
-            fm.nu  = ms.nu;
-            fm.cap = frame::Capacity::make(ms.rcomp, ms.rtens, ms.rshear);
-            matIdx[seg.mat] = static_cast<int>(m.materials.size());
-            m.materials.push_back(fm);
+        if (!materialFor(seg.mat)) {
+            out.error = "unknown material: " + seg.mat;
+            return false;
         }
         if (!secIdx.count(seg.section)) {
             auto it = sectionCatalogue().find(seg.section);
             if (it == sectionCatalogue().end()) {
                 out.error = "unknown section: " + seg.section;
-                return out;
+                return false;
             }
             secIdx[seg.section] = static_cast<int>(m.sections.size());
             m.sections.push_back(it->second);
+        }
+    }
+    for (const auto& q : quads) {
+        if (!materialFor(q.mat)) {
+            out.error = "unknown material: " + q.mat;
+            return false;
         }
     }
 
@@ -368,7 +571,6 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
         return id;
     };
 
-    int nextMember = 1;
     std::vector<SolveOut::MemberOut> mo;
     for (const auto& seg : segs) {
         const BlockPos& a = seg.blocks.front();
@@ -393,14 +595,53 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
         ++nextMember;
     }
 
-    if (m.members.empty()) {
-        out.ok    = true;
-        out.error = "no members extracted";
-        return out;
+    // ---- shell facets -------------------------------------------------------
+    // Corner order must be counter-clockwise about the facet's +normal, and it is
+    // CHECKED rather than reasoned about. The Minecraft-to-FrameCore map (x,y,z) ->
+    // (x,z,y) swaps two axes, so it is a REFLECTION: an ordering that is counter-
+    // clockwise in Minecraft comes out clockwise in the engine. Deriving the order by
+    // hand would be one sign slip away from inside-out facets that still solve, so the
+    // orientation is measured against the intended normal and flipped if it disagrees.
+    std::vector<SolveOut::ShellOut> so;
+    for (const auto& q : quads) {
+        int c[4];
+        for (int k = 0; k < 4; ++k) c[k] = nodeFor(q.c[k]);
+        if (c[0] == c[1] || c[0] == c[2] || c[0] == c[3] ||
+            c[1] == c[2] || c[1] == c[3] || c[2] == c[3]) continue;
+
+        frame::Vec3 want{ 0, 0, 0 };
+        (q.normalAxis == 0 ? want.x : q.normalAxis == 1 ? want.z : want.y) = 1.0;
+
+        auto at = [&](int id) { return m.nodes[static_cast<size_t>(m.nodeIndex(id))].pos; };
+        const frame::Vec3 d = frame::cross(at(c[2]) - at(c[0]), at(c[3]) - at(c[1]));
+        if (frame::dot(d, want) < 0) std::swap(c[1], c[3]);
+
+        frame::ShellQuad sq(nextShell, c[0], c[1], c[2], c[3],
+                            matIdx[q.mat], plateCatalogue().at(q.plate));
+        m.shells.push_back(sq);
+
+        SolveOut::ShellOut o;
+        o.id    = nextShell;
+        o.mat   = q.mat;
+        o.plate = q.plate;
+        o.t     = plateCatalogue().at(q.plate);
+        for (int k = 0; k < 4; ++k) {
+            o.world[static_cast<size_t>(k)] = fcToMc(at(c[k]));
+            // Report the BLOCK behind each corner in the same order the corners ended up
+            // in, so a client can key a block to its facet without redoing the flip.
+            for (const BlockPos& bp : q.c) {
+                if (nodeId.at(bp) == c[k]) { o.blocks[static_cast<size_t>(k)] = bp; break; }
+            }
+        }
+        so.push_back(std::move(o));
+        ++nextShell;
     }
 
+    if (m.members.empty() && m.shells.empty()) return true;
+
     // Self-weight is always on; FrameCore's helper does the kg/m^3 -> tonne/mm^3
-    // bridge and rotates gravity into each member's local axes.
+    // bridge, rotates gravity into each member's local axes, and lumps each facet's
+    // body load to its four corners.
     frame::addSelfWeight(m);
 
     // FAIL-CLOSED. A load whose block is not an analysis node used to be skipped with a
@@ -410,16 +651,12 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
     //
     // The right long-term answer is to split the member at the load point, or to carry it
     // as a member load. Until one of those exists, the request is refused.
+    // A load whose block belongs to a DIFFERENT island simply is not this island's load;
+    // the global check in runSolve has already refused any load that belongs to no island
+    // at all, so skipping here cannot lose one.
     for (size_t k = 0; k < pointLoads.size() && k < loadAt.size(); ++k) {
         auto it = nodeId.find(loadAt[k]);
-        if (it == nodeId.end()) {
-            const BlockPos& p = loadAt[k];
-            out.ok    = false;
-            out.error = "load at (" + std::to_string(p.x) + "," + std::to_string(p.y) + ","
-                      + std::to_string(p.z) + ") is not on an analysis node; "
-                        "loads inside a member are not representable yet";
-            return out;
-        }
+        if (it == nodeId.end()) continue;
         frame::NodalLoad nl;
         nl.node = it->second;
         // Caller sends Minecraft axes; map into FrameCore's.
@@ -435,17 +672,52 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
     std::string why;
     if (!m.validate(why)) {
         out.error = "model invalid: " + why;
-        return out;
+        return false;
     }
 
     frame::SolveResult r = frame::solve(m);
-    out.singular   = r.singular;
-    out.diagnostic = r.diagnostic;
-    out.ok         = true;
+    ++out.islands;
 
-    // A singular system means "this is a mechanism, not a structure". The forces
-    // are meaningless, so nothing is reported beyond the diagnostic.
-    if (r.singular) return out;
+    // Independent statement of the total applied force, in FrameCore axes. Shell body
+    // load arrives as nodal loads, member self weight as element UDLs, so the members'
+    // share is recomputed here from rho, A and L rather than read out of the model.
+    if (!r.singular) {
+        double appFc[3] = { 0, 0, 0 };
+        for (const frame::NodalLoad& nl : m.nodalLoads) {
+            appFc[0] += nl.comp[frame::Ux];
+            appFc[1] += nl.comp[frame::Uy];
+            appFc[2] += nl.comp[frame::Uz];
+        }
+        for (const frame::Member& mem : m.members) {
+            const int ia = m.nodeIndex(mem.i), ib = m.nodeIndex(mem.j);
+            if (ia < 0 || ib < 0) continue;
+            const frame::Vec3 d = m.nodes[static_cast<size_t>(ib)].pos - m.nodes[static_cast<size_t>(ia)].pos;
+            const double L   = frame::norm(d);
+            const double rho = m.materials[static_cast<size_t>(mem.matIdx)].rho;
+            const double A   = m.sections[static_cast<size_t>(mem.secIdx)].A;
+            appFc[2] -= rho * A * L * 9810.0 * 1e-12;      // gravity is -Z in FrameCore
+        }
+        double rxFc[3] = { 0, 0, 0 };
+        for (size_t nI = 0; nI < m.nodes.size(); ++nI) {
+            for (int d = 0; d < 3; ++d) rxFc[d] += r.reaction(static_cast<int>(nI), d);
+        }
+        // FrameCore (X, Y, Z) -> Minecraft (x, z, y), the same map used for every vector.
+        const McVec app = fcToMc(frame::Vec3{ appFc[0], appFc[1], appFc[2] });
+        const McVec rxn = fcToMc(frame::Vec3{ rxFc[0], rxFc[1], rxFc[2] });
+        out.appliedN[0] += app.x;  out.appliedN[1] += app.y;  out.appliedN[2] += app.z;
+        out.reactionN[0] += rxn.x; out.reactionN[1] += rxn.y; out.reactionN[2] += rxn.z;
+    }
+
+    // A singular system means "THIS structure is a mechanism". Its own forces are
+    // meaningless, so it reports nothing beyond the diagnostic — and, crucially, it takes
+    // nothing else down with it. One unsupported shed used to make every building in the
+    // world report nothing at all.
+    if (r.singular) {
+        out.singular = true;
+        ++out.singularIslands;
+        if (out.diagnostic.empty()) out.diagnostic = r.diagnostic;
+        return true;
+    }
 
     // ---- fibre stress field: the data the stress overlay actually draws ----
     // Built here rather than taken from computeStressField.
@@ -661,10 +933,276 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
             dst.stations.push_back(std::move(st));
         }
 
-        if (dst.dc > out.maxDC) { out.maxDC = dst.dc; out.governing = dst.id; }
+        if (dst.dc > out.maxDC) {
+            out.maxDC = dst.dc;
+            out.governing = dst.id;
+            out.governingKind = "member";
+        }
     }
 
-    out.members = std::move(mo);
+    // ---- shell facets: surface stress and the von Mises screen ---------------
+    //
+    // A beam's D/C is the argmax of five one-dimensional ratios. A plate's is not: the
+    // state at a point on its surface is a 2-D stress TENSOR, so the screen goes through
+    // the principal stresses and von Mises, on BOTH faces, at the centre and at all four
+    // corners. Reporting only the centre would flatten the peaks — for a clamped slab the
+    // support moment is more than twice the span moment.
+    //
+    // Honest boundary, carried into the docs: this is an ELASTIC SURFACE SCREEN.
+    // Transverse shear Qx/Qy is recovered and reported but NOT screened, there is no
+    // plate buckling check, and there is no plate ultimate strength.
+    std::vector<double> cenX(so.size()), cenY(so.size()), cenZ(so.size());
+    std::vector<char>   frameOk(so.size(), 0);
+    std::vector<std::array<frame::Vec3, 2>> facetAxes(so.size());
+
+    for (size_t k = 0; k < r.shellForces.size() && k < so.size(); ++k) {
+        const frame::ShellQuad&          sh = m.shells[k];
+        const frame::ShellElementForces& f  = r.shellForces[k];
+        auto& dst = so[k];
+
+        dst.Nxx = f.Nxx; dst.Nyy = f.Nyy; dst.Nxy = f.Nxy;
+        dst.Mxx = f.Mxx; dst.Myy = f.Myy; dst.Mxy = f.Mxy;
+        dst.Qx  = f.Qx;  dst.Qy  = f.Qy;
+        for (int c = 0; c < 4; ++c) {
+            dst.Mc[static_cast<size_t>(c)] = { f.MxxC[c], f.MyyC[c], f.MxyC[c] };
+        }
+
+        // The facet frame, rebuilt exactly as MITC4ShellElement::prepare builds it, so the
+        // axes on the wire are the axes the resultants are actually expressed in.
+        //
+        // NOTE for any reader of the wire: ex, ey, n form a right-handed triad in the
+        // ENGINE. The Minecraft axis map (x,y,z) -> (x,z,y) is a reflection, so the same
+        // three vectors read in Minecraft space are LEFT-handed: ex x ey = -n. Use them to
+        // project a point onto the facet, never to rebuild the normal by a cross product.
+        const int i0 = m.nodeIndex(sh.n[0]), i1 = m.nodeIndex(sh.n[1]);
+        const int i2 = m.nodeIndex(sh.n[2]), i3 = m.nodeIndex(sh.n[3]);
+        if (i0 < 0 || i1 < 0 || i2 < 0 || i3 < 0) continue;
+        const frame::Vec3 P0 = m.nodes[i0].pos, P1 = m.nodes[i1].pos;
+        const frame::Vec3 P2 = m.nodes[i2].pos, P3 = m.nodes[i3].pos;
+        frame::Vec3 n = frame::cross(P2 - P0, P3 - P1);
+        const double nl = frame::norm(n);
+        if (nl <= 0) continue;
+        n = n * (1.0 / nl);
+        frame::Vec3 e1 = P1 - P0;
+        e1 = e1 - n * frame::dot(e1, n);
+        const double e1l = frame::norm(e1);
+        if (e1l <= 0) continue;
+        e1 = e1 * (1.0 / e1l);
+        const frame::Vec3 e2 = frame::cross(n, e1);
+        dst.ex     = fcToMc(e1);
+        dst.ey     = fcToMc(e2);
+        dst.normal = fcToMc(n);
+        facetAxes[k] = { e1, e2 };
+        frameOk[k]   = 1;
+        cenX[k] = 0.25 * (P0.x + P1.x + P2.x + P3.x);
+        cenY[k] = 0.25 * (P0.y + P1.y + P2.y + P3.y);
+        cenZ[k] = 0.25 * (P0.z + P1.z + P2.z + P3.z);
+
+        double sx = 0, sy = 0, txy = 0;
+        frame::shellLayerSigma(f.Nxx, f.Nyy, f.Nxy, f.Mxx, f.Myy, f.Mxy, sh.t,
+                               frame::ShellLayer::Top, sx, sy, txy);
+        dst.vmTop = frame::principalStress(sx, sy, txy).vonMises;
+        frame::shellLayerSigma(f.Nxx, f.Nyy, f.Nxy, f.Mxx, f.Myy, f.Mxy, sh.t,
+                               frame::ShellLayer::Bot, sx, sy, txy);
+        dst.vmBot = frame::principalStress(sx, sy, txy).vonMises;
+    }
+
+    // ---- support-moment recovery --------------------------------------------
+    //
+    // MITC4's per-corner moments are NOT superconvergent, and at a clamped edge they are
+    // badly low: measured against Timoshenko's clamped square plate they under-report the
+    // support moment by 63% at 4 elements across and still 26% at 14. Under-reporting the
+    // one moment that governs a slab's supports is a silently-safe answer, and this
+    // project treats those as the worst kind of wrong.
+    //
+    // So the edge value is RECOVERED instead of read: the moment field is smooth in the
+    // interior, so it is extrapolated to the boundary from the two element CENTRES normal
+    // to that edge — the textbook interior-to-boundary recovery,
+    //     M_edge ~= 1.5*M_1 - 0.5*M_2
+    // which measures 14% low at 8 elements and 4% at 16, in place of 40% and 23%.
+    //
+    // It is applied only where it is defensible: an edge whose two corner nodes are fully
+    // fixed, with a neighbour facet whose local frame agrees with this one, so the two
+    // tensors being combined are expressed in the same axes. Anything else keeps the raw
+    // value. The recovery can only ever RAISE the reported demand — it is taken as the
+    // worse of the two — so a failure to recover cannot make a plate look safer.
+    std::map<std::array<long long, 3>, size_t> byCentre;
+    auto keyOf = [](double x, double y, double z) {
+        return std::array<long long, 3>{ llround(x), llround(y), llround(z) };
+    };
+    for (size_t k = 0; k < so.size(); ++k) {
+        if (frameOk[k]) byCentre[keyOf(cenX[k], cenY[k], cenZ[k])] = k;
+    }
+
+    for (size_t k = 0; k < r.shellForces.size() && k < so.size(); ++k) {
+        const frame::ShellQuad&          sh = m.shells[k];
+        const frame::ShellElementForces& f  = r.shellForces[k];
+        auto& dst = so[k];
+        const frame::Capacity& cap = m.materials[static_cast<size_t>(sh.matIdx)].cap;
+
+        frame::ShellDemandResult d = frame::checkShellSurface(f, sh.t, cap);
+        dst.dcRaw = d.risk;
+
+        if (frameOk[k]) {
+            for (int e = 0; e < 4; ++e) {
+                const int a = e, b = (e + 1) % 4;
+                const int ia = m.nodeIndex(sh.n[a]), ib = m.nodeIndex(sh.n[b]);
+                if (ia < 0 || ib < 0) continue;
+                auto allFixed = [&](int idx) {
+                    for (int q = 0; q < 6; ++q) if (!m.nodes[static_cast<size_t>(idx)].fixed[q]) return false;
+                    return true;
+                };
+                if (!allFixed(ia) || !allFixed(ib)) continue;
+
+                const frame::Vec3& Pa = m.nodes[ia].pos;
+                const frame::Vec3& Pb = m.nodes[ib].pos;
+                const double mx = 0.5 * (Pa.x + Pb.x), my = 0.5 * (Pa.y + Pb.y), mz = 0.5 * (Pa.z + Pb.z);
+                // Step twice the centre-to-edge vector, inwards: that lands on the centre
+                // of the next facet in from the boundary.
+                auto it = byCentre.find(keyOf(cenX[k] + 2 * (cenX[k] - mx),
+                                              cenY[k] + 2 * (cenY[k] - my),
+                                              cenZ[k] + 2 * (cenZ[k] - mz)));
+                if (it == byCentre.end()) continue;
+                const size_t nb = it->second;
+                if (!frameOk[nb]) continue;
+                if (frame::dot(facetAxes[k][0], facetAxes[nb][0]) < 0.999 ||
+                    frame::dot(facetAxes[k][1], facetAxes[nb][1]) < 0.999) continue;
+
+                frame::ShellElementForces g = f;
+                const frame::ShellElementForces& h = r.shellForces[nb];
+                const double rxx = 1.5 * f.Mxx - 0.5 * h.Mxx;
+                const double ryy = 1.5 * f.Myy - 0.5 * h.Myy;
+                const double rxy = 1.5 * f.Mxy - 0.5 * h.Mxy;
+                for (int c : { a, b }) { g.MxxC[c] = rxx; g.MyyC[c] = ryy; g.MxyC[c] = rxy; }
+                const frame::ShellDemandResult dr = frame::checkShellSurface(g, sh.t, cap);
+                if (dr.risk > d.risk) {
+                    d = dr;
+                    dst.edgeRecovered = true;
+                    dst.Mc[static_cast<size_t>(a)] = { rxx, ryy, rxy };
+                    dst.Mc[static_cast<size_t>(b)] = { rxx, ryy, rxy };
+                }
+            }
+        }
+
+        dst.dc              = d.risk;
+        dst.governingTop    = d.top;
+        dst.governingCorner = d.corner;
+
+        if (dst.dc > out.maxDC) {
+            out.maxDC = dst.dc;
+            out.governing = dst.id;
+            out.governingKind = "shell";
+        }
+    }
+
+    for (auto& x : mo) out.members.push_back(std::move(x));
+    for (auto& x : so) out.shells.push_back(std::move(x));
+    return true;
+}
+
+// ---------------------------------------------------------------- islands
+// A world is not one structure. Two buildings that share no node share no equilibrium
+// either, and assembling them into a single stiffness matrix only couples their FATES:
+// one unsupported shed anywhere in the dimension makes the global matrix rank-deficient,
+// the factorisation fails, and every building in the world reports nothing. Measured, not
+// theorised — a supported cantilever solved at D/C 0.026 alone, and reported `singular`
+// with no results at all once an unanchored beam was placed a hundred blocks away.
+//
+// So the elements are partitioned into connected components first and each is solved on
+// its own. A mechanism is then a property of the structure that is one. It also makes the
+// solve cheaper: direct factorisation is superlinear in the model, so N small models cost
+// less than one N-times-larger model — the opposite of what batching usually buys.
+struct DisjointSet {
+    std::map<BlockPos, BlockPos> parent;
+    BlockPos find(const BlockPos& a) {
+        auto it = parent.find(a);
+        if (it == parent.end()) { parent[a] = a; return a; }
+        if (it->second == a) return a;
+        const BlockPos root = find(it->second);
+        parent[a] = root;
+        return root;
+    }
+    void unite(const BlockPos& a, const BlockPos& b) {
+        const BlockPos ra = find(a), rb = find(b);
+        if (!(ra == rb)) parent[ra] = rb;
+    }
+};
+
+SolveOut runSolve(const std::vector<InBlock>& blocks,
+                  const std::vector<std::array<double, 6>>& pointLoads,
+                  const std::vector<BlockPos>&              loadAt) {
+    SolveOut out;
+
+    std::map<BlockPos, InBlock> grid;
+    for (const auto& b : blocks) grid[b.pos] = b;
+
+    // Sheets first: the shell nodes they claim are what a run is allowed to bear on.
+    std::set<BlockPos>   shellNodes;
+    std::vector<QuadSeg> quads = extractSheets(grid, shellNodes, out.unassigned);
+    std::vector<RunSeg>  segs  = extractRuns(grid, shellNodes, out.unassigned);
+    if (segs.empty() && quads.empty()) {
+        out.ok    = true;                 // not an error: nothing structural was placed
+        out.error = "no members or plates extracted";
+        return out;
+    }
+
+    // Connectivity is through SHARED NODES, which is exactly what the extraction already
+    // guarantees: runs are split at junctions so two members that meet share a block, and
+    // a run bearing on a plate ends on one of that plate's corner blocks.
+    DisjointSet ds;
+    std::set<BlockPos> nodeBlocks;
+    for (const auto& s : segs) {
+        ds.unite(s.blocks.front(), s.blocks.back());
+        nodeBlocks.insert(s.blocks.front());
+        nodeBlocks.insert(s.blocks.back());
+    }
+    for (const auto& q : quads) {
+        for (int k = 1; k < 4; ++k) ds.unite(q.c[0], q.c[k]);
+        for (const BlockPos& c : q.c) nodeBlocks.insert(c);
+    }
+
+    // FAIL-CLOSED, and checked GLOBALLY before any island is solved. A load whose block is
+    // no island's node must refuse the whole request; deciding that per island would let
+    // each one skip it as "not mine" and the load would vanish with ok:true — the silently
+    // safe answer that issue #14 exists to prevent.
+    for (size_t k = 0; k < pointLoads.size() && k < loadAt.size(); ++k) {
+        if (nodeBlocks.count(loadAt[k])) continue;
+        const BlockPos& p = loadAt[k];
+        out.ok    = false;
+        out.error = "load at (" + std::to_string(p.x) + "," + std::to_string(p.y) + ","
+                  + std::to_string(p.z) + ") is not on an analysis node; "
+                    "loads inside a member are not representable yet";
+        return out;
+    }
+
+    std::map<BlockPos, size_t>        islandOf;
+    std::vector<std::vector<RunSeg>>  islandSegs;
+    std::vector<std::vector<QuadSeg>> islandQuads;
+    auto slotFor = [&](const BlockPos& any) -> size_t {
+        const BlockPos root = ds.find(any);
+        auto it = islandOf.find(root);
+        if (it != islandOf.end()) return it->second;
+        const size_t slot = islandSegs.size();
+        islandOf[root] = slot;
+        islandSegs.emplace_back();
+        islandQuads.emplace_back();
+        return slot;
+    };
+    for (const auto& s : segs)  islandSegs[slotFor(s.blocks.front())].push_back(s);
+    for (const auto& q : quads) islandQuads[slotFor(q.c[0])].push_back(q);
+
+    int nextMember = 1, nextShell = 1;
+    out.ok = true;
+    for (size_t k = 0; k < islandSegs.size(); ++k) {
+        if (!solveIsland(grid, islandSegs[k], islandQuads[k], pointLoads, loadAt,
+                         nextMember, nextShell, out)) {
+            out.ok = false;
+            return out;
+        }
+    }
+    if (out.members.empty() && out.shells.empty() && out.error.empty()) {
+        out.error = "no members or plates extracted";
+    }
     return out;
 }
 
@@ -749,8 +1287,13 @@ std::string handleSolve(const bjson::Value& req) {
         b.section = bv.str("section");
         b.support = bv.boolean("support", false);
 
-        if (!matCat.count(b.mat))     return errorLine("unknown material '" + b.mat + "'", revision);
-        if (!secCat.count(b.section)) return errorLine("unknown section '" + b.section + "'", revision);
+        if (!matCat.count(b.mat)) return errorLine("unknown material '" + b.mat + "'", revision);
+        // The token names either a beam section or a plate. Anything else is refused
+        // rather than defaulted: a block whose token the engine does not recognise would
+        // otherwise become some other, perfectly solvable structure (issue #18).
+        if (!secCat.count(b.section) && !isPlate(b.section)) {
+            return errorLine("unknown section or plate '" + b.section + "'", revision);
+        }
 
         blocks.push_back(b);
     }
@@ -783,10 +1326,30 @@ std::string handleSolve(const bjson::Value& req) {
         w.endObj();
         return w.done();
     }
+    // `singular` now means "at least one structure in this world is a mechanism", and the
+    // counts say how many — the results of the sound ones are in this same reply. A client
+    // that blanked its whole overlay on `singular` would be throwing away good answers.
     w.kv("singular", s.singular);
+    w.kv("islands", s.islands).kv("singularIslands", s.singularIslands);
     if (!s.diagnostic.empty()) w.kv("diagnostic", s.diagnostic);
+    w.key("equilibrium").beginObj();
+    w.key("applied").beginArr().val(s.appliedN[0]).val(s.appliedN[1]).val(s.appliedN[2]).endArr();
+    w.key("reaction").beginArr().val(s.reactionN[0]).val(s.reactionN[1]).val(s.reactionN[2]).endArr();
+    {
+        double scale = 0, resid = 0;
+        for (int d = 0; d < 3; ++d) {
+            scale = std::max(scale, std::fabs(s.appliedN[d]));
+            resid = std::max(resid, std::fabs(s.appliedN[d] + s.reactionN[d]));
+        }
+        w.kv("residual", scale > 0 ? resid / scale : resid);
+    }
+    w.endObj();
     if (!s.error.empty())      w.kv("note", s.error);
     w.kv("maxDC", s.maxDC).kv("governing", s.governing);
+    // Members and plates number from 1 independently, so the id alone does not say what
+    // it refers to. The kind travels with it rather than being inferred from a lookup
+    // that would silently pick the wrong element when both exist.
+    if (!s.governingKind.empty()) w.kv("governingKind", s.governingKind);
 
     w.key("members").beginArr();
     for (const auto& mm : s.members) {
@@ -833,6 +1396,34 @@ std::string handleSolve(const bjson::Value& req) {
         w.endObj();
     }
     w.endArr();
+
+    w.key("shells").beginArr();
+    for (const auto& sh : s.shells) {
+        w.beginObj();
+        w.kv("id", sh.id).kv("mat", sh.mat).kv("plate", sh.plate).kv("t", sh.t);
+        w.kv("dc", sh.dc).kv("face", sh.governingTop ? "TOP" : "BOT");
+        w.kv("corner", sh.governingCorner);
+        w.key("blocks").beginArr();
+        for (const BlockPos& p : sh.blocks) w.beginArr().val(p.x).val(p.y).val(p.z).endArr();
+        w.endArr();
+        w.key("world").beginArr();
+        for (const McVec& v : sh.world) w.beginArr().val(v.x).val(v.y).val(v.z).endArr();
+        w.endArr();
+        writeVec(w, "ex", sh.ex);
+        writeVec(w, "ey", sh.ey);
+        writeVec(w, "n",  sh.normal);
+        w.key("N").beginObj().kv("xx", sh.Nxx).kv("yy", sh.Nyy).kv("xy", sh.Nxy).endObj();
+        w.key("M").beginObj().kv("xx", sh.Mxx).kv("yy", sh.Myy).kv("xy", sh.Mxy).endObj();
+        w.key("Q").beginObj().kv("x", sh.Qx).kv("y", sh.Qy).endObj();
+        w.key("Mc").beginArr();
+        for (const auto& c : sh.Mc) w.beginArr().val(c[0]).val(c[1]).val(c[2]).endArr();
+        w.endArr();
+        w.kv("vmTop", sh.vmTop).kv("vmBot", sh.vmBot);
+        w.kv("dcRaw", sh.dcRaw).kv("edgeRecovered", sh.edgeRecovered);
+        w.endObj();
+    }
+    w.endArr();
+
     writeBlocks(w, "unassigned", s.unassigned);
     w.endObj();
     return w.done();
@@ -847,6 +1438,11 @@ std::string handleHello() {
     w.endArr();
     w.key("sections").beginArr();
     for (const auto& [id, _] : sectionCatalogue()) w.val(id);
+    w.endArr();
+    w.key("plates").beginArr();
+    for (const auto& [id, t] : plateCatalogue()) {
+        w.beginObj().kv("id", id).kv("t", t).endObj();
+    }
     w.endArr();
     w.endObj();
     return w.done();
