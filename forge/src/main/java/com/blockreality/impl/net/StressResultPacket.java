@@ -3,7 +3,6 @@ package com.blockreality.impl.net;
 import com.blockreality.api.AnalysisResult;
 import com.blockreality.api.EndForces;
 import com.blockreality.api.GoverningFibre;
-import com.blockreality.api.Fibre;
 import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.ShellFieldSpec;
 import com.blockreality.api.ShellSnapshot;

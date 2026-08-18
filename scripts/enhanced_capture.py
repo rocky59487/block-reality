@@ -2,7 +2,6 @@
 
 import os
 import sys
-import time
 
 def is_windows():
     return os.name == "nt"
