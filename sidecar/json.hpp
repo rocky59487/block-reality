@@ -57,6 +57,10 @@ struct Value {
         auto it = o.find(k);
         return it != o.end() && it->second.t == T::Str;
     }
+    bool isBool(const char* k) const {
+        auto it = o.find(k);
+        return it != o.end() && it->second.t == T::Bool;
+    }
 
     const Array& arr(const char* k) const {
         static const Array kEmpty;

@@ -47,6 +47,7 @@ public final class ClientStressState {
     private static List<BlockKey> plateBlocks = List.of();
     private static int islands;
     private static int singularIslands;
+    private static double bucklingFactor;
     private static List<StressRibbon> ribbons = List.of();
     private static String engineStatus = "";
     private static String engineDetail = "";
@@ -67,6 +68,11 @@ public final class ClientStressState {
     public static int islands() { return islands; }
 
     public static int singularIslands() { return singularIslands; }
+
+    public static double bucklingFactor() { return bucklingFactor; }
+
+    /** Some structure is at or past its linear buckling load. */
+    public static boolean bucklingCritical() { return bucklingFactor > 0 && bucklingFactor <= 1.0; }
 
     public static long revision() { return revision; }
 
@@ -142,6 +148,7 @@ public final class ClientStressState {
         maxDc = p.maxDc();
         islands = p.islands();
         singularIslands = p.singularIslands();
+        bucklingFactor = p.bucklingFactor();
         members = p.members();
         shells = p.shells();
         engineStatus = "";

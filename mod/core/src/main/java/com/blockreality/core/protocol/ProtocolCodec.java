@@ -129,6 +129,7 @@ public final class ProtocolCodec {
                 v.i32("islands", 0),
                 v.i32("singularIslands", 0),
                 v.objField("equilibrium").num("residual", 0),
+                v.num("bucklingFactor", 0),
                 members,
                 shells,
                 unassigned);

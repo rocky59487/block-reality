@@ -235,19 +235,70 @@ class SidecarEngineTest {
     }
 
     @Test
-    void aLoadInsideAMemberIsRefusedRatherThanDropped() {
-        // There is no node in the middle of a run, so this load cannot be represented.
-        // Dropping it would answer a question about a lighter structure than the one
-        // that was asked about, with ok:true on the reply.
+    void aLoadInsideAMemberSplitsItAtThatPoint() {
+        // Hanging a weight on the middle of a beam is the most obvious thing to do with
+        // this mod, and it used to refuse the whole request — killing the analysis of every
+        // structure in the world. The loaded block is now a node, so the run splits there
+        // and the load acts exactly where it was put.
         SolveRequest.Builder b = SolveRequest.builder(new WorldRevision(12));
-        for (int x = 0; x <= 4; x++) {
+        for (int x = 0; x <= 8; x++) {
             b.block(new BlockKey(x, 64, 0), "steel", "steel_rect_200x400", x == 0);
         }
         AnalysisResult r = client.solve(
-                b.load(SolveRequest.PointLoad.downwards(new BlockKey(2, 64, 0), P_N)).build());
+                b.load(SolveRequest.PointLoad.downwards(new BlockKey(4, 64, 0), P_N)).build());
+
+        assertTrue(r.ok(), r.diagnostic());
+        assertEquals(2, r.members().size(), "the run splits at the loaded block");
+
+        // Closed form: cantilever with a point load at distance a, plus self weight. The
+        // load's POSITION enters through a, so a load quietly snapped to the nearest end
+        // would show up here rather than pass.
+        double span = 8000, a = 4000;
+        assertEquals(P_N * a + W_N_PER_MM * span * span / 2.0,
+                r.members().get(0).endI().mz(), 1e-3);
+    }
+
+    @Test
+    void aLoadOnNoElementAtAllIsStillRefused() {
+        // One block forms no member — L/h = 1 is not a beam — so this load has nowhere to
+        // go. Dropping it would answer a question about a lighter structure than the one
+        // asked about, with ok:true on the reply.
+        SolveRequest.Builder b = SolveRequest.builder(new WorldRevision(13));
+        b.block(new BlockKey(0, 64, 0), "steel", "steel_rect_200x400", true);
+        AnalysisResult r = client.solve(
+                b.load(SolveRequest.PointLoad.downwards(new BlockKey(0, 64, 0), P_N)).build());
 
         assertFalse(r.ok(), "a load that cannot be placed must fail the request");
-        assertTrue(r.diagnostic().contains("not on an analysis node"), r.diagnostic());
+        assertTrue(r.diagnostic().contains("no structural element"), r.diagnostic());
+    }
+
+    @Test
+    void aSlenderColumnIsCalledSafeByStressAndUnstableByBuckling() {
+        // The gap between a strength check and a stability check, as one number pair.
+        // Euler's critical load falls with the SQUARE of the length; the stress ratio does
+        // not know the length exists.
+        SolveRequest.Builder b = SolveRequest.builder(new WorldRevision(14));
+        for (int i = 0; i < 21; i++) {
+            b.block(new BlockKey(0, 64 + i, 0), "steel", "steel_rect_200x400", i == 0);
+        }
+        AnalysisResult r = client.solve(
+                b.load(SolveRequest.PointLoad.downwards(new BlockKey(0, 84, 0), 400_000)).build());
+
+        assertTrue(r.isUsable(), r.diagnostic());
+        assertTrue(r.maxDc() < 0.05, "the stress screen calls it safe: D/C = " + r.maxDc());
+        assertTrue(r.bucklingCritical(),
+                "but it is past its buckling load: lambda_cr = " + r.bucklingFactor());
+
+        // The same load on a short column is stable, so the factor really does depend on
+        // length rather than being a constant dressed up as an analysis.
+        SolveRequest.Builder shortCol = SolveRequest.builder(new WorldRevision(15));
+        for (int i = 0; i < 9; i++) {
+            shortCol.block(new BlockKey(0, 64 + i, 0), "steel", "steel_rect_200x400", i == 0);
+        }
+        AnalysisResult s = client.solve(shortCol
+                .load(SolveRequest.PointLoad.downwards(new BlockKey(0, 72, 0), 400_000)).build());
+        assertFalse(s.bucklingCritical(), "lambda_cr = " + s.bucklingFactor());
+        assertTrue(s.bucklingFactor() > r.bucklingFactor());
     }
 
     @Test
@@ -480,6 +531,65 @@ class SidecarEngineTest {
         AnalysisResult alone = client.solve(solo.build());
         assertEquals(alone.maxDc(), r.maxDc(), 0.0,
                 "the sound building's answer must not depend on its neighbours");
+    }
+
+    @Test
+    void aShearWallCarriesLoadInItsOwnPlane() {
+        // The load path that decided D-005. A grillage restrains the in-plane DOFs at every
+        // node, so it reports ZERO for the first of these two numbers; a shear wall's whole
+        // job is the thing it cannot represent.
+        int nw = 5, nh = 13;
+        double shear = 100_000;
+        SolveRequest.Builder b = SolveRequest.builder(new WorldRevision(50));
+        for (int i = 0; i < nw; i++) {
+            for (int j = 0; j < nh; j++) {
+                b.block(new BlockKey(i, 64 + j, 0), "concrete", "concrete_slab_200", j == 0);
+            }
+        }
+        for (int i = 0; i < nw; i++) {
+            b.load(new SolveRequest.PointLoad(new BlockKey(i, 64 + nh - 1, 0),
+                    shear / nw, 0, 0, 0, 0, 0));
+        }
+        AnalysisResult r = client.solve(b.build());
+        assertTrue(r.isUsable(), r.diagnostic());
+
+        double wMm = (nw - 1) * 1000.0;
+        double hMm = (nh - 1) * 1000.0;
+        double base = 64 * 1000 + 500;
+
+        // The facet row nearest mid height. Facet centres sit half a block above each node
+        // row, so "base + h/2" is not itself a centre — picking the nearest one keeps the
+        // test about the physics rather than about arithmetic on the mesh offset.
+        double yWanted = base + hMm / 2.0;
+        double yRow = r.shells().stream()
+                .mapToDouble(s -> s.field().orElseThrow().centreMm().y())
+                .boxed()
+                .min(java.util.Comparator.comparingDouble(v -> Math.abs(v - yWanted)))
+                .orElseThrow();
+        List<ShellSnapshot> row = new java.util.ArrayList<>();
+        for (ShellSnapshot s : r.shells()) {
+            if (Math.abs(s.field().orElseThrow().centreMm().y() - yRow) < 1e-6) row.add(s);
+        }
+        assertEquals(nw - 1, row.size(), "one facet row across the wall");
+
+        // Every horizontal cut carries the whole shear, so the mean in-plane shear per unit
+        // width is V/w — the membrane action, decoded through the Java field object rather
+        // than read off the wire.
+        double nxy = 0;
+        for (ShellSnapshot s : row) nxy += s.field().orElseThrow().nxy();
+        // Looser than the sidecar's own gate (1e-4) for two honest reasons: this side reads
+        // the value after a float32 round trip on the wire, and it samples a different facet
+        // row. The tight version of this check lives in verify.py where neither applies.
+        assertEquals(shear / wMm, Math.abs(nxy / row.size()), 1e-3 * shear / wMm);
+
+        // And the wall overturns as a vertical cantilever of its own plan section.
+        row.sort(java.util.Comparator.comparingDouble(s -> s.field().orElseThrow().centreMm().x()));
+        double nxxA = row.get(0).field().orElseThrow().nxx();
+        double nxxB = row.get(row.size() - 1).field().orElseThrow().nxx();
+        double t = 200.0;
+        double lever = hMm - (yRow - base);          // height of the load above this cut
+        double expect = shear * lever * (wMm / 2.0 - 500.0) / (t * Math.pow(wMm, 3) / 12.0) * t;
+        assertEquals(Math.abs(expect), Math.abs((nxxB - nxxA) / 2.0), 1e-3 * Math.abs(expect));
     }
 
     @Test

@@ -11,18 +11,18 @@ binary named below; none is transcribed by hand.
 | commit | `6b40c08f0e2c077bf041b0259870077420b9d6b8` (2026-08-11T21:24:40+08:00) |
 | worktree clean | True |
 | solver lane | compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT |
-| binary sha256 | `1ce74526c3a9f5336cac8546bc0a6ce0cf9351c8c12a4123cdbeaad30b6138e9` |
+| binary sha256 | `93a918785aa868993a3269eaa106b4ea4e20a2c0e62561d57397cf8ffe81cedc` |
 | host | Linux-6.18.5-fc-v20-x86_64-with-glibc2.39 |
 
 Source hashes:
 
 | file | sha256 |
 |---|---|
-| `sidecar/main.cpp` | `78d1d72e98f53d72229e10d0717a0eff4c98044e248939dd586fdf9edd31ccdb` |
-| `sidecar/json.hpp` | `2cfb778e3eafb848228a50efc794aa189010789c347a3baf7430601091380f1e` |
-| `sidecar/verify.py` | `651bbcd140217ef992368533a60425575aad442b89e8335c8b4ad9ea1e95394f` |
+| `sidecar/main.cpp` | `5f23af6275734f0cc03013b8752f43082da1f0f8c9e56847c103602fec830696` |
+| `sidecar/json.hpp` | `e6daed262ca85e77cd177498d51b541a72b13a330e2904702eab778cd967a98e` |
+| `sidecar/verify.py` | `b0d08767f95058a1a3f622d21f161cbcb3f6acb0945cb2ff5302819432bbab92` |
 | `sidecar/CMakeLists.txt` | `e9351f417fa6d3e0c33d42d0095b5d3ab25b433794258cb51732a474b701f700` |
-| `scripts/evidence.py` | `4dd94fe7b1f38227425ec678d40cc5b2e7fa2f6f02ea80159516af7c3abce958` |
+| `scripts/evidence.py` | `ac07708e0363a10e3f297b1edeea5685c6a9f7c278b7493fdfad49da55095d12` |
 
 ## Accuracy against closed-form solutions
 
@@ -127,7 +127,7 @@ Behaviours with no closed form: each is either right or wrong.
 |---|---|
 | P1  unsupported structure reported as a mechanism | yes |
 | P2  a single block is not a beam | yes |
-| P3  an unrepresentable load is refused, not dropped | yes |
+| P3  a load on no element is refused, not dropped | yes |
 | P4  a missing material is refused, not defaulted | yes |
 | P5  an unknown section is refused | yes |
 | P6  repeated solves are bit-identical | yes |
@@ -135,6 +135,8 @@ Behaviours with no closed form: each is either right or wrong.
 | P8  a slab meshes as plate facets and yields no members | yes |
 | P9  a solid of plate blocks is refused, not meshed | yes |
 | P10 support-moment recovery never lowers a demand | yes |
+| P11 a load inside a member splits it and acts there | yes |
+| P12 a slender column is safe by stress and unstable by buckling | yes |
 
 ## Plate element: mesh convergence
 
@@ -220,6 +222,42 @@ is four elements across and nothing recovers that well. Read the span moment as
 quantitative and the support moment as indicative until the plate spans at least
 a dozen blocks.
 
+## Shear wall: the load path the element was chosen for
+
+D-005 chose MITC4 flat shells over a grillage on one specific ground: a
+grillage restrains the in-plane DOFs at every node, so it cannot carry a shear
+wall's load at all and reports **exactly zero** for the first column below.
+That justification is checked here rather than asserted.
+
+A wall clamped along its base with 100000 N pushed across its top,
+read at the facet row nearest mid height. It resists that load two ways at once,
+and both have closed forms: in-plane shear flow V/w, and an overturning couple
+carried as vertical fibre force, the wall acting as a cantilever whose
+cross-section is its own plan.
+
+| elements (w × h) | aspect h/w | shear flow error | overturning error | self weight error |
+|---:|---:|---:|---:|---:|
+| 6 × 6 | 1 | 1.41e-03 | 2.13e-02 | 1.16e-10 |
+| 4 × 12 | 3 | 2.71e-05 | 6.80e-07 | 9.86e-11 |
+| 4 × 20 | 5 | 1.40e-07 | 7.49e-10 | 5.71e-11 |
+| 2 × 20 | 10 | 1.40e-07 | 1.82e-09 | 0.00e+00 |
+
+The slender walls agree with beam theory to 1e-7 and better, including one only
+**two elements wide** — which is the point of the QM6 incompatible membrane
+modes. Without them a four-node quad has no way to curve in its own plane, and
+the same walls reported their overturning fibre force 3.4% and 12.3% LOW, the
+unsafe direction. The bubble modes are statically condensed, so they cost no
+global degrees of freedom.
+
+The squat 6 × 6 wall is in the table deliberately and is **not** gated against
+beam theory. At an aspect ratio of 1 a wall is a deep beam: plane sections do
+not remain plane, and beam theory is the wrong model rather than the element
+being wrong. Its 2% is the reference disagreeing, not the answer.
+
+Self weight is gated at every aspect ratio, because it is exact geometry rather
+than an idealisation: the compression at a cut is the material above it and
+nothing else, and it matches to 1e-10.
+
 ## Cross-platform determinism
 
 **8/8 cases byte-for-byte identical** between the
@@ -232,17 +270,43 @@ Wall clock per solve, measured from the client side over the protocol, so it
 includes serialisation and the process boundary. Median of nine repeats after
 one warm-up; the cold process start is excluded because it happens once.
 
-| blocks | members | median (ms) | min | max | ms/member |
-|---:|---:|---:|---:|---:|---:|
-| 3 | 1 | 0.462 | 0.403 | 0.526 | 0.462 |
-| 6 | 3 | 1.125 | 1.03 | 1.29 | 0.375 |
-| 15 | 9 | 2.948 | 2.866 | 3.889 | 0.328 |
-| 30 | 19 | 6.449 | 5.766 | 11.115 | 0.339 |
-| 60 | 39 | 13.296 | 11.924 | 16.11 | 0.341 |
-| 150 | 99 | 36.893 | 35.605 | 40.618 | 0.373 |
-| 300 | 199 | 69.02 | 67.451 | 91.652 | 0.347 |
+| blocks | members | DOF | default (ms) | min | max | ms/member | no buckling (ms) | buckling |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 3 | 1 | 12 | 0.312 | 0.242 | 0.43 | 0.312 | 0.291 | x1.07 |
+| 6 | 3 | 24 | 0.895 | 0.789 | 1.126 | 0.298 | 0.689 | x1.30 |
+| 15 | 9 | 60 | 2.387 | 2.114 | 2.691 | 0.265 | 2.351 | x1.02 |
+| 30 | 19 | 120 | 4.626 | 4.358 | 5.691 | 0.243 | 4.404 | x1.05 |
+| 60 | 39 | 240 | 9.624 | 8.545 | 11.315 | 0.247 | 8.983 | x1.07 |
+| 90 | 59 | 360 | 13.925 | 13.396 | 19.035 | 0.236 | 13.889 | x1.00 |
+| 150 | 99 | 600 | 24.428 | 22.415 | 31.406 | 0.247 | 23.515 | x1.04 |
+| 300 | 199 | 1200 | 52.294 | 48.841 | 64.149 | 0.263 | 50.272 | x1.04 |
 
-At 199 members the whole round trip is 69.0 ms,
+At 199 members the whole round trip is 52.3 ms,
 against a Minecraft tick of 50 ms — and the solve does not run on the tick
 thread, so this is latency to a result rather than time taken from the game.
+
+The last two columns are the price of the default. Linear buckling is a second
+solve — an eigenvalue problem reusing the same factorisation — and it is on by
+default because a stress check alone is unsafe for slender members. It is not
+free, so the cost is measured rather than described, and `"buckling": false`
+on the request turns it off for a caller that has decided it does not want it.
+
+The DOF column is there because it explains a trap that was measured and then
+removed. FrameCore's eigensolver defaults to a dense path below 500 free DOF
+and a sparse subspace iteration above it, and only the sparse path reuses the
+factorisation the linear solve already computed. That put the entire relative
+cost of buckling on ordinary buildings: a 59-member structure (360 DOF) paid
+**3.7x** for buckling while a 199-member one paid nothing, because the large
+model was already on the cheap path. The sidecar therefore forces the sparse
+path at every size, and the same 59-member solve went from 51.7 ms to 14.0 ms.
+
+That is safe rather than a gamble, on the eigensolver's own contract: the
+sparse path is tolerance-level rather than bit-identical and falls back to
+dense on non-convergence, so the worst case is the cost that was there before.
+Its accuracy is pinned against the textbook single-element column value to
+1.6e-05 by a gate, not assumed.
+
+It is deliberately **not** skipped by a per-member screen. A frame can sway-buckle
+at a load far below any individual member's Euler load, so "nothing is near its
+own critical load" is not a safe reason to skip the global eigensolve.
 

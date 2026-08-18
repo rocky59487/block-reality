@@ -49,5 +49,7 @@
   "br.hud.focus_plate": "板 #%s  %s  厚 %s mm",
   "br.hud.plate_dc": "D/C %s   表面 von Mises",
   "br.hud.plate_faces": "上表面 %s MPa   下表面 %s MPa",
-  "br.hud.plate_recovered": "此邊界的支承彎矩經外推還原"
+  "br.hud.plate_recovered": "此邊界的支承彎矩經外推還原",
+  "br.hud.buckling": "挫屈  λ_cr %s",
+  "br.hud.buckling_critical": "挫屈  λ_cr %s — 已經失穩"
 }

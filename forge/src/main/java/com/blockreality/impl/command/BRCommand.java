@@ -114,6 +114,17 @@ public final class BRCommand {
             line(src, String.format(Locale.ROOT, "  equilibrium     residual %.3e",
                             r.equilibriumResidual()),
                     r.equilibriumResidual() > 1e-8 ? ChatFormatting.YELLOW : ChatFormatting.GRAY);
+            // Stability, reported next to strength and never folded into it. A slender
+            // column reaches its buckling load at a stress the D/C line calls comfortable.
+            // Absent means the structure carries no compression that could buckle it, which
+            // is a real state and not a missing number.
+            if (r.bucklingFactor() > 0) {
+                line(src, String.format(Locale.ROOT,
+                                "  buckling        lambda_cr %.3f%s   (linear onset, an upper bound)",
+                                r.bucklingFactor(),
+                                r.bucklingCritical() ? "   ALREADY UNSTABLE" : ""),
+                        r.bucklingCritical() ? ChatFormatting.RED : ChatFormatting.GRAY);
+            }
             if (!r.unassigned().isEmpty()) {
                 line(src, "  unassigned      " + r.unassigned().size()
                         + " blocks formed no element", ChatFormatting.YELLOW);

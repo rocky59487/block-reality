@@ -26,6 +26,8 @@
 #include "FrameCore/StressField.h"
 #include "FrameCore/StressKernel.h"
 #include "FrameCore/MemberGeometry.h"
+#include "FrameCore/BucklingAnalysis.h"
+#include "FrameCore/BucklingResult.h"
 
 #include <iostream>
 #include <string>
@@ -267,6 +269,7 @@ std::vector<QuadSeg> extractSheets(const std::map<BlockPos, InBlock>& grid,
 // nothing in the geometry says it should be.
 std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
                                 const std::set<BlockPos>&          shellNodes,
+                                const std::set<BlockPos>&          loadBlocks,
                                 std::vector<BlockPos>&             unassigned) {
     std::vector<std::vector<BlockPos>> rawRuns;
     std::vector<std::string>           runMat, runSec;
@@ -332,6 +335,19 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
         if (n > 1) nodeBlocks.insert(pos);
     for (const auto& [pos, blk] : grid)
         if (blk.support) nodeBlocks.insert(pos);
+
+    // A LOADED BLOCK IS A NODE. Without this a load anywhere but a member's end had no
+    // representation, and the whole request was refused rather than answered — so a player
+    // hanging a weight on the middle of a beam, which is the single most obvious thing to
+    // do with this mod, killed the analysis of every structure in the world.
+    //
+    // Refusing was still the right call at the time: the alternative then in place dropped
+    // such a load silently and reported the structure SAFER than it is. Splitting the run
+    // is the answer both of those were standing in for. The two halves share the loaded
+    // block, so the member stays continuous and the load lands exactly where the player
+    // put it — no lever arm invented, nothing moved to the nearest end.
+    for (const BlockPos& p : loadBlocks)
+        if (grid.count(p)) nodeBlocks.insert(p);
 
     // A section change is a node too. The boundary block is shared by both segments, so
     // the member stays continuous — which is what the physical steel does. A bearing
@@ -499,6 +515,16 @@ struct SolveOut {
     // single reply rather than only in the test suite.
     double appliedN[3]  = { 0, 0, 0 };
     double reactionN[3] = { 0, 0, 0 };
+
+    // Smallest linear-buckling load factor over every structure solved. <= 1 means some
+    // structure is already at or past its buckling load; 0 means "not computed".
+    double bucklingFactor = 0;
+
+    // Model size, summed over the islands actually solved. Reported because it is what the
+    // cost scales with — member count is a poor proxy once shells are involved, and the
+    // buckling eigensolver switches from a dense to a sparse path at a DOF threshold, so a
+    // performance table without this column shows an unexplained jump.
+    int nodes = 0;
 };
 
 // Solve ONE island — one connected structure — and append its results to `out`.
@@ -512,6 +538,7 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
                  const std::vector<QuadSeg>&               quads,
                  const std::vector<std::array<double, 6>>& pointLoads,
                  const std::vector<BlockPos>&              loadAt,
+                 bool wantBuckling,
                  int& nextMember, int& nextShell,
                  SolveOut& out) {
     frame::FrameModel m;
@@ -680,8 +707,45 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         return false;
     }
 
-    frame::SolveResult r = frame::solve(m);
+    // assembleAndFactor + solveLoad, rather than solve(), so the SAME factorisation can be
+    // reused for the buckling eigensolve. frame::solve() is literally those two calls, so
+    // the displacement results are unchanged.
+    // QM6 incompatible membrane modes, on.
+    //
+    // A shear wall is the case D-005 chose MITC4 for in the first place: it carries lateral
+    // load as in-plane shear and an overturning couple, which a grillage cannot represent
+    // at all because it restrains the in-plane DOFs at every node. Having made that choice,
+    // it is worth using the element that does the job well.
+    //
+    // The plain bilinear membrane is poor in bending — a four-node quad in pure in-plane
+    // bending has no way to curve — and it showed: a wall two elements wide reported its
+    // overturning fibre force 12.3% low, and four elements wide 3.4% low, LOW being the
+    // unsafe direction again. The two bubble modes fix exactly that, and they are
+    // statically condensed so they add no global DOF.
+    //
+    // Measured against cantilever bending of the wall's own cross-section:
+    //     width x height   plain      QM6
+    //       2 x 20        12.3%      0.0%
+    //       4 x 12         3.4%      0.0%
+    //       4 x 20         3.4%      0.0%
+    //
+    // FrameCore keeps it opt-in to preserve a bit-identical OpenSees ShellMITC4 PLATE gate;
+    // it touches the membrane block only, and the plate-bending convergence table in
+    // evidence/VERIFICATION.md is unchanged to every digit with it on.
+    frame::SolveOptions sopts;
+    sopts.useIncompatibleMembrane = true;
+    // Shell geometric stiffness, on. Without it the buckling analysis is blind to plates:
+    // a thin wall in compression reports no stability risk at all, which is the same
+    // unsafe-direction gap the column check exists to close, one element type over.
+    // Measured against a cantilever plate strip, P_cr = pi^2 D w / (2h)^2 — D and not EI,
+    // because a plate resists anticlastic curvature and the difference is a factor
+    // 1/(1-nu^2). Two elements across the width lands 3% low and eight under 1%, and the
+    // 1/h^2 law holds to 0.25% at fixed width (verify.py C14).
+    sopts.shellGeometricStiffness = true;
+    frame::PreparedSystem prepared = frame::assembleAndFactor(m, sopts);
+    frame::SolveResult r = frame::solveLoad(prepared, m);
     ++out.islands;
+    out.nodes += static_cast<int>(m.nodes.size());
 
     // Independent statement of the total applied force, in FrameCore axes. Shell body
     // load arrives as nodal loads, member self weight as element UDLs, so the members'
@@ -1101,6 +1165,45 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         }
     }
 
+    // ---- linear buckling -----------------------------------------------------
+    //
+    // A stress check alone is not a stability check, and the gap is not small. A slender
+    // steel column carrying a load far below its crushing stress reports a comfortable
+    // D/C and would nonetheless fold: Euler's critical load falls with the SQUARE of the
+    // length while the stress check does not know the length exists at all. Reporting only
+    // the stress ratio is therefore unsafe in exactly the case a player is most likely to
+    // build — a tall thin column.
+    //
+    // lambda_cr is the factor on the CURRENT load at which this structure becomes
+    // unstable, so lambda_cr <= 1 means it is already past its buckling load. It is a
+    // property of the whole structure, not of one member: a frame buckles as a frame.
+    //
+    // Honest boundary: this is the LINEAR (eigenvalue) onset. It is an upper bound —
+    // imperfections and post-buckling softening pull the real capacity below it — and it
+    // says nothing about what happens after. No knockdown factor is applied here; the
+    // number reported is the eigenvalue, named as such.
+    if (wantBuckling && (!m.members.empty() || !m.shells.empty())) {
+        // Force the SPARSE eigensolver at every size. FrameCore's default switches to it
+        // only above 500 free DOF, which put the worst relative cost squarely on ordinary
+        // buildings: a 59-member structure paid 3.7x for buckling while a 199-member one
+        // paid nothing, because the big one was already on the sparse path. The sparse
+        // iteration reuses the factorisation the linear solve just computed instead of
+        // building and decomposing a dense matrix.
+        //
+        // Its own contract makes this safe rather than a gamble: it is tolerance-level
+        // rather than bit-identical, and it falls back to dense on any non-convergence, so
+        // the worst case is the cost we already had. The measured agreement is pinned by a
+        // gate (verify.py C12), not assumed.
+        frame::BucklingOptions bopts;
+        bopts.denseThreshold = 0;
+        const frame::BucklingResult bk = frame::solveBuckling(prepared, m, bopts);
+        if (!bk.singular && std::isfinite(bk.criticalFactor) && bk.criticalFactor > 0) {
+            if (out.bucklingFactor <= 0 || bk.criticalFactor < out.bucklingFactor) {
+                out.bucklingFactor = bk.criticalFactor;
+            }
+        }
+    }
+
     for (auto& x : mo) out.members.push_back(std::move(x));
     for (auto& x : so) out.shells.push_back(std::move(x));
     return true;
@@ -1136,7 +1239,8 @@ struct DisjointSet {
 
 SolveOut runSolve(const std::vector<InBlock>& blocks,
                   const std::vector<std::array<double, 6>>& pointLoads,
-                  const std::vector<BlockPos>&              loadAt) {
+                  const std::vector<BlockPos>&              loadAt,
+                  bool wantBuckling) {
     SolveOut out;
 
     std::map<BlockPos, InBlock> grid;
@@ -1145,12 +1249,8 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
     // Sheets first: the shell nodes they claim are what a run is allowed to bear on.
     std::set<BlockPos>   shellNodes;
     std::vector<QuadSeg> quads = extractSheets(grid, shellNodes, out.unassigned);
-    std::vector<RunSeg>  segs  = extractRuns(grid, shellNodes, out.unassigned);
-    if (segs.empty() && quads.empty()) {
-        out.ok    = true;                 // not an error: nothing structural was placed
-        out.error = "no members or plates extracted";
-        return out;
-    }
+    std::set<BlockPos> loadBlocks(loadAt.begin(), loadAt.end());
+    std::vector<RunSeg>  segs  = extractRuns(grid, shellNodes, loadBlocks, out.unassigned);
 
     // Connectivity is through SHARED NODES, which is exactly what the extraction already
     // guarantees: runs are split at junctions so two members that meet share a block, and
@@ -1167,17 +1267,31 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
         for (const BlockPos& c : q.c) nodeBlocks.insert(c);
     }
 
-    // FAIL-CLOSED, and checked GLOBALLY before any island is solved. A load whose block is
-    // no island's node must refuse the whole request; deciding that per island would let
-    // each one skip it as "not mine" and the load would vanish with ok:true — the silently
-    // safe answer that issue #14 exists to prevent.
+    // FAIL-CLOSED, and checked GLOBALLY before any island is solved. Extraction has already
+    // made every loaded block that belongs to a member into a node, so what remains here is
+    // a load on a block that belongs to no element at all — a lone block, or a plate block
+    // that closed no facet. That one still refuses the whole request.
+    //
+    // The check must be global. Letting each island decide "not mine" and skip would make a
+    // load nobody claims vanish with ok:true, and reporting a structure safer than it is is
+    // the worst answer this program can give (issue #14).
     for (size_t k = 0; k < pointLoads.size() && k < loadAt.size(); ++k) {
         if (nodeBlocks.count(loadAt[k])) continue;
         const BlockPos& p = loadAt[k];
         out.ok    = false;
         out.error = "load at (" + std::to_string(p.x) + "," + std::to_string(p.y) + ","
-                  + std::to_string(p.z) + ") is not on an analysis node; "
-                    "loads inside a member are not representable yet";
+                  + std::to_string(p.z) + ") is on no structural element; "
+                    "it belongs to no member and closes no plate facet";
+        return out;
+    }
+
+    // Only now: nothing structural was placed. This is deliberately AFTER the load check
+    // and not before it. Returning early here used to swallow the load entirely — a
+    // request carrying a load on a block that formed no element came back ok:true with no
+    // mention of it, which is the silently-safe answer wearing the "nothing to do" costume.
+    if (segs.empty() && quads.empty()) {
+        out.ok    = true;
+        out.error = "no members or plates extracted";
         return out;
     }
 
@@ -1200,7 +1314,7 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
     int nextMember = 1, nextShell = 1;
     out.ok = true;
     for (size_t k = 0; k < islandSegs.size(); ++k) {
-        if (!solveIsland(grid, islandSegs[k], islandQuads[k], pointLoads, loadAt,
+        if (!solveIsland(grid, islandSegs[k], islandQuads[k], pointLoads, loadAt, wantBuckling,
                          nextMember, nextShell, out)) {
             out.ok = false;
             return out;
@@ -1322,7 +1436,22 @@ std::string handleSolve(const bjson::Value& req) {
         loads.push_back(f);
     }
 
-    SolveOut s = runSolve(blocks, loads, loadAt);
+    // Buckling is an extra eigensolve on top of the linear solve and it is not free — see
+    // the measured cost in evidence/VERIFICATION.md. It is ON by default because a stress
+    // check alone is unsafe for slender members, and a default that is cheap and wrong is
+    // not a good trade. The switch exists so the cost can be MEASURED (the performance
+    // sweep runs both ways) and so a server that does not want it can say so explicitly
+    // rather than discovering it as unexplained latency.
+    //
+    // Deliberately NOT screened per member. A frame can sway-buckle at a load far below any
+    // individual member's Euler load, so "no member is near its own critical load" is not a
+    // safe reason to skip the global eigensolve — it is the silently-safe trap again.
+    if (req.has("buckling") && !req.isBool("buckling")) {
+        return errorLine("'buckling' must be a boolean", revision);
+    }
+    const bool wantBuckling = req.boolean("buckling", true);
+
+    SolveOut s = runSolve(blocks, loads, loadAt, wantBuckling);
 
     bjson::Writer w;
     w.beginObj();
@@ -1338,6 +1467,11 @@ std::string handleSolve(const bjson::Value& req) {
     w.kv("singular", s.singular);
     w.kv("islands", s.islands).kv("singularIslands", s.singularIslands);
     if (!s.diagnostic.empty()) w.kv("diagnostic", s.diagnostic);
+    // Named `bucklingFactor` and not `safetyFactor`: it is the eigenvalue of the linear
+    // onset problem, an upper bound on the real critical load, and calling it a safety
+    // factor would invite a reader to treat an upper bound as a margin.
+    if (s.bucklingFactor > 0) w.kv("bucklingFactor", s.bucklingFactor);
+    w.kv("nodes", s.nodes).kv("dof", s.nodes * 6);
     w.key("equilibrium").beginObj();
     w.key("applied").beginArr().val(s.appliedN[0]).val(s.appliedN[1]).val(s.appliedN[2]).endArr();
     w.key("reaction").beginArr().val(s.reactionN[0]).val(s.reactionN[1]).val(s.reactionN[2]).endArr();

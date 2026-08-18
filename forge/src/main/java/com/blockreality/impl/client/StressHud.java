@@ -106,6 +106,17 @@ public final class StressHud {
                     ClientStressState.shells().size()), x, y, 0xAAAAAA);
             y += 11;
         }
+        // Stability is a SEPARATE answer from strength and is printed as one. A slender
+        // column reaches its buckling load at a stress the D/C line calls comfortable, so a
+        // player who only ever sees D/C is being told the safe half of the story.
+        if (ClientStressState.bucklingFactor() > 0) {
+            boolean crit = ClientStressState.bucklingCritical();
+            g.drawString(mc.font, Component.translatable(
+                    crit ? "br.hud.buckling_critical" : "br.hud.buckling",
+                    String.format(Locale.ROOT, "%.2f", ClientStressState.bucklingFactor())),
+                    x, y, crit ? 0xFF6B6B : 0xAAAAAA);
+            y += 11;
+        }
         // Without this the contour is only ordinal. With it, a colour can be read as MPa.
         g.drawString(mc.font, Component.translatable("br.hud.scale",
                 String.format(Locale.ROOT, "%.2f", ClientStressState.colourScaleMpa())),

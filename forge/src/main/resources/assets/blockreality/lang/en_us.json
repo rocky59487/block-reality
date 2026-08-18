@@ -49,5 +49,7 @@
   "br.hud.focus_plate": "Plate #%s  %s  t = %s mm",
   "br.hud.plate_dc": "D/C %s   surface von Mises",
   "br.hud.plate_faces": "top %s MPa   bottom %s MPa",
-  "br.hud.plate_recovered": "support moment recovered at this edge"
+  "br.hud.plate_recovered": "support moment recovered at this edge",
+  "br.hud.buckling": "buckling  λ_cr %s",
+  "br.hud.buckling_critical": "BUCKLING  λ_cr %s — already unstable"
 }

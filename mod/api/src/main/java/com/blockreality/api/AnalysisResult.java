@@ -43,6 +43,12 @@ import java.util.Optional;
  * @param equilibriumResidual  the engine's own force-balance check on this solve,
  *                             relative: applied load recomputed from geometry against the
  *                             sum of reactions. Machine precision on a sound solve.
+ * @param bucklingFactor  smallest linear-buckling load factor across every structure:
+ *                        the multiple of the CURRENT load at which something goes
+ *                        unstable, so {@code <= 1} means it already has. 0 means it was
+ *                        not computed. Deliberately not called a safety factor — it is
+ *                        the eigenvalue of the linear onset problem and therefore an
+ *                        upper bound on the real critical load, not a margin.
  * @param unassigned  blocks no element could be extracted from
  */
 public record AnalysisResult(
@@ -56,6 +62,7 @@ public record AnalysisResult(
         int islands,
         int singularIslands,
         double equilibriumResidual,
+        double bucklingFactor,
         List<MemberSnapshot> members,
         List<ShellSnapshot> shells,
         List<BlockKey> unassigned) {
@@ -79,8 +86,18 @@ public record AnalysisResult(
     /** True when nothing at all could be solved — every structure found was a mechanism. */
     public boolean allSingular() { return ok && singular && !isUsable(); }
 
+    /**
+     * True when some structure is at or past its linear buckling load.
+     *
+     * <p>Separate from {@code maxDc > 1} on purpose. They are different failures with
+     * different causes: one is the material running out of strength, the other is the
+     * geometry running out of stiffness, and a slender column reaches the second at a
+     * stress the first calls comfortable.
+     */
+    public boolean bucklingCritical() { return bucklingFactor > 0 && bucklingFactor <= 1.0; }
+
     public static AnalysisResult failed(WorldRevision rev, String why) {
-        return new AnalysisResult(rev, false, false, why, 0, -1, "", 0, 0, 0,
+        return new AnalysisResult(rev, false, false, why, 0, -1, "", 0, 0, 0, 0,
                 List.of(), List.of(), List.of());
     }
 

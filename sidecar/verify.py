@@ -420,12 +420,14 @@ def main():
     rejects("missing revision", {"op": "solve", "blocks": [good, nxt]})
     rejects("non-integer revision", {"op": "solve", "revision": 1.5, "blocks": [good, nxt]})
 
-    # A load in the middle of a member has nowhere to go in this model. It must be
-    # refused, not dropped — dropping it reports the structure as SAFER than it is.
-    rejects("load inside a member",
+    # A load on a block that belongs to NO element still has nowhere to go, and is still
+    # refused rather than dropped — dropping it reports the structure as SAFER than it is.
+    # (A load in the middle of a member is a different case now: see C11.)
+    rejects("load on a block that is no element",
             {"op": "solve", "revision": 35,
-             "blocks": beam_blocks(5),
-             "loads": [{"x": 2, "y": 64, "z": 0, "fy": -P}]})
+             "blocks": [{"x": 0, "y": 64, "z": 0, "mat": "steel",
+                         "section": "steel_rect_200x400", "support": True}],
+             "loads": [{"x": 0, "y": 64, "z": 0, "fy": -P}]})
 
     rejects("non-finite load",
             {"op": "solve", "revision": 36, "blocks": beam_blocks(5),
@@ -468,6 +470,164 @@ def main():
     r9 = sc.call({"op": "hello"})
     check_true("still alive after bad input", r9.get("ok") is True)
 
+    # ------------------------------------------- C11: a load splits the member
+    # A load anywhere along a member used to refuse the WHOLE request, so hanging a weight
+    # on the middle of a beam — the most obvious thing anyone would do with this mod —
+    # killed the analysis of every structure in the world. The loaded block is now a node,
+    # so the run splits there and the load lands exactly where it was put.
+    print("\n[C11] a load in the middle of a member splits it")
+    n11, P11 = 9, 20000.0
+    a11 = 4 * BLOCK_MM                       # the load is 4 m from the root
+    L11 = (n11 - 1) * BLOCK_MM
+    r11 = sc.call({"op": "solve", "revision": 37, "blocks": beam_blocks(n11),
+                   "loads": [{"x": 4, "y": 64, "z": 0, "fy": -P11}]})
+    check_true("ok", r11.get("ok") is True, r11.get("error", ""))
+    check_true("the run split at the loaded block", len(r11.get("members", [])) == 2,
+               str([(m["blocks"][0], m["blocks"][-1]) for m in r11.get("members", [])]))
+    # Closed form for a cantilever with a point load at distance a plus its own weight.
+    # The load's position enters through a, so a load quietly moved to the nearest end
+    # would show up here as a wrong root moment rather than as a passing test.
+    check("root moment with the load at midspan", r11["members"][0]["i"]["Mz"],
+          P11 * a11 + w * L11 * L11 / 2.0, 1e-12)
+    check_true("both halves are present and share the loaded block",
+               r11["members"][0]["blocks"][-1] == r11["members"][1]["blocks"][0] == [4, 64, 0],
+               str(r11["members"][0]["blocks"][-1]))
+    check("equilibrium still closes", r11["equilibrium"]["residual"], 0.0, 1e-10)
+
+    # The same load one block further along must give a DIFFERENT root moment. Without
+    # this, a bug that snapped every load to the same node would pass the check above.
+    r11b = sc.call({"op": "solve", "revision": 38, "blocks": beam_blocks(n11),
+                    "loads": [{"x": 5, "y": 64, "z": 0, "fy": -P11}]})
+    check("moving the load moves the moment", r11b["members"][0]["i"]["Mz"],
+          P11 * 5 * BLOCK_MM + w * L11 * L11 / 2.0, 1e-12)
+
+    # ============================================================ BUCKLING ====
+    # A stress check is not a stability check, and the gap is not small: Euler's critical
+    # load falls with the SQUARE of the length while the stress ratio does not know the
+    # length exists. A tall thin column is exactly what a player builds first.
+    print("\n[C12] linear buckling vs Euler")
+    E_STEEL = 200000.0
+    b_col, d_col = 200.0, 400.0
+    IY_WEAK = d_col * b_col ** 3 / 12.0          # buckling takes the WEAK axis
+    A_COL = b_col * d_col
+
+    def column(n, p_newton, splits=(), y0=64):
+        blocks = [{"x": 0, "y": y0 + i, "z": 0, "mat": "steel",
+                   "section": "steel_rect_200x400", "support": i == 0} for i in range(n)]
+        # A zero-magnitude load adds no force but does create a NODE, so it refines the
+        # mesh without touching the reference load the eigenvalue scales.
+        loads = [{"x": 0, "y": y0 + n - 1, "z": 0, "fy": -p_newton}]
+        loads += [{"x": 0, "y": y0 + k, "z": 0, "fy": 0.0} for k in splits]
+        return blocks, loads
+
+    n12 = 17
+    L12 = (n12 - 1) * BLOCK_MM
+    # Self weight is part of the reference load the eigenvalue scales, and a DISTRIBUTED
+    # axial load is far less destabilising than a tip load — so the tip-load Euler formula
+    # is only a valid reference when self weight is negligible against P. At P = 2e7 it is
+    # half a per cent. Comparing against Euler with a heavy column instead made refinement
+    # look divergent, when what was wrong was the reference.
+    P12 = 2.0e7
+    W12 = 7850.0 * A_COL * 1e-9 * G * L12
+    euler = math.pi ** 2 * E_STEEL * IY_WEAK / (2 * L12) ** 2     # fixed-free, K = 2
+
+    blocks, loads = column(n12, P12)
+    r12 = sc.call({"op": "solve", "revision": 60, "blocks": blocks, "loads": loads})
+    check_true("one element per column", len(r12.get("members", [])) == 1)
+    # ONE 2-node element with the consistent geometric stiffness gives the textbook
+    # P_cr = 2.4860 EI/L^2 against Euler's 2.4674 — a ratio of 1.00754. Pinning the known
+    # discretisation value rather than "close to Euler" makes an accidental change visible.
+    check("single-element column matches the textbook value",
+          r12["bucklingFactor"] * (P12 + W12) / euler, 2.4860 / 2.4674, 2e-4)
+
+    blocks, loads = column(n12, P12, splits=(4, 8, 12))
+    r12b = sc.call({"op": "solve", "revision": 61, "blocks": blocks, "loads": loads})
+    check_true("the column refined into four elements", len(r12b.get("members", [])) == 4)
+    check("refined column converges onto Euler",
+          r12b["bucklingFactor"] * (P12 + W12) / euler, 1.0, 0.006)
+
+    # The whole point, as one number pair: a column the stress screen calls safe.
+    print("\n[C13] a stress check is not a stability check")
+    n13 = 21
+    L13 = (n13 - 1) * BLOCK_MM
+    P13 = 400000.0
+    blocks, loads = column(n13, P13)
+    r13 = sc.call({"op": "solve", "revision": 62, "blocks": blocks, "loads": loads})
+    dc13 = r13["maxDC"]
+    lam13 = r13["bucklingFactor"]
+    check_true("the stress screen reports it comfortably safe", dc13 < 0.05, f"D/C = {dc13:.4f}")
+    check_true("but it is already past its buckling load", 0 < lam13 < 1.0,
+               f"lambda_cr = {lam13:.4f}")
+
+    # Shorten the same column and it becomes stable again — the factor has to depend on
+    # length, which is the property a stress ratio structurally cannot have.
+    blocks, loads = column(9, P13)
+    r13b = sc.call({"op": "solve", "revision": 63, "blocks": blocks, "loads": loads})
+    check_true("the same load on a short column is stable", r13b["bucklingFactor"] > 4.0,
+               f"lambda_cr = {r13b['bucklingFactor']:.4f}")
+
+    # ... and the critical LOAD follows 1/L^2. Comparing the two lambdas directly does not
+    # test that: lambda scales the reference load, which includes each column's own weight,
+    # and the two columns do not weigh the same. So the comparison is made on P_cr with the
+    # applied load large enough that self weight is negligible in both.
+    P_BIG = 2.0e7
+    pcr = {}
+    for nn in (21, 9):
+        bl, ld = column(nn, P_BIG)
+        rr = sc.call({"op": "solve", "revision": 64 + nn, "blocks": bl, "loads": ld})
+        w_self = 7850.0 * A_COL * 1e-9 * G * (nn - 1) * BLOCK_MM
+        pcr[nn] = rr["bucklingFactor"] * (P_BIG + w_self)
+    check("critical load scales as 1/L^2", pcr[9] / pcr[21], (20.0 / 8.0) ** 2, 0.01)
+
+    # ======================================================= SHELL BUCKLING ==
+    # Without shell geometric stiffness a thin wall in compression reports no buckling risk
+    # at all — the same unsafe-direction gap the column check closes, one element type over.
+    print("\n[C14] a wall buckles out of plane")
+    W_E, W_NU, W_T = 30000.0, 0.20, 200.0
+    W_D = W_E * W_T ** 3 / (12 * (1 - W_NU ** 2))     # plate rigidity: D, not EI
+
+    def wall_column(nw, nh, p_newton, y0=64):
+        blocks = [{"x": i, "y": y0 + j, "z": 0, "mat": "concrete",
+                   "section": "concrete_slab_200", "support": j == 0}
+                  for i in range(nw) for j in range(nh)]
+        loads = [{"x": i, "y": y0 + nh - 1, "z": 0, "fy": -p_newton / nw} for i in range(nw)]
+        return blocks, loads
+
+    P_WALL = 3.0e7                       # self weight negligible against it
+    q_wall = 2350.0 * W_T * 9810.0 * 1e-12
+    scaled = []
+    for nw, nh in ((3, 13), (3, 21), (3, 31), (5, 21), (9, 21)):
+        blocks, loads = wall_column(nw, nh, P_WALL)
+        rb = sc.call({"op": "solve", "revision": 500 + nw * 40 + nh,
+                      "blocks": blocks, "loads": loads})
+        lam = rb.get("bucklingFactor", 0)
+        check_true(f"wall {nw - 1}x{nh - 1}: a buckling factor is reported", lam > 0,
+                   f"lambda_cr = {lam}")
+        w_mm, h_mm = (nw - 1) * BLOCK_MM, (nh - 1) * BLOCK_MM
+        p_cr = lam * (P_WALL + q_wall * w_mm * h_mm)
+        # A cantilever plate strip: P_cr = pi^2 D w / (2h)^2. D and not EI — a plate resists
+        # anticlastic curvature, which is a factor 1/(1-nu^2) = 1.0417 here and would show up
+        # as a 4% "error" against the beam formula.
+        ref = math.pi ** 2 * W_D * w_mm / (2 * h_mm) ** 2
+        scaled.append((nw, nh, p_cr, ref, p_cr * h_mm ** 2 / w_mm))
+
+    # The 1/h^2 law is reference-free: three heights at one width must give the same
+    # P_cr*h^2/w. This tests the physics without depending on which idealisation applies.
+    fixed_width = [x for x in scaled if x[0] == 3]
+    base = fixed_width[0][4]
+    for nw, nh, _, _, k in fixed_width:
+        check(f"wall {nw - 1}x{nh - 1}: P_cr follows 1/h^2", k, base, 5e-3)
+
+    # And the value itself approaches the plate reference as the mesh across the width is
+    # refined: 2 elements wide is 3% low, 8 elements wide under 1%.
+    narrow = [x for x in scaled if x[0] == 3 and x[1] == 21][0]
+    wide = [x for x in scaled if x[0] == 9][0]
+    check_true("wall: 2 elements across is within 4% of the plate reference",
+               abs(narrow[2] / narrow[3] - 1) < 0.04, f"{narrow[2] / narrow[3]:.4f}")
+    check_true("wall: refining across the width converges onto it",
+               abs(wide[2] / wide[3] - 1) < abs(narrow[2] / narrow[3] - 1),
+               f"{wide[2] / wide[3]:.4f} vs {narrow[2] / narrow[3]:.4f}")
+
     # ============================================================ ISLANDS =====
     # A world is not one structure. Before this, one unsupported beam anywhere in the
     # dimension made the single global stiffness matrix rank-deficient and EVERY building
@@ -486,13 +646,25 @@ def main():
     check_true("only the mechanism is a mechanism", both.get("singularIslands") == 1,
                str(both.get("singularIslands")))
 
-    # And a load in the middle of a member must STILL be refused, per island or not: the
-    # check is global, so no island may quietly decide the load is "not mine".
+    # A load on a block belonging to NO element must still be refused, per island or not:
+    # the check is global, so no island may quietly decide the load is "not mine" and let it
+    # vanish. The block here sits between the two buildings and forms nothing.
     bad_load = sc.call({"op": "solve", "revision": 42,
-                        "blocks": beam_blocks(5) + floating,
-                        "loads": [{"x": 2, "y": 64, "z": 0, "fy": -1000.0}]})
-    check_true("interior load still refused with many islands", bad_load.get("ok") is False,
+                        "blocks": beam_blocks(5) + floating
+                        + [{"x": 50, "y": 64, "z": 0, "mat": "steel",
+                            "section": "steel_rect_200x400", "support": False}],
+                        "loads": [{"x": 50, "y": 64, "z": 0, "fy": -1000.0}]})
+    check_true("a load on no element is refused with many islands", bad_load.get("ok") is False,
                bad_load.get("error", ""))
+
+    # ... and a load INSIDE a member of one island is now fine, and belongs to that island.
+    ok_load = sc.call({"op": "solve", "revision": 43,
+                       "blocks": beam_blocks(5) + floating,
+                       "loads": [{"x": 2, "y": 64, "z": 0, "fy": -1000.0}]})
+    check_true("an interior load is carried, not refused", ok_load.get("ok") is True,
+               ok_load.get("error", ""))
+    check_true("and it split that island's member", len(ok_load.get("members", [])) == 2,
+               f"members={len(ok_load.get('members', []))}")
 
     # ============================================================= PLATES =====
     # MITC4 flat shells. Every reference below is Timoshenko's clamped square plate under
@@ -649,6 +821,63 @@ def main():
     # to the whole weight of the structure. This is the connection, stated as a number.
     check("columns carry the total weight",
           sum(-mm["i"]["N"] for mm in r_col["members"]), eqc["applied"][1], 1e-9)
+
+    # ========================================================== SHEAR WALLS ==
+    # D-005 chose MITC4 over grillage on one specific ground: a grillage restrains the
+    # in-plane DOFs at every node, so it CANNOT carry a shear wall's load path at all.
+    # That justification had never been tested. A wall carries lateral load two ways at
+    # once, and both are checked here against closed forms.
+    print("\n[S8] a shear wall carries load in its own plane")
+
+    def wall(nw, nh, shear_n, y0=64):
+        """nw wide, nh tall, base row clamped, `shear_n` total pushed along +x at the top."""
+        blocks = [{"x": i, "y": y0 + j, "z": 0, "mat": "concrete",
+                   "section": "concrete_slab_200", "support": j == 0}
+                  for i in range(nw) for j in range(nh)]
+        loads = [{"x": i, "y": y0 + nh - 1, "z": 0, "fx": shear_n / nw} for i in range(nw)]
+        return blocks, loads
+
+    def centre(sh, k):
+        return sum(w[k] for w in sh["world"]) / 4.0
+
+    V_WALL = 100000.0
+    # Tolerances set from the MEASURED agreement, not from what felt safe to claim. With
+    # the QM6 membrane these land at 1e-5 and better, so a gate at 1% would pass through
+    # a hundredfold regression without noticing.
+    for nw, nh, tol_v, tol_m in ((5, 13, 1e-4, 1e-4), (3, 21, 1e-4, 1e-4)):
+        blocks, loads = wall(nw, nh, V_WALL)
+        rw = sc.call({"op": "solve", "revision": 300 + nw * 10 + nh,
+                      "blocks": blocks, "loads": loads})
+        check_true(f"wall {nw - 1}x{nh - 1} solves", rw.get("ok") is True and bool(rw.get("shells")),
+                   rw.get("error", ""))
+        w_mm = (nw - 1) * BLOCK_MM
+        h_mm = (nh - 1) * BLOCK_MM
+
+        heights = sorted({round(centre(s, 1)) for s in rw["shells"]})
+        ymid = heights[len(heights) // 2]
+        row = sorted([s for s in rw["shells"] if abs(centre(s, 1) - ymid) < 1e-6],
+                     key=lambda s: centre(s, 0))
+
+        # 1. Shear flow. The whole horizontal force crosses every cut, so the mean in-plane
+        #    shear per unit width is V/w. A grillage reports ZERO here — this number is the
+        #    load path that motivated the element choice.
+        nxy = sum(s["N"]["xy"] for s in row) / len(row)
+        check(f"wall {nw - 1}x{nh - 1}: shear flow = V/w", abs(nxy), V_WALL / w_mm, tol_v)
+
+        # 2. Overturning. The wall is a vertical cantilever whose cross-section is its own
+        #    plan (w x t), so the vertical fibre force varies linearly across the width.
+        #    Compared at the outermost facet CENTRE, half a block in from the edge.
+        bend = (row[-1]["N"]["xx"] - row[0]["N"]["xx"]) / 2.0
+        moment = V_WALL * (h_mm - (ymid - (64 * BLOCK_MM + BLOCK_MM / 2.0)))
+        c_mm = w_mm / 2.0 - BLOCK_MM / 2.0
+        expect = moment * c_mm / (T_T * w_mm ** 3 / 12.0) * T_T
+        check(f"wall {nw - 1}x{nh - 1}: overturning fibre force", abs(bend), abs(expect), tol_m)
+
+        # 3. Uniform compression from the wall's own weight, exact: the material above the
+        #    cut and nothing else.
+        mean = sum(s["N"]["xx"] for s in row) / len(row)
+        above = h_mm - (ymid - (64 * BLOCK_MM + BLOCK_MM / 2.0))
+        check(f"wall {nw - 1}x{nh - 1}: self weight above the cut", -mean, q_plate * above, 1e-6)
 
     sc.close()
 

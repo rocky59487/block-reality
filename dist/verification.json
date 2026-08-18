@@ -9,14 +9,14 @@
     },
     "binary": {
       "path": "/workspace/block-reality/dist/br-sidecar",
-      "sha256": "1ce74526c3a9f5336cac8546bc0a6ce0cf9351c8c12a4123cdbeaad30b6138e9"
+      "sha256": "93a918785aa868993a3269eaa106b4ea4e20a2c0e62561d57397cf8ffe81cedc"
     },
     "sources": {
-      "sidecar/main.cpp": "78d1d72e98f53d72229e10d0717a0eff4c98044e248939dd586fdf9edd31ccdb",
-      "sidecar/json.hpp": "2cfb778e3eafb848228a50efc794aa189010789c347a3baf7430601091380f1e",
-      "sidecar/verify.py": "651bbcd140217ef992368533a60425575aad442b89e8335c8b4ad9ea1e95394f",
+      "sidecar/main.cpp": "5f23af6275734f0cc03013b8752f43082da1f0f8c9e56847c103602fec830696",
+      "sidecar/json.hpp": "e6daed262ca85e77cd177498d51b541a72b13a330e2904702eab778cd967a98e",
+      "sidecar/verify.py": "b0d08767f95058a1a3f622d21f161cbcb3f6acb0945cb2ff5302819432bbab92",
       "sidecar/CMakeLists.txt": "e9351f417fa6d3e0c33d42d0095b5d3ab25b433794258cb51732a474b701f700",
-      "scripts/evidence.py": "4dd94fe7b1f38227425ec678d40cc5b2e7fa2f6f02ea80159516af7c3abce958"
+      "scripts/evidence.py": "ac07708e0363a10e3f297b1edeea5685c6a9f7c278b7493fdfad49da55095d12"
     },
     "host": {
       "platform": "Linux-6.18.5-fc-v20-x86_64-with-glibc2.39",
@@ -408,7 +408,7 @@
       "holds": true
     },
     {
-      "property": "P3  an unrepresentable load is refused, not dropped",
+      "property": "P3  a load on no element is refused, not dropped",
       "holds": true
     },
     {
@@ -437,6 +437,14 @@
     },
     {
       "property": "P10 support-moment recovery never lowers a demand",
+      "holds": true
+    },
+    {
+      "property": "P11 a load inside a member splits it and acts there",
+      "holds": true
+    },
+    {
+      "property": "P12 a slender column is safe by stress and unstable by buckling",
       "holds": true
     }
   ],
@@ -574,6 +582,60 @@
     "edge_coefficient": 0.0513,
     "q_n_per_mm2": 0.0046107
   },
+  "shear_wall": {
+    "rows": [
+      {
+        "elements_wide": 6,
+        "elements_tall": 6,
+        "aspect": 1.0,
+        "shear_flow": 16.690106092666667,
+        "shear_reference": 16.666666666666668,
+        "shear_rel_error": 0.001406365559999969,
+        "overturning": 35.460155665,
+        "overturning_reference": 34.72222222222222,
+        "overturning_rel_error": 0.021252483152000082,
+        "self_weight_rel_error": 1.1567312729179234e-10
+      },
+      {
+        "elements_wide": 4,
+        "elements_tall": 12,
+        "aspect": 3.0,
+        "shear_flow": 24.999322677499997,
+        "shear_reference": 25.0,
+        "shear_rel_error": 2.709290000012743e-05,
+        "overturning": 154.68739475,
+        "overturning_reference": 154.6875,
+        "overturning_rel_error": 6.804040403398121e-07,
+        "self_weight_rel_error": 9.858527057161996e-11
+      },
+      {
+        "elements_wide": 4,
+        "elements_tall": 20,
+        "aspect": 5.0,
+        "shear_flow": 24.99999651,
+        "shear_reference": 25.0,
+        "shear_rel_error": 1.3960000003976346e-07,
+        "overturning": 267.1874998,
+        "overturning_reference": 267.1875,
+        "overturning_rel_error": 7.485379672565699e-10,
+        "self_weight_rel_error": 5.707552074425889e-11
+      },
+      {
+        "elements_wide": 2,
+        "elements_tall": 20,
+        "aspect": 10.0,
+        "shear_flow": 49.999993020000005,
+        "shear_reference": 50.0,
+        "shear_rel_error": 1.3959999989765492e-07,
+        "overturning": 712.5000013,
+        "overturning_reference": 712.5,
+        "overturning_rel_error": 1.8245614148582446e-09,
+        "self_weight_rel_error": 0.0
+      }
+    ],
+    "gate": true,
+    "shear_n": 100000.0
+  },
   "determinism": {
     "checked": true,
     "identical": 8,
@@ -584,51 +646,82 @@
     {
       "blocks": 3,
       "members": 1,
-      "median_ms": 0.462,
-      "min_ms": 0.403,
-      "max_ms": 0.526
+      "dof": 12,
+      "with_buckling_ms": 0.312,
+      "min_ms": 0.242,
+      "max_ms": 0.43,
+      "without_buckling_ms": 0.291,
+      "median_ms": 0.312
     },
     {
       "blocks": 6,
       "members": 3,
-      "median_ms": 1.125,
-      "min_ms": 1.03,
-      "max_ms": 1.29
+      "dof": 24,
+      "with_buckling_ms": 0.895,
+      "min_ms": 0.789,
+      "max_ms": 1.126,
+      "without_buckling_ms": 0.689,
+      "median_ms": 0.895
     },
     {
       "blocks": 15,
       "members": 9,
-      "median_ms": 2.948,
-      "min_ms": 2.866,
-      "max_ms": 3.889
+      "dof": 60,
+      "with_buckling_ms": 2.387,
+      "min_ms": 2.114,
+      "max_ms": 2.691,
+      "without_buckling_ms": 2.351,
+      "median_ms": 2.387
     },
     {
       "blocks": 30,
       "members": 19,
-      "median_ms": 6.449,
-      "min_ms": 5.766,
-      "max_ms": 11.115
+      "dof": 120,
+      "with_buckling_ms": 4.626,
+      "min_ms": 4.358,
+      "max_ms": 5.691,
+      "without_buckling_ms": 4.404,
+      "median_ms": 4.626
     },
     {
       "blocks": 60,
       "members": 39,
-      "median_ms": 13.296,
-      "min_ms": 11.924,
-      "max_ms": 16.11
+      "dof": 240,
+      "with_buckling_ms": 9.624,
+      "min_ms": 8.545,
+      "max_ms": 11.315,
+      "without_buckling_ms": 8.983,
+      "median_ms": 9.624
+    },
+    {
+      "blocks": 90,
+      "members": 59,
+      "dof": 360,
+      "with_buckling_ms": 13.925,
+      "min_ms": 13.396,
+      "max_ms": 19.035,
+      "without_buckling_ms": 13.889,
+      "median_ms": 13.925
     },
     {
       "blocks": 150,
       "members": 99,
-      "median_ms": 36.893,
-      "min_ms": 35.605,
-      "max_ms": 40.618
+      "dof": 600,
+      "with_buckling_ms": 24.428,
+      "min_ms": 22.415,
+      "max_ms": 31.406,
+      "without_buckling_ms": 23.515,
+      "median_ms": 24.428
     },
     {
       "blocks": 300,
       "members": 199,
-      "median_ms": 69.02,
-      "min_ms": 67.451,
-      "max_ms": 91.652
+      "dof": 1200,
+      "with_buckling_ms": 52.294,
+      "min_ms": 48.841,
+      "max_ms": 64.149,
+      "without_buckling_ms": 50.272,
+      "median_ms": 52.294
     }
   ]
 }

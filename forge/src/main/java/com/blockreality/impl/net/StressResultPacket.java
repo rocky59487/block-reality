@@ -52,17 +52,19 @@ public final class StressResultPacket {
     private final double maxDc;
     private final int islands;
     private final int singularIslands;
+    private final double bucklingFactor;
     private final List<MemberSnapshot> members;
     private final List<ShellSnapshot> shells;
 
     private StressResultPacket(long revision, boolean singular, double maxDc,
-                               int islands, int singularIslands,
+                               int islands, int singularIslands, double bucklingFactor,
                                List<MemberSnapshot> members, List<ShellSnapshot> shells) {
         this.revision = revision;
         this.singular = singular;
         this.maxDc = maxDc;
         this.islands = islands;
         this.singularIslands = singularIslands;
+        this.bucklingFactor = bucklingFactor;
         this.members = members;
         this.shells = shells;
     }
@@ -83,7 +85,7 @@ public final class StressResultPacket {
             s = s.subList(0, MAX_SHELLS);
         }
         return new StressResultPacket(r.revision().value(), r.singular(), r.maxDc(),
-                r.islands(), r.singularIslands(), m, s);
+                r.islands(), r.singularIslands(), r.bucklingFactor(), m, s);
     }
 
     public long revision() { return revision; }
@@ -95,6 +97,9 @@ public final class StressResultPacket {
     public int islands() { return islands; }
 
     public int singularIslands() { return singularIslands; }
+
+    /** Smallest linear-buckling load factor; {@code <= 1} means already unstable. */
+    public double bucklingFactor() { return bucklingFactor; }
 
     public List<MemberSnapshot> members() { return members; }
 
@@ -112,6 +117,7 @@ public final class StressResultPacket {
         buf.writeFloat((float) p.maxDc);
         buf.writeVarInt(Math.max(0, p.islands));
         buf.writeVarInt(Math.max(0, p.singularIslands));
+        buf.writeFloat((float) p.bucklingFactor);
         buf.writeVarInt(Math.min(p.members.size(), MAX_MEMBERS));
 
         for (int i = 0; i < p.members.size() && i < MAX_MEMBERS; i++) {
@@ -221,6 +227,7 @@ public final class StressResultPacket {
         double maxDc = finite(buf.readFloat());
         int islands = clamp(buf.readVarInt(), Integer.MAX_VALUE);
         int singularIslands = clamp(buf.readVarInt(), Integer.MAX_VALUE);
+        double bucklingFactor = Math.max(0, finite(buf.readFloat()));
         int nMembers = clamp(buf.readVarInt(), MAX_MEMBERS);
 
         List<MemberSnapshot> members = new ArrayList<>(nMembers);
@@ -273,7 +280,7 @@ public final class StressResultPacket {
         }
 
         return new StressResultPacket(revision, singular, maxDc, islands, singularIslands,
-                members, shells);
+                bucklingFactor, members, shells);
     }
 
     private static ShellFieldSpec readShellField(FriendlyByteBuf buf, double fallbackT) {
