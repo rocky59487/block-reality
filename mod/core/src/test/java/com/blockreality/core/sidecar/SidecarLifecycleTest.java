@@ -46,6 +46,9 @@ class SidecarLifecycleTest {
     void shutdown() { if (client != null) client.close(); }
 
     private Path script(String name, String body) throws IOException {
+        org.junit.jupiter.api.Assumptions.assumeTrue(
+                !System.getProperty("os.name", "").toLowerCase().contains("win"),
+                "POSIX shell stub scripts are not supported on Windows");
         Path p = tmp.resolve(name);
         Files.writeString(p, "#!/bin/sh\n" + body);
         Files.setPosixFilePermissions(p, Set.of(

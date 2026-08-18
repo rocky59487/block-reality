@@ -40,3 +40,25 @@ local.properties
 # CMake out-of-source build trees
 sidecar/build*/
 dist/**/CMakeFiles/
+
+# Build & Binaries
+bin/
+**/bin/
+
+# Evidence & Media / Screenshots
+evidence/frames/
+evidence/screenshots/
+evidence/*.mp4
+forge/evidence/
+test_screen.png
+*.mp4
+*.avi
+*.mov
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+
