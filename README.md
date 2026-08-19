@@ -56,3 +56,9 @@ Minecraft 的結構工程沙盒。玩家用真實工法蓋房子，用真實力�
 | `evidence/VERIFICATION.md` | 身分、精度、收斂、決定性、效能（自動產生） |
 | `docs/GATES.md` | 判準先凍紀律 |
 | `docs/ENGINE_BOUNDARY.md` | Java ↔ 力學引擎的介面契約 |
+
+## License
+
+Block Reality 本身以 **Apache License 2.0** 授權，見根目錄 `LICENSE` 與 `NOTICE`。
+
+目前的力學後端 **FrameCore** 是外部 source dependency，不屬於本倉庫的 Apache-2.0 授權範圍；FrameCore 依其原專案的 **MIT License** 授權。其他第三方元件保留各自的授權與著作權聲明。
