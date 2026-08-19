@@ -1,71 +1,101 @@
 @echo off
+rem Block Reality installer / 安裝器
+rem
+rem   Double-click it, or pass an instance:
+rem     install.bat "%APPDATA%\.minecraft"
+rem     install.bat --list
+rem
+rem Chinese text below only ever appears inside echo strings — every byte of it is
+rem >= 0x80, so cmd cannot mistake it for an operator no matter what codepage is
+rem active. Worst case it renders as mojibake; the script still runs.
+chcp 65001 >nul 2>&1
 setlocal enabledelayedexpansion
-rem Block Reality installer.
-rem
-rem Double-click it, or pass an instance:
-rem   install.bat "%APPDATA%\.minecraft"
-rem
-rem With no argument it looks for Minecraft instances in the usual places. It only
-rem installs automatically when it finds EXACTLY ONE — guessing between several and
-rem silently picking the wrong one is worse than asking.
 
 set "HERE=%~dp0"
 set "TARGET=%~1"
+set "LIST_ONLY="
+if /i "%TARGET%"=="--list" (set "LIST_ONLY=1" & set "TARGET=")
+if /i "%TARGET%"=="-l"     (set "LIST_ONLY=1" & set "TARGET=")
 
 echo.
-echo   Block Reality - Demo v0
-echo   =======================
+echo   Block Reality - 安裝器 / installer
+echo   ==================================
 echo.
 
 if not "%TARGET%"=="" goto :have_target
 
 rem ---------------------------------------------------------------- autodetect
 set "COUNT=0"
-set "FOUND="
 
 call :try "%APPDATA%\.minecraft"
-for /d %%i in ("%APPDATA%\PrismLauncher\instances\*") do call :try "%%~i\.minecraft"
-for /d %%i in ("%APPDATA%\MultiMC\instances\*")       do call :try "%%~i\.minecraft"
-for /d %%i in ("%APPDATA%\ModrinthApp\profiles\*")    do call :try "%%~i"
+for /d %%i in ("%APPDATA%\PrismLauncher\instances\*")           do call :try "%%~i\.minecraft"
+for /d %%i in ("%APPDATA%\MultiMC\instances\*")                 do call :try "%%~i\.minecraft"
+for /d %%i in ("%APPDATA%\ModrinthApp\profiles\*")              do call :try "%%~i"
 for /d %%i in ("%USERPROFILE%\curseforge\minecraft\Instances\*") do call :try "%%~i"
+for /d %%i in ("%APPDATA%\.minecraft\..\.technic\modpacks\*")   do call :try "%%~i"
 
 if "%COUNT%"=="0" (
-    echo   No Minecraft instance found.
+    echo   找不到 Minecraft 實例。 / No Minecraft instance found.
     echo.
-    echo   Looked in:
+    echo   找過這些地方 / looked in:
     echo     %%APPDATA%%\.minecraft
     echo     %%APPDATA%%\PrismLauncher\instances\*
     echo     %%APPDATA%%\MultiMC\instances\*
     echo     %%APPDATA%%\ModrinthApp\profiles\*
     echo     %%USERPROFILE%%\curseforge\minecraft\Instances\*
     echo.
-    echo   Run it with the folder instead - the one containing mods\ and saves\:
+    echo   直接把遊戲目錄給它就好（裡面有 mods\ 和 saves\ 的那層）：
+    echo   Pass the game directory instead - the one containing mods\ and saves\:
     echo     install.bat "D:\games\my-instance\.minecraft"
     goto :done
 )
-if not "%COUNT%"=="1" (
-    echo   Found %COUNT% instances. Pick one and pass it in:
-    echo.
-    for /f "tokens=1,* delims=|" %%a in ('type "%TEMP%\br_instances.txt"') do echo     install.bat "%%b"
+
+if defined LIST_ONLY (
+    for /l %%n in (1,1,%COUNT%) do call :show %%n
     goto :done
 )
-set "TARGET=!FOUND!"
-echo   Found one instance:
-echo     !TARGET!
+
+if "%COUNT%"=="1" (
+    set "TARGET=!INST_1!"
+    echo   找到一個實例 / found one instance:
+    echo     !TARGET!
+    echo.
+    goto :have_target
+)
+
+echo   找到 %COUNT% 個實例。要裝到哪一個？
+echo   Found %COUNT% instances. Which one?
 echo.
+for /l %%n in (1,1,%COUNT%) do call :show %%n
+echo.
+set "PICK="
+set /p "PICK=  輸入編號 / enter a number [1-%COUNT%]: "
+if not defined PICK goto :badpick
+rem A non-numeric answer makes INST_<answer> undefined, which is exactly the check below.
+set "TARGET=!INST_%PICK%!"
+if not defined TARGET goto :badpick
+echo.
+goto :have_target
+
+:badpick
+echo.
+echo   不是有效的編號 / not a valid choice.
+goto :done
 
 :have_target
 if not exist "%TARGET%\" (
-    echo   Not a directory: %TARGET%
+    echo   這不是一個資料夾 / not a directory: %TARGET%
     goto :done
 )
 
+rem -------------------------------------------------------------------- install
 if not exist "%TARGET%\mods\" mkdir "%TARGET%\mods"
 
 set "JAR="
 for %%f in ("%HERE%blockreality-*.jar") do set "JAR=%%f"
-if "!JAR!"=="" (
-    echo   No blockreality-*.jar next to this script.
+if not defined JAR (
+    echo   這個資料夾裡沒有 blockreality-*.jar。zip 有完整解壓縮嗎？
+    echo   No blockreality-*.jar next to this script - did the zip fully extract?
     goto :done
 )
 
@@ -79,21 +109,56 @@ if exist "%HERE%br-sidecar.exe" (
     copy /y "%HERE%br-sidecar.exe" "%TARGET%\" >nul
     echo   engine -^> %TARGET%\br-sidecar.exe
 ) else (
-    echo   WARNING: no br-sidecar.exe next to this script.
-    echo            The mod will load and play, but analysis will be off.
+    echo   警告：旁邊沒有 br-sidecar.exe。mod 照樣載入照樣玩，但分析是關的。
+    echo   WARNING: no br-sidecar.exe next to this script - the mod loads and plays,
+    echo            analysis is simply off.
 )
 
 echo.
-echo   Done. You still need Minecraft 1.20.1 with Forge 47.x in that instance.
-echo   In game: creative tab "Block Reality", and /br status if anything looks wrong.
+call :forge "%TARGET%"
+if defined HASFORGE (
+    echo   [OK] 這個實例裡有 Forge。用你平常的啟動器開遊戲就好。
+    echo        Forge found in this instance. Launch it the way you normally do.
+) else (
+    echo   [!!] 這個實例裡沒看到 Forge。Block Reality 需要 Minecraft 1.20.1 + Forge 47.x。
+    echo        No Forge here. Block Reality needs Minecraft 1.20.1 + Forge 47.x:
+    echo        https://files.minecraftforge.net/net/minecraftforge/index.html
+)
+echo.
+echo   進遊戲後：創造分頁 "Block Reality"。有問題打 /br status。
+echo   In game: creative tab "Block Reality". If anything looks off: /br status
 goto :done
 
-rem ------------------------------------------------------------------ helpers
+rem ------------------------------------------------------------------- helpers
+
+rem :try <dir> — count it as an instance if it looks like a game directory.
+rem mods\ alone is not enough: a fresh Forge instance that has never had a mod in
+rem it has no mods\ yet, and that is precisely the person who needs this script.
 :try
-if exist "%~1\mods\" (
-    set /a COUNT+=1
-    set "FOUND=%~1"
-    if "!COUNT!"=="1" (echo %COUNT%^|%~1> "%TEMP%\br_instances.txt") else (echo !COUNT!^|%~1>> "%TEMP%\br_instances.txt")
+set "CAND=%~1"
+set "OK="
+if exist "%CAND%\mods\" set "OK=1"
+if exist "%CAND%\versions\" if exist "%CAND%\launcher_profiles.json" set "OK=1"
+if exist "%CAND%\versions\" if exist "%CAND%\saves\" set "OK=1"
+if not defined OK exit /b
+set /a COUNT+=1
+set "INST_!COUNT!=%CAND%"
+exit /b
+
+rem :forge <dir> — sets HASFORGE if Forge is installed in that instance.
+:forge
+set "HASFORGE="
+for /d %%v in ("%~1\versions\*forge*") do set "HASFORGE=1"
+if exist "%~1\libraries\net\minecraftforge\" set "HASFORGE=1"
+exit /b
+
+rem :show <n> — print one numbered candidate, tagged with whether it has Forge.
+:show
+call :forge "!INST_%~1!"
+if defined HASFORGE (
+    echo     %~1^) [Forge]    !INST_%~1!
+) else (
+    echo     %~1^) [no Forge] !INST_%~1!
 )
 exit /b
 
