@@ -1,47 +1,51 @@
-# 明天早上
+# 上手
 
-**什麼都不用建。** `blockreality-0.0.1-demo.zip` 就是 release，`dist/` 是它的內容。
+`blockreality-0.0.1-demo.zip` 就是發行包，`dist/` 是它的內容。安裝不需要建置任何東西。
 
 ---
 
-## 0 · 一鍵
+## 0 · 安裝與啟動
 
 ### A · 已經有 Minecraft 1.20.1 + Forge 47.x
 
-解開 zip，**直接雙擊 `install.bat`**（Linux 是 `./install.sh`）。
+解開 zip，Windows 執行 `install.bat`，Linux 與 macOS 執行 `./install.sh`。
 
-**不用給參數**——它會自己找 `.minecraft`、PrismLauncher、MultiMC、Modrinth、
-CurseForge 的實例。找到剛好一個就直接裝；**找到好幾個會列出來要你指定**，
-而不是亂猜一個。
+不帶參數執行時，安裝器會在原生啟動器、Prism、MultiMC、Modrinth、CurseForge 的慣用位置
+尋找實例；找到多個會列出來讓你選，而不是自行決定。也可以自行指定遊戲目錄，或用
+`--list` 只列出找到的實例。
 
-裝完就好了，用你平常的啟動器開遊戲。
+裝完用平常的啟動器開遊戲即可。
 
-### B · 什麼都沒有，只想看它動
+### B · 沒有 Minecraft，只想看它執行
 
 ```
 Windows：  run.bat
 Linux ：   ./run.sh
 ```
 
-**這會直接開起遊戲。** 只需要 PATH 上有 JDK 17——Gradle 用 wrapper，
-Minecraft 與 Forge 由 ForgeGradle 第一次執行時自己抓（要幾分鐘，只有一次）。
+啟動開發用客戶端，只需要 PATH 上有 JDK 17。Gradle 來自 wrapper，Minecraft 與 Forge 由
+ForgeGradle 於首次執行時取得，需要數分鐘，只有一次。
 
-> 為什麼不能做成「解壓縮就能玩」的完整包：**Minecraft 與 Forge 不能轉散布**，
-> 所以任何可以交出去的檔案裡都不可能含有它們。B 這條是唯一存在的一鍵開遊戲路徑。
+> Minecraft 與 Forge 不可轉散布，因此無法提供解壓縮即可遊玩的完整包。B 是唯一能一步
+> 啟動遊戲的路徑。
 
-zip 裡有什麼（2.3 MB）：
+zip 內容（約 2.4 MB）：
 
 | | |
 |---|---|
-| `blockreality-0.0.1-demo.jar` | Forge mod（api + core + impl 全在裡面，117 KB） |
-| `br-sidecar.exe` | Windows 引擎，**只 import KERNEL32 與 msvcrt**，沒有要額外附的 DLL |
+| `blockreality-0.0.1-demo.jar` | Forge mod，api + core + impl 全在裡面 |
+| `br-sidecar.exe` | Windows 引擎，只 import KERNEL32 與 msvcrt，無額外 DLL |
 | `br-sidecar` | Linux 引擎，只依賴 libc/libm |
-| `install.bat` / `install.sh` | 會自己找實例的安裝器 |
-| `START-HERE.txt` | 同樣的說明，英文，放在 zip 裡 |
+| `install.bat` / `install.sh` | 安裝器 |
+| `START-HERE.txt` / `讀我-中文.txt` | 說明文件，英文與中文 |
+| `VERIFICATION.md` / `verification.json` | 這一版的驗證紀錄 |
+| `SHA256SUMS.txt` | 每個檔案的 SHA-256 |
 
-> **沒有 FrameCore.dll 這種東西。** FrameCore 是**靜態連進 `br-sidecar`** 的，而
-> `br-sidecar` 是**獨立程序**不是 mod 載入的函式庫（D-013）。這樣 C++ 這側如果 segfault，
-> 代價是一次分析失敗，不是整個伺服器加存檔。
+> FrameCore 靜態連結進 `br-sidecar`，沒有 FrameCore.dll 這種東西。`br-sidecar` 是獨立
+> 程序而非 mod 載入的函式庫（D-013），因此 C++ 端若發生錯誤，代價是一次分析失敗，
+> 不是整個伺服器與存檔。
+
+打包與發版流程見 `docs/RELEASING.md`。
 
 ---
 
