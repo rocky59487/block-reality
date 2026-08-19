@@ -1,0 +1,73 @@
+# Publishes dist/ as a downloadable release archive.
+#
+# The engine is not built here. br-sidecar links FrameCore, which is an external
+# source dependency that this repository does not carry, so a hosted runner cannot
+# reproduce it. dist/ holds the binaries that scripts/package.sh produced on a
+# machine that does have it, and this workflow only packages and publishes them.
+#
+# Push a tag to publish:
+#     git tag v0.0.1-demo && git push origin v0.0.1-demo
+#
+# Or run it by hand from the Actions tab.
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to publish as (e.g. v0.0.1-demo)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: v
+        run: |
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+
+      # A release whose contents do not match the hashes shipped beside them is
+      # worse than no hashes at all, so the check gates publication.
+      - name: Verify checksums
+        working-directory: dist
+        run: |
+          sha256sum -c SHA256SUMS.txt
+
+      - name: Build archive
+        id: pack
+        run: |
+          name="blockreality-${{ steps.v.outputs.version }}.zip"
+          chmod +x dist/br-sidecar dist/install.sh
+          (cd dist && zip -q -r "../$name" . -x '*.zip')
+          echo "archive=$name" >> "$GITHUB_OUTPUT"
+          unzip -l "$name"
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.v.outputs.tag }}
+          name: Block Reality ${{ steps.v.outputs.version }}
+          files: ${{ steps.pack.outputs.archive }}
+          fail_on_unmatched_files: true
+          body: |
+            Minecraft 1.20.1 + Forge 47.x.
+
+            Download `${{ steps.pack.outputs.archive }}`, extract it, then run
+            `install.bat` on Windows or `./install.sh` on Linux and macOS. The
+            installer finds your Minecraft instance and copies the mod and the
+            analysis engine into it.
+
+            Instructions are in `START-HERE.txt` and `讀我-中文.txt` inside the
+            archive. `SHA256SUMS.txt` lists the hash of every file, and
+            `VERIFICATION.md` is the verification record for this build.

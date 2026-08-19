@@ -8,6 +8,10 @@
 #   dist/br-sidecar                   Linux engine, no dependencies but libc
 #   dist/br-sidecar.exe               Windows engine, if a mingw cross-compiler is present
 #   dist/install.sh / install.bat     copies both into a Minecraft instance
+#   dist/START-HERE.txt               instructions, English
+#   dist/讀我-中文.txt                instructions, Chinese
+#   dist/SHA256SUMS.txt               hashes of everything in the archive
+#   blockreality-<version>.zip        all of the above, one file
 #
 # The engine is a SEPARATE PROCESS, not a library the mod loads (DECISIONS D-013).
 # There is no FrameCore .dll to ship: FrameCore is statically linked into br-sidecar,
@@ -84,80 +88,15 @@ cp "$ROOT"/forge/build/libs/blockreality-*.jar "$DIST/"
 cp "$ROOT/scripts/install.sh" "$ROOT/scripts/install.bat" "$DIST/"
 chmod +x "$DIST/install.sh" "$DIST/br-sidecar"
 
-cat > "$DIST/START-HERE.txt" <<'TXT'
-Block Reality - Demo v0
-=======================
+# The two READMEs that go in the archive live in scripts/dist-docs/ rather than in
+# a heredoc here, so that editing them does not mean editing the packaging script.
+cp "$ROOT/scripts/dist-docs/START-HERE.txt" "$DIST/"
+cp "$ROOT/scripts/dist-docs/讀我-中文.txt" "$DIST/"
 
-Structural analysis for Minecraft, solved by a real finite element engine.
-Minecraft 1.20.1 + Forge 47.x.
-
-
-INSTALL
--------
-Windows:  double-click  install.bat
-Linux:    ./install.sh
-
-With no arguments it finds your Minecraft instance by itself. If you have several
-it lists them and asks you to pick, rather than guessing:
-
-    install.bat "D:\games\my-instance\.minecraft"
-    ./install.sh ~/.minecraft
-
-
-WHAT GETS INSTALLED
--------------------
-  blockreality-*.jar   the Forge mod       -> <instance>/mods/
-  br-sidecar[.exe]     the physics engine  -> <instance>/
-
-There is no FrameCore.dll. FrameCore is statically linked into br-sidecar, and
-br-sidecar is a SEPARATE PROCESS rather than a library the mod loads. That way a
-crash in the C++ costs you one analysis instead of the server and your save.
-
-The mod finds the engine automatically: config file, then -Dbr.sidecar, then
-BR_SIDECAR, then the game directory, then PATH. Without it the mod still loads and
-plays perfectly well - analysis is simply off, and it tells you so.
-
-
-IN GAME
--------
-Creative tab "Block Reality":  Structural Steel,  Stress Glasses.
-
-  1. Put five Structural Steel blocks in a line out from a stone wall.
-     The one touching the wall counts as grounded.
-  2. Hold the Stress Glasses.
-  3. Sneak-right-click the far end to add a 20 kN test load.
-
-The top face of the beam should read BLUE (tension) and the underside RED
-(compression), strongest at the wall and fading to nothing at the tip, with a grey
-line through the middle where the stress changes sign - the neutral axis.
-
-Right-click the air to change lens: Utilisation -> Stress -> Material.
-
-Build it wrong on purpose:
-  - not touching anything    -> "Mechanism, not a structure". That is the correct
-                                answer, not a bug: nothing is holding it up, so
-                                there are no stresses to report.
-  - overload it              -> max D/C goes above 1 and turns red.
-
-
-IF SOMETHING LOOKS WRONG
-------------------------
-    /br status     engine state, every path it looked in, and the last result
-    /br members    per member: D/C, governing fibre, governing section, peak stress
-    /br scan       re-read loaded chunks (for blocks placed by commands or WorldEdit)
-    /br resolve    force a re-analysis
-    /br reset      restart the engine after it was disabled (OP only)
-
-
-HONEST NOTE
------------
-The server side has been run in a real Minecraft server and its numbers checked by
-hand against closed-form beam theory. The CLIENT RENDERING has never been seen by
-anyone - it compiles, and the data behind it is covered by 60 tests, but no one has
-looked at the picture yet. If the overlay is invisible or misplaced, that is the
-most likely thing to be wrong. /br members will tell you whether the numbers are
-there regardless of what is drawn.
-TXT
+# Hashes of everything that is about to be shipped, so a download can be checked
+# against the archive it claims to be. Generated last, over the finished dist/.
+echo "==> hashing"
+(cd "$DIST" && sha256sum -- * > SHA256SUMS.txt)
 
 # ------------------------------------------------------------------- release zip
 # One file to hand to someone. The scripts inside it are the whole interface.
