@@ -56,3 +56,7 @@ git push origin v0.1a
 
 版本號寫在 `forge/build.gradle` 的 `version`，並且要與 `mods.toml` 的 `version` 一致。
 zip 檔名由 jar 檔名推得，改一處就會跟著改。
+
+**README 的下載連結是釘在版本上的**（`releases/download/v<版本>/blockreality-<版本>.zip`），
+不會自己跟著動。換版本時要一起改，中英兩段各一處。釘住是刻意的：`releases/latest/download/`
+需要寫死附件檔名，那個檔名本身就含版本號，換版本一樣會斷，還斷得比較安靜。

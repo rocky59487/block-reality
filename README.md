@@ -20,10 +20,10 @@ unrestrained and therefore reported as mechanisms rather than given stresses.
 
 ## Install
 
-1. Get the latest `blockreality-*.zip` from
-   [Releases](https://github.com/rocky59487/block-reality/releases/latest), or
-   [`blockreality-0.1a.zip`](blockreality-0.1a.zip) from this repository
-   (about 2.4 MB).
+1. Download
+   [**`blockreality-0.1a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.1a/blockreality-0.1a.zip)
+   (2.4 MB). Later versions are on the
+   [Releases page](https://github.com/rocky59487/block-reality/releases/latest).
 2. Extract it, then run `install.bat` on Windows or `./install.sh` on Linux and macOS.
 3. Launch the game the way you normally do.
 
@@ -181,9 +181,10 @@ Minecraft 1.20.1 的結構分析模組。放置的方塊會被擷取為 6 自由
 
 ## 安裝
 
-1. 從 [Releases](https://github.com/rocky59487/block-reality/releases/latest) 取得最新的
-   `blockreality-*.zip`，或用本倉庫的
-   [`blockreality-0.1a.zip`](blockreality-0.1a.zip)（約 2.4 MB）
+1. 下載
+   [**`blockreality-0.1a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.1a/blockreality-0.1a.zip)
+   （2.4 MB）。之後的版本在
+   [Releases 頁](https://github.com/rocky59487/block-reality/releases/latest)
 2. 解壓縮後，Windows 執行 `install.bat`，Linux 與 macOS 執行 `./install.sh`
 3. 用平常的啟動器開遊戲
 
