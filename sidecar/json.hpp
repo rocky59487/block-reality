@@ -42,8 +42,16 @@ struct Value {
     }
     long long i64(const char* k, long long dflt = 0) const {
         auto it = o.find(k);
-        return (it != o.end() && it->second.t == T::Num)
-                   ? static_cast<long long>(it->second.n) : dflt;
+        if (it == o.end() || it->second.t != T::Num) return dflt;
+        const double d = it->second.n;
+        // double -> long long is UB outside the representable range, and "1e999"
+        // parses to +inf as a perfectly typed Num. The remaining callers of this
+        // accessor echo a revision back on error lines; echoing INT64_MIN garbage
+        // would break the Java side's revision pairing for that reply (SIDE-5).
+        if (!std::isfinite(d) || d < -9223372036854775808.0 || d >= 9223372036854775808.0) {
+            return dflt;
+        }
+        return static_cast<long long>(d);
     }
     std::string str(const char* k, const char* dflt = "") const {
         auto it = o.find(k);
@@ -110,6 +118,16 @@ private:
     const std::string& s_;
     size_t p_ = 0;
     bool   ok_ = true;
+    // This protocol never nests more than four deep; a hostile "[[[[[..." line
+    // would otherwise recurse until the stack gives out (SIDE-2). Mirrors the
+    // Java parser's MAX_DEPTH so both ends reject the same documents.
+    static constexpr int kMaxDepth = 64;
+    int    depth_ = 0;
+    struct DepthGuard {
+        Parser& p;
+        explicit DepthGuard(Parser& pp) : p(pp) { ++p.depth_; }
+        ~DepthGuard() { --p.depth_; }
+    };
 
     void skip() { while (p_ < s_.size() && (unsigned char)s_[p_] <= ' ') ++p_; }
     bool eat(char c) { skip(); if (p_ < s_.size() && s_[p_] == c) { ++p_; return true; } return false; }
@@ -121,6 +139,8 @@ private:
     }
 
     Value value() {
+        DepthGuard g(*this);
+        if (depth_ > kMaxDepth) { ok_ = false; return {}; }
         skip();
         if (p_ >= s_.size()) { ok_ = false; return {}; }
         switch (s_[p_]) {

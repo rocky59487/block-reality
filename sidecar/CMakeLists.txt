@@ -18,7 +18,7 @@ if(NOT EXISTS "${FRAMECORE_DIR}/Public/FrameCore/FrameSolver.h")
         "  -DFRAMECORE_DIR=/path/to/Plugins/FrameSolver/Source/FrameCore")
 endif()
 
-file(GLOB FRAMECORE_SRC "${FRAMECORE_DIR}/Private/*.cpp")
+file(GLOB FRAMECORE_SRC CONFIGURE_DEPENDS "${FRAMECORE_DIR}/Private/*.cpp")
 list(FILTER FRAMECORE_SRC EXCLUDE REGEX "FrameCoreModule\\.cpp$")
 
 # ------------------------------------------------------------------- Eigen

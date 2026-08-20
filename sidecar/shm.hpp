@@ -47,11 +47,15 @@ public:
     bool open(const std::string& path, std::string& err) {
         close();
 #if defined(_WIN32)
-        // The path arrives as UTF-8; the W API wants UTF-16.
-        const int wlen = MultiByteToWideChar(CP_UTF8, 0, path.c_str(), -1, nullptr, 0);
+        // The path arrives as UTF-8; the W API wants UTF-16. MB_ERR_INVALID_CHARS
+        // makes the conversion FAIL on a malformed sequence instead of silently
+        // substituting U+FFFD — without it the error branch below is unreachable
+        // and a mangled path surfaces later as a misleading "cannot open" (SIDE-7).
+        const int wlen = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS,
+                                             path.c_str(), -1, nullptr, 0);
         if (wlen <= 0) { err = "shm: path is not valid UTF-8"; return false; }
         std::wstring wpath(static_cast<size_t>(wlen), L'\0');
-        MultiByteToWideChar(CP_UTF8, 0, path.c_str(), -1, &wpath[0], wlen);
+        MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, path.c_str(), -1, &wpath[0], wlen);
 
         file_ = CreateFileW(wpath.c_str(), GENERIC_READ | GENERIC_WRITE,
                             FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,

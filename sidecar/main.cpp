@@ -946,74 +946,6 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         }
     }
 
-    // ---- shell facets: surface stress and the von Mises screen ---------------
-    //
-    // A beam's D/C is the argmax of five one-dimensional ratios. A plate's is not: the
-    // state at a point on its surface is a 2-D stress TENSOR, so the screen goes through
-    // the principal stresses and von Mises, on BOTH faces, at the centre and at all four
-    // corners. Reporting only the centre would flatten the peaks — for a clamped slab the
-    // support moment is more than twice the span moment.
-    //
-    // Honest boundary, carried into the docs: this is an ELASTIC SURFACE SCREEN.
-    // Transverse shear Qx/Qy is recovered and reported but NOT screened, there is no
-    // plate buckling check, and there is no plate ultimate strength.
-    std::vector<double> cenX(so.size()), cenY(so.size()), cenZ(so.size());
-    std::vector<char>   frameOk(so.size(), 0);
-    std::vector<std::array<frame::Vec3, 2>> facetAxes(so.size());
-
-    for (size_t k = 0; k < r.shellForces.size() && k < so.size(); ++k) {
-        const frame::ShellQuad&          sh = m.shells[k];
-        const frame::ShellElementForces& f  = r.shellForces[k];
-        auto& dst = so[k];
-
-        dst.Nxx = f.Nxx; dst.Nyy = f.Nyy; dst.Nxy = f.Nxy;
-        dst.Mxx = f.Mxx; dst.Myy = f.Myy; dst.Mxy = f.Mxy;
-        dst.Qx  = f.Qx;  dst.Qy  = f.Qy;
-        for (int c = 0; c < 4; ++c) {
-            dst.Mc[static_cast<size_t>(c)]    = { f.MxxC[c], f.MyyC[c], f.MxyC[c] };
-            dst.McRaw[static_cast<size_t>(c)] = { f.MxxC[c], f.MyyC[c], f.MxyC[c] };
-        }
-
-        // The facet frame, rebuilt exactly as MITC4ShellElement::prepare builds it, so the
-        // axes on the wire are the axes the resultants are actually expressed in.
-        //
-        // NOTE for any reader of the wire: ex, ey, n form a right-handed triad in the
-        // ENGINE. The Minecraft axis map (x,y,z) -> (x,z,y) is a reflection, so the same
-        // three vectors read in Minecraft space are LEFT-handed: ex x ey = -n. Use them to
-        // project a point onto the facet, never to rebuild the normal by a cross product.
-        const int i0 = m.nodeIndex(sh.n[0]), i1 = m.nodeIndex(sh.n[1]);
-        const int i2 = m.nodeIndex(sh.n[2]), i3 = m.nodeIndex(sh.n[3]);
-        if (i0 < 0 || i1 < 0 || i2 < 0 || i3 < 0) continue;
-        const frame::Vec3 P0 = m.nodes[i0].pos, P1 = m.nodes[i1].pos;
-        const frame::Vec3 P2 = m.nodes[i2].pos, P3 = m.nodes[i3].pos;
-        frame::Vec3 n = frame::cross(P2 - P0, P3 - P1);
-        const double nl = frame::norm(n);
-        if (nl <= 0) continue;
-        n = n * (1.0 / nl);
-        frame::Vec3 e1 = P1 - P0;
-        e1 = e1 - n * frame::dot(e1, n);
-        const double e1l = frame::norm(e1);
-        if (e1l <= 0) continue;
-        e1 = e1 * (1.0 / e1l);
-        const frame::Vec3 e2 = frame::cross(n, e1);
-        dst.ex     = fcToMc(e1);
-        dst.ey     = fcToMc(e2);
-        dst.normal = fcToMc(n);
-        facetAxes[k] = { e1, e2 };
-        frameOk[k]   = 1;
-        cenX[k] = 0.25 * (P0.x + P1.x + P2.x + P3.x);
-        cenY[k] = 0.25 * (P0.y + P1.y + P2.y + P3.y);
-        cenZ[k] = 0.25 * (P0.z + P1.z + P2.z + P3.z);
-
-        double sx = 0, sy = 0, txy = 0;
-        frame::shellLayerSigma(f.Nxx, f.Nyy, f.Nxy, f.Mxx, f.Myy, f.Mxy, sh.t,
-                               frame::ShellLayer::Top, sx, sy, txy);
-        dst.vmTop = frame::principalStress(sx, sy, txy).vonMises;
-        frame::shellLayerSigma(f.Nxx, f.Nyy, f.Nxy, f.Mxx, f.Myy, f.Mxy, sh.t,
-                               frame::ShellLayer::Bot, sx, sy, txy);
-        dst.vmBot = frame::principalStress(sx, sy, txy).vonMises;
-    }
-
     // ---- shell facets: resultants, surface stress, and the engine's screen ---
     //
     // A beam's D/C is the argmax of five one-dimensional ratios. A plate's is not: the
@@ -1825,6 +1757,11 @@ std::string handleSolveShm(const bjson::Value& req) {
         const std::int32_t matIdx = rd.i32();
         const std::int32_t tokIdx = rd.i32();
         const std::uint32_t bf    = rd.u32();
+        // A frame truncated mid-block must be diagnosed as a truncation. The zero-filled
+        // fields a failed read returns would otherwise pass the range checks and could
+        // trip the duplicate-coordinate error, pointing the debugger at block sync
+        // when the actual fault is the transport length.
+        if (!rd.ok) break;
         if (matIdx < 0 || matIdx >= static_cast<std::int32_t>(mats.size())) {
             return errorLine("shm block: material index out of range", revision);
         }
@@ -1858,6 +1795,7 @@ std::string handleSolveShm(const bjson::Value& req) {
             f[c] = rd.f64();
             if (!std::isfinite(f[c])) return errorLine("shm load: component is not finite", revision);
         }
+        if (!rd.ok) break;   // truncated mid-load: report truncation, not a junk row
         loadAt.push_back(p);
         loads.push_back(f);
     }

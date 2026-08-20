@@ -888,6 +888,71 @@ def main():
         above = h_mm - (ymid - (64 * BLOCK_MM + BLOCK_MM / 2.0))
         check(f"wall {nw - 1}x{nh - 1}: self weight above the cut", -mean, q_plate * above, 1e-6)
 
+    # --------------------- S9: every plate token, not just concrete_slab_200
+    # The catalogue ships three plate tokens; S1-S8 exercised only one. A token whose
+    # thickness or material is wired wrong would pass every existing gate untouched —
+    # "no capability without a gate" applies per token, not per code path.
+    print("\n[S9] the other plate tokens: concrete_slab_150, steel_plate_20")
+    S_NU, S_RHO = 0.29, 7850.0                     # engine catalogue: steel
+    n9 = 9
+    a9 = (n9 - 1) * BLOCK_MM
+    c9 = (n9 - 1) / 2.0 * BLOCK_MM + BLOCK_MM / 2.0
+    r200 = sc.call({"op": "solve", "revision": 90, "blocks": slab(n9), "loads": []})
+
+    def slab_token_gate(tag, rev, mat, plate, t_mm, rho, nu):
+        rr = sc.call({"op": "solve", "revision": rev,
+                      "blocks": slab(n9, mat=mat, plate=plate), "loads": []})
+        check_true(f"{tag}: ok", rr.get("ok") is True, rr.get("error", ""))
+        q = rho * t_mm * G_MM * 1e-12
+        # Thickness enters the model twice, independently: linearly through MASS
+        # (self weight), and inversely-squared through the SURFACE STRESS kernel.
+        # This pins the first; the vm ratio checks below pin the second.
+        check(f"{tag}: self weight = rho*t*g*area", rr["equilibrium"]["applied"][1],
+              -q * a9 * a9, 1e-12)
+        # Timoshenko centre coefficient at this material's nu (edge coefficient is
+        # nu-free, centre rescales by (1+nu)/1.3 — same derivation as C_CENTRE).
+        got = corner_moment(rr, c9, c9, 0)
+        ref = 0.0231 / 1.3 * (1 + nu) * q * a9 * a9
+        err = abs(abs(got) - ref) / ref
+        check_true(f"{tag}: centre span moment within 1%", err < 0.01,
+                   f"got={got:.4g} ref={ref:.4g} err={err * 100:.2f}%")
+        return rr
+
+    r150 = slab_token_gate("slab_150", 91, "concrete", "concrete_slab_150", 150.0, T_RHO, T_NU)
+    r020 = slab_token_gate("plate_20", 92, "steel", "steel_plate_20", 20.0, S_RHO, S_NU)
+
+    # Thickness-squared in the STRESS kernel, pinned by ratios of the centre-face
+    # von Mises. The comparison point is the plate CENTRE — the field's stationary
+    # point — on an n=8 mesh (7x7 facets), whose central facet centre lands exactly
+    # there. Two earlier cuts of this gate compared at the argmax instead, which
+    # sits half an element inside the clamped-edge boundary layer where the closed
+    # form is only ~1% good; both cuts and the move are registered in docs/GATES.md.
+    def centre_vm(rev, mat, plate):
+        n8 = 8
+        rr = sc.call({"op": "solve", "revision": rev,
+                      "blocks": slab(n8, mat=mat, plate=plate), "loads": []})
+        cx = (n8 - 1) / 2.0 * BLOCK_MM + BLOCK_MM / 2.0   # plate centre, world mm
+        best, bd = None, None
+        for sh in rr["shells"]:
+            wx = sum(w[0] for w in sh["world"]) / 4.0
+            wz = sum(w[2] for w in sh["world"]) / 4.0
+            d = (wx - cx) ** 2 + (wz - cx) ** 2
+            if bd is None or d < bd:
+                best, bd = sh, d
+        return best["vmTop"]
+
+    v200 = centre_vm(93, "concrete", "concrete_slab_200")
+    v150 = centre_vm(94, "concrete", "concrete_slab_150")
+    v020 = centre_vm(95, "steel", "steel_plate_20")
+    # Same material: the whole moment field scales with q = rho*g*t and the surface
+    # stress with M/t^2, so vm(150)/vm(200) = t200/t150 = 4/3 pointwise.
+    check("centre vm ratio 150/200 = t200/t150", v150 / v200, 200.0 / 150.0, 1e-3)
+    # Across materials, at the centre the two curvatures are equal by symmetry, so
+    # both surface stresses are s = 6*q*f,xx*(1+nu)/t^2 and vm of the equal biaxial
+    # pair is s itself: E drops out, nu enters only as (1+nu).
+    check("centre vm ratio steel20/conc200 = (rho_s/rho_c)*(t_c/t_s)*(1+nu_s)/(1+nu_c)",
+          v020 / v200, (S_RHO / T_RHO) * (200.0 / 20.0) * (1 + S_NU) / (1 + T_NU), 5e-3)
+
     # ------------------------- C15: timber and brick sections vs closed forms
     # The material catalogue always carried timber and brick; no block could declare
     # them because no beam section existed for either. These gates run BEFORE the
