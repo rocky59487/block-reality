@@ -8,6 +8,53 @@
 
 ---
 
+## D-024 · 生命週期語意：關了就是關了、寧棄勿混、寧拒勿猜
+
+**決定**：三條相關的生命週期規則一次定案。
+(1) `SidecarClient` 的 `CLOSED` 是**終態**——維度重載建新 client，不復活舊實例。
+(2) 可續傳 gather 用 **revision-abandon** 保一致性：cursor 跨 tick 續掃,revision
+一動就整個週期作廢重來;不加鎖、不凍結世界、絕不讓一個請求混到兩個世界。
+(3) 封包解碼對**超上限 count 整包拒收**,不做 skip-consume：宣告數超過上限只可能
+來自版本不符或惡意端,frame 已證明 off-schema,信任其餘位元組去跳過反而危險。
+
+**理由**：三條共享同一個原則——狀態機的模糊地帶是併發 bug 的巢。復活舊 client
+要回答「復活時 in-flight 的東西算誰的」;續傳中途混 revision 要回答「這個模型是
+哪個世界的」;skip 半信半疑的 frame 要回答「你憑什麼信 count 後面的位元組」。
+三個問題的正確答案都是「不要讓這個狀態存在」。
+
+**否證條件**：(1) 出現需要 client 池化復用的場景（如多維度共享 client）;
+(2) 實測正常遊玩下連續編輯使 gather 連續棄週期而飢餓（>100 連續 abandon）——
+屆時改 copy-on-write 快照;(3) 未來合法需要提高 count 上限——兩端同步提升並
+回顧拒收語意。任一成立重新裁決該分項。
+
+## D-023 · 顯示軌的實作形狀：server 裁決、client 對齊、過期必標
+
+**決定**：兩軌精度分離（不變式 5/6）的 v1 實作**不是兩次求解**,而是一次承諾軌
+求解加上一條受紀律約束的顯示投影：
+
+- **承諾軌**＝server 端 double 上的判定：D/C、`overCapacity`、`bucklingCritical`
+  由 server 在 double 上定案,以 boolean 隨封包下發。
+- **顯示軌**＝封包裡的 float32 場：client 的 `alignToVerdict` 把降轉值推到 server
+  裁決的同一側（≤1 ulp）,下游任何 `dc>1` 比較與 server 一致 by construction,
+  client **永不重算安全分類**。
+- **過期必標**：revision 前進時 server 廣播 pending 訊號,HUD 對舊 revision 的
+  畫面顯示 stale 標示（顯示軌可 stale,但「舊」必須看得出來——ENGINE_BOUNDARY
+  對 D-007 的精確化）。UNAVAILABLE/MECHANISM 的顯示路由由 `RevisionGate.displayState`
+  在 server 端裁決;STALE 標示本體在 client（client 只有封包,沒有 AnalysisResult）。
+- **壞值即拒**：NaN/Inf/未知 enum/尾端剩餘 → 整包拒收保留前一好狀態,不洗成 0。
+- 顯示軌精度預算 rel ≤ 1e-5 由可執行 gate 釘住（`DisplayTrackPrecisionTest`,
+  f32 降轉全數量級 ≤ 1e-5）——在此之前這個數字只存在於文件（GATE-1）。
+
+**理由**：不變式 5/6 要防的實害是「玩家看到的與實際判定不一致」與「判定吃到
+顯示精度」。兩者都不需要第二次低精度求解才能守住——判定不過 wire、顯示對齊
+判定、過期標示出來,三件事就把消費者隔離做完了。真正的雙求解軌（顯示軌用更粗
+網格/更鬆容差換速度）留給效能需要它的那天。
+
+**否證條件**：(1) 若同版 server 對引擎可產生的任何合法 AnalysisResult 編出會被
+client 拒收的封包（round-trip 測試紅）,拒收規則錯,重裁;(2) 分析延遲實測成為
+玩法瓶頸、需要低精度快軌時,本條的「一次求解」形狀重議;(3) 出現需要 server 端
+per-result stale 標示的場景（如錄影回放）,STALE 歸屬收回 server。
+
 ## D-022 · 支承 = 「結構方塊坐在非結構實體上」，全固接——過渡規則
 
 **決定**：擷取層以啟發式判定支承：一個結構方塊的正下方是非結構實體方塊（地形）時，

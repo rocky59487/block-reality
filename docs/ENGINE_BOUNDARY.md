@@ -40,6 +40,12 @@ Minecraft 側與力學引擎之間的介面契約。目標：**換引擎不動 M
 
 這也精確化了 D-007 的兩軌：顯示軌可以 stale，但**「舊」與「過期」是不同的**——revision 變了就是過期，不是「舊但可用」。
 
+> **兩軌的實作現況（2026-08-20，D-023）**：不是兩次求解。承諾軌＝server 在 double
+> 上定案的判定（D/C、超載、挫屈臨界）以 boolean 隨封包下發;顯示軌＝封包裡的
+> float32 場,client 對齊 server 裁決、永不重算分類;revision 前進即廣播 pending,
+> HUD 對過期畫面標 stale。顯示軌精度預算 rel ≤ 1e-5 有可執行 gate
+> （`DisplayTrackPrecisionTest`）。細節與否證條件見 D-023。
+
 ---
 
 ## 目標協定（未實作——本節與下行目錄是方向，不是現況）
