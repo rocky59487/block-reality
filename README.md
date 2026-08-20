@@ -153,6 +153,7 @@ rather than read back out of the assembled load vector. The full record is in
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | architecture decision record |
 | [`docs/GATES.md`](docs/GATES.md) | acceptance criteria |
 | [`evidence/VERIFICATION.md`](evidence/VERIFICATION.md) | verification record, generated |
+| [`docs/outreach/`](docs/outreach/OUTREACH.md) | academic outreach, community posting and funding playbooks |
 | [`CLAUDE.md`](CLAUDE.md) | development guide and invariants |
 
 ## License
@@ -299,6 +300,7 @@ fallback 與除錯面）。wire 上的每一個力學數值都是引擎函式的
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | 架構決策紀錄 |
 | [`docs/GATES.md`](docs/GATES.md) | 驗收判準 |
 | [`evidence/VERIFICATION.md`](evidence/VERIFICATION.md) | 驗證紀錄，自動產生 |
+| [`docs/outreach/`](docs/outreach/OUTREACH.md) | 學術合作、社群發佈與資助申請的行動手冊 |
 | [`CLAUDE.md`](CLAUDE.md) | 開發指引與不變式 |
 
 ## 授權
