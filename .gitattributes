@@ -1,0 +1,20 @@
+# Executable text must keep its native line endings REGARDLESS of the checkout
+# platform. A shell script checked out with CRLF dies on its first line
+# ("set: pipefail: invalid option name" — the option was 'pipefail\r'), and a
+# release packaged from such a checkout ships an install.sh that no Linux or
+# macOS machine can run. Batch files have the mirrored problem.
+*.sh      text eol=lf
+gradlew   text eol=lf
+*.py      text eol=lf
+*.bat     text eol=crlf
+
+# The engine patch series must apply with `git am` byte-for-byte.
+*.patch   -text
+
+# Binaries, never normalised.
+*.jar     binary
+*.png     binary
+*.jpg     binary
+*.zip     binary
+br-sidecar     binary
+br-sidecar.exe binary
