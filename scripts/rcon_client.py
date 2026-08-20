@@ -36,20 +36,48 @@ class MinecraftRCON:
         data = struct.pack("<iii", 10 + len(body), self.req_id, ptype) + body.encode("utf-8") + b"\x00\x00"
         self.sock.sendall(data)
 
+    def _recv_exact(self, n):
+        # recv() may return fewer bytes than asked (SCRIPT-7); a single call would
+        # truncate long replies and leave the residue to corrupt the next command.
+        buf = b""
+        while len(buf) < n:
+            chunk = self.sock.recv(n - len(buf))
+            if not chunk:
+                raise ConnectionError("RCON connection closed mid-packet")
+            buf += chunk
+        return buf
+
     def _read(self):
-        head = self.sock.recv(12)
-        if len(head) < 12:
+        try:
+            head = self._recv_exact(12)
+        except ConnectionError:
             return -1, 0, ""
         length, req_id, ptype = struct.unpack("<iii", head)
-        body = self.sock.recv(length - 8)
+        if length < 10:
+            return -1, 0, ""
+        body = self._recv_exact(length - 8)
         return req_id, ptype, body[:-2].decode("utf-8", errors="replace")
 
     def command(self, cmd):
         if cmd.startswith("/"):
             cmd = cmd[1:]
         self._send(2, cmd)  # type 2 = EXECCOMMAND
-        req_id, ptype, body = self._read()
-        return body
+        cmd_id = self.req_id
+        # The server fragments long replies across packets with no end marker. The
+        # standard delimiter: send a junk RESPONSE_VALUE packet right behind, which
+        # the server answers in order — everything before that answer is our reply.
+        self._send(0, "")
+        end_id = self.req_id
+        parts = []
+        while True:
+            req_id, ptype, body = self._read()
+            if req_id == -1:
+                break
+            if req_id == end_id:
+                break
+            if req_id == cmd_id:
+                parts.append(body)
+        return "".join(parts)
 
     def close(self):
         if self.sock:

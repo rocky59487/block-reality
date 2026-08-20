@@ -44,6 +44,43 @@ jobs:
         run: |
           sha256sum -c SHA256SUMS.txt
 
+      # The tag names the release; dist/ provides its contents. Nothing else ties
+      # the two together, so without this gate a workflow_dispatch with any tag
+      # would happily publish an OLD binary under a NEW version (#48). The jar
+      # filename, the version inside its mods.toml, and the evidence record must
+      # all agree with the tag being published.
+      - name: Version consistency (tag vs jar vs mods.toml vs evidence)
+        run: |
+          v="${{ steps.v.outputs.version }}"
+          jar=$(ls dist/blockreality-*.jar)
+          [ "$(basename "$jar")" = "blockreality-${v}.jar" ] || {
+            echo "::error::tag says ${v} but dist ships $(basename "$jar")"; exit 1; }
+          unzip -p "$jar" META-INF/mods.toml | grep -Eq "^version *= *\"${v}\"" || {
+            echo "::error::mods.toml inside the jar disagrees with tag ${v}:"
+            unzip -p "$jar" META-INF/mods.toml | grep -E "^version" || true
+            exit 1
+          }
+          python3 - <<'PY'
+          import hashlib, json, sys
+          doc = json.load(open("evidence/verification.json"))
+          claimed = doc["identity"]["binary"]["sha256"]
+          h = hashlib.sha256()
+          with open("dist/br-sidecar", "rb") as f:
+              for chunk in iter(lambda: f.read(65536), b""):
+                  h.update(chunk)
+          actual = h.hexdigest()
+          if claimed != actual:
+              print(f"::error::evidence verified binary {claimed[:12]}... but dist "
+                    f"ships {actual[:12]}... — the record is stale (#47)")
+              sys.exit(1)
+          eng = doc["identity"]["engine"]
+          if eng["commit"] == "unavailable" or not eng["worktree_clean"]:
+              print(f"::error::evidence has no engine provenance "
+                    f"(commit={eng['commit']}, clean={eng['worktree_clean']}) (#47)")
+              sys.exit(1)
+          print("evidence matches the shipped engine:", claimed[:12], eng["commit"][:12])
+          PY
+
       - name: Build archive
         id: pack
         run: |

@@ -558,9 +558,14 @@ def sha256(path):
 
 def identity(exe, framecore_dir):
     def git(*args):
+        # safe.directory: the engine checkout usually sits on NTFS and this script
+        # usually runs under WSL, where git refuses "dubious ownership" and every
+        # query below would come back "unavailable". Provenance that silently
+        # degrades to "unavailable" is exactly what the gate now refuses to ship.
         try:
-            return subprocess.check_output(["git", "-C", framecore_dir, *args],
-                                           text=True, stderr=subprocess.DEVNULL).strip()
+            return subprocess.check_output(
+                ["git", "-c", "safe.directory=*", "-C", framecore_dir, *args],
+                text=True, stderr=subprocess.DEVNULL).strip()
         except Exception:
             return "unavailable"
 
@@ -615,15 +620,22 @@ def main():
     # comparisons are eight orders of magnitude better.
     results = []
     rels, absresid = [], []
+    # A case that failed to solve, or a quantity the extractor could not find, used
+    # to fall OUT of the aggregate: the headline numbers were then computed over the
+    # cases that happened to work, and the gate passed without the accuracy having
+    # been measured (SCRIPT-5). Both now count, and either makes the gate fail.
+    failed_cases, missing_quantities = 0, 0
     for name, req, checks in cases():
         r = sc.call(req)
         if not r.get("ok"):
+            failed_cases += 1
             results.append({"case": name, "error": r.get("error", "solve failed")})
             continue
         rows = []
         for label, expected, extract in checks:
             got = extract(r)
             if got is None:
+                missing_quantities += 1
                 rows.append({"quantity": label, "expected": expected, "got": None,
                              "rel": None, "abs": None})
                 continue
@@ -663,11 +675,20 @@ def main():
 
     perf = performance(exe)
 
+    # Transport comparison, from the same importable measurement the standalone
+    # bench uses. The README quotes these numbers; they must come from a record
+    # a reader can regenerate, not from a one-off terminal session (PERF-1).
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import bench_transport
+    transport = bench_transport.measure(exe)
+
     doc = {
         "identity": identity(exe, framecore),
         "handshake": hello,
         "accuracy": {
             "cases": results,
+            "failed_cases": failed_cases,
+            "missing_quantities": missing_quantities,
             "nonzero_references": {
                 "comparisons": len(rels),
                 "worst_relative_error": worst_rel,
@@ -684,6 +705,7 @@ def main():
         "shear_wall": wall,
         "determinism": determinism,
         "performance": perf,
+        "transport": transport,
     }
 
     with open(os.path.join(outdir, "verification.json"), "w") as f:
@@ -691,9 +713,21 @@ def main():
 
     write_markdown(os.path.join(outdir, "VERIFICATION.md"), doc)
 
-    ok = worst_rel < 1e-9 and worst_abs < 1e-3 and all(ok for _, ok in props) \
+    # Provenance is a NECESSARY condition (#47): a verification record that cannot
+    # name the engine commit it verified, or that was produced from a dirty tree,
+    # is not evidence — it is a screenshot. GATES.md carries the same requirement.
+    eng = doc["identity"]["engine"]
+    provenance_ok = (eng["commit"] != "unavailable" and eng["worktree_clean"] is True)
+
+    ok = provenance_ok and failed_cases == 0 and missing_quantities == 0 \
+        and worst_rel < 1e-9 and worst_abs < 1e-3 and all(ok for _, ok in props) \
         and convergence["gate"] and wall["gate"] \
         and (not determinism["checked"] or determinism["identical"] == determinism["cases"])
+    print(f"provenance: engine commit {eng['commit'][:12]} "
+          f"worktree_clean={eng['worktree_clean']} — {'OK' if provenance_ok else 'FAIL'}")
+    if failed_cases or missing_quantities:
+        print(f"INCOMPLETE: {failed_cases} case(s) failed to solve, "
+              f"{missing_quantities} quantity(ies) not extracted — gate FAILS")
     print(f"worst relative error {worst_rel:.3e} over {len(rels)} non-zero references")
     print(f"worst absolute residual {worst_abs:.3e} over {len(absresid)} zero references")
     print(f"properties {sum(1 for _, o in props if o)}/{len(props)}")
@@ -908,6 +942,22 @@ def write_markdown(path, doc):
     L.append(f"At {big['members']} members the whole round trip is {big['median_ms']:.1f} ms,")
     L.append("against a Minecraft tick of 50 ms — and the solve does not run on the tick")
     L.append("thread, so this is latency to a result rather than time taken from the game.\n")
+    tr = doc.get("transport")
+    if tr:
+        L.append("### Transport: shared memory vs JSON, same solves\n")
+        L.append(f"A {tr['members']}-member, {tr['dof']}-DOF frame solved {tr['rounds']} times")
+        L.append("over each wire (median). The solve in the middle is identical; the")
+        L.append("difference is the transport.\n")
+        L.append("| wire | median (ms) | min (ms) | reply size |")
+        L.append("|---|---:|---:|---:|")
+        L.append(f"| JSON lines | {tr['json_median_ms']} | {tr['json_min_ms']} "
+                 f"| {tr['json_reply_bytes']} bytes over the pipe |")
+        L.append(f"| shared memory | {tr['shm_median_ms']} | {tr['shm_min_ms']} "
+                 f"| {tr['shm_reply_bytes']} bytes in the region, ~60-byte doorbell |")
+        L.append("")
+        L.append(f"Transport saving: {tr['saving_ms']} ms per solve ({tr['saving_pct']}%).")
+        L.append("Measured by `scripts/bench_transport.py`, imported and run by this script")
+        L.append("so the record regenerates with everything else.\n")
     if big.get("without_buckling_ms"):
         L.append("The last two columns are the price of the default. Linear buckling is a second")
         L.append("solve — an eigenvalue problem reusing the same factorisation — and it is on by")
