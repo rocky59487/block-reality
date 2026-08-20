@@ -177,3 +177,49 @@ CONC-9（close 阻塞主執行緒 4 秒/程序）、CONC-10（cores/4 → 4 核�
 ---
 
 **統計**：來源 88 條審核 findings（83 confirmed / 4 downgraded / 1 upgraded / 0 refuted）＋ issues #27–#34 逐條查證（8 個 Opus 代理）＋ #35–#55 對照。去重後本表 Phase 0–6 共 60 個修理項，其中 ✅ 已覆核 47、⚠️ 部分 6、⬜ 待驗 7。
+
+---
+
+## 處置紀錄（2026-08-20 當日完成，分支 `claude/purity-shm-hardening`）
+
+本表全數處置完畢。⬜ 標記的七項在動手前先驗過現況，結果一併記在下面。
+
+| Phase | 項次 | commit | 註 |
+|---|---|---|---|
+| 0 | 0.1 CI / 0.2 renormalize / 0.3 gitattributes / 0.4 SHA256SUMS | `bbab7b9`, `20a0419`, `301aa18` | 0.4 以 fresh clone 實測 `sha256sum -c` 7/7 OK、`git status` 空 |
+| 1 | 1.1–1.4, 1.6, 1.7 | `97b9c6d` | 皆抽出無 MC 依賴的 seam（GatherCycle/SolveDispatch/SnapshotLoads）後以 JUnit 釘住 |
+| 1 | 1.5, 1.8 | `223682c` | CLOSED 終態 + per-dimension lock + volatile 狀態讀 |
+| 2 | 2.1–2.3, 2.5, 2.6, 2.8–2.10 | `bbab7b9` | 2.6(#48)/2.9(#52) 先驗後修 |
+| 2 | 2.4 macOS | 前一輪已修 | 本輪複掃四份文件 + install.sh，零殘餘 |
+| 2 | 2.7 根目錄 zip | `20a0419` | 移出版控並加 ignore |
+| 3 | 3.1–3.3, 3.5–3.9 | `1174e69`（前一輪） | 本輪逐條驗殘量：framing/schema/desync/grow/handshake/int 溢位皆已落地 |
+| 3 | 3.4 forge 側 | `97b9c6d` | gate 裁決 latest 與廣播；`/br status` EMPTY 守門 |
+| 3 | 3.10–3.12 | `23b0b37`, `2ebcfd6` | 死碼刪除、parser 上鎖、三個 plate token 各自閉合解 gate（219 項） |
+| 3 | 3.13(#49), 3.14 | `223682c` | 皆先驗屬實；佇列有界 + 顯式 unmap（Windows 刪檔實證） |
+| 4 | 4.1–4.14 | `97b9c6d` | 4.2/4.3/4.6/4.7/4.9/4.14 先驗；4.9 的 #54 宣稱部分 refuted（見下） |
+| 5 | 5.1–5.3, 5.5–5.7, 5.9, 5.11–5.15 | `5a0cd01` | D-021/D-022 新增；D-002/D-013 實況修正；三條「否證條件：無」補齊 |
+| 5 | 5.4 兩軌 | `fa7720d` | 升格為 D-023，並首次有可執行 gate（`DisplayTrackPrecisionTest`） |
+| 5 | 5.8, 5.10 數字 | `301aa18` | 全站數字改由重建後的 evidence 供給 |
+| 6 | 6.1–6.5 | `223682c`, `97b9c6d`, `bbab7b9` | parity 比對加嚴至全欄位 0.0 容差；權限枚舉、生命週期五連、never-throws 窮舉；CI 為其牙齒 |
+| 附錄 B | SIDE-5/6/7, BUILD-3 | `23b0b37` | |
+| 附錄 B | BUILD-1, BUILD-2 | `20a0419` | |
+| 附錄 B | SCRIPT-4/7/9 | `bbab7b9` | SCRIPT-8 隨 `test_harness.py` 刪除而消失（TEST-7） |
+| 附錄 B | CONC-9, CONC-10 | `223682c` | CONC-10 的 `max(1,…)` 部分本分支已存在（稽核基線行號漂移），照登 |
+
+### 稽核宣稱被推翻或修正的部分（輸格照登的反向）
+
+- **#54「rescan 只 add 不 reconcile」部分 refuted**：snapshot 對 loaded chunk 的 stale 移除本來就存在。真殘量僅 unloaded chunk 內的追蹤殘留，它只佔記憶體、永不進模型（#38 的三分法保證）。仍補了 `/br scan` 的 loaded 位置 reconcile。
+- **4.9 的修法建議修正**：稽核建議改聽 `MONITOR` priority，但 Forge 1.20.1 的 eventbus 沒有 MONITOR；實作用 `LOWEST`（最後一級，且預設不收已取消事件）。
+- **CONC-10 與 3.x 若干條**：行號對 `abc8e78`，本分支已含 `87c6114`/`1174e69`，逐條以符號重新定位後才動手。
+- **S9 gate 的兩次自我否證**：新 gate 首版的參考解推導有誤（漏掉夾支邊的切向伴隨彎矩、取樣點落在邊界層），兩次失敗與觀測點移動全部登記在 `docs/GATES.md`，引擎數字自始未動。
+- **紀律違規自登**：SIDE-2/5/6 的修復先於其 gate 一個 commit，違反鐵則 1 的順序，已登記於 `docs/GATES.md` 而非以 squash 掩蓋。
+
+### 最終狀態
+
+| | |
+|---|---|
+| 引擎 gate | 219/219，Linux 原生與 Windows 原生各跑一次 |
+| Java | 184/184（mod 155 + forge 29），28 項對真引擎 |
+| evidence | provenance OK（engine `10395c3c4c5f`、worktree clean）、最差相對誤差 1.216e-14、決定性 8/8 |
+| issues | #35–#55 全數關閉（21 個）；#20/#22/#23/#27–#34 前一輪已關 |
+| 仍開啟 | #1–#13、#16、#17（設計級：施工、倒塌、持久身分）；#21（版本命名，待人裁決） |
