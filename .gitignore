@@ -4,11 +4,19 @@ build/
 out/
 *.class
 *.jar
-!gradle/wrapper/gradle-wrapper.jar
+# A pattern with a slash anchors at the repository root, and the wrapper jars
+# live under mod/gradle/ and forge/gradle/ — the unanchored form here used to
+# cover a root gradle/ that does not exist, so a re-added wrapper jar would be
+# silently ignored and a clean clone's ./gradlew would not run (BUILD-1).
+!**/gradle/wrapper/gradle-wrapper.jar
 # The shipped mod jar is a release artifact, not a build output. Without this the
 # `*.jar` rule above silently drops it from dist/ and the release workflow fails
 # its own checksum gate on a file that is listed but not there.
 !dist/*.jar
+
+# The release zip is a build product of scripts/package.sh, fully redundant with
+# dist/ (the workflow zips dist/ itself). It was once committed at 2.4 MB.
+/blockreality-*.zip
 
 # Minecraft / Forge
 run/

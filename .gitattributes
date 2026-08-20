@@ -1,3 +1,13 @@
+# dist/ ships to every platform from whatever machine cut the release, and its
+# byte-level hashes are recorded in SHA256SUMS.txt. Every text file in it must
+# therefore check out IDENTICALLY everywhere — the release workflow's
+# `sha256sum -c` gate runs on a Linux checkout, and an unpinned .txt that
+# normalised differently there fails the gate on content that is "the same".
+# LF for everything first; the later, more specific rules (*.bat crlf, the
+# binary entries) override where they must.
+dist/**             text eol=lf
+scripts/dist-docs/* text eol=lf
+
 # Executable text must keep its native line endings REGARDLESS of the checkout
 # platform. A shell script checked out with CRLF dies on its first line
 # ("set: pipefail: invalid option name" — the option was 'pipefail\r'), and a
