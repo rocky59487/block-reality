@@ -142,6 +142,11 @@ python3 sidecar/verify.py sidecar/build/br-sidecar
 | 荷載落在**完全不屬於任何元素**的方塊 → 拒絕整個請求 | issue #14 |
 | 每一島跑線性挫屈，回報全世界最小的 λ_cr | D-018 |
 | 殼的膜元素開 QM6 incompatible modes（面內受彎精確） | D-018 |
+| **缺 mat / 缺 section / 未知 token / 非整數座標 / 重複座標 / 缺 revision / 非有限數 → 全部拒絕** | issue #18 |
+| **落在構件中間、無法映射到節點的荷載 → 拒絕整筆請求，不丟棄** | issue #14 |
+| **斷面改變 → 該處成為節點，構件分段但仍連續** | issue #13 |
+| **D/C 取自沿構件的 stations（含彎矩解析極值），不只兩端** | issue #14 |
+| stdin EOF → 自我了斷 | 防僵屍 |
 
 ### ⚠️ `ex` / `ey` / `n` 在 Minecraft 空間裡是**左手系**
 
@@ -149,11 +154,6 @@ python3 sidecar/verify.py sidecar/build/br-sidecar
 **反射**，所以同樣三個向量讀在 Minecraft 空間就滿足 `ex × ey = −n`。
 
 拿它們把點投影到 facet 上完全沒問題（客戶端就是這樣用的）。**不要用它們的外積去重建法向。**
-| **缺 mat / 缺 section / 未知 token / 非整數座標 / 重複座標 / 缺 revision / 非有限數 → 全部拒絕** | issue #18 |
-| **落在構件中間、無法映射到節點的荷載 → 拒絕整筆請求，不丟棄** | issue #14 |
-| **斷面改變 → 該處成為節點，構件分段但仍連續** | issue #13 |
-| **D/C 取自沿構件的 stations（含彎矩解析極值），不只兩端** | issue #14 |
-| stdin EOF → 自我了斷 | 防僵屍 |
 
 ## 已知 v0 邊界
 

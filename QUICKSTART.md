@@ -55,6 +55,19 @@ FrameCore 的 supernodal lane 由 `FRAMECORE_SUPERNODAL` 在編譯期關掉，�
 `useSupernodalPrimary` 本來就是 `false`，所以每次求解走的一直都是 Eigen LDLT。
 **實測開與關的數字到最後一位都相同**，208 項 gate 兩邊都全過。
 
+**先套引擎補丁——跳過這步必然編譯失敗。** 上游 FrameCore v4.0.0 是凍結的，
+本專案對它的三個修正以 patch 系列隨倉攜帶（`sidecar/patches/`，緣由見其 README
+與 D-020）。`main.cpp` include 的 `ShellEdgeRecovery.h` 就是 patch 0002 新增的檔案，
+所以對著未套補丁的 v4.0.0 建置，第一個錯誤就是找不到它：
+
+```bash
+cd /path/to/architect_simulator
+git checkout v4.0.0
+git am /path/to/block-reality/sidecar/patches/*.patch
+```
+
+然後才是建置：
+
 ```bash
 sudo apt-get install -y libeigen3-dev cmake g++
 
@@ -277,9 +290,12 @@ rcon.port=25575
 
 ## 驗證證據
 
-`evidence/VERIFICATION.md`（release zip 裡也有一份）是**由 `scripts/evidence.py` 產生的**，
-不是手打的表格。每一個數字都來自一次可重複的執行，並蓋上引擎 commit、二進位檔 hash、
-原始碼 hash 與主機。
+`evidence/VERIFICATION.md` 是**由 `scripts/evidence.py` 產生的**，不是手打的表格
+（它**不在** release zip 裡——發行包只放能玩所需的東西，證據留在倉庫，這是
+package.sh 自己註明的取捨）。每一個數字都來自一次可重複的執行，並蓋上引擎
+commit、二進位檔 hash、原始碼 hash 與主機；**provenance 查不到（commit 不可解析、
+工作樹不乾淨）時 evidence 的 gate 直接紅**，不會再出現蓋著 `unavailable` 卻照樣
+PASS 的紀錄。
 
 | | |
 |---|---|
@@ -287,7 +303,7 @@ rcon.port=25575
 | 對恰為零的參考 | 10 項，最差絕對殘差 **1.49e-08 N·mm** |
 | 無閉合解的性質 | **12/12**（機構偵測、單方塊、荷載拒絕、缺料拒絕、未知斷面拒絕、重複求解逐位元相同、島隔離、板不是格梁、實心板拒絕、支承還原不會降低需求、荷載切開構件、細長柱應力安全但挫屈失穩） |
 | 板元素收斂 | 跨中 20 元素 **0.57%**；支承還原後 **2.7%**（逐角原值 18.9%） |
-| 剪力牆 | 面內剪力流與傾覆軸力對閉合解 **1e-7** 等級（細長牆） |
+| 剪力牆 | h/w≥5：剪力流 **1.4e-07**、傾覆 **~1e-09**；h/w=3：**2.7e-05 / 6.8e-07**；方牆是深樑，樑理論本身不適用（1e-3～2e-2 是參考模型的誤差） |
 | 線性挫屈 | 單元素柱對課本值 **1.6e-05**；臨界載重的 1/L² 關係 **2.3e-10** |
 | 跨平台決定性 | **8/8 逐位元相同**（Linux 原生 vs Windows 交叉編譯，比對整行回覆） |
 

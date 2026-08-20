@@ -54,11 +54,12 @@ technology 的老師都是好對象。一次寄 3–5 封,分開寫,不群發。
 > column "looks safe" on stress alone and the eigenvalue says otherwise, which is
 > exactly the lesson I want players to trip over.
 >
-> The part I hope earns your 30 minutes: the verification record. 164 acceptance
+> The part I hope earns your 30 minutes: the verification record. 216 acceptance
 > checks run against closed forms and solver-independent invariants on every build —
 > worst relative error 1.2e-14 over 31 non-zero references, clamped-plate support
-> moments recovered by interior extrapolation (39.7% low raw → 14.0% at 8 elements),
-> shear walls against beam theory to 1e-7, byte-identical solves across Windows and
+> moments recovered by interior extrapolation (39.8% low raw → 14.3% at 8 elements),
+> shear walls against beam theory to 1e-7 from h/w ≥ 5 (a few parts in 1e5 at
+> h/w = 3), byte-identical solves across Windows and
 > Linux. Honest boundaries, stated in the README: everything is linear elastic, plate
 > D/C is a surface screen only, and there are no composite RC sections yet — the
 > section tokens say "solid rectangle" because that is what is being solved.

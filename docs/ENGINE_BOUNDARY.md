@@ -42,7 +42,24 @@ Minecraft 側與力學引擎之間的介面契約。目標：**換引擎不動 M
 
 ---
 
-## 上行（Minecraft → 引擎）
+## 目標協定（未實作——本節與下行目錄是方向，不是現況）
+
+> **實作狀態（2026-08-20，INV-8 修正）**：以下 `world.declare` / `world.edit` /
+> `solve.request` 與下行的 `result.*` / `event.*` / `diag.*` **全部不存在**。
+> 現行協定只有四個 op：`hello`、`solve`、`solve.shm`、`bye`（見「傳輸（實作現況）」節），
+> 每次求解送**全量快照**，沒有 delta、沒有事件、沒有損傷。這個目錄過去以現在式
+> 書寫，讀起來像已實作——那是文件錯誤。對照表：
+>
+> | 目標訊息 | 現況 |
+> |---|---|
+> | `world.declare` / `world.edit`（delta） | 併入 `solve` 的全量 blocks 陣列 |
+> | `solve.request`（軌別、載重工況） | `solve` / `solve.shm`（無軌別欄位；載重只有 point loads） |
+> | `result.utilization` / `result.forces` / `result.shell` | 併入 `solve` 回覆的 members/shells |
+> | `result.damage` / `result.material` | 不存在（損傷系統未開始） |
+> | `event.failure` / `event.mechanism` | 不存在；機構以 `singular` + 診斷欄位回報 |
+> | `diag.status` | `/br status` 由 Java 側狀態機拼裝，非引擎訊息 |
+
+## 上行（Minecraft → 引擎）——目標形狀
 
 只有三類訊息：
 
@@ -64,7 +81,7 @@ Minecraft 側與力學引擎之間的介面契約。目標：**換引擎不動 M
 ### `solve.request`
 要一次求解。帶軌別（`display` / `commit`）與載重工況。
 
-## 下行（引擎 → Minecraft）
+## 下行（引擎 → Minecraft）——目標形狀
 
 | 訊息 | 內容 |
 |---|---|
@@ -113,7 +130,14 @@ wire 上必須有一份雙方同意的材料/角色詞彙表。這跑不掉。
 
 但它是**產品概念不是求解器概念**——「鋼骨」「養護中的混凝土」「模板」在任何力學引擎下都是同樣的東西，換引擎時不變。詞彙表本身版本化，加項目不破相容。
 
-**不可以放上 wire 的**：`Section` 的具體參數（A、Iy、Iz、J、Wy、Wz）、節點編號、DOF 索引、元素型別。那些是引擎的內部詞彙，一旦洩漏就等於把 frame 抽象寫死在 Java 側。
+**不可以放上 wire 的**（D-021 修訂）：**元素身分詞彙**——節點編號、DOF 索引、
+元素型別、剛度矩陣內部。那些換一個引擎就沒有對應物，一旦洩漏就把 frame 抽象寫死
+在 Java 側。
+
+**明確允許**（D-021）：斷面幾何純量（A、Iy、Iz、cy、cz、J）與沿桿內力站值，作為
+**可求值的顯示場**隨結果下發——client 用它們在任意剖面位置重建纖維應力畫圖。
+這些是樑理論的共通語言，任何以樑為模型的引擎都有同一組數。本節第一版把它們
+列進禁令，而實作一直在傳（INV-1）；裁決與否證條件見 D-021，這裡不再重複。
 
 ## 傳輸（實作現況，D-013 + D-019）
 

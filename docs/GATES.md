@@ -82,14 +82,21 @@
 | 日期 | 判準 | 原線 | 實測 | 裁決 | 下游影響 |
 |---|---|---|---|---|---|
 | 2026-08-20 | SidecarEngineTest「兩構件在共享節點報同一斷面彎矩」 | 絕對 1e-9 | 對 ~2.9e7 的彎矩,絕對 1e-9 = 相對 3.5e-17,**嚴於 double 的最後一位**;舊實作恰好同一條浮點路徑所以 bit 相等,D-020 改用引擎重建後端 J 在 x=L 求值、端 I 原生,代數相等但末位捨入不同（實測差 6e-8 絕對 = 2e-16 相對） | 改為**相對 1e-12**（仍比承諾軌的 1e-9 嚴三個數量級）。原線斷言的是實作巧合,不是力學語意 | 無下游結論降級:該 gate 驗的「節點彎矩連續性」在新線下仍成立到 2e-16 |
+| 2026-08-20 | verify.py [S9] 跨材料板 vm 比（新 gate 的撰寫史,commit 前修訂兩次,照登） | 第一版:argmax 處 vm 比 = (ρs/ρc)(tc/ts),容差 5e-3 | FAIL 2.8%:推導漏掉夾支邊的切向伴隨彎矩 ν·M（vm 要乘 √(1−ν+ν²)）;補上後仍 FAIL 1.0%:argmax 取樣點在邊界層內半格,閉合解在那裡本來就只準 ~1% | 觀測點**移到場的駐點**（板中心,n=8 網格）,ν 因子化在該處二階精確;實測落在 1.6e-4 / 3.8e-4,容差維持 5e-3 | 無下游降級:此 gate 首度執行於本次,未曾支撐過任何能力宣稱;兩次失敗都是**參考解推導錯**,引擎數字自始未動 |
+| 2026-08-20 | evidence.py 總 gate | provenance 缺席可過（實際出貨過 commit=unavailable + dirty 的紀錄） | 兩版 release 的 verification.json 皆無可解析引擎 SHA（根因:WSL 讀 NTFS 的 dubious-ownership） | **收緊**:引擎 commit 可解析 + worktree 乾淨 + 失敗 case 為零,三者任缺 gate 即紅（#47） | 舊 evidence 的 identity 節追溯視為**無效**;數字本身由本次重生成覆蓋 |
 
 ## Evidence
 
-每次 gate 執行產生一份 `identity.json`，至少包含：
+每次 gate 執行產生的紀錄（`evidence/verification.json` 的 `identity` 節）至少包含：
 
-- 判準凍結 commit 的 SHA
-- fixture 產生器的路徑與其內容雜湊
-- 硬體與 build 組態
-- 引擎版本（`frame_v2_abi_version()` + `frame_v2_engine_version()` + `frame_v2_build_sha()`）
+- 引擎 checkout 的 commit SHA 與 worktree 是否乾淨——**查不到即 gate 紅**（#47）
+- 出貨二進位的 sha256
+- 判準與轉接層原始碼的內容雜湊（`verify.py`、`main.cpp`、`json.hpp`、`evidence.py`）
+- 主機平台
 
-最後一項是免費的——`frame_capi_v2` 已經暴露這三個符號。用它。
+release workflow 另外驗證「evidence 記錄的二進位 sha256 == dist/ 出貨的那顆」，
+過期紀錄擋發布（#48）。
+
+> 本節第一版寫「用 `frame_v2_abi_version()` 這三個符號,它們是免費的」——那是
+> frame_capi_v2 的符號,而 frame_capi_v2 從未接上（D-002 實況修正）。現行做法
+> 是上面的 git SHA + 檔案雜湊,提供同等的可追溯性。

@@ -902,7 +902,9 @@ def write_markdown(path, doc):
                 r["elements_wide"], r["elements_tall"], r["aspect"],
                 r["shear_rel_error"], r["overturning_rel_error"], r["self_weight_rel_error"]))
         L.append("")
-        L.append("The slender walls agree with beam theory to 1e-7 and better, including one only")
+        L.append("Agreement improves with slenderness, as beam theory itself does: at h/w = 3 the")
+        L.append("shear flow is a few parts in 1e5 and the overturning a few in 1e7; from h/w = 5")
+        L.append("up, 1e-7 and 1e-9. The h/w >= 5 rows include a wall only")
         L.append("**two elements wide** — which is the point of the QM6 incompatible membrane")
         L.append("modes. Without them a four-node quad has no way to curve in its own plane, and")
         L.append("the same walls reported their overturning fibre force 3.4% and 12.3% LOW, the")

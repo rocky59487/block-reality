@@ -67,9 +67,12 @@
 > shells → real solve, with the verification record to prove it
 >
 > 內文骨架:先報驗證數字(這裡的讀者只吃這個):閉合解 1.2e-14、clamped plate
-> 支承彎矩 recovery 39.7%→14.0% @8 元素、剪力牆對梁理論 1e-7、跨平台逐位元
+> 支承彎矩 recovery 39.8%→14.3% @8 元素、剪力牆對梁理論 h/w≥5 到 1e-7
+> (h/w=3 是 1e-5 級)、跨平台逐位元
 > 決定性。再講一句「玩家在遇到公式之前先遇到 P_cr ∝ 1/L²」。**明說**彈性上限、
 > 線性挫屈是上界。問題丟給版眾:「你會先加塑性鉸、載重組合,還是 RC 複合斷面?」
+>
+> (數字出處是 `evidence/VERIFICATION.md`;貼文前重新對一次,別背數字。)
 
 ### r/EngineeringStudents / r/civilengineering(次波)
 
