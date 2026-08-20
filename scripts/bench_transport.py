@@ -100,7 +100,7 @@ def main():
     shm_bytes = 0
     for k in range(rounds):
         payload = encode(200 + k)
-        bell = json.dumps({"op": "solve.shm", "revision": 200 + k})
+        bell = json.dumps({"op": "solve.shm", "revision": 200 + k, "bytes": len(payload)})
         t0 = time.perf_counter()
         mm.seek(0)
         mm.write(payload)

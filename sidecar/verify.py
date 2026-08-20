@@ -44,6 +44,15 @@ class Sidecar:
             raise RuntimeError("sidecar closed the pipe")
         return json.loads(line)
 
+    def raw(self, line):
+        """One raw request line, for malformed-input gates the dict API cannot express."""
+        self.p.stdin.write(line + "\n")
+        self.p.stdin.flush()
+        reply = self.p.stdout.readline()
+        if not reply:
+            raise RuntimeError("sidecar closed the pipe")
+        return json.loads(reply)
+
     def close(self):
         try:
             self.p.stdin.write('{"op":"bye"}\n')
@@ -994,6 +1003,7 @@ def main():
                              l.get("mx", 0), l.get("my", 0), l.get("mz", 0))
         mm.seek(0)
         mm.write(o)
+        return len(o)
 
     def shm_decode_reply(mm, nbytes):
         c = Cur(memoryview(mm)[:nbytes])
@@ -1131,8 +1141,8 @@ def main():
     for ti, (tag, tb, tl) in enumerate(t_cases):
         rev = 9000 + ti
         rj = sc.call({"op": "solve", "revision": rev, "blocks": tb, "loads": tl})
-        shm_encode_request(mm, rev, tb, tl)
-        bell = sc.call({"op": "solve.shm", "revision": rev})
+        nreq = shm_encode_request(mm, rev, tb, tl)
+        bell = sc.call({"op": "solve.shm", "revision": rev, "bytes": nreq})
         check_true(f"T{ti} doorbell ok ({tag})", bell.get("ok") is True, bell.get("error", ""))
         rb = shm_decode_reply(mm, bell["bytes"])
         # `op` is doorbell-side framing, not solve content.
@@ -1146,11 +1156,107 @@ def main():
     eb = beam_blocks(3)
     el = [{"x": 40, "y": 64, "z": 0, "fy": -1000.0}]
     rj = sc.call({"op": "solve", "revision": rev, "blocks": eb, "loads": el})
-    shm_encode_request(mm, rev, eb, el)
-    bell = sc.call({"op": "solve.shm", "revision": rev})
+    nreq = shm_encode_request(mm, rev, eb, el)
+    bell = sc.call({"op": "solve.shm", "revision": rev, "bytes": nreq})
     check_true("T-err doorbell still ok=false", bell.get("ok") is False, str(bell))
     check_true("T-err same refusal text", bell.get("error") == rj.get("error"),
                f"json={rj.get('error')!r} shm={bell.get('error')!r}")
+
+    # ---------------------------------- TF: frame boundary and fail-closed wire
+    # The byte length on the doorbell IS the frame (#27); the mapping capacity is
+    # not. Every refusal here must name the problem, not solve a lighter model.
+    print("\n[TF] shm framing and fail-closed decode")
+    fb, fl = beam_blocks(3), []
+    nreq = shm_encode_request(mm, 9200, fb, fl)
+    check_true("TF bytes missing refused",
+               sc.call({"op": "solve.shm", "revision": 9200}).get("ok") is False, "")
+    check_true("TF bytes zero refused",
+               sc.call({"op": "solve.shm", "revision": 9200, "bytes": 0}).get("ok") is False, "")
+    check_true("TF bytes beyond region refused",
+               sc.call({"op": "solve.shm", "revision": 9200,
+                        "bytes": 1 << 30}).get("ok") is False, "")
+    r = sc.call({"op": "solve.shm", "revision": 9200, "bytes": nreq + 8})
+    check_true("TF trailing bytes refused", r.get("ok") is False and "trailing" in r.get("error", ""),
+               str(r.get("error", "")))
+    r = sc.call({"op": "solve.shm", "revision": 9200, "bytes": nreq - 8})
+    check_true("TF truncated frame refused", r.get("ok") is False and "truncat" in r.get("error", ""),
+               str(r.get("error", "")))
+    check_true("TF exact frame still solves",
+               sc.call({"op": "solve.shm", "revision": 9200, "bytes": nreq}).get("ok") is True, "")
+
+    # Unknown request flags / block flags / out-of-world coordinates: refused (#28).
+    def patched(rev, patch_at, value):
+        n = shm_encode_request(mm, rev, fb, fl)
+        mm.seek(patch_at)
+        mm.write(struct.pack("<I", value))
+        return n
+    n = patched(9201, 12, 3)   # flags word: unknown bit 1 set
+    r = sc.call({"op": "solve.shm", "revision": 9201, "bytes": n})
+    check_true("TF unknown request flags refused",
+               r.get("ok") is False and "flags" in r.get("error", ""), str(r.get("error", "")))
+    n = patched(9202, 20 + 20, 2)   # first block's flags word (header 20 + x,y,z,mat,tok)
+    r = sc.call({"op": "solve.shm", "revision": 9202, "bytes": n})
+    check_true("TF unknown block flags refused",
+               r.get("ok") is False and "flags" in r.get("error", ""), str(r.get("error", "")))
+    n = patched(9203, 20, 0x7fffffff)   # first block x: far outside the world
+    r = sc.call({"op": "solve.shm", "revision": 9203, "bytes": n})
+    check_true("TF out-of-world coordinate refused",
+               r.get("ok") is False and "range" in r.get("error", ""), str(r.get("error", "")))
+
+    # ------------------------------------ TR: revision is exact 64-bit (#29)
+    # A double folds every integer above 2^53; the fence must not. Adjacent
+    # revisions on both sides of the fold, echoed exactly, on both transports.
+    print("\n[TR] revision domain is exact int64")
+    for rev in (2 ** 53 - 1, 2 ** 53, 2 ** 53 + 1, 2 ** 63 - 1):
+        rj = sc.call({"op": "solve", "revision": rev, "blocks": fb, "loads": fl})
+        check_true(f"TR json echoes {rev}", rj.get("ok") is True and rj.get("revision") == rev,
+                   str(rj.get("revision")))
+        n = shm_encode_request(mm, rev, fb, fl)
+        bell = sc.call({"op": "solve.shm", "revision": rev, "bytes": n})
+        check_true(f"TR shm echoes {rev}", bell.get("ok") is True and bell.get("revision") == rev,
+                   str(bell.get("revision")))
+        rb = shm_decode_reply(mm, bell["bytes"])
+        check_true(f"TR region echoes {rev}", rb.get("revision") == rev, str(rb.get("revision")))
+    check_true("TR fractional revision refused",
+               sc.raw('{"op":"solve","revision":1.5,"blocks":[]}').get("ok") is False, "")
+    check_true("TR exponent-form revision refused",
+               sc.raw('{"op":"solve","revision":1e3,"blocks":[]}').get("ok") is False, "")
+    check_true("TR negative revision refused",
+               sc.call({"op": "solve", "revision": -1, "blocks": []}).get("ok") is False, "")
+    check_true("TR beyond-int64 revision refused",
+               sc.raw('{"op":"solve","revision":9223372036854775808,"blocks":[]}').get("ok") is False, "")
+
+    # -------------------------------- TS: JSON request schema is strict (#30)
+    # A wrong-typed or misspelled field must refuse, never quietly become a
+    # lighter model that still answers ok:true.
+    print("\n[TS] strict JSON request schema")
+    base = {"op": "solve", "revision": 9300, "blocks": beam_blocks(3)}
+    check_true("TS baseline solves", sc.call(base).get("ok") is True, "")
+    check_true("TS loads as object refused",
+               sc.call({**base, "loads": {}}).get("ok") is False, "")
+    check_true("TS loads as string refused",
+               sc.call({**base, "loads": "none"}).get("ok") is False, "")
+    r = sc.call({**base, "load": [{"x": 0, "y": 64, "z": 0, "fy": -1.0}]})
+    check_true("TS typo'd 'load' key refused", r.get("ok") is False and "load" in r.get("error", ""),
+               str(r.get("error", "")))
+    check_true("TS blocks as object refused",
+               sc.call({"op": "solve", "revision": 9301, "blocks": {}}).get("ok") is False, "")
+    check_true("TS blocks missing refused",
+               sc.call({"op": "solve", "revision": 9302}).get("ok") is False, "")
+    bad_support = [dict(beam_blocks(3)[0], support="true")] + beam_blocks(3)[1:]
+    check_true("TS string 'support' refused",
+               sc.call({"op": "solve", "revision": 9303, "blocks": bad_support}).get("ok") is False, "")
+    check_true("TS unknown block field refused",
+               sc.call({"op": "solve", "revision": 9304,
+                        "blocks": [dict(beam_blocks(1)[0], colour="red")]}).get("ok") is False, "")
+    check_true("TS trailing garbage line refused",
+               sc.raw('{"op":"solve","revision":1,"blocks":[]} tail').get("ok") is False, "")
+    check_true("TS malformed number refused",
+               sc.raw('{"op":"solve","revision":1,"blocks":[{"x":1.2.3,"y":64,"z":0,'
+                      '"mat":"steel","section":"steel_rect_200x400"}]}').get("ok") is False, "")
+    check_true("TS invalid escape refused",
+               sc.raw('{"op":"solve","revision":1,"blocks":[],"loads":[],"buckling":true,'
+                      '"op":"so\\qlve"}').get("ok") is False, "")
 
     # Capacity path: a region too small must refuse loudly, never truncate.
     small_path = os.path.join(os.path.dirname(shm_path), "small.bin")
@@ -1162,8 +1268,8 @@ def main():
     mm2 = mmap_mod.mmap(fs2.fileno(), 0)
     rev = 9101
     bb, bl = wall(3, 5, 100000.0)
-    shm_encode_request(mm2, rev, bb, bl)
-    bell = sc.call({"op": "solve.shm", "revision": rev})
+    nreq = shm_encode_request(mm2, rev, bb, bl)
+    bell = sc.call({"op": "solve.shm", "revision": rev, "bytes": nreq})
     check_true("T-cap overflow refused with grow hint",
                bell.get("ok") is False and "grow" in bell.get("error", ""), str(bell))
     mm2.close()

@@ -148,7 +148,20 @@ cp "$JAR" "$TARGET/mods/"
 echo "  mod    -> $TARGET/mods/$(basename "$JAR")"
 
 # 引擎放在遊戲目錄，那正是 mod 會去找的地方。
-if [[ -f "$HERE/br-sidecar" ]]; then
+# The archive carries Windows and Linux x86-64 engines only. Copying the Linux
+# ELF onto a Mac would report "installed" and then never run — the user's first
+# contact with the project would be a mystery failure blamed on the mod. Saying
+# so up front costs a paragraph; silence costs a compatibility reputation.
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    echo "  ⚠ macOS：這個發行包目前沒有 macOS 版引擎（只有 Windows 與 Linux x86-64）。"
+    echo "    mod 已安裝、可正常遊玩，但結構分析會是關閉狀態。"
+    echo "    想在 macOS 跑分析：依 repo 的 sidecar/README.md 自行建置 br-sidecar，"
+    echo "    放進上面那個遊戲目錄即可。"
+    echo "  macOS: this archive ships no macOS engine (Windows and Linux x86-64 only)."
+    echo "    The mod is installed and plays fine; analysis stays off. To get analysis"
+    echo "    on a Mac, build br-sidecar from source (see sidecar/README.md in the"
+    echo "    repository) and drop it into the game directory above."
+elif [[ -f "$HERE/br-sidecar" ]]; then
     cp "$HERE/br-sidecar" "$TARGET/"
     chmod +x "$TARGET/br-sidecar"
     echo "  engine -> $TARGET/br-sidecar"

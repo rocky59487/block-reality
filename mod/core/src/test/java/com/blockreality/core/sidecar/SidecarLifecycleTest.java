@@ -96,7 +96,7 @@ class SidecarLifecycleTest {
         Path exe = script("mismatch.sh",
                 "while read -r line; do\n"
                         + "  printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"X\",\"protocol\":99,"
-                        + "\"materials\":[],\"sections\":[]}\\n'\n"
+                        + "\"materials\":[],\"sections\":[],\"plates\":[]}\\n'\n"
                         + "done\n");
         client = clientFor(exe, 2_000);
 
@@ -114,7 +114,7 @@ class SidecarLifecycleTest {
         Path exe = script("wedged.sh",
                 "read -r line\n"
                         + "printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":1,"
-                        + "\"materials\":[],\"sections\":[]}\\n'\n"
+                        + "\"materials\":[],\"sections\":[],\"plates\":[]}\\n'\n"
                         + "sleep 60\n");
         client = clientFor(exe, 300);
 
@@ -135,11 +135,16 @@ class SidecarLifecycleTest {
                         + "  case \"$line\" in\n"
                         + "    *'\"op\":\"hello\"'*)\n"
                         + "      printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":1,"
-                        + "\"materials\":[],\"sections\":[]}\\n' ;;\n"
+                        + "\"materials\":[],\"sections\":[],\"plates\":[]}\\n' ;;\n"
                         + "    *)\n"
                         + "      if [ ! -f '" + marker + "' ]; then touch '" + marker + "'; exit 1; fi\n"
-                        + "      printf '{\"ok\":true,\"revision\":2,\"singular\":false,\"maxDC\":0.5,"
-                        + "\"governing\":1,\"members\":[],\"unassigned\":[]}\\n' ;;\n"
+                        // Schema-complete on purpose: the strict decoder (#31) treats a
+                        // reply that claims ok but lacks required fields as a protocol
+                        // desync, and this test is about crash recovery, not schema.
+                        + "      printf '{\"ok\":true,\"revision\":2,\"singular\":false,"
+                        + "\"islands\":1,\"singularIslands\":0,\"equilibrium\":{\"residual\":0},"
+                        + "\"maxDC\":0.5,\"governing\":1,\"members\":[],\"shells\":[],"
+                        + "\"unassigned\":[]}\\n' ;;\n"
                         + "  esac\n"
                         + "done\n");
         client = clientFor(exe, 2_000);
@@ -163,12 +168,14 @@ class SidecarLifecycleTest {
                         + "  case \"$line\" in\n"
                         + "    *'\"op\":\"hello\"'*)\n"
                         + "      printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":1,"
-                        + "\"materials\":[],\"sections\":[]}\\n' ;;\n"
+                        + "\"materials\":[],\"sections\":[],\"plates\":[]}\\n' ;;\n"
                         + "    *)\n"
                         + "      n=$((n+1))\n"
                         + "      if [ $n -eq 1 ]; then sleep 1; fi\n"
-                        + "      printf '{\"ok\":true,\"revision\":%s,\"singular\":false,\"maxDC\":0.1,"
-                        + "\"governing\":1,\"members\":[],\"unassigned\":[]}\\n' \"$n\" ;;\n"
+                        + "      printf '{\"ok\":true,\"revision\":%s,\"singular\":false,"
+                        + "\"islands\":1,\"singularIslands\":0,\"equilibrium\":{\"residual\":0},"
+                        + "\"maxDC\":0.1,\"governing\":1,\"members\":[],\"shells\":[],"
+                        + "\"unassigned\":[]}\\n' \"$n\" ;;\n"
                         + "  esac\n"
                         + "done\n");
         client = clientFor(exe, 200);
@@ -189,7 +196,7 @@ class SidecarLifecycleTest {
                         + "  case \"$line\" in\n"
                         + "    *'\"op\":\"bye\"'*) exit 0 ;;\n"
                         + "    *) printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":1,"
-                        + "\"materials\":[],\"sections\":[]}\\n' ;;\n"
+                        + "\"materials\":[],\"sections\":[],\"plates\":[]}\\n' ;;\n"
                         + "  esac\n"
                         + "done\n");
         client = clientFor(exe, 2_000);
@@ -208,7 +215,7 @@ class SidecarLifecycleTest {
         script("later.sh",
                 "while read -r line; do\n"
                         + "  printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":1,"
-                        + "\"materials\":[],\"sections\":[]}\\n'\n"
+                        + "\"materials\":[],\"sections\":[],\"plates\":[]}\\n'\n"
                         + "done\n");
         client.reset();
         assertTrue(client.ensureReady());

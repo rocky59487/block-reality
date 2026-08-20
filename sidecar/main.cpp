@@ -1294,6 +1294,40 @@ void writeBlocks(bjson::Writer& w, const char* key, const std::vector<BlockPos>&
 std::string errorLine(const std::string& msg, long long revision);
 double relativeResidual(const SolveOut& s);
 
+// Revision is the stale-result fence and is read EXACTLY (#29). The previous path
+// stored it in a double, which folds every integer above 2^53 onto its neighbours —
+// so two adjacent revisions could become the same value and a stale result could
+// pass the one check that exists to stop it. The parser keeps plain-integer
+// literals as int64; anything else — missing, fractional, exponent-form, negative,
+// beyond int64 — is refused here.
+bool readRevision(const bjson::Value& req, long long& out, std::string& err) {
+    if (!req.isExactInt("revision")) {
+        err = "'revision' missing or not a plain non-negative integer";
+        return false;
+    }
+    const long long r = req.exactI64("revision");
+    if (r < 0) {
+        err = "'revision' must be a non-negative integer";
+        return false;
+    }
+    out = r;
+    return true;
+}
+
+// Unknown-key policy (#30): the wire is a fixed vocabulary, and a key the engine
+// does not know is most likely a TYPO of one it does — "load" for "loads" would
+// otherwise solve an unloaded model and report it safe. Refused, with the key named.
+std::string unknownKeyIn(const bjson::Value& v, std::initializer_list<const char*> allowed) {
+    for (const auto& [key, _] : v.o) {
+        bool known = false;
+        for (const char* a : allowed) {
+            if (key == a) { known = true; break; }
+        }
+        if (!known) return key;
+    }
+    return "";
+}
+
 bool readCoord(const bjson::Value& v, const char* key, int& out, std::string& err) {
     if (!v.isFiniteNum(key)) { err = std::string("field '") + key + "' missing or not a finite number"; return false; }
     const double d = v.num(key);
@@ -1311,15 +1345,27 @@ bool readForce(const bjson::Value& v, const char* key, double& out, std::string&
 }
 
 std::string handleSolve(const bjson::Value& req) {
-    // revision travels as an integer field and must round-trip exactly. Rejecting a
-    // non-integer here is cheap; a revision that silently changed value would defeat the
-    // one mechanism that keeps stale results from causing damage.
-    if (!req.isFiniteNum("revision")) return errorLine("'revision' missing or not a finite number", 0);
-    const double revd = req.num("revision");
-    if (revd != std::floor(revd) || revd < 0 || revd > 9.007199254740992e15) {
-        return errorLine("'revision' must be a non-negative integer", 0);
+    long long revision = 0;
+    std::string revErr;
+    if (!readRevision(req, revision, revErr)) return errorLine(revErr, 0);
+
+    // Schema is a fixed vocabulary at EVERY level (#30). The permissive accessors
+    // (arr() returning empty on a wrong type, boolean() defaulting) must never be
+    // the thing standing between a malformed request and a solve: "loads": {...}
+    // read as zero loads, or a typo'd key silently dropped, both produce ok:true
+    // for a LIGHTER model than the caller asked about — the silently-safe answer.
+    {
+        const std::string bad = unknownKeyIn(req, { "op", "revision", "blocks", "loads", "buckling" });
+        if (!bad.empty()) return errorLine("unknown field '" + bad + "'", revision);
     }
-    const long long revision = static_cast<long long>(revd);
+    if (!req.isArr("blocks")) {
+        return errorLine("'blocks' missing or not an array", revision);
+    }
+    // Policy, frozen: `loads` may be ABSENT (meaning none), but if present it must
+    // be an array. Absence is an explicit vocabulary choice; a wrong type is not.
+    if (req.has("loads") && !req.isArr("loads")) {
+        return errorLine("'loads' is not an array", revision);
+    }
 
     const auto& matCat = materialCatalogue();
     const auto& secCat = sectionCatalogue();
@@ -1330,6 +1376,10 @@ std::string handleSolve(const bjson::Value& req) {
 
     for (const auto& bv : req.arr("blocks")) {
         if (bv.t != bjson::Value::T::Obj) return errorLine("blocks[] entry is not an object", revision);
+        {
+            const std::string bad = unknownKeyIn(bv, { "x", "y", "z", "mat", "section", "support" });
+            if (!bad.empty()) return errorLine("block: unknown field '" + bad + "'", revision);
+        }
         InBlock b;
         if (!readCoord(bv, "x", b.pos.x, err)) return errorLine("block: " + err, revision);
         if (!readCoord(bv, "y", b.pos.y, err)) return errorLine("block: " + err, revision);
@@ -1341,6 +1391,12 @@ std::string handleSolve(const bjson::Value& req) {
         }
         if (!bv.isStr("mat"))     return errorLine("block: 'mat' missing", revision);
         if (!bv.isStr("section")) return errorLine("block: 'section' missing", revision);
+        // Policy, frozen: `support` may be absent (not a support), but a present
+        // field must be a real boolean — "support": "true" defaulting to false
+        // turns a supported structure into a mechanism with a straight face.
+        if (bv.has("support") && !bv.isBool("support")) {
+            return errorLine("block: 'support' is not a boolean", revision);
+        }
 
         b.mat     = bv.str("mat");
         b.section = bv.str("section");
@@ -1361,6 +1417,10 @@ std::string handleSolve(const bjson::Value& req) {
     std::vector<BlockPos>              loadAt;
     for (const auto& lv : req.arr("loads")) {
         if (lv.t != bjson::Value::T::Obj) return errorLine("loads[] entry is not an object", revision);
+        {
+            const std::string bad = unknownKeyIn(lv, { "x", "y", "z", "fx", "fy", "fz", "mx", "my", "mz" });
+            if (!bad.empty()) return errorLine("load: unknown field '" + bad + "'", revision);
+        }
         BlockPos p;
         if (!readCoord(lv, "x", p.x, err)) return errorLine("load: " + err, revision);
         if (!readCoord(lv, "y", p.y, err)) return errorLine("load: " + err, revision);
@@ -1702,20 +1762,35 @@ std::string handleShmOpen(const bjson::Value& req) {
 }
 
 std::string handleSolveShm(const bjson::Value& req) {
-    if (!req.isFiniteNum("revision")) return errorLine("'revision' missing or not a finite number", 0);
-    const double revd = req.num("revision");
-    if (revd != std::floor(revd) || revd < 0 || revd > 9.007199254740992e15) {
-        return errorLine("'revision' must be a non-negative integer", 0);
-    }
-    const long long revision = static_cast<long long>(revd);
+    long long revision = 0;
+    std::string revErr;
+    if (!readRevision(req, revision, revErr)) return errorLine(revErr, 0);
     if (!g_shm.valid()) return errorLine("solve.shm before shm.open", revision);
 
-    brshm::Reader rd{ g_shm.data(), g_shm.data() + g_shm.size() };
+    // The doorbell carries the request's byte length, and that length — never the
+    // mapping capacity — is the frame (#27). Reading to the end of the mapping
+    // would let a truncated request keep parsing into whatever the LAST frame left
+    // behind, which is exactly the stale-tail corruption this field exists to stop.
+    if (!req.isExactInt("bytes")) {
+        return errorLine("solve.shm: 'bytes' missing or not a plain integer", revision);
+    }
+    const long long reqBytes = req.exactI64("bytes");
+    if (reqBytes <= 0 || static_cast<unsigned long long>(reqBytes) > g_shm.size()) {
+        return errorLine("solve.shm: 'bytes' out of range for the mapped region", revision);
+    }
+
+    brshm::Reader rd{ g_shm.data(), g_shm.data() + static_cast<size_t>(reqBytes) };
     if (rd.u32() != kShmReqMagic) return errorLine("shm request: bad magic", revision);
-    const std::uint32_t revLo = rd.u32();
-    const std::uint32_t revHi = rd.u32();
-    const long long shmRev = static_cast<long long>(revLo)
-                           | (static_cast<long long>(revHi) << 32);
+    // hi/lo are composed UNSIGNED first and range-checked before touching a signed
+    // value (#29): a corrupt hi word must be a protocol error, not a signed-shift
+    // excursion into implementation-defined territory.
+    const std::uint64_t revLo = rd.u32();
+    const std::uint64_t revHi = rd.u32();
+    const std::uint64_t shmRevU = revLo | (revHi << 32);
+    if (shmRevU > 0x7fffffffffffffffULL) {
+        return errorLine("shm request: revision out of range", revision);
+    }
+    const long long shmRev = static_cast<long long>(shmRevU);
     // The doorbell and the region must agree about WHICH request this is; a skew
     // means the two sides have lost sync, and answering would answer the wrong
     // question with confident numbers.
@@ -1723,10 +1798,18 @@ std::string handleSolveShm(const bjson::Value& req) {
         return errorLine("shm request: revision skew between doorbell and region", revision);
     }
     const std::uint32_t flags = rd.u32();
+    // Unknown flag bits are refused, not ignored (#28): a future bit changes what
+    // the request MEANS, and an old engine that ignores it would answer a different
+    // question with a confident yes.
+    if ((flags & ~1u) != 0) return errorLine("shm request: unknown flags", revision);
     const bool wantBuckling = (flags & 1u) != 0;
 
     const auto& toks = tokenTable();
     const auto& mats = materialTable();
+
+    // Same world-domain guard the JSON path applies (#28): the binary wire is not a
+    // side door around the coordinate contract.
+    auto coordOk = [](std::int32_t c) { return c >= -30000000 && c <= 30000000; };
 
     std::vector<InBlock> blocks;
     std::set<BlockPos>   seen;
@@ -1736,6 +1819,9 @@ std::string handleSolveShm(const bjson::Value& req) {
         b.pos.x = rd.i32();
         b.pos.y = rd.i32();
         b.pos.z = rd.i32();
+        if (!coordOk(b.pos.x) || !coordOk(b.pos.y) || !coordOk(b.pos.z)) {
+            return errorLine("shm block: coordinate out of world range", revision);
+        }
         const std::int32_t matIdx = rd.i32();
         const std::int32_t tokIdx = rd.i32();
         const std::uint32_t bf    = rd.u32();
@@ -1745,6 +1831,7 @@ std::string handleSolveShm(const bjson::Value& req) {
         if (tokIdx < 0 || tokIdx >= static_cast<std::int32_t>(toks.size())) {
             return errorLine("shm block: section/plate index out of range", revision);
         }
+        if ((bf & ~1u) != 0) return errorLine("shm block: unknown flags", revision);
         b.mat     = mats[static_cast<size_t>(matIdx)];
         b.section = toks[static_cast<size_t>(tokIdx)];
         b.support = (bf & 1u) != 0;
@@ -1763,6 +1850,9 @@ std::string handleSolveShm(const bjson::Value& req) {
         p.x = rd.i32();
         p.y = rd.i32();
         p.z = rd.i32();
+        if (!coordOk(p.x) || !coordOk(p.y) || !coordOk(p.z)) {
+            return errorLine("shm load: coordinate out of world range", revision);
+        }
         std::array<double, 6> f{};
         for (int c = 0; c < 6; ++c) {
             f[c] = rd.f64();
@@ -1772,6 +1862,10 @@ std::string handleSolveShm(const bjson::Value& req) {
         loads.push_back(f);
     }
     if (!rd.ok) return errorLine("shm request: truncated", revision);
+    // The frame must be consumed EXACTLY (#27). Trailing bytes inside the declared
+    // length mean the two ends disagree about the schema, and a schema disagreement
+    // that still parses is the most dangerous kind.
+    if (rd.p != rd.end) return errorLine("shm request: trailing bytes after the frame", revision);
 
     SolveOut s = runSolve(blocks, loads, loadAt, wantBuckling);
     // A refused solve refuses identically on both transports: the doorbell carries

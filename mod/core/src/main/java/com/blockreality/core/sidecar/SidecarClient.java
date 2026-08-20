@@ -9,7 +9,6 @@ import com.blockreality.core.protocol.ProtocolCodec;
 import com.blockreality.core.protocol.SolveRequest;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -21,7 +20,7 @@ import java.util.function.Consumer;
  * {@link IOException}, a process handle, or a restart.
  *
  * <h2>Fail-safe, not fail-open</h2>
- * Four failures are handled, and the response to all of them is the same in the one
+ * Failures are sorted into kinds, and the response to all of them is the same in the one
  * respect that matters — <strong>the world does not change</strong>:
  *
  * <table>
@@ -29,9 +28,20 @@ import java.util.function.Consumer;
  *   <tr><td>binary absent</td><td>analysis disabled, mod plays normally, message shown</td></tr>
  *   <tr><td>protocol mismatch</td><td>refused outright — a version skew that silently
  *       half-works is how you get results that are wrong instead of missing</td></tr>
+ *   <tr><td>engine refusal</td><td>that request fails, conversation continues — a
+ *       refused solve is an <em>answer</em>, not a transport problem</td></tr>
  *   <tr><td>crash mid-request</td><td>that request fails, process restarts with backoff</td></tr>
+ *   <tr><td>protocol desync</td><td>kill and restart with backoff — once the two sides
+ *       disagree about which reply answers which request, every later reply is suspect</td></tr>
  *   <tr><td>wedged</td><td>timeout, kill, restart</td></tr>
  * </table>
+ *
+ * <p>The refusal/desync split (#33) is what keeps a malformed <em>world</em> from
+ * burning restart budget: an engine that answers "this model cannot be solved" a
+ * thousand times in a row is healthy, and restarting it would turn a player's odd
+ * build into a disabled engine. Desyncs and transport failures, by contrast, all go
+ * through one backoff path whose counter is capped — so a sidecar that desyncs on
+ * every request converges to DISABLED instead of a restart storm.
  *
  * <p>Not thread-safe by design. One instance per dimension, driven from that dimension's
  * analysis thread. A shared instance behind a lock would serialise every dimension behind
@@ -92,9 +102,11 @@ public final class SidecarClient implements AutoCloseable {
      * Runs one analysis. Never throws.
      *
      * <p>The returned result is stamped with the revision the engine answered for, and
-     * {@link ProtocolCodec} has already rejected any reply that does not match the
-     * request. Callers still have to check it against the world's current revision before
-     * applying anything — the engine cannot know that the world moved on while it worked.
+     * a reply that cannot be matched to the request — wrong revision, unreadable line,
+     * broken frame — never becomes a result at all; it restarts the conversation.
+     * Callers still have to check the result against the world's current revision
+     * before applying anything — the engine cannot know that the world moved on while
+     * it worked.
      */
     public AnalysisResult solve(SolveRequest request) {
         WorldRevision rev = request.revision();
@@ -104,28 +116,76 @@ public final class SidecarClient implements AutoCloseable {
         }
 
         // A reply left over from a timed-out earlier request would otherwise be read as
-        // this one's. The revision check in the codec would catch it, but discarding it
+        // this one's. The revision check in the triage would catch it, but discarding it
         // here means one stale reply cannot fail every subsequent request.
         process.drain();
 
         // The shared-memory wire when both ends speak it; JSON otherwise. A TRANSPORT
-        // failure (region cannot be created, grown or opened) downgrades to JSON and
-        // keeps playing — the JSON path is the contract, shm is the optimisation. A
-        // SOLVE failure is returned as-is on either wire: the engine refusing a
-        // malformed world is an answer, not a transport problem, and retrying it over
-        // JSON would just refuse again.
+        // failure of the region itself (cannot be created, grown or opened) downgrades
+        // to JSON and keeps playing — the JSON path is the contract, shm is the
+        // optimisation, and losing it may cost speed but never an analysis (#32).
         if (shm != null) {
             AnalysisResult viaShm = solveViaShm(request);
-            if (viaShm != null) {
-                if (viaShm.ok()) consecutiveFailures = 0;
-                return viaShm;
-            }
+            if (viaShm != null) return viaShm;
         }
+        return solveViaJson(request);
+    }
+
+    // ---------------------------------------------------------------- triage
+    /**
+     * The three kinds of reply line (#33). What separates them is whether the
+     * conversation can be trusted afterwards:
+     *
+     * <ul>
+     *   <li>{@link #REFUSAL} — a well-formed "this model cannot be solved" for the right
+     *       revision. That is an <em>answer</em>; the next request proceeds normally.
+     *   <li>{@link #DESYNC} — the line cannot be matched to the request (malformed, wrong
+     *       revision, off-schema). Once "which reply is this?" has no answer, every later
+     *       reply on this pipe is suspect, so the conversation must end.
+     *   <li>{@link #OK} — a well-formed success doorbell for the right revision; the
+     *       payload still has to survive its own strict decode.
+     * </ul>
+     */
+    private enum Verdict { OK, REFUSAL, DESYNC }
+
+    private record Triage(Verdict verdict, String detail, JsonValue value) { }
+
+    private Triage triage(String line, WorldRevision rev) {
+        JsonValue v = JsonValue.parse(line);
+        if (!v.isObject()) {
+            return new Triage(Verdict.DESYNC, "malformed reply line", v);
+        }
+        // Exact-integer on purpose: revision is the field whose whole job is telling
+        // adjacent values apart, and a double reading folds values above 2^53.
+        if (!v.isExactInt("revision")) {
+            return new Triage(Verdict.DESYNC, "reply carries no plain-integer revision", v);
+        }
+        long got = v.exactI64("revision");
+        if (got != rev.value()) {
+            return new Triage(Verdict.DESYNC,
+                    "revision mismatch: asked for " + rev.value() + ", got " + got, v);
+        }
+        if (!v.isBool("ok")) {
+            return new Triage(Verdict.DESYNC, "reply carries no boolean ok", v);
+        }
+        if (!v.bool("ok", false)) {
+            // A refusal without a reason is not something our peer produces; treating
+            // it as a refusal anyway would hide a desync behind an empty message.
+            if (!v.isStr("error")) {
+                return new Triage(Verdict.DESYNC, "refusal without an error message", v);
+            }
+            return new Triage(Verdict.REFUSAL, v.str("error", ""), v);
+        }
+        return new Triage(Verdict.OK, "", v);
+    }
+
+    // ------------------------------------------------------------- transports
+    private AnalysisResult solveViaJson(SolveRequest request) {
+        WorldRevision rev = request.revision();
 
         if (!process.send(ProtocolCodec.encodeSolve(request))) {
             return failAndRestart(rev, "sidecar pipe closed while sending");
         }
-
         String line = process.awaitLine(config.requestTimeoutMs());
         if (line == null) {
             return failAndRestart(rev, process.alive()
@@ -133,70 +193,112 @@ public final class SidecarClient implements AutoCloseable {
                     : "sidecar exited during analysis");
         }
 
-        AnalysisResult result = ProtocolCodec.decodeSolve(line, rev);
-        if (result.ok()) consecutiveFailures = 0;
-        return result;
+        Triage t = triage(line, rev);
+        return switch (t.verdict()) {
+            case DESYNC -> failAndRestart(rev, "protocol desync: " + t.detail());
+            // No restart and no failure count: the engine is healthy, the model is not,
+            // and burning restart budget on a player's odd build would converge on
+            // DISABLED for an engine that answered every question it was asked.
+            case REFUSAL -> AnalysisResult.failed(rev, t.detail());
+            case OK -> {
+                AnalysisResult result = ProtocolCodec.decodeSolve(line, rev);
+                if (!result.ok()) {
+                    // The line said ok and then failed the strict schema: the two ends
+                    // disagree about what a reply looks like, which is a desync, not a
+                    // solve failure.
+                    yield failAndRestart(rev, "protocol desync: " + result.diagnostic());
+                }
+                consecutiveFailures = 0;
+                yield result;
+            }
+        };
     }
 
     /**
      * One solve over the shared region. Returns {@code null} only when the shm
-     * transport itself is unusable — the caller then falls through to JSON.
+     * transport itself is unusable — the caller then falls through to JSON, so a shm
+     * problem costs the speed of the fast path, never the analysis (#32).
+     *
+     * <p><strong>Idempotency caveat:</strong> the grow-and-resend loop below re-sends
+     * the same request after a region overflow. That is safe solely because solve is a
+     * pure function of the request — asking twice cannot change the world. If a verb
+     * with side effects is ever added to this protocol, it must NOT inherit this
+     * automatic resend.
      */
     private AnalysisResult solveViaShm(SolveRequest request) {
         WorldRevision rev = request.revision();
 
-        int need = BinaryCodec.requestBytes(request);
-        if (need > shm.size() && !reopenShm(Math.max((long) need * 2, shm.size() * 2))) {
-            return null;
-        }
-        if (!BinaryCodec.encodeSolve(request, catalogue, shm.buffer())) {
-            // A token the catalogue does not list cannot travel as an index. Let the
-            // JSON path answer; its fail-closed validation names the offending token.
+        long need = BinaryCodec.requestBytes(request);
+        if (need > shm.size() && !reopenShm(Math.max(need * 2, shm.size() * 2))) {
             return null;
         }
 
-        if (!process.send(ProtocolCodec.encodeSolveShm(rev.value()))) {
-            return failAndRestart(rev, "sidecar pipe closed while sending");
-        }
-        String line = process.awaitLine(config.requestTimeoutMs());
-        if (line == null) {
-            return failAndRestart(rev, process.alive()
-                    ? "sidecar timed out after " + config.requestTimeoutMs() + " ms"
-                    : "sidecar exited during analysis");
-        }
-
-        JsonValue bell = JsonValue.parse(line);
-        if (!bell.isObject()) {
-            return AnalysisResult.failed(rev, "malformed shm doorbell reply");
-        }
-        if (!bell.bool("ok", false)) {
-            String error = bell.str("error", "engine reported failure");
-            // The one transport-shaped error on this path: the reply outgrew the
-            // region. Grow once and retry; a second failure is reported as-is.
-            if (error.contains("grow") && reopenShm(shm.size() * 2)) {
-                if (!BinaryCodec.encodeSolve(request, catalogue, shm.buffer())
-                        || !process.send(ProtocolCodec.encodeSolveShm(rev.value()))) {
-                    return null;
-                }
-                String retry = process.awaitLine(config.requestTimeoutMs());
-                if (retry == null) {
-                    return failAndRestart(rev, "sidecar timed out during shm retry");
-                }
-                JsonValue rb = JsonValue.parse(retry);
-                if (rb.isObject() && rb.bool("ok", false)) {
-                    return BinaryCodec.decodeSolve(shm.buffer(), rev, catalogue);
-                }
-                error = rb.isObject() ? rb.str("error", error) : error;
+        while (true) {
+            int wrote = BinaryCodec.encodeSolve(request, catalogue, shm.buffer());
+            if (wrote < 0) {
+                // A token the catalogue does not list cannot travel as an index. Let
+                // the JSON path answer; its fail-closed validation names the token.
+                return null;
             }
-            return AnalysisResult.failed(rev, error);
-        }
+            // The doorbell carries the request's exact length; the sidecar reads that
+            // many bytes and no more, so a stale longer frame cannot lend its tail to
+            // a truncated new one (#27).
+            if (!process.send(ProtocolCodec.encodeSolveShm(rev.value(), wrote))) {
+                return failAndRestart(rev, "sidecar pipe closed while sending");
+            }
+            String line = process.awaitLine(config.requestTimeoutMs());
+            if (line == null) {
+                return failAndRestart(rev, process.alive()
+                        ? "sidecar timed out after " + config.requestTimeoutMs() + " ms"
+                        : "sidecar exited during analysis");
+            }
 
-        long bellRev = bell.i64("revision", -1);
-        if (bellRev != rev.value()) {
-            return AnalysisResult.failed(rev,
-                    "revision mismatch: asked for " + rev.value() + ", got " + bellRev);
+            Triage t = triage(line, rev);
+            if (t.verdict() == Verdict.DESYNC) {
+                return failAndRestart(rev, "protocol desync: " + t.detail());
+            }
+            if (t.verdict() == Verdict.REFUSAL) {
+                // The one transport-shaped refusal on this path: the reply outgrew the
+                // region. Grow and resend until it fits; when the ceiling or the
+                // filesystem says no, fall back to JSON rather than reporting failure —
+                // a reply too big for the fast path is not a reply too big to have.
+                if (t.detail().contains("grow")) {
+                    if (!reopenShm(shm.size() * 2)) {
+                        closeShm();
+                        return null;
+                    }
+                    continue;
+                }
+                // Same reasoning as the JSON path: a refusal is an answer, and it is
+                // deliberately NOT retried over JSON — the engine refuses identically
+                // on both transports, so the retry would only refuse again, slower.
+                return AnalysisResult.failed(rev, t.detail());
+            }
+
+            // A success doorbell must say how long the reply frame is; without that
+            // length the frame boundary would be "wherever the reads stop", which is
+            // exactly the stale-tail reading the byte count exists to prevent.
+            JsonValue bell = t.value();
+            if (!bell.isExactInt("bytes")) {
+                return failAndRestart(rev, "protocol desync: doorbell carries no byte count");
+            }
+            long bytes = bell.exactI64("bytes");
+            if (bytes <= 0 || bytes > shm.size()) {
+                return failAndRestart(rev,
+                        "protocol desync: doorbell byte count " + bytes + " out of range");
+            }
+            AnalysisResult result = BinaryCodec.decodeSolve(shm.buffer(), (int) bytes, rev, catalogue);
+            if (!result.ok()) {
+                // The doorbell said ok but the region does not decode: bad magic, wrong
+                // revision, truncated frame, off-schema content. The two sides no
+                // longer agree about the region's contents, and the region itself is
+                // discarded with the process (closeProcessQuietly closes it) so the
+                // next conversation starts with a fresh mapping.
+                return failAndRestart(rev, "protocol desync: " + result.diagnostic());
+            }
+            consecutiveFailures = 0;
+            return result;
         }
-        return BinaryCodec.decodeSolve(shm.buffer(), rev, catalogue);
     }
 
     /** Creates (or replaces) the region and asks the sidecar to map it. */
@@ -312,6 +414,12 @@ public final class SidecarClient implements AutoCloseable {
         return false;
     }
 
+    /**
+     * Transport failures and protocol desyncs both land here: kill the process, count
+     * the failure, back off, and disable after the cap. The shared region is discarded
+     * with the process ({@link #closeProcessQuietly} closes it), so a desync can never
+     * leave a poisoned mapping behind for the next conversation to read.
+     */
     private AnalysisResult failAndRestart(WorldRevision rev, String why) {
         log.accept(why);
         if (process != null) process.kill();

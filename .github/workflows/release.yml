@@ -61,14 +61,39 @@ jobs:
           files: ${{ steps.pack.outputs.archive }}
           fail_on_unmatched_files: true
           body: |
-            Minecraft 1.20.1 + Forge 47.x.
+            **Structural Preview** for Minecraft 1.20.1 + Forge 47.x: real finite
+            element analysis on the blocks you place, from an engine running outside
+            the game process.
 
-            Download `${{ steps.pack.outputs.archive }}`, extract it, then run
-            `install.bat` on Windows or `./install.sh` on Linux and macOS. The
-            installer finds your Minecraft instance and copies the mod and the
-            analysis engine into it.
+            **What this preview does**
+            - extracts placed blocks into 6-DOF beam members and MITC4 shell facets
+              (floors and shear walls), one structure per connected component
+            - solves them with self weight plus point test loads (`/br load`, in kN,
+              any direction), off the tick thread, over a zero-copy shared-memory
+              transport
+            - reports per-member and per-plate demand/capacity with the governing
+              fibre named, stress contours on the block faces, a section readout
+              with the neutral axis, and a linear buckling factor — a slender column
+              that "looks safe" on stress says so
+            - nine structural blocks: three steel sections, plain concrete, timber,
+              a brick pier, two slab thicknesses, 20 mm steel plate
+            - every number is gated: 208 acceptance checks against closed forms and
+              invariants per build, record in `evidence/VERIFICATION.md`
 
-            Contents: the mod jar, the analysis engine for Windows and Linux, the
-            installers, and instructions in `START-HERE.txt` and `讀我-中文.txt`.
-            `SHA256SUMS.txt` lists the hash of every file. The verification record
-            for this build is in the repository at `evidence/VERIFICATION.md`.
+            **What it deliberately does not do yet**
+            - no fracture, collapse or falling-block consequences — analysis reports;
+              nothing breaks or falls
+            - no construction sequencing, no reinforced-concrete composite sections
+              (the concrete beam is honestly plain), no load combinations or wind
+            - linear elastic only; the buckling factor is the linear onset, an upper
+              bound on the real critical load
+
+            **Install**: download `${{ steps.pack.outputs.archive }}`, extract, then
+            run `install.bat` on Windows or `./install.sh` on Linux. The installer
+            finds your Minecraft instance and copies the mod and the engine in.
+            macOS: the mod installs and plays, but no macOS engine binary ships yet —
+            analysis stays off unless you build `br-sidecar` from source.
+
+            Contents: the mod jar, the analysis engine for Windows and Linux x86-64,
+            the installers, and instructions in `START-HERE.txt` and `讀我-中文.txt`.
+            `SHA256SUMS.txt` lists the hash of every file.

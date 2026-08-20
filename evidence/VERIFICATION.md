@@ -11,16 +11,16 @@ binary named below; none is transcribed by hand.
 | commit | `unavailable` (unavailable) |
 | worktree clean | False |
 | solver lane | compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT |
-| binary sha256 | `fb8f4e0de089705b7da497bd8214c1b421dad4ffc89ae91e931c06a155adaf92` |
+| binary sha256 | `1cd9534d6a71e3707d0a382e4468784fe389fc90e0640c563dfee00a7df9495f` |
 | host | Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35 |
 
 Source hashes:
 
 | file | sha256 |
 |---|---|
-| `sidecar/main.cpp` | `fdc8217bbf367006d0895c50d9943bda3a445235ae7078ab23a0d07c7230b257` |
-| `sidecar/json.hpp` | `14620fe97a851cbb85dde4e9ff263634fc3cdb9f56460c7086dc581faab4ca05` |
-| `sidecar/verify.py` | `43410838d146aee78afdf179c1faff709d8cf0e0835868e3e4a9183c9aed47e5` |
+| `sidecar/main.cpp` | `628445167f78c54a4f05a7a45568df88e657bda973031f90f3030147d0d97bc3` |
+| `sidecar/json.hpp` | `8a9b6d6cf6d3a33486e4ef8cb9abbb766460ff53db517367e9a409bffb5a6e68` |
+| `sidecar/verify.py` | `8545f8a9c4ec325c865adcb7829cbc31dd6bde8894fde796871307020e13a206` |
 | `sidecar/CMakeLists.txt` | `e20f43a8705a2fd1c9a8a378156540ae28eb0115ec6ed6a328fe966bdbdab27c` |
 | `scripts/evidence.py` | `ac07708e0363a10e3f297b1edeea5685c6a9f7c278b7493fdfad49da55095d12` |
 
@@ -272,16 +272,16 @@ one warm-up; the cold process start is excluded because it happens once.
 
 | blocks | members | DOF | default (ms) | min | max | ms/member | no buckling (ms) | buckling |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 3 | 1 | 12 | 0.437 | 0.372 | 0.563 | 0.437 | 0.486 | x0.90 |
-| 6 | 3 | 24 | 1.112 | 1.025 | 1.258 | 0.371 | 0.932 | x1.19 |
-| 15 | 9 | 60 | 2.704 | 2.471 | 2.997 | 0.300 | 2.336 | x1.16 |
-| 30 | 19 | 120 | 5.139 | 4.835 | 6.899 | 0.270 | 5.115 | x1.00 |
-| 60 | 39 | 240 | 11.873 | 10.272 | 13.883 | 0.304 | 10.733 | x1.11 |
-| 90 | 59 | 360 | 16.663 | 15.597 | 18.671 | 0.282 | 17.891 | x0.93 |
-| 150 | 99 | 600 | 26.357 | 24.992 | 30.365 | 0.266 | 28.205 | x0.93 |
-| 300 | 199 | 1200 | 75.646 | 61.513 | 93.031 | 0.380 | 60.558 | x1.25 |
+| 3 | 1 | 12 | 0.327 | 0.305 | 0.666 | 0.327 | 0.321 | x1.02 |
+| 6 | 3 | 24 | 0.765 | 0.709 | 1.404 | 0.255 | 0.708 | x1.08 |
+| 15 | 9 | 60 | 2.123 | 1.966 | 2.608 | 0.236 | 2.095 | x1.01 |
+| 30 | 19 | 120 | 4.531 | 4.14 | 4.928 | 0.238 | 4.413 | x1.03 |
+| 60 | 39 | 240 | 9.354 | 8.73 | 11.423 | 0.240 | 9.229 | x1.01 |
+| 90 | 59 | 360 | 15.834 | 13.584 | 20.844 | 0.268 | 15.01 | x1.05 |
+| 150 | 99 | 600 | 27.059 | 24.049 | 31.617 | 0.273 | 27.205 | x0.99 |
+| 300 | 199 | 1200 | 56.269 | 51.475 | 64.977 | 0.283 | 52.608 | x1.07 |
 
-At 199 members the whole round trip is 75.6 ms,
+At 199 members the whole round trip is 56.3 ms,
 against a Minecraft tick of 50 ms — and the solve does not run on the tick
 thread, so this is latency to a result rather than time taken from the game.
 

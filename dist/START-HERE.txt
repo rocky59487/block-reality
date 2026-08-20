@@ -1,5 +1,5 @@
-Block Reality — Demo v0
-=======================
+Block Reality — Structural Preview
+==================================
 
 Structural analysis for Minecraft, solved by a real finite element engine.
 Requires Minecraft 1.20.1 with Forge 47.x.
@@ -9,7 +9,7 @@ INSTALL
 -------
 Windows   double-click  install.bat
 Linux     ./install.sh
-macOS     ./install.sh
+macOS     ./install.sh  (mod only: no macOS engine ships yet, analysis stays off)
 
 With no arguments the installer looks for a Minecraft instance in the usual
 locations for the vanilla launcher, Prism, MultiMC, Modrinth and CurseForge. If
@@ -47,12 +47,17 @@ and reported as such.
 
 IN GAME
 -------
-Creative tab "Block Reality": Structural Steel, Concrete Slab, Stress Glasses.
+Creative tab "Block Reality": nine structural blocks and the Stress Glasses.
+A block's token decides which ELEMENT it becomes — beams and plates are
+different element types, not one type in different colours:
 
-The two blocks are two different element types, not one type in two colours:
-
-  Structural Steel   steel_rect_200x400   6-DOF beam, 200 x 400 mm section
-  Concrete Slab      concrete_slab_200    MITC4 shell facet, 200 mm thick
+  Structural Steel (three sizes)   6-DOF beams: 200x400, 150x300, 100x200 mm
+  Plain Concrete Beam              6-DOF beam, 400x600 mm, unreinforced —
+                                   cracks in tension at 3 MPa, as it should
+  Timber Beam                      6-DOF beam, 140x240 mm sawn section
+  Brick Pier                       6-DOF beam, 230x350 mm masonry pier
+  Concrete Slab (200 / 150)        MITC4 shell facets
+  Steel Plate 20                   MITC4 shell facet, 20 mm thick
 
 What counts as grounded: a structural block whose DIRECTLY BELOW neighbour is a
 solid, non-structural block. Nothing else grounds anything — a beam butted
@@ -96,6 +101,10 @@ COMMANDS
   /br status         engine state, every path searched, last result
   /br members        per member: D/C, governing fibre, governing section, peak
   /br section <id>   per station, in text
+  /br load <fx> <fy> <fz>   test load in kN on the block you aim at —
+                     /br load 30 0 0 pushes a shear wall sideways
+  /br unload [all]   remove the aimed block's test load / all of them
+  /br loads          list every test load
   /br scan [radius]  re-read the chunks around you (default radius 4, so 9x9),
                      for blocks placed by command or WorldEdit
   /br resolve        force re-analysis

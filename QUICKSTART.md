@@ -8,7 +8,7 @@
 
 ### A · 已經有 Minecraft 1.20.1 + Forge 47.x
 
-解開 zip，Windows 執行 `install.bat`，Linux 與 macOS 執行 `./install.sh`。
+解開 zip，Windows 執行 `install.bat`，Linux 執行 `./install.sh`。（macOS：尚無預建引擎，mod 可玩、分析關閉；要分析請自行建置 `br-sidecar`。）
 
 不帶參數執行時，安裝器會在原生啟動器、Prism、MultiMC、Modrinth、CurseForge 的慣用位置
 尋找實例；找到多個會列出來讓你選，而不是自行決定。也可以自行指定遊戲目錄，或用
@@ -53,7 +53,7 @@ zip 內容（約 2.4 MB）：
 **依賴只剩 Eigen**（header-only）。METIS / OpenBLAS / LAPACKE 都不用了——
 FrameCore 的 supernodal lane 由 `FRAMECORE_SUPERNODAL` 在編譯期關掉，而
 `useSupernodalPrimary` 本來就是 `false`，所以每次求解走的一直都是 Eigen LDLT。
-**實測開與關的數字到最後一位都相同**，151 項 gate 兩邊都全過。
+**實測開與關的數字到最後一位都相同**，208 項 gate 兩邊都全過。
 
 ```bash
 sudo apt-get install -y libeigen3-dev cmake g++
@@ -69,7 +69,7 @@ cmake --build sidecar/build --parallel
 python3 sidecar/verify.py sidecar/build/br-sidecar
 ```
 
-最後一行要是 `ALL PASS`（151 項）。**這一步失敗就不要往下走**——後面看到的任何東西都不可信。
+最後一行要是 `ALL PASS`（208 項，含傳輸等價與 fail-closed 協定 gate）。**這一步失敗就不要往下走**——後面看到的任何東西都不可信。
 
 一次把全部（Linux + Windows + jar）打包好：
 
@@ -88,7 +88,7 @@ cd mod
 gradle test -Dbr.sidecar=../sidecar/build/br-sidecar
 ```
 
-107 個測試，0 failures。其中 26 個會**實際啟動 `br-sidecar` 子程序**跑真的 FrameCore。
+全部測試 0 failures。其中 28 個會**實際啟動 `br-sidecar` 子程序**跑真的 FrameCore（含兩條 JSON↔共用記憶體等價測試）。
 
 沒帶 `-Dbr.sidecar` 那 26 個會 skip 而不是假裝通過。**帶了但路徑不對則直接建置失敗**，
 不會 skip——先前那一行相對路徑在 forked test JVM 裡解析不到，測試全部靜靜 skip 而
@@ -116,9 +116,9 @@ build 照樣 SUCCESSFUL。靠「不跑」變綠是最糟的一種綠。
 
 ## 進去以後做什麼
 
-創造模式，物品欄搜 `Block Reality`。三樣東西：**結構鋼**、**混凝土樓板**、**應力眼鏡**。
+創造模式，物品欄搜 `Block Reality`。九種結構方塊加**應力眼鏡**；先拿最基本的兩種上手：
 
-兩種方塊是**兩種元素**，不是同一種東西換個顏色：
+樑與板是**兩種元素**，不是同一種東西換個顏色（完整方塊表見 README）：
 
 | 方塊 | token | 元素 | 尺寸 |
 |---|---|---|---|
@@ -283,7 +283,7 @@ rcon.port=25575
 
 | | |
 |---|---|
-| 對閉合解（非零參考） | **31 項，最差相對誤差 1.623e-10**，RMS 3.008e-11 |
+| 對閉合解（非零參考） | **31 項，最差相對誤差 1.2e-14**（前兩版引用的 1.6e-10 是舊 wire 的 10 位截斷，不是引擎） |
 | 對恰為零的參考 | 10 項，最差絕對殘差 **1.49e-08 N·mm** |
 | 無閉合解的性質 | **12/12**（機構偵測、單方塊、荷載拒絕、缺料拒絕、未知斷面拒絕、重複求解逐位元相同、島隔離、板不是格梁、實心板拒絕、支承還原不會降低需求、荷載切開構件、細長柱應力安全但挫屈失穩） |
 | 板元素收斂 | 跨中 20 元素 **0.57%**；支承還原後 **2.7%**（逐角原值 18.9%） |
@@ -293,7 +293,6 @@ rcon.port=25575
 
 每一次求解的回覆裡都自帶一個**全域平衡殘差**——施加載重由幾何與密度獨立重算，不是從組裝後
 的載重向量讀回來，所以它是一句與求解器無關的陳述。`/br status` 直接印它。
-| FrameCore | `6b40c08`，工作樹乾淨 |
 
 **兩個誤差指標分開報是刻意的**：恰為零的量沒有相對誤差，把它折進同一個數字會把其他
 所有比較都誤報成 1e-8 等級，而實際上非零比較好了好幾個數量級。
