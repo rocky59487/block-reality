@@ -1323,6 +1323,29 @@ def main():
                sc.raw('{"op":"solve","revision":1,"blocks":[],"loads":[],"buckling":true,'
                       '"op":"so\\qlve"}').get("ok") is False, "")
 
+    # Parser-hardening gates (SIDE-2 / SIDE-5 / SIDE-6). Discipline note, logged
+    # in GATES.md: the fixes for these three landed one commit before their gates
+    # — an ordering slip registered as such, not laundered.
+    r = sc.raw("[" * 200000 + "]" * 200000)
+    h = sc.call({"op": "hello"})
+    check_true("TS 200k-deep nesting refused, process alive",
+               r.get("ok") is False and "materials" in h, str(r)[:60])
+    r = sc.raw('{"op":"nonsense","revision":1e999}')
+    check_true("TS overflow revision echoes 0, not cast garbage",
+               r.get("ok") is False and r.get("revision") == 0, str(r.get("revision")))
+    tb = [{"x": 0, "y": 0, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+           "support": True},
+          {"x": 1, "y": 0, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+           "support": False}]
+    shm_encode_request(mm, 9310, tb, [])
+    # Cut exactly after block 1 of 2: the zero-filled reads of block 2 land on
+    # (0,0,0), which IS block 1 — the old code reported "duplicate block
+    # coordinate" and sent the debugger to block sync instead of the transport.
+    r = sc.call({"op": "solve.shm", "revision": 9310, "bytes": 20 + 24})
+    check_true("TS mid-block truncation says truncated, not duplicate",
+               r.get("ok") is False and "truncat" in r.get("error", "")
+               and "duplicate" not in r.get("error", ""), str(r.get("error", "")))
+
     # Capacity path: a region too small must refuse loudly, never truncate.
     small_path = os.path.join(os.path.dirname(shm_path), "small.bin")
     with open(small_path, "wb") as f:
