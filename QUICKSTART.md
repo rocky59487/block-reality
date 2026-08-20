@@ -1,6 +1,6 @@
 # 上手
 
-`blockreality-0.0.1-demo.zip` 就是發行包，`dist/` 是它的內容。安裝不需要建置任何東西。
+`blockreality-0.1a.zip` 就是發行包，`dist/` 是它的內容。安裝不需要建置任何東西。
 
 ---
 
@@ -33,12 +33,11 @@ zip 內容（約 2.4 MB）：
 
 | | |
 |---|---|
-| `blockreality-0.0.1-demo.jar` | Forge mod，api + core + impl 全在裡面 |
+| `blockreality-0.1a.jar` | Forge mod，api + core + impl 全在裡面 |
 | `br-sidecar.exe` | Windows 引擎，只 import KERNEL32 與 msvcrt，無額外 DLL |
 | `br-sidecar` | Linux 引擎，只依賴 libc/libm |
 | `install.bat` / `install.sh` | 安裝器 |
 | `START-HERE.txt` / `讀我-中文.txt` | 說明文件，英文與中文 |
-| `VERIFICATION.md` / `verification.json` | 這一版的驗證紀錄 |
 | `SHA256SUMS.txt` | 每個檔案的 SHA-256 |
 
 > FrameCore 靜態連結進 `br-sidecar`，沒有 FrameCore.dll 這種東西。`br-sidecar` 是獨立

@@ -22,7 +22,7 @@ unrestrained and therefore reported as mechanisms rather than given stresses.
 
 1. Get the latest `blockreality-*.zip` from
    [Releases](https://github.com/rocky59487/block-reality/releases/latest), or
-   [`blockreality-0.0.1-demo.zip`](blockreality-0.0.1-demo.zip) from this repository
+   [`blockreality-0.1a.zip`](blockreality-0.1a.zip) from this repository
    (about 2.4 MB).
 2. Extract it, then run `install.bat` on Windows or `./install.sh` on Linux and macOS.
 3. Launch the game the way you normally do.
@@ -44,7 +44,6 @@ What is in the archive:
 | `blockreality-*.jar` | the Forge mod, installed into `<instance>/mods/` |
 | `br-sidecar` / `br-sidecar.exe` | the analysis engine, installed into `<instance>/` |
 | `START-HERE.txt` / `讀我-中文.txt` | instructions, English and Chinese |
-| `VERIFICATION.md` / `verification.json` | the verification record for this build |
 | `SHA256SUMS.txt` | SHA-256 of every file |
 
 FrameCore is statically linked into `br-sidecar`, so there is no separate library to
@@ -184,7 +183,7 @@ Minecraft 1.20.1 的結構分析模組。放置的方塊會被擷取為 6 自由
 
 1. 從 [Releases](https://github.com/rocky59487/block-reality/releases/latest) 取得最新的
    `blockreality-*.zip`，或用本倉庫的
-   [`blockreality-0.0.1-demo.zip`](blockreality-0.0.1-demo.zip)（約 2.4 MB）
+   [`blockreality-0.1a.zip`](blockreality-0.1a.zip)（約 2.4 MB）
 2. 解壓縮後，Windows 執行 `install.bat`，Linux 與 macOS 執行 `./install.sh`
 3. 用平常的啟動器開遊戲
 
@@ -204,7 +203,6 @@ install.bat "D:\games\my-instance\.minecraft"
 | `blockreality-*.jar` | Forge 模組，安裝至 `<實例>/mods/` |
 | `br-sidecar` / `br-sidecar.exe` | 分析引擎，安裝至 `<實例>/` |
 | `START-HERE.txt` / `讀我-中文.txt` | 說明文件，英文與中文 |
-| `VERIFICATION.md` / `verification.json` | 這一版的驗證紀錄 |
 | `SHA256SUMS.txt` | 每個檔案的 SHA-256 |
 
 FrameCore 已靜態連結進 `br-sidecar`，沒有另外要安裝的函式庫。`br-sidecar` 以獨立程序執行而非

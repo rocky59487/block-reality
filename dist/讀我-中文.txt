@@ -27,10 +27,9 @@ macOS     ./install.sh
 內容
 ----
   blockreality-*.jar     Forge 模組                -> <實例>/mods/
-  br-sidecar[.exe]       分析引擎                  -> <實例>/
+  br-sidecar.exe         分析引擎，Windows         -> <實例>/
+  br-sidecar             分析引擎，Linux           -> <實例>/
   install.bat/.sh        安裝器
-  VERIFICATION.md        這一版的驗證紀錄
-  verification.json      同一份紀錄，機器可讀
   SHA256SUMS.txt         壓縮檔內每個檔案的雜湊
 
 FrameCore 已靜態連結進 br-sidecar，因此沒有另外要安裝的函式庫。br-sidecar 以
@@ -100,4 +99,5 @@ FrameCore 已靜態連結進 br-sidecar，因此沒有另外要安裝的函式�
 的上界。
 
 每一次求解的回覆都附帶全域平衡殘差，該值由幾何與密度獨立重算，而非從組裝後的載重
-向量讀回。這一版的驗證紀錄見 VERIFICATION.md。
+向量讀回。這一版的驗證紀錄——引擎身分、每一項對閉合解的比對、跨平台決定性與效能——
+在倉庫裡的 evidence/VERIFICATION.md。

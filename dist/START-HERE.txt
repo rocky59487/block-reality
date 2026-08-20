@@ -29,10 +29,9 @@ saves/.
 CONTENTS
 --------
   blockreality-*.jar     the Forge mod                 -> <instance>/mods/
-  br-sidecar[.exe]       the analysis engine           -> <instance>/
+  br-sidecar.exe         the analysis engine, Windows  -> <instance>/
+  br-sidecar             the analysis engine, Linux    -> <instance>/
   install.bat/.sh        installer
-  VERIFICATION.md        verification record for this build
-  verification.json      the same record, machine readable
   SHA256SUMS.txt         hashes of every file in this archive
 
 FrameCore is statically linked into br-sidecar, so there is no separate library
@@ -118,4 +117,6 @@ bound on the real critical load.
 
 Every solve returns a global equilibrium residual computed independently from
 geometry and density rather than read back from the assembled load vector. The
-verification record for this build is in VERIFICATION.md.
+verification record for this build - engine identity, every benchmark against
+its closed form, cross-platform determinism and timing - is in the repository,
+at evidence/VERIFICATION.md.

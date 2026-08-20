@@ -6,7 +6,7 @@
 # machine that does have it, and this workflow only packages and publishes them.
 #
 # Push a tag to publish:
-#     git tag v0.0.1-demo && git push origin v0.0.1-demo
+#     git tag v0.1a && git push origin v0.1a
 #
 # Or run it by hand from the Actions tab.
 name: release
@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to publish as (e.g. v0.0.1-demo)'
+        description: 'Tag to publish as (e.g. v0.1a)'
         required: true
 
 permissions:
@@ -68,6 +68,7 @@ jobs:
             installer finds your Minecraft instance and copies the mod and the
             analysis engine into it.
 
-            Instructions are in `START-HERE.txt` and `讀我-中文.txt` inside the
-            archive. `SHA256SUMS.txt` lists the hash of every file, and
-            `VERIFICATION.md` is the verification record for this build.
+            Contents: the mod jar, the analysis engine for Windows and Linux, the
+            installers, and instructions in `START-HERE.txt` and `讀我-中文.txt`.
+            `SHA256SUMS.txt` lists the hash of every file. The verification record
+            for this build is in the repository at `evidence/VERIFICATION.md`.

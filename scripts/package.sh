@@ -13,6 +13,9 @@
 #   dist/SHA256SUMS.txt               hashes of everything in the archive
 #   blockreality-<version>.zip        all of the above, one file
 #
+# The verification record is NOT in the archive. It stays in evidence/ — the release
+# carries what is needed to play, and the evidence stays where it can be read.
+#
 # The engine is a SEPARATE PROCESS, not a library the mod loads (DECISIONS D-013).
 # There is no FrameCore .dll to ship: FrameCore is statically linked into br-sidecar,
 # so a crash in C++ costs you one analysis instead of the server and the save.
@@ -78,7 +81,9 @@ WRAP
 fi
 FRAMECORE_DIR="$FRAMECORE_DIR" python3 "$ROOT/scripts/evidence.py" "${EVIDENCE_ARGS[@]}"
 rm -f "$ROOT/.br-winewrap"
-cp "$ROOT/evidence/VERIFICATION.md" "$ROOT/evidence/verification.json" "$DIST/"
+# The record stays in evidence/ and is NOT copied into dist/. The archive is what a
+# player needs in order to play: the mod, the engine, and how to install them. The
+# evidence belongs to the repository, where it can be read without downloading a zip.
 
 # ------------------------------------------------------------------------- mod
 echo "==> building the mod jar"
