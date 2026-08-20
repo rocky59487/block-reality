@@ -33,9 +33,12 @@ import java.util.Map;
  * blocks are in the model, and what the last result said. Without this, a missing binary
  * and an unstressed structure look identical from inside the game.
  *
- * <p>Read-only except for {@code resolve} and {@code reset}, which only ask for work to
- * be redone, and {@code load}/{@code unload}, which edit the TEST LOADS — an experiment
- * layered on the model, never the world itself. Nothing here places or breaks a block.
+ * <p>Read-only subcommands (status/members/section/loads) are open to everyone; the
+ * rest require operator level 2 — see {@link BrPermissions} for the table and the
+ * reasoning per command. {@code scan} walks up to 1089 chunks on the server thread,
+ * {@code load} applies arbitrary force vectors to the shared model, and neither is
+ * something an anonymous survival player should hold on a public server (#45).
+ * Nothing here places or breaks a block.
  */
 public final class BRCommand {
 
@@ -46,26 +49,30 @@ public final class BRCommand {
         register(event.getDispatcher());
     }
 
+    /** A literal whose permission level comes from the table — never inline (#45). */
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> lit(String name) {
+        int level = BrPermissions.required(name);
+        return Commands.literal(name).requires(s -> s.hasPermission(level));
+    }
+
     private static void register(CommandDispatcher<CommandSourceStack> d) {
         d.register(Commands.literal("br")
-                .then(Commands.literal("status").executes(c -> status(c.getSource())))
-                .then(Commands.literal("members").executes(c -> members(c.getSource())))
-                .then(Commands.literal("section")
+                .then(lit("status").executes(c -> status(c.getSource())))
+                .then(lit("members").executes(c -> members(c.getSource())))
+                .then(lit("section")
                         .then(Commands.argument("member", IntegerArgumentType.integer(1))
                                 .executes(c -> section(c.getSource(),
                                         IntegerArgumentType.getInteger(c, "member")))))
-                .then(Commands.literal("resolve")
-                        // Available to everyone: it only asks for a recomputation.
+                .then(lit("resolve")
                         .executes(c -> resolve(c.getSource())))
-                .then(Commands.literal("scan")
+                .then(lit("scan")
                         .executes(c -> scan(c.getSource(), 4))
                         .then(Commands.argument("chunkRadius", IntegerArgumentType.integer(0, 16))
                                 .executes(c -> scan(c.getSource(),
                                         IntegerArgumentType.getInteger(c, "chunkRadius")))))
                 // Arbitrary test loads, in kN because that is the unit an engineering
-                // reader thinks in (the wire stays in newtons). Available to everyone,
-                // like the glasses: a load is an experiment, not an edit.
-                .then(Commands.literal("load")
+                // reader thinks in (the wire stays in newtons).
+                .then(lit("load")
                         .then(Commands.argument("fxKn", DoubleArgumentType.doubleArg(-1e6, 1e6))
                                 .then(Commands.argument("fyKn", DoubleArgumentType.doubleArg(-1e6, 1e6))
                                         .then(Commands.argument("fzKn", DoubleArgumentType.doubleArg(-1e6, 1e6))
@@ -73,12 +80,13 @@ public final class BRCommand {
                                                         DoubleArgumentType.getDouble(c, "fxKn"),
                                                         DoubleArgumentType.getDouble(c, "fyKn"),
                                                         DoubleArgumentType.getDouble(c, "fzKn")))))))
-                .then(Commands.literal("unload")
+                // "unload all" inherits the parent literal's gate: Brigadier checks
+                // requires() on every node along the executed path.
+                .then(lit("unload")
                         .executes(c -> load(c.getSource(), 0, 0, 0))
                         .then(Commands.literal("all").executes(c -> unloadAll(c.getSource()))))
-                .then(Commands.literal("loads").executes(c -> loads(c.getSource())))
-                .then(Commands.literal("reset")
-                        .requires(s -> s.hasPermission(2))
+                .then(lit("loads").executes(c -> loads(c.getSource())))
+                .then(lit("reset")
                         .executes(c -> reset(c.getSource())))
                 .executes(c -> status(c.getSource())));
     }
@@ -154,10 +162,13 @@ public final class BRCommand {
                         : s == SidecarClient.Status.DISABLED ? ChatFormatting.RED
                         : ChatFormatting.YELLOW);
 
-        // Where it looked, always — a wrong path is the single most likely first-run
-        // problem and guessing at it from a one-word status is miserable.
-        for (String l : SidecarLocator.describe(m.engineLocation()).split("\n")) {
-            line(src, "  " + l, ChatFormatting.DARK_GRAY);
+        // Where it looked — a wrong path is the single most likely first-run problem.
+        // OP only: the search list spells out server filesystem paths (user names,
+        // drive layout), which a non-privileged player has no business reading (#45).
+        if (src.hasPermission(BrPermissions.LEVEL_OP)) {
+            for (String l : SidecarLocator.describe(m.engineLocation()).split("\n")) {
+                line(src, "  " + l, ChatFormatting.DARK_GRAY);
+            }
         }
 
         line(src, "  revision        " + m.gate().current().value()
@@ -175,6 +186,13 @@ public final class BRCommand {
         } else if (r.allSingular()) {
             // Not a failure and not a safe structure: nothing is holding it up.
             line(src, "  last result     MECHANISM — " + r.diagnostic(), ChatFormatting.YELLOW);
+        } else if (!r.isUsable()) {
+            // ok, not singular, yet nothing came back. Printing the old green
+            // "0 members, max D/C 0.0000" here dressed an empty answer up as a safe
+            // one (#53); an empty answer is a diagnostic, not a verdict.
+            line(src, "  last result     EMPTY — engine returned no members or facets"
+                    + (r.diagnostic().isEmpty() ? "" : " — " + r.diagnostic()),
+                    ChatFormatting.YELLOW);
         } else {
             line(src, String.format(Locale.ROOT,
                             "  last result     %d members, %d plate facets, max D/C %.4f  (%s)%s",

@@ -91,7 +91,10 @@ public final class SidecarLocator {
         } else {
             b.append("engine not found. Looked in:");
             for (String t : r.tried()) b.append("\n  ").append(t);
-            b.append("\nSet 'sidecarPath' in config/blockreality-server.toml, or drop ")
+            // SERVER-type config: Forge writes it into the world save, not into the
+            // global config/ folder — pointing players at config/ sent them editing a
+            // file the mod never reads (FORGE-9).
+            b.append("\nSet 'sidecarPath' in <world save>/serverconfig/blockreality-server.toml, or drop ")
              .append(EXE).append(" in the game directory.");
         }
         return b.toString();

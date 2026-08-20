@@ -23,6 +23,7 @@
   "br.engine.unavailable": "結構分析無法使用：%s",
   "br.hud.engine_off": "設定檔停用了分析",
   "br.hud.stale": "過期——計算之後世界已經改變",
+  "br.hud.truncated": "疊加層不完整——顯示 %s／%s 根構件、%s／%s 片板元素",
   "br.hint.first_use": "蹲下右鍵結構方塊可加測試荷載。/br status 顯示引擎狀態。",
   "br.hud.aim": "看向一根構件以顯示斷面",
   "br.hud.focus": "構件 #%s  %s",
