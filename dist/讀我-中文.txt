@@ -1,4 +1,4 @@
-Block Reality — Demo v0
+Block Reality — Structural Preview
 =======================
 
 Minecraft 的結構分析模組，由一個真的有限元素求解器計算。
@@ -9,7 +9,7 @@ Minecraft 的結構分析模組，由一個真的有限元素求解器計算。
 ----
 Windows   雙擊  install.bat
 Linux     ./install.sh
-macOS     ./install.sh
+macOS     ./install.sh （僅安裝 mod：發行包尚無 macOS 引擎，分析為關閉狀態）
 
 不帶參數執行時，安裝器會在原生啟動器、Prism、MultiMC、Modrinth、CurseForge 的
 慣用位置尋找 Minecraft 實例。找到一個就直接安裝，找到多個會列出來讓你選。
@@ -42,7 +42,15 @@ FrameCore 已靜態連結進 br-sidecar，因此沒有另外要安裝的函式�
 
 進入遊戲
 --------
-創造模式分頁「Block Reality」：結構鋼、混凝土樓板、應力眼鏡。
+創造模式分頁「Block Reality」：九種結構方塊與應力眼鏡。方塊的 token 決定
+它成為哪種「元素」——樑與板是不同的元素型別，不是同一種東西換顏色：
+
+  結構鋼（三種尺寸）      6 自由度樑：200x400、150x300、100x200 mm
+  素混凝土樑              6 自由度樑，400x600 mm，無筋——受拉 3 MPa 就裂，正該如此
+  木樑                    6 自由度樑，140x240 mm 製材斷面
+  磚柱                    6 自由度樑，230x350 mm 砌體柱
+  混凝土樓板（200 / 150） MITC4 板殼 facet
+  鋼板 20                 MITC4 板殼 facet，厚 20 mm
 
 兩種方塊是兩種不同的元素型別，不是同一種換顏色：
 
@@ -82,6 +90,10 @@ FrameCore 已靜態連結進 br-sidecar，因此沒有另外要安裝的函式�
   /br status         引擎狀態、找過的每一條路徑、上一次的結果
   /br members        每根構件的 D/C、控制纖維、控制斷面、峰值應力
   /br section <id>   逐站的純文字讀數
+  /br load <fx> <fy> <fz>   對注視的方塊施加測試荷載（kN）——
+                     /br load 30 0 0 就是把剪力牆往側面推
+  /br unload [all]   移除注視方塊的荷載／全部移除
+  /br loads          列出所有測試荷載
   /br scan [半徑]    重讀你周圍的區塊（預設半徑 4，即 9x9），供指令或 WorldEdit
                      放置的方塊使用
   /br resolve        強制重新分析

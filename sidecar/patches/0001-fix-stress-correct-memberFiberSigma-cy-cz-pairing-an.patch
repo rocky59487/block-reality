@@ -1,0 +1,256 @@
+From 774318af9fb04f53cdfe702a761ef91c07601446 Mon Sep 17 00:00:00 2001
+From: rocky59487 <hankqaq.tmd.tw@gmail.com>
+Date: Thu, 20 Aug 2026 11:24:26 +0800
+Subject: [PATCH 1/3] fix(stress): correct memberFiberSigma cy/cz pairing and
+ UDL reconstruction signs
+
+Two visualisation-layer defects, both invisible to every existing fixture:
+
+- memberFiberSigma paired cy with Iz and cz with Iy. Section names extreme-fibre
+  distances by the axis they pair with (Wz = Iz/cz), so TopY/BotY must use cz and
+  PlusZ/MinusZ must use cy. Square fixtures (cy == cz) hid it; a 200x400 returned
+  exactly half the extreme-fibre stress. Gate: F72 (non-square closed form).
+
+- internalForcesAtX carried the UDL terms with inverted signs in all three
+  components: V(L) came out 2wL and M(L) came out wL^2 at a free tip where the
+  closed form is zero. End forces themselves were correct (root reads wL, wL^2/2
+  exactly). No fixture carried a UDL, so F68 (tip load, w = 0) could not see it.
+  Gate: F73 (self-weight cantilever closed form on all three local axes).
+
+frametest: ALL PASS including new F72/F73.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+---
+ .../Source/FrameCore/Private/StressField.cpp  |  29 ++--
+ .../FrameCore/Public/FrameCore/StressKernel.h |  19 ++-
+ Plugins/FrameSolver/Standalone/main.cpp       | 126 ++++++++++++++++++
+ 3 files changed, 158 insertions(+), 16 deletions(-)
+
+diff --git a/Plugins/FrameSolver/Source/FrameCore/Private/StressField.cpp b/Plugins/FrameSolver/Source/FrameCore/Private/StressField.cpp
+index 7a6403a..f97a37e 100644
+--- a/Plugins/FrameSolver/Source/FrameCore/Private/StressField.cpp
++++ b/Plugins/FrameSolver/Source/FrameCore/Private/StressField.cpp
+@@ -25,25 +25,34 @@ inline real memberLength(const FrameModel& model, const Member& m) {
+ //   For a cantilever tip-loaded along local +y: Vy_i = +P, Mz_i = +P*L, so the
+ //   bending moment must DECREASE toward the free end -> dMz/dx = -Vy.
+ //
+-//   N(x)  = N_i  - w_x * x                                (axial UDL drains N)
+-//   Vy(x) = Vy_i - w_y * x                                (linear, dV/dx = -w)
+-//   Vz(x) = Vz_i - w_z * x                                (linear)
+-//   Mz(x) = Mz_i - Vy_i * x + 0.5 * w_y * x^2             (quadratic, dMz/dx = -Vy)
+-//   My(x) = My_i + Vz_i * x - 0.5 * w_z * x^2             (about local y, opposite sign of Mz block)
++//   N(x)  = N_i  + w_x * x                                (axial UDL drains N)
++//   Vy(x) = Vy_i + w_y * x                                (linear, dVy/dx = +w_y)
++//   Vz(x) = Vz_i + w_z * x                                (linear)
++//   Mz(x) = Mz_i - Vy_i * x - 0.5 * w_y * x^2             (quadratic, dMz/dx = -Vy)
++//   My(x) = My_i + Vz_i * x + 0.5 * w_z * x^2             (about local y, opposite sign of Mz block)
+ //   T(x)  = T_i                                           (no torsion UDL in MemberUDL)
+ //
++// SIGN OF THE w-TERMS (F73): fixed by the self-weight cantilever closed form. The
++// end forces themselves are correct -- for w_local.y = -w (gravity), endI reads
++// Vy_i = +wL and Mz_i = +wL^2/2, exactly wL and wL^2/2 -- and the reconstruction
++// must bring every component to ZERO at the free tip: V(x) = w(L-x), M(x) =
++// w(L-x)^2/2. The pre-F73 signs (-w_y * x, +0.5 * w_y * x^2) doubled the root
++// value at the tip instead (V(L) = 2wL, M(L) = wL^2), in all three components.
++// No fixture carried a UDL, so F68 (tip load only, w = 0) could not see it;
++// F73 runs the closed form on all three local axes.
++//
+ // Calibrated against F68 (cantilever tip load) so sample[0] matches checkSection(endI,.)
+ // AND sample[L] vanishes at the free end. F70's D/C interlock asserts the same
+ // equivalence against ElasticAllowable bit-exact on a mixed model.
+ inline void internalForcesAtX(const MemberEndForces& endI, const Vec3& w, real x,
+                               real& N, real& Vy, real& Vz, real& T, real& My, real& Mz)
+ {
+-    N  = endI.N  - w.x * x;
+-    Vy = endI.Vy - w.y * x;
+-    Vz = endI.Vz - w.z * x;
++    N  = endI.N  + w.x * x;
++    Vy = endI.Vy + w.y * x;
++    Vz = endI.Vz + w.z * x;
+     T  = endI.T;
+-    Mz = endI.Mz - endI.Vy * x + real(0.5) * w.y * x * x;
+-    My = endI.My + endI.Vz * x - real(0.5) * w.z * x * x;
++    Mz = endI.Mz - endI.Vy * x - real(0.5) * w.y * x * x;
++    My = endI.My + endI.Vz * x + real(0.5) * w.z * x * x;
+ }
+ 
+ inline void fillSample(MemberStressSample& s,
+diff --git a/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/StressKernel.h b/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/StressKernel.h
+index 4daaaba..f6552a9 100644
+--- a/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/StressKernel.h
++++ b/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/StressKernel.h
+@@ -35,10 +35,17 @@ enum class MemberFiber : int { TopY = 0, BotY = 1, PlusZ = 2, MinusZ = 3 };
+ // ---- Member fiber sigma (compression-positive) -----------------------------
+ // Face mid-line fiber sigma from axial + bending (Euler-Bernoulli).
+ //   sigma(fiber) = N/A + Mz * y_fiber / Iz + My * z_fiber / Iy   (compression-positive)
+-// where (y_fiber, z_fiber) ranges over the 4 face mid-points (+/-cy, 0) and
+-// (0, +/-cz). Mz contributes only at TopY/BotY; My contributes only at PlusZ/MinusZ.
++// where (y_fiber, z_fiber) ranges over the 4 face mid-points (0, +/-cz) and
++// (+/-cy, 0). Mz contributes only at TopY/BotY; My contributes only at PlusZ/MinusZ.
+ // Useful for visualising the contiguous fiber stress field along a member
+ // (matches how a colour-band paint over the 4 long faces would be sampled).
++//
++// PAIRING (F72): Section names its extreme-fibre distances by the AXIS they pair
++// with, not the direction they point along -- cz belongs to Iz (it is the distance
++// along local y, d/2 on a rectangle, so Wz = Iz/cz) and cy belongs to Iy (along
++// local z, b/2). The pre-F72 pairing used cy with Iz, which on a square section is
++// invisible (cy == cz) and on a 200x400 returned exactly half the extreme-fibre
++// stress. Every fixture was square; F72 pins the non-square closed form.
+ [[nodiscard]] inline real memberFiberSigma(real N, real A,
+                                            real My, real Mz,
+                                            real Iy, real Iz,
+@@ -50,10 +57,10 @@ enum class MemberFiber : int { TopY = 0, BotY = 1, PlusZ = 2, MinusZ = 3 };
+     const real safeIz = (Iz > 0) ? Iz : real(1e-12);
+     const real sN = N / safeA;
+     switch (fiber) {
+-        case MemberFiber::TopY:   return sN + Mz * ( cy) / safeIz;
+-        case MemberFiber::BotY:   return sN + Mz * (-cy) / safeIz;
+-        case MemberFiber::PlusZ:  return sN + My * ( cz) / safeIy;
+-        case MemberFiber::MinusZ: return sN + My * (-cz) / safeIy;
++        case MemberFiber::TopY:   return sN + Mz * ( cz) / safeIz;
++        case MemberFiber::BotY:   return sN + Mz * (-cz) / safeIz;
++        case MemberFiber::PlusZ:  return sN + My * ( cy) / safeIy;
++        case MemberFiber::MinusZ: return sN + My * (-cy) / safeIy;
+     }
+     return sN;
+ }
+diff --git a/Plugins/FrameSolver/Standalone/main.cpp b/Plugins/FrameSolver/Standalone/main.cpp
+index b24809b..9d4cdc7 100644
+--- a/Plugins/FrameSolver/Standalone/main.cpp
++++ b/Plugins/FrameSolver/Standalone/main.cpp
+@@ -4420,6 +4420,132 @@ int main() {
+         }
+     }
+ 
++    // ---------- F72: fiber kernel on a NON-SQUARE section (cy != cz oracle) ----------
++    // Every member fixture above uses a square section, and on a square cy == cz hides
++    // a swapped pairing: the extreme fibre along local y is cz (= d/2, paired with Iz
++    // via Wz = Iz/cz) and the one along local z is cy (= b/2, paired with Iy). A
++    // 200x400 rectangle separates the two by a factor 2, so the closed form catches
++    // what the square could not. (Same reason block-reality's GATES.md forbids square
++    // fixture sections outright.)
++    {
++        std::printf("[F72] fiber kernel non-square oracle (200x400)\n");
++        const Section ns = Section::Rectangular(200.0, 400.0);   // b=200 (local z), d=400 (local y)
++        const real Mzb = 1.0e6, Myb = 2.0e6;
++        checkClose("F72 TopY   = +Mz*cz/Iz (= Mz/Wz)",
++                   memberFiberSigma(0, ns.A, 0, Mzb, ns.Iy, ns.Iz, ns.cy, ns.cz, MemberFiber::TopY),
++                   Mzb * ns.cz / ns.Iz, 1e-12);
++        checkClose("F72 BotY   = -Mz*cz/Iz",
++                   memberFiberSigma(0, ns.A, 0, Mzb, ns.Iy, ns.Iz, ns.cy, ns.cz, MemberFiber::BotY),
++                   -Mzb * ns.cz / ns.Iz, 1e-12);
++        checkClose("F72 PlusZ  = +My*cy/Iy (= My/Wy)",
++                   memberFiberSigma(0, ns.A, Myb, 0, ns.Iy, ns.Iz, ns.cy, ns.cz, MemberFiber::PlusZ),
++                   Myb * ns.cy / ns.Iy, 1e-12);
++        checkClose("F72 MinusZ = -My*cy/Iy",
++                   memberFiberSigma(0, ns.A, Myb, 0, ns.Iy, ns.Iz, ns.cy, ns.cz, MemberFiber::MinusZ),
++                   -Myb * ns.cy / ns.Iy, 1e-12);
++
++        // Solve-level interlock: F68's cantilever with the non-square section. At the
++        // root, pure bending about local z -> TopY/BotY carry |M|/Wz, PlusZ/MinusZ zero.
++        const real P = 1000.0, L = 2000.0;
++        FrameModel m; fixtures::cantileverTipLoad(m, P, L, mat, ns);
++        SolveResult r = solve(m);
++        checkTrue("F72 solve non-singular", !r.singular, r.diagnostic);
++        const StressField fld = computeStressField(m, r, 11);
++        checkTrue("F72 trace exists", !fld.members.empty(), "");
++        if (!fld.members.empty()) {
++            const MemberStressSample& s0 = fld.members.front().samples.front();
++            const real fibreMag = std::max(std::fabs((double)s0.sigmaFiberTopY),
++                                           std::fabs((double)s0.sigmaFiberBotY));
++            checkClose("F72 root TopY/BotY |sigma| == |P|*L/Wz (non-square)",
++                       fibreMag, std::abs(P) * L / ns.Wz(), 1e-9);
++            checkClose("F72 root PlusZ sigma == pure-bending-about-z gives 0",
++                       s0.sigmaFiberPlusZ - s0.N / ns.A, real(0), 1e-9);
++        }
++    }
++
++    // ---------- F73: stress-field reconstruction under a member UDL ----------
++    // F68's fixture carries no distributed load, so internalForcesAtX's w-terms were
++    // never exercised end-to-end against a closed form. Cantilever under uniform w:
++    //   |V(x)| = w*(L-x)      |M(x)| = w*(L-x)^2/2      both -> 0 at the free tip.
++    // The oracle runs on all three UDL components: local y via the default frame,
++    // local z via refVec, local x via a vertical member (self weight is axial there).
++    {
++        std::printf("[F73] stress-field reconstruction under UDL (self weight)\n");
++        Material smat(200000.0, 200000.0 / (2.0 * 1.29), 7850.0);
++        smat.nu  = 0.29;
++        smat.cap = Capacity::make(350.0, 500.0, 200.0);
++        const Section ns = Section::Rectangular(200.0, 400.0);
++        const real L = 4000.0;
++        const real w = smat.rho * ns.A * 9810.0 * 1e-12;   // N/mm, self weight
++
++        struct UdlCase { const char* name; Vec3 di, dj; Vec3 refVec; };
++        const UdlCase cases[] = {
++            // horizontal member, default frame: gravity lands in local y
++            { "local-y", Vec3{0,0,0}, Vec3{L,0,0}, Vec3{0,0,1} },
++            // horizontal member, refVec flips the frame: gravity lands in local z
++            { "local-z", Vec3{0,0,0}, Vec3{L,0,0}, Vec3{0,1,0} },
++            // vertical member: gravity is axial, local x
++            { "local-x", Vec3{0,0,0}, Vec3{0,0,L}, Vec3{1,0,0} },
++        };
++        for (const UdlCase& c : cases) {
++            FrameModel m;
++            Node ni(1, c.di.x, c.di.y, c.di.z); ni.fixAll();
++            Node nj(2, c.dj.x, c.dj.y, c.dj.z);
++            m.nodes.push_back(ni);
++            m.nodes.push_back(nj);
++            m.materials.push_back(smat);
++            m.sections.push_back(ns);
++            Member mem(1, 1, 2, 0, 0);
++            mem.refVec = c.refVec;
++            m.members.push_back(mem);
++            addSelfWeight(m);
++            std::string why;
++            checkTrue(std::string("F73 ").append(c.name).append(" model valid").c_str(),
++                      m.validate(why), why);
++            SolveResult r = solve(m);
++            checkTrue(std::string("F73 ").append(c.name).append(" non-singular").c_str(),
++                      !r.singular, r.diagnostic);
++            const StressField fld = computeStressField(m, r, 11);
++            const MemberStressTrace& tr = fld.members.front();
++            const MemberStressSample& sRoot = tr.samples.front();
++            const MemberStressSample& sMid  = tr.samples[5];
++            const MemberStressSample& sTip  = tr.samples.back();
++            const real mScale = w * L * L / 2.0, vScale = w * L;
++            auto mag2 = [](real a, real b) { return std::sqrt((double)(a * a + b * b)); };
++            if (std::string(c.name) == "local-x") {
++                // Axial: |N(root)| = wL (all compression), N(tip) = 0.
++                checkClose(("F73 " + std::string(c.name) + " |N(0)| = wL").c_str(),
++                           std::fabs((double)sRoot.N), vScale, 1e-9);
++                checkTrue(("F73 " + std::string(c.name) + " N(L) ~ 0").c_str(),
++                          std::fabs((double)sTip.N) < 1e-9 * vScale,
++                          "N=" + std::to_string((double)sTip.N));
++            } else {
++                // Transverse: root matches wL and wL^2/2, midspan wL^2/8, tip vanishes.
++                checkClose(("F73 " + std::string(c.name) + " |V(0)| = wL").c_str(),
++                           mag2(sRoot.Vy, sRoot.Vz), vScale, 1e-9);
++                checkClose(("F73 " + std::string(c.name) + " |M(0)| = wL^2/2").c_str(),
++                           mag2(sRoot.My, sRoot.Mz), mScale, 1e-9);
++                checkClose(("F73 " + std::string(c.name) + " |M(L/2)| = wL^2/8").c_str(),
++                           mag2(sMid.My, sMid.Mz), w * L * L / 8.0, 1e-9);
++                checkTrue(("F73 " + std::string(c.name) + " V(L) ~ 0").c_str(),
++                          mag2(sTip.Vy, sTip.Vz) < 1e-9 * vScale,
++                          "V=" + std::to_string(mag2(sTip.Vy, sTip.Vz)));
++                checkTrue(("F73 " + std::string(c.name) + " M(L) ~ 0").c_str(),
++                          mag2(sTip.My, sTip.Mz) < 1e-9 * mScale,
++                          "M=" + std::to_string(mag2(sTip.My, sTip.Mz)));
++                checkTrue(("F73 " + std::string(c.name) + " sigma tip ~ 0").c_str(),
++                          sTip.sigmaCompMax < 1e-9 * sRoot.sigmaCompMax,
++                          "sigmaTip=" + std::to_string((double)sTip.sigmaCompMax));
++            }
++            // Root interlock holds under UDL too: the x = 0 sample IS endI, so the
++            // shared-kernel identity with ElasticAllowable must be bit-exact there.
++            ElasticAllowable screen;
++            const DemandResult dI = screen.checkSection(r.memberForces[0].endI, ns, smat.cap);
++            checkClose(("F73 " + std::string(c.name) + " root sigmaCompMax == EA(endI).sComp").c_str(),
++                       sRoot.sigmaCompMax, dI.sComp, 1e-12);
++        }
++    }
++
+     std::printf("\n%s  (failures=%d)\n", g_fail == 0 ? "ALL PASS" : "FAILURES", g_fail);
+     return g_fail == 0 ? 0 : 1;
+ }
+-- 
+2.53.0.windows.2
+

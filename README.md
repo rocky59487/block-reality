@@ -1,6 +1,6 @@
 # Block Reality
 
-**English** · [中文](#中文)
+**English** · [中文](README.zh-TW.md)
 
 A structural analysis mod for Minecraft 1.20.1. Blocks placed in the world are extracted
 into 6-DOF beam members and MITC4 shell facets, solved by a finite element engine running
@@ -21,10 +21,12 @@ unrestrained and therefore reported as mechanisms rather than given stresses.
 ## Install
 
 1. Download
-   [**`blockreality-0.1a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.1a/blockreality-0.1a.zip)
+   [**`blockreality-0.2a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.2a/blockreality-0.2a.zip)
    (2.4 MB). Later versions are on the
    [Releases page](https://github.com/rocky59487/block-reality/releases/latest).
-2. Extract it, then run `install.bat` on Windows or `./install.sh` on Linux and macOS.
+2. Extract it, then run `install.bat` on Windows or `./install.sh` on Linux.
+   (macOS: the mod installs and plays, but no macOS engine binary ships yet —
+   analysis stays off unless you build `br-sidecar` from source.)
 3. Launch the game the way you normally do.
 
 With no arguments the installer looks for a Minecraft instance in the usual locations for
@@ -64,13 +66,27 @@ else can contain them, and there is no extract-and-play package.
 
 ## Using it
 
-The creative tab "Block Reality" holds Structural Steel, Concrete Slab and Stress Glasses.
-The two blocks are two different element types:
+The creative tab "Block Reality" holds the structural blocks and the Stress Glasses.
+A block's token decides which element it becomes — beams and plates are different
+element types, not different colours:
 
 | Block | Token | Element | Size |
 |---|---|---|---|
 | Structural Steel | `steel_rect_200x400` | 6-DOF beam | 200 × 400 mm section |
+| Structural Steel 150x300 | `steel_rect_150x300` | 6-DOF beam | 150 × 300 mm section |
+| Structural Steel 100x200 | `steel_rect_100x200` | 6-DOF beam | 100 × 200 mm section |
+| Plain Concrete Beam | `concrete_rect_400x600` | 6-DOF beam | 400 × 600 mm, unreinforced — cracks in tension at 3 MPa, as it should |
+| Timber Beam | `timber_rect_140x240` | 6-DOF beam | 140 × 240 mm sawn section |
+| Brick Pier | `brick_rect_230x350` | 6-DOF beam | 230 × 350 mm masonry pier |
 | Concrete Slab | `concrete_slab_200` | MITC4 shell facet | 200 mm thick |
+| Concrete Slab 150 | `concrete_slab_150` | MITC4 shell facet | 150 mm thick |
+| Steel Plate 20 | `steel_plate_20` | MITC4 shell facet | 20 mm thick |
+
+Every token is gated against a closed form before it got a block (`verify.py` C1/C1b/C15).
+There is deliberately no brick *wall* plate: the plate screen is an elastic von Mises
+check, which cannot see the tension/compression asymmetry that governs a brittle
+material — so brick only exists as a pier, where the beam screen's five separate
+ratios handle the asymmetry honestly.
 
 **What counts as grounded**: a structural block whose *directly below* neighbour is a
 solid, non-structural block. Nothing else grounds anything — a beam butted sideways
@@ -97,9 +113,12 @@ Right-click the air to change lens: Utilisation, Stress, Material.
 
 | Command | |
 |---|---|
-| `/br status` | engine state, every path searched, last result |
+| `/br status` | engine state, every path searched, transport, last result |
 | `/br members` | per member: D/C, governing fibre, governing section, peak stress |
 | `/br section <id>` | the whole stress profile of one member, as text |
+| `/br load <fx> <fy> <fz>` | apply a test load, in kN, to the block you aim at — `/br load 30 0 0` pushes a shear wall sideways |
+| `/br unload` / `/br unload all` | remove the aimed block's test load / all of them |
+| `/br loads` | list every test load |
 | `/br scan [radius]` | re-read the chunks around you, default radius 4 — for blocks placed by command or WorldEdit |
 | `/br resolve` | force re-analysis |
 | `/br reset` | restart the engine after it has been disabled (OP only) |
@@ -111,8 +130,11 @@ More cases — slabs, shear walls, slender column buckling, loads inside a membe
 
 Implemented: 6-DOF beam members, MITC4 shells including floors and shear walls, linear
 buckling with geometric stiffness for both beams and shells, per-member and per-plate D/C,
-and stress contours on the block surfaces. The design and construction-sequence layers
-have not been started.
+stress contours on the block surfaces, and a zero-copy shared-memory transport between
+the mod and the engine (JSON remains the fallback and the debug surface). Every mechanics
+number on the wire is the return value of an engine function behind the engine's own
+closed-form gates — the adapter computes nothing. The design and construction-sequence
+layers have not been started.
 
 Not implemented: the plate D/C is an elastic surface screen only — transverse shear is
 recovered and reported but not screened, there is no per-plate buckling check and no plate
@@ -125,14 +147,15 @@ critical load.
 
 | | |
 |---|---|
-| Engine | `sidecar/verify.py`, 151 checks, all passing, each against a closed form or a solver-independent invariant |
-| Java | 107 tests, all passing; 26 of them start `br-sidecar` and run FrameCore for real |
-| Closed form | 31 non-zero references, worst relative error 1.6e-10; 10 zero references, worst absolute residual 1.5e-08 |
+| Engine | `sidecar/verify.py`, 219 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
+| Java | 184 tests, all passing (155 pure-Java, 29 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real |
+| Closed form | 31 non-zero references, worst relative error 1.2e-14; 10 zero references, worst absolute residual 1.5e-08. (Two earlier releases quoted 1.6e-10 here — that floor turned out to be the old wire's 10-digit truncation, not the engine) |
+| Transport | numbers cross as raw little-endian doubles in shared memory, never textualised; the JSON fallback prints 17 significant digits. Gate: three representative solves bit-identical across both transports |
 | Shell convergence | clamped square plate at 20 elements per side: span moment 0.57%, recovered support moment 2.7% |
-| Shear wall | slender walls (h/w ≥ 3) agree with beam theory to 1e-7 on both shear flow and overturning; a square wall is 1e-3 to 1e-2 |
+| Shear wall | h/w ≥ 5 agrees with beam theory to 1.4e-7 (shear flow) and ~1e-9 (overturning); h/w = 3 is 2.7e-5 / 6.8e-7; a square wall is a deep beam, where beam theory itself is the wrong model (1e-3 to 2e-2 is the reference's error) |
 | Buckling | single-element column against the textbook value, 1.6e-05; the 1/L² law, 2.3e-10 |
 | Determinism | 8/8 cases byte-for-byte identical, Linux native against the Windows cross-build |
-| Performance | 199 members and 1200 DOF: 52 ms for the whole round trip including buckling, and not on the tick thread |
+| Performance | transport, same 86-member solve both ways: 4.5 ms over shared memory vs 28.3 ms over JSON (84% saving); a 199-member, 1200-DOF frame completes its full round trip including buckling in ~0.1 s on the noisy reference laptop — and never on the tick thread, so this is latency to a result, not time taken from the game |
 
 Every solve returns a global equilibrium residual recomputed from geometry and density
 rather than read back out of the assembled load vector. The full record is in
@@ -149,6 +172,7 @@ rather than read back out of the assembled load vector. The full record is in
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | architecture decision record |
 | [`docs/GATES.md`](docs/GATES.md) | acceptance criteria |
 | [`evidence/VERIFICATION.md`](evidence/VERIFICATION.md) | verification record, generated |
+| [`docs/outreach/`](docs/outreach/OUTREACH.md) | academic outreach, community posting and funding playbooks |
 | [`CLAUDE.md`](CLAUDE.md) | development guide and invariants |
 
 ## License
@@ -158,145 +182,3 @@ Block Reality is licensed under the Apache License 2.0; see `LICENSE` and `NOTIC
 FrameCore, the mechanics backend, is an external source dependency outside this
 repository's licence and is covered by its own project's MIT License. Other third-party
 components keep their own licences and copyright notices.
-
----
-
-# 中文
-
-[English](#block-reality) · **中文**
-
-Minecraft 1.20.1 的結構分析模組。放置的方塊會被擷取為 6 自由度樑構件與 MITC4 板殼 facet，
-交由遊戲程序之外的有限元素求解器計算，結果以方塊表面的應力等值圖，以及每根構件、每片板的
-需求容量比（D/C）回到畫面上。
-
-![利用率鏡頭](docs/images/utilisation-lens.jpg)
-
-利用率鏡頭。角落的讀數就是這一次求解的結果：構件數、板 facet 數、最大 D/C，以及世界中有幾棟
-結構未獲拘束、因而被判定為機構而不給應力。
-
-## 需求
-
-- Minecraft **1.20.1**
-- Forge **47.x**（[下載](https://files.minecraftforge.net/net/minecraftforge/index.html)）
-
-## 安裝
-
-1. 下載
-   [**`blockreality-0.1a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.1a/blockreality-0.1a.zip)
-   （2.4 MB）。之後的版本在
-   [Releases 頁](https://github.com/rocky59487/block-reality/releases/latest)
-2. 解壓縮後，Windows 執行 `install.bat`，Linux 與 macOS 執行 `./install.sh`
-3. 用平常的啟動器開遊戲
-
-安裝器不帶參數執行時，會在原生啟動器、Prism、MultiMC、Modrinth、CurseForge 的慣用位置尋找
-Minecraft 實例；找到多個會列出來讓你選。也可以自行指定遊戲目錄：
-
-```
-install.bat "D:\games\my-instance\.minecraft"
-./install.sh ~/.minecraft
-./install.sh --list      # 只列出找到的實例，不安裝
-```
-
-壓縮檔內容：
-
-| | |
-|---|---|
-| `blockreality-*.jar` | Forge 模組，安裝至 `<實例>/mods/` |
-| `br-sidecar` / `br-sidecar.exe` | 分析引擎，安裝至 `<實例>/` |
-| `START-HERE.txt` / `讀我-中文.txt` | 說明文件，英文與中文 |
-| `SHA256SUMS.txt` | 每個檔案的 SHA-256 |
-
-FrameCore 已靜態連結進 `br-sidecar`，沒有另外要安裝的函式庫。`br-sidecar` 以獨立程序執行而非
-由模組載入（D-013），因此 C++ 端的錯誤只影響一次分析，不影響伺服器與存檔。模組尋找引擎的順序
-為設定檔、`-Dbr.sidecar`、`BR_SIDECAR`、遊戲目錄、`PATH`。引擎為選配，沒有它模組仍正常載入，
-分析功能關閉並顯示狀態。
-
-### 從原始碼執行
-
-倉庫根目錄的 `run.bat`（Windows）或 `./run.sh`（Linux）會啟動開發用客戶端，只需要 `PATH` 上有
-JDK 17，Minecraft 與 Forge 由 ForgeGradle 於首次執行時取得。
-
-Minecraft 與 Forge 不可轉散布，因此任何可以交給別人的壓縮檔裡都不可能含有它們，也就不存在
-解壓縮即可遊玩的完整包。
-
-## 使用
-
-創造分頁「Block Reality」提供結構鋼、混凝土樓板與應力眼鏡。兩種方塊對應兩種元素型別：
-
-| 方塊 | token | 元素 | 尺寸 |
-|---|---|---|---|
-| 結構鋼 | `steel_rect_200x400` | 6 自由度樑 | 斷面 200 × 400 mm |
-| 混凝土樓板 | `concrete_slab_200` | MITC4 板殼 facet | 厚 200 mm |
-
-**什麼叫接地**：一個結構方塊，其*正下方*是實心且非結構的方塊。除此之外沒有別的接地方式——
-樑從側面頂著一面牆並不算被牆撐住，分析會正確地把結果判為機構。
-
-第一個懸臂：蓋一面五格高的石牆，在牆頂放一格結構鋼，再往外接四格排成一直線伸進空中，拿起
-應力眼鏡，蹲下右鍵最外側那一格施加 20 kN 測試荷載（同一個動作可以再把它移除）。看向該構件，
-畫面角落就會顯示它的斷面讀數。
-
-![斷面讀數](docs/images/section-view.jpg)
-
-斷面讀數：構件編號與斷面 token、D/C、控制纖維與其沿構件的位置，以及沿斷面高度的應力剖面，
-上下緣應力值與中性軸位置一併標示。
-
-上緣受拉或受壓取決於結構形式而非構件本身——懸臂上凸，上緣受拉；兩端有支承的樑下垂，上緣受壓。
-HUD 因此以文字標明拉壓，不要求從顏色反推。
-
-對空氣右鍵可切換鏡頭：利用率、應力、材料。
-
-| 指令 | |
-|---|---|
-| `/br status` | 引擎狀態、搜尋過的每一條路徑、上一次的結果 |
-| `/br members` | 每根構件的 D/C、控制纖維、控制斷面、峰值應力 |
-| `/br section <id>` | 單一構件的完整應力剖面，純文字 |
-| `/br scan [半徑]` | 重讀你周圍的區塊，預設半徑 4——供指令或 WorldEdit 放置的方塊使用 |
-| `/br resolve` | 強制重新分析 |
-| `/br reset` | 引擎被停用後重新啟動（需 OP） |
-
-更多案例——樓板、剪力牆、細長柱的挫屈、構件中段加載——見 [`QUICKSTART.md`](QUICKSTART.md)。
-
-## 範圍
-
-已實作：6 自由度樑構件、MITC4 板殼（含樓板與剪力牆）、含樑與板殼幾何勁度的線性挫屈、每構件
-與每片板的 D/C、方塊表面的應力等值圖。設計層與工法層尚未開始。
-
-未實作：板的 D/C 只是彈性表面篩選——橫向剪力有算出來也有回報，但不納入篩選；沒有逐片板的挫屈
-檢核，也沒有板的極限強度。沒有 RC 複合斷面，斷面目錄裡是實心矩形與實心圓形，命名也照實寫。
-沒有非線性後挫屈：挫屈倍數是線性起始點，是真實臨界載重的上界。
-
-## 驗證
-
-| | |
-|---|---|
-| 引擎 | `sidecar/verify.py` 151 項全過，每一項都對閉合解或不依賴求解器的不變量 |
-| Java | 107 項測試全過，其中 26 項會實際啟動 `br-sidecar` 執行 FrameCore |
-| 對閉合解 | 31 項非零參考，最差相對誤差 1.6e-10；10 項零參考，最差絕對殘差 1.5e-08 |
-| 板元素收斂 | 固端方形板每邊 20 元素：跨中彎矩 0.57%，還原後的支承彎矩 2.7% |
-| 剪力牆 | 細長牆（h/w ≥ 3）的面內剪力流與傾覆軸力對梁理論到 1e-7；方形牆則是 1e-3 至 1e-2 |
-| 線性挫屈 | 單元素柱對課本值 1.6e-05；1/L² 關係 2.3e-10 |
-| 跨平台決定性 | 8/8 逐位元相同，Linux 原生對 Windows 交叉編譯 |
-| 效能 | 199 根構件、1200 自由度：完整往返 52 ms（含挫屈），且不在 tick 執行緒上 |
-
-每一次求解的回覆都附帶全域平衡殘差，該值由幾何與密度重算，而非從組裝後的載重向量讀回。完整
-紀錄見 [`evidence/VERIFICATION.md`](evidence/VERIFICATION.md)，由 `scripts/evidence.py` 產生。
-
-## 文件
-
-| 檔案 | |
-|---|---|
-| [`QUICKSTART.md`](QUICKSTART.md) | 安裝、自行建置、進遊戲後的操作 |
-| [`docs/RELEASING.md`](docs/RELEASING.md) | 打包與發版流程 |
-| [`docs/ENGINE_BOUNDARY.md`](docs/ENGINE_BOUNDARY.md) | Java 與力學引擎的介面契約 |
-| [`docs/MEMBER_SEMANTICS.md`](docs/MEMBER_SEMANTICS.md) | 方塊如何成為構件 |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | 架構決策紀錄 |
-| [`docs/GATES.md`](docs/GATES.md) | 驗收判準 |
-| [`evidence/VERIFICATION.md`](evidence/VERIFICATION.md) | 驗證紀錄，自動產生 |
-| [`CLAUDE.md`](CLAUDE.md) | 開發指引與不變式 |
-
-## 授權
-
-Block Reality 以 Apache License 2.0 授權，見 `LICENSE` 與 `NOTICE`。
-
-力學後端 FrameCore 為本倉庫授權範圍之外的外部 source dependency，依其原專案的 MIT License
-授權。其他第三方元件保留各自的授權與著作權聲明。

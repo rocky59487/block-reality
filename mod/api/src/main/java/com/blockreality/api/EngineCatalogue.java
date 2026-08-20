@@ -12,16 +12,32 @@ import java.util.List;
  * real debugging time.
  */
 public record EngineCatalogue(String engine, int protocol, List<String> materials,
-                              List<String> sections, List<String> plates) {
+                              List<String> sections, List<String> plates, int shmLayout) {
 
     /** The protocol version this build of the mod speaks. */
     public static final int SUPPORTED_PROTOCOL = 1;
+
+    /** The shared-memory wire layout this build can decode. 0 means "JSON only". */
+    public static final int SUPPORTED_SHM_LAYOUT = 1;
 
     public EngineCatalogue {
         materials = List.copyOf(materials);
         sections = List.copyOf(sections);
         plates = List.copyOf(plates);
     }
+
+    /** Pre-shm signature, kept for callers and fixtures that predate the capability. */
+    public EngineCatalogue(String engine, int protocol, List<String> materials,
+                           List<String> sections, List<String> plates) {
+        this(engine, protocol, materials, sections, plates, 0);
+    }
+
+    /**
+     * Whether both ends speak the same shared-memory layout. A mismatch is not an
+     * error: the JSON transport is the contract, shm is an optimisation, and an
+     * engine advertising a layout this build does not know simply stays on JSON.
+     */
+    public boolean supportsShm() { return shmLayout == SUPPORTED_SHM_LAYOUT; }
 
     public boolean isCompatible() { return protocol == SUPPORTED_PROTOCOL; }
 

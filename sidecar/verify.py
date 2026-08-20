@@ -18,11 +18,22 @@ fails = []
 
 
 def check(tag, got, expect, tol):
-    rel = abs(got - expect) / max(abs(expect), 1e-30)
-    ok = math.isfinite(got) and rel <= tol
+    # A zero reference has no relative error: |got| is compared ABSOLUTELY against
+    # tol. The old formula divided by 1e-30, which silently turned every zero-
+    # reference line into an exact-zero assertion and made the caller's tolerance
+    # a dead parameter (TEST-8) — the caller believed slack existed that did not.
+    # Same split evidence.py has always made, registered in GATES.md.
+    if expect == 0:
+        err = abs(got)
+        ok = math.isfinite(got) and err <= tol
+        label = f"abs={err:.2e}"
+    else:
+        err = abs(got - expect) / abs(expect)
+        ok = math.isfinite(got) and err <= tol
+        label = f"rel={err:.2e}"
     if not ok:
         fails.append(tag)
-    print(f"  {'[PASS]' if ok else '[FAIL]'} {tag:<38} got={got:<14.6g} exp={expect:<14.6g} rel={rel:.2e}")
+    print(f"  {'[PASS]' if ok else '[FAIL]'} {tag:<38} got={got:<14.6g} exp={expect:<14.6g} {label}")
 
 
 def check_true(tag, cond, detail=""):
@@ -43,6 +54,15 @@ class Sidecar:
         if not line:
             raise RuntimeError("sidecar closed the pipe")
         return json.loads(line)
+
+    def raw(self, line):
+        """One raw request line, for malformed-input gates the dict API cannot express."""
+        self.p.stdin.write(line + "\n")
+        self.p.stdin.flush()
+        reply = self.p.stdout.readline()
+        if not reply:
+            raise RuntimeError("sidecar closed the pipe")
+        return json.loads(reply)
 
     def close(self):
         try:
@@ -878,6 +898,484 @@ def main():
         mean = sum(s["N"]["xx"] for s in row) / len(row)
         above = h_mm - (ymid - (64 * BLOCK_MM + BLOCK_MM / 2.0))
         check(f"wall {nw - 1}x{nh - 1}: self weight above the cut", -mean, q_plate * above, 1e-6)
+
+    # --------------------- S9: every plate token, not just concrete_slab_200
+    # The catalogue ships three plate tokens; S1-S8 exercised only one. A token whose
+    # thickness or material is wired wrong would pass every existing gate untouched —
+    # "no capability without a gate" applies per token, not per code path.
+    print("\n[S9] the other plate tokens: concrete_slab_150, steel_plate_20")
+    S_NU, S_RHO = 0.29, 7850.0                     # engine catalogue: steel
+    n9 = 9
+    a9 = (n9 - 1) * BLOCK_MM
+    c9 = (n9 - 1) / 2.0 * BLOCK_MM + BLOCK_MM / 2.0
+    r200 = sc.call({"op": "solve", "revision": 90, "blocks": slab(n9), "loads": []})
+
+    def slab_token_gate(tag, rev, mat, plate, t_mm, rho, nu):
+        rr = sc.call({"op": "solve", "revision": rev,
+                      "blocks": slab(n9, mat=mat, plate=plate), "loads": []})
+        check_true(f"{tag}: ok", rr.get("ok") is True, rr.get("error", ""))
+        q = rho * t_mm * G_MM * 1e-12
+        # Thickness enters the model twice, independently: linearly through MASS
+        # (self weight), and inversely-squared through the SURFACE STRESS kernel.
+        # This pins the first; the vm ratio checks below pin the second.
+        check(f"{tag}: self weight = rho*t*g*area", rr["equilibrium"]["applied"][1],
+              -q * a9 * a9, 1e-12)
+        # Timoshenko centre coefficient at this material's nu (edge coefficient is
+        # nu-free, centre rescales by (1+nu)/1.3 — same derivation as C_CENTRE).
+        got = corner_moment(rr, c9, c9, 0)
+        ref = 0.0231 / 1.3 * (1 + nu) * q * a9 * a9
+        err = abs(abs(got) - ref) / ref
+        check_true(f"{tag}: centre span moment within 1%", err < 0.01,
+                   f"got={got:.4g} ref={ref:.4g} err={err * 100:.2f}%")
+        return rr
+
+    r150 = slab_token_gate("slab_150", 91, "concrete", "concrete_slab_150", 150.0, T_RHO, T_NU)
+    r020 = slab_token_gate("plate_20", 92, "steel", "steel_plate_20", 20.0, S_RHO, S_NU)
+
+    # Thickness-squared in the STRESS kernel, pinned by ratios of the centre-face
+    # von Mises. The comparison point is the plate CENTRE — the field's stationary
+    # point — on an n=8 mesh (7x7 facets), whose central facet centre lands exactly
+    # there. Two earlier cuts of this gate compared at the argmax instead, which
+    # sits half an element inside the clamped-edge boundary layer where the closed
+    # form is only ~1% good; both cuts and the move are registered in docs/GATES.md.
+    def centre_vm(rev, mat, plate):
+        n8 = 8
+        rr = sc.call({"op": "solve", "revision": rev,
+                      "blocks": slab(n8, mat=mat, plate=plate), "loads": []})
+        cx = (n8 - 1) / 2.0 * BLOCK_MM + BLOCK_MM / 2.0   # plate centre, world mm
+        best, bd = None, None
+        for sh in rr["shells"]:
+            wx = sum(w[0] for w in sh["world"]) / 4.0
+            wz = sum(w[2] for w in sh["world"]) / 4.0
+            d = (wx - cx) ** 2 + (wz - cx) ** 2
+            if bd is None or d < bd:
+                best, bd = sh, d
+        return best["vmTop"]
+
+    v200 = centre_vm(93, "concrete", "concrete_slab_200")
+    v150 = centre_vm(94, "concrete", "concrete_slab_150")
+    v020 = centre_vm(95, "steel", "steel_plate_20")
+    # Same material: the whole moment field scales with q = rho*g*t and the surface
+    # stress with M/t^2, so vm(150)/vm(200) = t200/t150 = 4/3 pointwise.
+    check("centre vm ratio 150/200 = t200/t150", v150 / v200, 200.0 / 150.0, 1e-3)
+    # Across materials, at the centre the two curvatures are equal by symmetry, so
+    # both surface stresses are s = 6*q*f,xx*(1+nu)/t^2 and vm of the equal biaxial
+    # pair is s itself: E drops out, nu enters only as (1+nu).
+    check("centre vm ratio steel20/conc200 = (rho_s/rho_c)*(t_c/t_s)*(1+nu_s)/(1+nu_c)",
+          v020 / v200, (S_RHO / T_RHO) * (200.0 / 20.0) * (1 + S_NU) / (1 + T_NU), 5e-3)
+
+    # ------------------------- C15: timber and brick sections vs closed forms
+    # The material catalogue always carried timber and brick; no block could declare
+    # them because no beam section existed for either. These gates run BEFORE the
+    # game-side blocks were added — "no capability without a gate" — and pin the two
+    # new non-square sections to hand screens through the same closed forms C1 uses.
+    print("\n[C15] timber and brick sections")
+    h15 = sc.call({"op": "hello"})
+    check_true("timber section advertised", "timber_rect_140x240" in h15.get("sections", []))
+    check_true("brick section advertised", "brick_rect_230x350" in h15.get("sections", []))
+
+    # Timber cantilever under self weight. Timber's allowables are Rcomp 5 < Rtens 8,
+    # so like steel it reaches the compression face first: CRUSH, at the root.
+    tb, td, trho = 140.0, 240.0, 600.0
+    rt = sc.call({"op": "solve", "revision": 700,
+                  "blocks": beam_blocks(5, mat="timber", section="timber_rect_140x240")})
+    check_true("timber cantilever solves", rt.get("ok") is True, rt.get("error", ""))
+    wt = trho * (tb * td) * 1e-9 * G
+    dc_t = ((wt * L * L / 2.0) / (tb * td * td / 6.0)) / 5.0
+    check("timber D/C vs hand screen", rt["members"][0]["dc"], dc_t, 1e-6)
+    check_true("timber governs in CRUSH (Rcomp 5 < Rtens 8)",
+               rt["members"][0]["governingFibre"] == "CRUSH", rt["members"][0]["governingFibre"])
+
+    # Brick pier: a vertical stack under its own weight. At the supported base the
+    # axial stress is rho*g*L — independent of the section, which makes it a pure
+    # check of the density chain and the vertical-run extraction. The section only
+    # decides that D/C reads it against Rcomp = 10.
+    brho = 1800.0
+    rb15 = sc.call({"op": "solve", "revision": 701,
+                    "blocks": [{"x": 0, "y": 64 + i, "z": 0, "mat": "brick",
+                                "section": "brick_rect_230x350", "support": i == 0}
+                               for i in range(5)]})
+    check_true("brick pier solves", rb15.get("ok") is True, rb15.get("error", ""))
+    sigma_base = brho * 1e-9 * G * L          # MPa, at the supported end
+    check("brick pier D/C = rho*g*L / Rcomp", rb15["members"][0]["dc"], sigma_base / 10.0, 1e-6)
+    check_true("brick pier governs in CRUSH",
+               rb15["members"][0]["governingFibre"] == "CRUSH", rb15["members"][0]["governingFibre"])
+
+    # ------------------------------------------------- T: transport equivalence
+    # The shared-memory transport must be the SAME sidecar answering the SAME
+    # question — so every number must match the JSON reply bit for bit. This
+    # simultaneously proves three things: the binary layout is decoded as
+    # specified, the 17-digit JSON path round-trips doubles exactly (a double
+    # that survives text unchanged and equals the raw bits cannot have been
+    # altered in transit), and the two encoders quote one solve, not two.
+    import mmap as mmap_mod
+    import os
+    import struct
+    import tempfile
+
+    print("\n[T] shared-memory transport: bit-exact against JSON")
+    hs = sc.call({"op": "hello"})
+    check_true("shm capability advertised", hs.get("shm") == 1, str(hs.get("shm")))
+    t_mats = list(hs.get("materials", []))
+    t_toks = list(hs.get("sections", [])) + [p["id"] for p in hs.get("plates", [])]
+    FIBRE_NAMES = ["NONE", "CRUSH", "TENSION", "SHEAR", "BENDING", "TORSION", "SHELL_VM"]
+
+    def f64bits(x):
+        return struct.pack("<d", float(x))
+
+    def num_eq(a, b):
+        if a == 0 and b == 0:      # +0 vs -0: JSON prints both as "0"
+            return True
+        return f64bits(a) == f64bits(b)
+
+    class Cur:
+        def __init__(self, mv):
+            self.mv = mv
+            self.o = 0
+
+        def u32(self):
+            v = struct.unpack_from("<I", self.mv, self.o)[0]
+            self.o += 4
+            return v
+
+        def i32(self):
+            v = struct.unpack_from("<i", self.mv, self.o)[0]
+            self.o += 4
+            return v
+
+        def f64(self):
+            v = struct.unpack_from("<d", self.mv, self.o)[0]
+            self.o += 8
+            return v
+
+        def f64n(self, n):
+            v = list(struct.unpack_from(f"<{n}d", self.mv, self.o))
+            self.o += 8 * n
+            return v
+
+        def i32n(self, n):
+            v = list(struct.unpack_from(f"<{n}i", self.mv, self.o))
+            self.o += 4 * n
+            return v
+
+        def s(self):
+            n = self.u32()
+            v = bytes(self.mv[self.o:self.o + n]).decode("utf-8")
+            self.o += n
+            return v
+
+    def shm_encode_request(mm, rev, blocks, loads, buckling=True):
+        o = struct.pack("<III", 0x31515242, rev & 0xffffffff, (rev >> 32) & 0xffffffff)
+        o += struct.pack("<I", 1 if buckling else 0)
+        o += struct.pack("<I", len(blocks))
+        for b in blocks:
+            o += struct.pack("<iiiiiI", b["x"], b["y"], b["z"],
+                             t_mats.index(b["mat"]), t_toks.index(b["section"]),
+                             1 if b.get("support") else 0)
+        o += struct.pack("<I", len(loads))
+        for l in loads:
+            o += struct.pack("<iii", l["x"], l["y"], l["z"])
+            o += struct.pack("<6d", l.get("fx", 0), l.get("fy", 0), l.get("fz", 0),
+                             l.get("mx", 0), l.get("my", 0), l.get("mz", 0))
+        mm.seek(0)
+        mm.write(o)
+        return len(o)
+
+    def shm_decode_reply(mm, nbytes):
+        c = Cur(memoryview(mm)[:nbytes])
+        magic = c.u32()
+        assert magic == 0x31505242, hex(magic)
+        rev = c.u32() | (c.u32() << 32)
+        ok = c.u32() == 1
+        if not ok:
+            return {"ok": False, "revision": rev, "error": c.s()}
+        r = {"ok": True, "revision": rev}
+        r["singular"] = c.u32() == 1
+        r["islands"] = c.u32()
+        r["singularIslands"] = c.u32()
+        diag = c.s()
+        if diag:
+            r["diagnostic"] = diag
+        note = c.s()
+        if note:
+            r["note"] = note
+        r["equilibrium"] = {"applied": c.f64n(3), "reaction": c.f64n(3), "residual": c.f64()}
+        r["maxDC"] = c.f64()
+        r["governing"] = c.i32()
+        gk = c.u32()
+        if gk:
+            r["governingKind"] = "member" if gk == 1 else "shell"
+        bf = c.f64()
+        if bf > 0:
+            r["bucklingFactor"] = bf
+        r["nodes"] = c.u32()
+        r["dof"] = c.u32()
+        r["members"] = []
+        for _ in range(c.u32()):
+            m = {"id": c.i32(), "mat": t_mats[c.i32()], "section": t_toks[c.i32()],
+                 "lengthMm": c.f64(), "dc": c.f64(),
+                 "governingFibre": FIBRE_NAMES[c.u32()], "governingStation": c.i32()}
+            for end in ("i", "j"):
+                N, Vy, Vz, T, My, Mz = c.f64n(6)
+                m[end] = {"N": N, "Vy": Vy, "Vz": Vz, "T": T, "My": My, "Mz": Mz}
+            f = {"origin": c.f64n(3), "ax": c.f64n(3), "ay": c.f64n(3), "az": c.f64n(3)}
+            f["A"], f["Iy"], f["Iz"], f["cy"], f["cz"], f["wy"], f["wz"] = c.f64n(7)
+            m["field"] = f
+            m["blocks"] = [c.i32n(3) for _ in range(c.u32())]
+            m["stations"] = []
+            for _ in range(c.u32()):
+                st = {"x": c.f64(), "world": c.f64n(3)}
+                sig = c.f64n(4)
+                st["fibres"] = [{"name": nm, "sigma": sv} for nm, sv in
+                                zip(("TOP_Y", "BOT_Y", "PLUS_Z", "MINUS_Z"), sig)]
+                st["sigmaTens"], st["sigmaComp"], st["tau"] = c.f64n(3)
+                naY, naZ = c.f64n(2)
+                if not math.isnan(naY):
+                    st["naY"] = naY
+                if not math.isnan(naZ):
+                    st["naZ"] = naZ
+                m["stations"].append(st)
+            r["members"].append(m)
+        r["shells"] = []
+        for _ in range(c.u32()):
+            sh = {"id": c.i32(), "mat": t_mats[c.i32()], "plate": t_toks[c.i32()],
+                  "t": c.f64(), "dc": c.f64(), "dcRaw": c.f64()}
+            fl = c.u32()
+            sh["face"] = "TOP" if (fl & 1) else "BOT"
+            sh["edgeRecovered"] = (fl & 2) != 0
+            sh["corner"] = c.i32()
+            sh["blocks"] = [c.i32n(3) for _ in range(4)]
+            sh["world"] = [c.f64n(3) for _ in range(4)]
+            sh["ex"], sh["ey"], sh["n"] = c.f64n(3), c.f64n(3), c.f64n(3)
+            nxx, nyy, nxy, mxx, myy, mxy, qx, qy = c.f64n(8)
+            sh["N"] = {"xx": nxx, "yy": nyy, "xy": nxy}
+            sh["M"] = {"xx": mxx, "yy": myy, "xy": mxy}
+            sh["Q"] = {"x": qx, "y": qy}
+            sh["Mc"] = [c.f64n(3) for _ in range(4)]
+            sh["McRaw"] = [c.f64n(3) for _ in range(4)]
+            sh["vmTop"], sh["vmBot"] = c.f64n(2)
+            r["shells"].append(sh)
+        r["unassigned"] = [c.i32n(3) for _ in range(c.u32())]
+        return r
+
+    def deep_eq(a, b, path):
+        if isinstance(a, dict) and isinstance(b, dict):
+            for k in a.keys() | b.keys():
+                if k not in a or k not in b:
+                    return f"{path}.{k}: present on one side only"
+                bad = deep_eq(a[k], b[k], f"{path}.{k}")
+                if bad:
+                    return bad
+            return None
+        if isinstance(a, list) and isinstance(b, list):
+            if len(a) != len(b):
+                return f"{path}: length {len(a)} vs {len(b)}"
+            for i, (x, y) in enumerate(zip(a, b)):
+                bad = deep_eq(x, y, f"{path}[{i}]")
+                if bad:
+                    return bad
+            return None
+        if isinstance(a, bool) or isinstance(b, bool) or isinstance(a, str) or isinstance(b, str):
+            return None if a == b else f"{path}: {a!r} vs {b!r}"
+        if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+            return None if num_eq(a, b) else f"{path}: {a!r} vs {b!r} (bit mismatch)"
+        return None if a == b else f"{path}: {a!r} vs {b!r}"
+
+    def strip_json_extras(r):
+        # Fibre dir/offset are geometry the binary wire derives from the member
+        # header instead of repeating per fibre; McRaw is emitted by JSON only
+        # when recovery fired but always by the binary layout.
+        out = json.loads(json.dumps(r))
+        for m in out.get("members", []):
+            for st in m.get("stations", []):
+                for f in st.get("fibres", []):
+                    f.pop("dir", None)
+                    f.pop("offsetMm", None)
+        for sh in out.get("shells", []):
+            if "McRaw" not in sh:
+                sh["McRaw"] = sh.get("Mc")
+        return out
+
+    shm_path = os.path.join(tempfile.mkdtemp(prefix="br-verify-shm"), "region.bin")
+    with open(shm_path, "wb") as f:
+        f.write(b"\0" * (8 * 1024 * 1024))
+    fshm = open(shm_path, "r+b")
+    mm = mmap_mod.mmap(fshm.fileno(), 0)
+
+    ro = sc.call({"op": "shm.open", "path": shm_path})
+    check_true("shm.open ok", ro.get("ok") is True, ro.get("error", ""))
+
+    t_cases = [
+        ("cantilever + tip load", beam_blocks(5),
+         [{"x": 4, "y": 64, "z": 0, "fy": -20000.0}]),
+        ("two supports + midspan load",
+         [{"x": i, "y": 64, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+           "support": i in (0, 6)} for i in range(7)],
+         [{"x": 3, "y": 64, "z": 0, "fy": -30000.0}]),
+        ("shear wall 2x4", *wall(3, 5, 100000.0)),
+    ]
+    for ti, (tag, tb, tl) in enumerate(t_cases):
+        rev = 9000 + ti
+        rj = sc.call({"op": "solve", "revision": rev, "blocks": tb, "loads": tl})
+        nreq = shm_encode_request(mm, rev, tb, tl)
+        bell = sc.call({"op": "solve.shm", "revision": rev, "bytes": nreq})
+        check_true(f"T{ti} doorbell ok ({tag})", bell.get("ok") is True, bell.get("error", ""))
+        rb = shm_decode_reply(mm, bell["bytes"])
+        # `op` is doorbell-side framing, not solve content.
+        rjc = strip_json_extras(rj)
+        rjc.pop("op", None)
+        bad = deep_eq(rjc, rb, "$")
+        check_true(f"T{ti} shm reply bit-exact vs JSON ({tag})", bad is None, bad or "")
+
+    # Error path: a load on nothing must refuse identically on both transports.
+    rev = 9100
+    eb = beam_blocks(3)
+    el = [{"x": 40, "y": 64, "z": 0, "fy": -1000.0}]
+    rj = sc.call({"op": "solve", "revision": rev, "blocks": eb, "loads": el})
+    nreq = shm_encode_request(mm, rev, eb, el)
+    bell = sc.call({"op": "solve.shm", "revision": rev, "bytes": nreq})
+    check_true("T-err doorbell still ok=false", bell.get("ok") is False, str(bell))
+    check_true("T-err same refusal text", bell.get("error") == rj.get("error"),
+               f"json={rj.get('error')!r} shm={bell.get('error')!r}")
+
+    # ---------------------------------- TF: frame boundary and fail-closed wire
+    # The byte length on the doorbell IS the frame (#27); the mapping capacity is
+    # not. Every refusal here must name the problem, not solve a lighter model.
+    print("\n[TF] shm framing and fail-closed decode")
+    fb, fl = beam_blocks(3), []
+    nreq = shm_encode_request(mm, 9200, fb, fl)
+    check_true("TF bytes missing refused",
+               sc.call({"op": "solve.shm", "revision": 9200}).get("ok") is False, "")
+    check_true("TF bytes zero refused",
+               sc.call({"op": "solve.shm", "revision": 9200, "bytes": 0}).get("ok") is False, "")
+    check_true("TF bytes beyond region refused",
+               sc.call({"op": "solve.shm", "revision": 9200,
+                        "bytes": 1 << 30}).get("ok") is False, "")
+    r = sc.call({"op": "solve.shm", "revision": 9200, "bytes": nreq + 8})
+    check_true("TF trailing bytes refused", r.get("ok") is False and "trailing" in r.get("error", ""),
+               str(r.get("error", "")))
+    r = sc.call({"op": "solve.shm", "revision": 9200, "bytes": nreq - 8})
+    check_true("TF truncated frame refused", r.get("ok") is False and "truncat" in r.get("error", ""),
+               str(r.get("error", "")))
+    check_true("TF exact frame still solves",
+               sc.call({"op": "solve.shm", "revision": 9200, "bytes": nreq}).get("ok") is True, "")
+
+    # Unknown request flags / block flags / out-of-world coordinates: refused (#28).
+    def patched(rev, patch_at, value):
+        n = shm_encode_request(mm, rev, fb, fl)
+        mm.seek(patch_at)
+        mm.write(struct.pack("<I", value))
+        return n
+    n = patched(9201, 12, 3)   # flags word: unknown bit 1 set
+    r = sc.call({"op": "solve.shm", "revision": 9201, "bytes": n})
+    check_true("TF unknown request flags refused",
+               r.get("ok") is False and "flags" in r.get("error", ""), str(r.get("error", "")))
+    n = patched(9202, 20 + 20, 2)   # first block's flags word (header 20 + x,y,z,mat,tok)
+    r = sc.call({"op": "solve.shm", "revision": 9202, "bytes": n})
+    check_true("TF unknown block flags refused",
+               r.get("ok") is False and "flags" in r.get("error", ""), str(r.get("error", "")))
+    n = patched(9203, 20, 0x7fffffff)   # first block x: far outside the world
+    r = sc.call({"op": "solve.shm", "revision": 9203, "bytes": n})
+    check_true("TF out-of-world coordinate refused",
+               r.get("ok") is False and "range" in r.get("error", ""), str(r.get("error", "")))
+
+    # ------------------------------------ TR: revision is exact 64-bit (#29)
+    # A double folds every integer above 2^53; the fence must not. Adjacent
+    # revisions on both sides of the fold, echoed exactly, on both transports.
+    print("\n[TR] revision domain is exact int64")
+    for rev in (2 ** 53 - 1, 2 ** 53, 2 ** 53 + 1, 2 ** 63 - 1):
+        rj = sc.call({"op": "solve", "revision": rev, "blocks": fb, "loads": fl})
+        check_true(f"TR json echoes {rev}", rj.get("ok") is True and rj.get("revision") == rev,
+                   str(rj.get("revision")))
+        n = shm_encode_request(mm, rev, fb, fl)
+        bell = sc.call({"op": "solve.shm", "revision": rev, "bytes": n})
+        check_true(f"TR shm echoes {rev}", bell.get("ok") is True and bell.get("revision") == rev,
+                   str(bell.get("revision")))
+        rb = shm_decode_reply(mm, bell["bytes"])
+        check_true(f"TR region echoes {rev}", rb.get("revision") == rev, str(rb.get("revision")))
+    check_true("TR fractional revision refused",
+               sc.raw('{"op":"solve","revision":1.5,"blocks":[]}').get("ok") is False, "")
+    check_true("TR exponent-form revision refused",
+               sc.raw('{"op":"solve","revision":1e3,"blocks":[]}').get("ok") is False, "")
+    check_true("TR negative revision refused",
+               sc.call({"op": "solve", "revision": -1, "blocks": []}).get("ok") is False, "")
+    check_true("TR beyond-int64 revision refused",
+               sc.raw('{"op":"solve","revision":9223372036854775808,"blocks":[]}').get("ok") is False, "")
+
+    # -------------------------------- TS: JSON request schema is strict (#30)
+    # A wrong-typed or misspelled field must refuse, never quietly become a
+    # lighter model that still answers ok:true.
+    print("\n[TS] strict JSON request schema")
+    base = {"op": "solve", "revision": 9300, "blocks": beam_blocks(3)}
+    check_true("TS baseline solves", sc.call(base).get("ok") is True, "")
+    check_true("TS loads as object refused",
+               sc.call({**base, "loads": {}}).get("ok") is False, "")
+    check_true("TS loads as string refused",
+               sc.call({**base, "loads": "none"}).get("ok") is False, "")
+    r = sc.call({**base, "load": [{"x": 0, "y": 64, "z": 0, "fy": -1.0}]})
+    check_true("TS typo'd 'load' key refused", r.get("ok") is False and "load" in r.get("error", ""),
+               str(r.get("error", "")))
+    check_true("TS blocks as object refused",
+               sc.call({"op": "solve", "revision": 9301, "blocks": {}}).get("ok") is False, "")
+    check_true("TS blocks missing refused",
+               sc.call({"op": "solve", "revision": 9302}).get("ok") is False, "")
+    bad_support = [dict(beam_blocks(3)[0], support="true")] + beam_blocks(3)[1:]
+    check_true("TS string 'support' refused",
+               sc.call({"op": "solve", "revision": 9303, "blocks": bad_support}).get("ok") is False, "")
+    check_true("TS unknown block field refused",
+               sc.call({"op": "solve", "revision": 9304,
+                        "blocks": [dict(beam_blocks(1)[0], colour="red")]}).get("ok") is False, "")
+    check_true("TS trailing garbage line refused",
+               sc.raw('{"op":"solve","revision":1,"blocks":[]} tail').get("ok") is False, "")
+    check_true("TS malformed number refused",
+               sc.raw('{"op":"solve","revision":1,"blocks":[{"x":1.2.3,"y":64,"z":0,'
+                      '"mat":"steel","section":"steel_rect_200x400"}]}').get("ok") is False, "")
+    check_true("TS invalid escape refused",
+               sc.raw('{"op":"solve","revision":1,"blocks":[],"loads":[],"buckling":true,'
+                      '"op":"so\\qlve"}').get("ok") is False, "")
+
+    # Parser-hardening gates (SIDE-2 / SIDE-5 / SIDE-6). Discipline note, logged
+    # in GATES.md: the fixes for these three landed one commit before their gates
+    # — an ordering slip registered as such, not laundered.
+    r = sc.raw("[" * 200000 + "]" * 200000)
+    h = sc.call({"op": "hello"})
+    check_true("TS 200k-deep nesting refused, process alive",
+               r.get("ok") is False and "materials" in h, str(r)[:60])
+    r = sc.raw('{"op":"nonsense","revision":1e999}')
+    check_true("TS overflow revision echoes 0, not cast garbage",
+               r.get("ok") is False and r.get("revision") == 0, str(r.get("revision")))
+    tb = [{"x": 0, "y": 0, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+           "support": True},
+          {"x": 1, "y": 0, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+           "support": False}]
+    shm_encode_request(mm, 9310, tb, [])
+    # Cut exactly after block 1 of 2: the zero-filled reads of block 2 land on
+    # (0,0,0), which IS block 1 — the old code reported "duplicate block
+    # coordinate" and sent the debugger to block sync instead of the transport.
+    r = sc.call({"op": "solve.shm", "revision": 9310, "bytes": 20 + 24})
+    check_true("TS mid-block truncation says truncated, not duplicate",
+               r.get("ok") is False and "truncat" in r.get("error", "")
+               and "duplicate" not in r.get("error", ""), str(r.get("error", "")))
+
+    # Capacity path: a region too small must refuse loudly, never truncate.
+    small_path = os.path.join(os.path.dirname(shm_path), "small.bin")
+    with open(small_path, "wb") as f:
+        f.write(b"\0" * 4096)
+    ro = sc.call({"op": "shm.open", "path": small_path})
+    check_true("shm.open small ok", ro.get("ok") is True, ro.get("error", ""))
+    fs2 = open(small_path, "r+b")
+    mm2 = mmap_mod.mmap(fs2.fileno(), 0)
+    rev = 9101
+    bb, bl = wall(3, 5, 100000.0)
+    nreq = shm_encode_request(mm2, rev, bb, bl)
+    bell = sc.call({"op": "solve.shm", "revision": rev, "bytes": nreq})
+    check_true("T-cap overflow refused with grow hint",
+               bell.get("ok") is False and "grow" in bell.get("error", ""), str(bell))
+    mm2.close()
+    fs2.close()
+
+    mm.close()
+    fshm.close()
 
     sc.close()
 

@@ -1,18 +1,28 @@
 # Block Reality 結構 sidecar
 
-獨立程序（D-013），JSON-lines over stdio。Minecraft 側送方塊與材料，**這裡擁有結構模型**——構件擷取、節點管理、求解、D/C 回收都在這一側（D-006）。
+獨立程序（D-013）。控制通道是 stdio 上的 JSON-lines;數值走**共用記憶體零拷貝**傳輸
+（D-019,雙方映射同一個檔,double 以 raw little-endian 過去,stdio 只剩門鈴）,JSON
+`solve` 保留為 wire 契約、fallback 與除錯面。Minecraft 側送方塊與材料，**這裡擁有
+結構模型**——構件擷取、節點管理都在這一側（D-006）;但**這裡不算任何力學**——每個
+應力、內力、D/C、還原值都是 FrameCore 函式的回傳值（D-020）。
 
 ## 建置
 
 ```bash
 sudo apt-get install -y libeigen3-dev cmake g++
 
+# FrameCore v4.0.0 + 本倉攜帶的引擎修正（見 sidecar/patches/README.md）
+cd /path/to/architect_simulator && git checkout v4.0.0 \
+  && git am /path/to/block-reality/sidecar/patches/*.patch && cd -
+
 cmake -S sidecar -B sidecar/build -DCMAKE_BUILD_TYPE=Release -DBR_STATIC_RUNTIME=ON \
       -DFRAMECORE_DIR=/path/to/architect_simulator/Plugins/FrameSolver/Source/FrameCore
 cmake --build sidecar/build --parallel
 ```
 
-FrameCore 以**原始碼**引用，不 vendor 進本倉庫。
+FrameCore 以**原始碼**引用，不 vendor 進本倉庫。`sidecar/patches/` 是對上游
+v4.0.0 的三個修正/擴充 commit（F72–F77 gate 隨附）,套不上就建不出來——這是刻意的,
+缺了它們引擎的 stress field 帶著已量測的缺陷。
 
 **依賴只有 Eigen**（header-only）。FrameCore 的 supernodal lane 由 `FRAMECORE_SUPERNODAL`
 在編譯期關掉（`-DBR_SUPERNODAL=ON` 可以開回來，那時才需要 METIS / OpenBLAS / LAPACKE）。
@@ -85,6 +95,31 @@ python3 sidecar/verify.py sidecar/build/br-sidecar
 {"op":"bye"}   // 或直接關 stdin
 ```
 
+### 共用記憶體傳輸（shm layout 1）
+
+```jsonc
+// hello 多一個能力欄位（沒有它的舊 client 繼續講 JSON）
+→ {"ok":true, ..., "shm":1}
+
+// JVM 建好 scratch 檔並映射後,叫 sidecar 映射同一個檔
+{"op":"shm.open","path":"/tmp/br-shm-1234.bin"}
+→ {"ok":true,"op":"shm.open","bytes":4194304}
+
+// 之後的求解:請求已在映射區裡,門鈴不載數值
+{"op":"solve.shm","revision":7}
+→ {"ok":true,"op":"solve.shm","revision":7,"bytes":132536}   // 回覆也在映射區裡
+```
+
+- 全部 little-endian;double 是 raw IEEE-754,**從不文字化**——傳輸從構造上不可能
+  改變數值。JSON 路徑同時修到 17 位有效數字(無損下限;之前是 10 位,每個數值都被
+  截到 ~1e-10 相對,evidence 把這當引擎誤差引用了兩版)
+- 嚴格半雙工:一問一答,請求與回覆重用同一段記憶體,門鈴就是互斥
+- 字串不過二進位 wire:材料/斷面 token 用 hello 清單的索引,governing fibre 用枚舉序號
+- 失敗的 solve 在門鈴上以與 JSON 相同的 error line 拒絕,不寫映射區;回覆裝不下時
+  大聲拒絕並附 grow 提示,JVM 放大檔案重試一次
+- verify.py 的 T 系列 gate 押著兩傳輸**逐位元相同**;確切欄位佈局的權威定義是
+  `main.cpp` 的 `encodeShmReply` 與 Java 端 `BinaryCodec`（兩者由 gate 互鎖）
+
 ## 已實作的規則
 
 | 規則 | 出處 |
@@ -107,6 +142,11 @@ python3 sidecar/verify.py sidecar/build/br-sidecar
 | 荷載落在**完全不屬於任何元素**的方塊 → 拒絕整個請求 | issue #14 |
 | 每一島跑線性挫屈，回報全世界最小的 λ_cr | D-018 |
 | 殼的膜元素開 QM6 incompatible modes（面內受彎精確） | D-018 |
+| **缺 mat / 缺 section / 未知 token / 非整數座標 / 重複座標 / 缺 revision / 非有限數 → 全部拒絕** | issue #18 |
+| **落在構件中間、無法映射到節點的荷載 → 拒絕整筆請求，不丟棄** | issue #14 |
+| **斷面改變 → 該處成為節點，構件分段但仍連續** | issue #13 |
+| **D/C 取自沿構件的 stations（含彎矩解析極值），不只兩端** | issue #14 |
+| stdin EOF → 自我了斷 | 防僵屍 |
 
 ### ⚠️ `ex` / `ey` / `n` 在 Minecraft 空間裡是**左手系**
 
@@ -114,11 +154,6 @@ python3 sidecar/verify.py sidecar/build/br-sidecar
 **反射**，所以同樣三個向量讀在 Minecraft 空間就滿足 `ex × ey = −n`。
 
 拿它們把點投影到 facet 上完全沒問題（客戶端就是這樣用的）。**不要用它們的外積去重建法向。**
-| **缺 mat / 缺 section / 未知 token / 非整數座標 / 重複座標 / 缺 revision / 非有限數 → 全部拒絕** | issue #18 |
-| **落在構件中間、無法映射到節點的荷載 → 拒絕整筆請求，不丟棄** | issue #14 |
-| **斷面改變 → 該處成為節點，構件分段但仍連續** | issue #13 |
-| **D/C 取自沿構件的 stations（含彎矩解析極值），不只兩端** | issue #14 |
-| stdin EOF → 自我了斷 | 防僵屍 |
 
 ## 已知 v0 邊界
 
@@ -129,9 +164,7 @@ python3 sidecar/verify.py sidecar/build/br-sidecar
   支承是 `fixAll`，而節點只在 run 端點與交會處產生，所以兩節點構件的自由度是零。
   這是擷取的真實限制，寫在這裡而不是繞過去——C8 因此改用「向上端點荷載的懸臂」
   來製造內部控制斷面
-- 只有點荷載與自重；無風、無活載、無載重組合。**落在構件中間的點荷載會被拒絕**，
-  因為那裡沒有節點可以承接它
-- 無殼元素（模板宣告 MITC4 是第二刀）
+- 只有點荷載與自重；無風、無活載、無載重組合
 - 無損傷、無 member registry（D-011 的持久身分尚未實作）
 - **member `id` 是每次求解重編的暫時索引，不是持久身分**，不可用於任何交易或損傷
   紀錄（issue #17）

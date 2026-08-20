@@ -8,8 +8,12 @@ rem
 rem Chinese text below only ever appears inside echo strings — every byte of it is
 rem >= 0x80, so cmd cannot mistake it for an operator no matter what codepage is
 rem active. Worst case it renders as mojibake; the script still runs.
+rem
+rem Delayed expansion stays OFF for the whole script: with it on, %-expansion eats
+rem any "!" inside a user path (C:\Users\ming!\...) and the install lands in a
+rem directory that does not exist. Array reads use `call` double-expansion instead.
 chcp 65001 >nul 2>&1
-setlocal enabledelayedexpansion
+setlocal disabledelayedexpansion
 
 set "HERE=%~dp0"
 set "TARGET=%~1"
@@ -56,9 +60,9 @@ if defined LIST_ONLY (
 )
 
 if "%COUNT%"=="1" (
-    set "TARGET=!INST_1!"
+    set "TARGET=%INST_1%"
     echo   找到一個實例 / found one instance:
-    echo     !TARGET!
+    echo     %INST_1%
     echo.
     goto :have_target
 )
@@ -72,7 +76,7 @@ set "PICK="
 set /p "PICK=  輸入編號 / enter a number [1-%COUNT%]: "
 if not defined PICK goto :badpick
 rem A non-numeric answer makes INST_<answer> undefined, which is exactly the check below.
-set "TARGET=!INST_%PICK%!"
+call set "TARGET=%%INST_%PICK%%%"
 if not defined TARGET goto :badpick
 echo.
 goto :have_target
@@ -89,7 +93,14 @@ if not exist "%TARGET%\" (
 )
 
 rem -------------------------------------------------------------------- install
+rem Every copy is CHECKED. Reporting "installed" after a copy silently failed
+rem (read-only folder, disk full, antivirus hold) sends the user hunting in-game
+rem for a mod that is not there.
 if not exist "%TARGET%\mods\" mkdir "%TARGET%\mods"
+if not exist "%TARGET%\mods\" (
+    echo   無法建立 / cannot create: %TARGET%\mods
+    goto :done
+)
 
 set "JAR="
 for %%f in ("%HERE%blockreality-*.jar") do set "JAR=%%f"
@@ -101,12 +112,24 @@ if not defined JAR (
 
 rem Two copies of the same mod in mods\ is a load error, so the old one goes first.
 del /q "%TARGET%\mods\blockreality-*.jar" 2>nul
-copy /y "!JAR!" "%TARGET%\mods\" >nul
-for %%f in ("!JAR!") do echo   mod    -^> %TARGET%\mods\%%~nxf
+copy /y "%JAR%" "%TARGET%\mods\" >nul
+if errorlevel 1 (
+    echo   複製 mod 失敗，沒有安裝任何東西。 / Copying the mod FAILED - nothing was installed.
+    echo   來源 / from: %JAR%
+    echo   目的 / to:   %TARGET%\mods\
+    goto :done
+)
+for %%f in ("%JAR%") do echo   mod    -^> %TARGET%\mods\%%~nxf
 
 rem The engine goes in the game directory, which is where the mod looks for it.
 if exist "%HERE%br-sidecar.exe" (
     copy /y "%HERE%br-sidecar.exe" "%TARGET%\" >nul
+    if errorlevel 1 (
+        echo   複製引擎失敗。mod 已安裝、可遊玩，但分析會是關的。
+        echo   Copying the engine FAILED. The mod IS installed and plays;
+        echo   analysis stays off until br-sidecar.exe is copied into: %TARGET%
+        goto :done
+    )
     echo   engine -^> %TARGET%\br-sidecar.exe
 ) else (
     echo   警告：旁邊沒有 br-sidecar.exe。mod 照樣載入照樣玩，但分析是關的。
@@ -134,6 +157,8 @@ rem ------------------------------------------------------------------- helpers
 rem :try <dir> — count it as an instance if it looks like a game directory.
 rem mods\ alone is not enough: a fresh Forge instance that has never had a mod in
 rem it has no mods\ yet, and that is precisely the person who needs this script.
+rem Lines inside a called label are parsed per line, so %COUNT% below reads the
+rem value the preceding set /a just wrote — no delayed expansion needed.
 :try
 set "CAND=%~1"
 set "OK="
@@ -142,7 +167,7 @@ if exist "%CAND%\versions\" if exist "%CAND%\launcher_profiles.json" set "OK=1"
 if exist "%CAND%\versions\" if exist "%CAND%\saves\" set "OK=1"
 if not defined OK exit /b
 set /a COUNT+=1
-set "INST_!COUNT!=%CAND%"
+set "INST_%COUNT%=%CAND%"
 exit /b
 
 rem :forge <dir> — sets HASFORGE if Forge is installed in that instance.
@@ -154,11 +179,12 @@ exit /b
 
 rem :show <n> — print one numbered candidate, tagged with whether it has Forge.
 :show
-call :forge "!INST_%~1!"
+call set "SHOWP=%%INST_%~1%%"
+call :forge "%SHOWP%"
 if defined HASFORGE (
-    echo     %~1^) [Forge]    !INST_%~1!
+    echo     %~1^) [Forge]    %SHOWP%
 ) else (
-    echo     %~1^) [no Forge] !INST_%~1!
+    echo     %~1^) [no Forge] %SHOWP%
 )
 exit /b
 

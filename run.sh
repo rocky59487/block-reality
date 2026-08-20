@@ -7,12 +7,15 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 
 mkdir -p forge/run
 
-if [[ -x dist/br-sidecar ]]; then
-    cp dist/br-sidecar forge/run/
-    echo "engine: forge/run/br-sidecar"
-elif [[ -x sidecar/build/br-sidecar ]]; then
+# A locally built engine beats the committed dist binary (#51): after editing the
+# sidecar and rebuilding, the run must exercise what was just built, not silently
+# regress to the last release's binary.
+if [[ -x sidecar/build/br-sidecar ]]; then
     cp sidecar/build/br-sidecar forge/run/
     echo "engine: forge/run/br-sidecar (from sidecar/build)"
+elif [[ -x dist/br-sidecar ]]; then
+    cp dist/br-sidecar forge/run/
+    echo "engine: forge/run/br-sidecar (from dist — no local build found)"
 else
     cat <<'MSG'
 

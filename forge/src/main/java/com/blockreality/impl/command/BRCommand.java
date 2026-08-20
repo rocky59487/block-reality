@@ -6,7 +6,9 @@ import com.blockreality.api.StressStation;
 import com.blockreality.core.sidecar.SidecarClient;
 import com.blockreality.impl.server.SidecarLocator;
 import com.blockreality.impl.server.StructureManager;
+import com.blockreality.impl.block.StructuralBlock;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -14,10 +16,14 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * {@code /br} — the answer to "why is nothing happening?".
@@ -27,8 +33,12 @@ import java.util.Locale;
  * blocks are in the model, and what the last result said. Without this, a missing binary
  * and an unstressed structure look identical from inside the game.
  *
- * <p>Read-only except for {@code resolve} and {@code reset}, both of which only ask for
- * work to be redone. Nothing here can change the world.
+ * <p>Read-only subcommands (status/members/section/loads) are open to everyone; the
+ * rest require operator level 2 — see {@link BrPermissions} for the table and the
+ * reasoning per command. {@code scan} walks up to 1089 chunks on the server thread,
+ * {@code load} applies arbitrary force vectors to the shared model, and neither is
+ * something an anonymous survival player should hold on a public server (#45).
+ * Nothing here places or breaks a block.
  */
 public final class BRCommand {
 
@@ -39,26 +49,99 @@ public final class BRCommand {
         register(event.getDispatcher());
     }
 
+    /** A literal whose permission level comes from the table — never inline (#45). */
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> lit(String name) {
+        int level = BrPermissions.required(name);
+        return Commands.literal(name).requires(s -> s.hasPermission(level));
+    }
+
     private static void register(CommandDispatcher<CommandSourceStack> d) {
         d.register(Commands.literal("br")
-                .then(Commands.literal("status").executes(c -> status(c.getSource())))
-                .then(Commands.literal("members").executes(c -> members(c.getSource())))
-                .then(Commands.literal("section")
+                .then(lit("status").executes(c -> status(c.getSource())))
+                .then(lit("members").executes(c -> members(c.getSource())))
+                .then(lit("section")
                         .then(Commands.argument("member", IntegerArgumentType.integer(1))
                                 .executes(c -> section(c.getSource(),
                                         IntegerArgumentType.getInteger(c, "member")))))
-                .then(Commands.literal("resolve")
-                        // Available to everyone: it only asks for a recomputation.
+                .then(lit("resolve")
                         .executes(c -> resolve(c.getSource())))
-                .then(Commands.literal("scan")
+                .then(lit("scan")
                         .executes(c -> scan(c.getSource(), 4))
                         .then(Commands.argument("chunkRadius", IntegerArgumentType.integer(0, 16))
                                 .executes(c -> scan(c.getSource(),
                                         IntegerArgumentType.getInteger(c, "chunkRadius")))))
-                .then(Commands.literal("reset")
-                        .requires(s -> s.hasPermission(2))
+                // Arbitrary test loads, in kN because that is the unit an engineering
+                // reader thinks in (the wire stays in newtons).
+                .then(lit("load")
+                        .then(Commands.argument("fxKn", DoubleArgumentType.doubleArg(-1e6, 1e6))
+                                .then(Commands.argument("fyKn", DoubleArgumentType.doubleArg(-1e6, 1e6))
+                                        .then(Commands.argument("fzKn", DoubleArgumentType.doubleArg(-1e6, 1e6))
+                                                .executes(c -> load(c.getSource(),
+                                                        DoubleArgumentType.getDouble(c, "fxKn"),
+                                                        DoubleArgumentType.getDouble(c, "fyKn"),
+                                                        DoubleArgumentType.getDouble(c, "fzKn")))))))
+                // "unload all" inherits the parent literal's gate: Brigadier checks
+                // requires() on every node along the executed path.
+                .then(lit("unload")
+                        .executes(c -> load(c.getSource(), 0, 0, 0))
+                        .then(Commands.literal("all").executes(c -> unloadAll(c.getSource()))))
+                .then(lit("loads").executes(c -> loads(c.getSource())))
+                .then(lit("reset")
                         .executes(c -> reset(c.getSource())))
                 .executes(c -> status(c.getSource())));
+    }
+
+    /**
+     * Applies (or with a zero vector clears) a test load on the block the player is
+     * looking at. The block must be structural: a load anywhere else would be refused
+     * by the engine's fail-closed check anyway, and telling the player at the point of
+     * aim beats a refusal three ticks later.
+     */
+    private static int load(CommandSourceStack src, double fxKn, double fyKn, double fzKn) {
+        ServerPlayer player;
+        try {
+            player = src.getPlayerOrException();
+        } catch (Exception e) {
+            line(src, "A player has to aim this command.", ChatFormatting.RED);
+            return 0;
+        }
+        HitResult hit = player.pick(20.0, 0.0f, false);
+        if (!(hit instanceof BlockHitResult bh)
+                || !(src.getLevel().getBlockState(bh.getBlockPos()).getBlock() instanceof StructuralBlock)) {
+            line(src, Component.translatable("br.load.not_structural").getString(), ChatFormatting.YELLOW);
+            return 0;
+        }
+        BlockPos pos = bh.getBlockPos();
+        boolean present = managerFor(src).setLoad(pos, fxKn * 1000.0, fyKn * 1000.0, fzKn * 1000.0);
+        if (present) {
+            line(src, String.format(Locale.ROOT, "Load at %d %d %d: (%.1f, %.1f, %.1f) kN",
+                    pos.getX(), pos.getY(), pos.getZ(), fxKn, fyKn, fzKn), ChatFormatting.GREEN);
+        } else {
+            line(src, String.format(Locale.ROOT, "Load cleared at %d %d %d",
+                    pos.getX(), pos.getY(), pos.getZ()), ChatFormatting.GRAY);
+        }
+        return 1;
+    }
+
+    private static int unloadAll(CommandSourceStack src) {
+        int n = managerFor(src).clearAllLoads();
+        line(src, n + " test load" + (n == 1 ? "" : "s") + " removed.", ChatFormatting.GRAY);
+        return n;
+    }
+
+    private static int loads(CommandSourceStack src) {
+        Map<BlockPos, double[]> all = managerFor(src).loads();
+        if (all.isEmpty()) {
+            line(src, "No test loads. /br load <fx> <fy> <fz> (kN) applies one to the block you aim at.",
+                    ChatFormatting.GRAY);
+            return 0;
+        }
+        line(src, "Test loads (kN):", ChatFormatting.AQUA);
+        all.forEach((pos, f) -> line(src, String.format(Locale.ROOT,
+                "  %d %d %d   (%.1f, %.1f, %.1f)",
+                pos.getX(), pos.getY(), pos.getZ(),
+                f[0] / 1000.0, f[1] / 1000.0, f[2] / 1000.0), ChatFormatting.GRAY));
+        return all.size();
     }
 
     private static StructureManager managerFor(CommandSourceStack src) {
@@ -72,15 +155,20 @@ public final class BRCommand {
 
         line(src, "Block Reality", ChatFormatting.AQUA);
         line(src, "  dimension       " + m.dimension().location(), ChatFormatting.GRAY);
-        line(src, "  engine          " + s,
+        line(src, "  engine          " + s
+                        + (s == SidecarClient.Status.READY
+                                ? "   (transport: " + m.engineTransport() + ")" : ""),
                 s == SidecarClient.Status.READY ? ChatFormatting.GREEN
                         : s == SidecarClient.Status.DISABLED ? ChatFormatting.RED
                         : ChatFormatting.YELLOW);
 
-        // Where it looked, always — a wrong path is the single most likely first-run
-        // problem and guessing at it from a one-word status is miserable.
-        for (String l : SidecarLocator.describe(m.engineLocation()).split("\n")) {
-            line(src, "  " + l, ChatFormatting.DARK_GRAY);
+        // Where it looked — a wrong path is the single most likely first-run problem.
+        // OP only: the search list spells out server filesystem paths (user names,
+        // drive layout), which a non-privileged player has no business reading (#45).
+        if (src.hasPermission(BrPermissions.LEVEL_OP)) {
+            for (String l : SidecarLocator.describe(m.engineLocation()).split("\n")) {
+                line(src, "  " + l, ChatFormatting.DARK_GRAY);
+            }
         }
 
         line(src, "  revision        " + m.gate().current().value()
@@ -98,6 +186,13 @@ public final class BRCommand {
         } else if (r.allSingular()) {
             // Not a failure and not a safe structure: nothing is holding it up.
             line(src, "  last result     MECHANISM — " + r.diagnostic(), ChatFormatting.YELLOW);
+        } else if (!r.isUsable()) {
+            // ok, not singular, yet nothing came back. Printing the old green
+            // "0 members, max D/C 0.0000" here dressed an empty answer up as a safe
+            // one (#53); an empty answer is a diagnostic, not a verdict.
+            line(src, "  last result     EMPTY — engine returned no members or facets"
+                    + (r.diagnostic().isEmpty() ? "" : " — " + r.diagnostic()),
+                    ChatFormatting.YELLOW);
         } else {
             line(src, String.format(Locale.ROOT,
                             "  last result     %d members, %d plate facets, max D/C %.4f  (%s)%s",

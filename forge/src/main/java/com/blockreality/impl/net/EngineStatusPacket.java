@@ -16,14 +16,34 @@ import java.util.function.Supplier;
  */
 public record EngineStatusPacket(String status, String detail) {
 
+    /** {@code writeUtf}'s cap for {@link #detail}; longer strings make it THROW. */
+    private static final int MAX_DETAIL = 256;
+    private static final int MAX_STATUS = 32;
+
+    /**
+     * The canonical constructor truncates rather than trusting callers: {@code
+     * writeUtf(s, n)} does not shorten an overlong string, it throws — and an encoder
+     * that throws mid-broadcast disconnects every player in the dimension over one
+     * verbose diagnostic (FORGE-2). Diagnostics come from engine internals and from
+     * filesystem paths, neither of which respects a length budget.
+     */
+    public EngineStatusPacket {
+        status = clip(status == null ? "" : status, MAX_STATUS);
+        detail = clip(detail == null ? "" : detail, MAX_DETAIL);
+    }
+
+    private static String clip(String s, int max) {
+        return s.length() <= max ? s : s.substring(0, max - 1) + "…";
+    }
+
     public static void encode(EngineStatusPacket p, FriendlyByteBuf buf) {
-        buf.writeUtf(p.status, 32);
-        buf.writeUtf(p.detail, 256);
+        buf.writeUtf(p.status, MAX_STATUS);
+        buf.writeUtf(p.detail, MAX_DETAIL);
     }
 
     public static EngineStatusPacket decode(FriendlyByteBuf buf) {
         // Bounded reads; readUtf enforces the cap without an exception path of our own.
-        return new EngineStatusPacket(buf.readUtf(32), buf.readUtf(256));
+        return new EngineStatusPacket(buf.readUtf(MAX_STATUS), buf.readUtf(MAX_DETAIL));
     }
 
     /** Client-only type by FQN, never imported — see {@link StressResultPacket#handle}. */

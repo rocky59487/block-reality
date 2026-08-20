@@ -8,26 +8,26 @@ binary named below; none is transcribed by hand.
 | | |
 |---|---|
 | engine | FrameCore |
-| commit | `6b40c08f0e2c077bf041b0259870077420b9d6b8` (2026-08-11T21:24:40+08:00) |
+| commit | `10395c3c4c5f7442702318a22160b4920301de0d` (2026-08-20T11:41:38+08:00) |
 | worktree clean | True |
 | solver lane | compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT |
-| binary sha256 | `93a918785aa868993a3269eaa106b4ea4e20a2c0e62561d57397cf8ffe81cedc` |
-| host | Linux-6.18.5-fc-v20-x86_64-with-glibc2.39 |
+| binary sha256 | `aac6b57a83fd3155f3e370fc602583f06c01e61f7207dc64d36e99724c4ad907` |
+| host | Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35 |
 
 Source hashes:
 
 | file | sha256 |
 |---|---|
-| `sidecar/main.cpp` | `5f23af6275734f0cc03013b8752f43082da1f0f8c9e56847c103602fec830696` |
-| `sidecar/json.hpp` | `e6daed262ca85e77cd177498d51b541a72b13a330e2904702eab778cd967a98e` |
-| `sidecar/verify.py` | `b0d08767f95058a1a3f622d21f161cbcb3f6acb0945cb2ff5302819432bbab92` |
-| `sidecar/CMakeLists.txt` | `e9351f417fa6d3e0c33d42d0095b5d3ab25b433794258cb51732a474b701f700` |
-| `scripts/evidence.py` | `ac07708e0363a10e3f297b1edeea5685c6a9f7c278b7493fdfad49da55095d12` |
+| `sidecar/main.cpp` | `c596ac99169c4f08dd90de5a9fc4f7cd2e2eb9a8c6234517d7d77c970fd3effb` |
+| `sidecar/json.hpp` | `1c9b71510fe56a6a2439d273a7a1c58b4bffe1177e6b10085bf02163514c4cb0` |
+| `sidecar/verify.py` | `7f4bb610c54b72aaaf49af8e81b6579cd794816f47b1b28c8162585aeb04e8ff` |
+| `sidecar/CMakeLists.txt` | `7d272beffe52d0e69047f59771a333da0e9e17c0af9894ceff1f4453dfc30fa5` |
+| `scripts/evidence.py` | `d9ec33586226ff36ab239cdb33da046a05b953ff4428f81f60bd6e431e253925` |
 
 ## Accuracy against closed-form solutions
 
 **31 comparisons against non-zero references: worst relative
-error 1.623e-10, RMS 3.008e-11.**
+error 1.216e-14, RMS 2.756e-15.**
 
 **10 comparisons against exactly-zero references: worst absolute
 residual 1.490e-08 N·mm.**
@@ -42,35 +42,35 @@ non-zero comparisons are several orders of magnitude better than that.
 
 | quantity | closed form | engine | error |
 |---|---:|---:|---:|
-| sigma_top(x=0mm) | 24.241 | 24.241 | 1.47e-16 rel |
+| sigma_top(x=0mm) | 24.241 | 24.241 | 2.93e-16 rel |
 | sigma_top(x=400mm) | 20.9852 | 20.9852 | 1.69e-16 rel |
-| sigma_top(x=800mm) | 17.9143 | 17.9143 | 0.00e+00 rel |
-| sigma_top(x=1200mm) | 15.0281 | 15.0281 | 0.00e+00 rel |
-| sigma_top(x=1600mm) | 12.3268 | 12.3268 | 0.00e+00 rel |
-| sigma_top(x=2000mm) | 9.81025 | 9.81025 | 0.00e+00 rel |
-| sigma_top(x=2400mm) | 7.47856 | 7.47856 | 0.00e+00 rel |
-| sigma_top(x=2800mm) | 5.33169 | 5.33169 | 1.67e-16 rel |
-| sigma_top(x=3200mm) | 3.36964 | 3.36964 | 1.32e-16 rel |
-| sigma_top(x=3600mm) | 1.59241 | 1.59241 | 1.39e-16 rel |
-| sigma_top(x=4000mm) | 0 | 0 | 0.00e+00 abs |
-| D/C | 0.0692601 | 0.0692601 | 4.13e-11 rel |
+| sigma_top(x=800mm) | 17.9143 | 17.9143 | 1.98e-16 rel |
+| sigma_top(x=1200mm) | 15.0281 | 15.0281 | 3.55e-16 rel |
+| sigma_top(x=1600mm) | 12.3268 | 12.3268 | 4.32e-16 rel |
+| sigma_top(x=2000mm) | 9.81025 | 9.81026 | 5.43e-16 rel |
+| sigma_top(x=2400mm) | 7.47856 | 7.47856 | 7.13e-16 rel |
+| sigma_top(x=2800mm) | 5.33169 | 5.33169 | 1.00e-15 rel |
+| sigma_top(x=3200mm) | 3.36964 | 3.36964 | 1.45e-15 rel |
+| sigma_top(x=3600mm) | 1.59241 | 1.59241 | 3.21e-15 rel |
+| sigma_top(x=4000mm) | 0 | 5.58794e-15 | 5.59e-15 abs |
+| D/C | 0.0692601 | 0.0692601 | 0.00e+00 rel |
 | member length (mm) | 4000 | 4000 | 0.00e+00 rel |
 
 ### V2  cantilever, self weight only
 
 | quantity | closed form | engine | error |
 |---|---:|---:|---:|
-| sigma_top(x=0mm) | 9.24102 | 9.24102 | 0.00e+00 rel |
+| sigma_top(x=0mm) | 9.24102 | 9.24102 | 1.92e-16 rel |
 | sigma_top(x=400mm) | 7.48523 | 7.48523 | 1.19e-16 rel |
-| sigma_top(x=800mm) | 5.91425 | 5.91425 | 0.00e+00 rel |
-| sigma_top(x=1200mm) | 4.5281 | 4.5281 | 0.00e+00 rel |
-| sigma_top(x=1600mm) | 3.32677 | 3.32677 | 0.00e+00 rel |
-| sigma_top(x=2000mm) | 2.31026 | 2.31026 | 0.00e+00 rel |
-| sigma_top(x=2400mm) | 1.47856 | 1.47856 | 0.00e+00 rel |
-| sigma_top(x=2800mm) | 0.831692 | 0.831692 | 0.00e+00 rel |
-| sigma_top(x=3200mm) | 0.369641 | 0.369641 | 0.00e+00 rel |
-| sigma_top(x=3600mm) | 0.0924102 | 0.0924102 | 0.00e+00 rel |
-| sigma_top(x=4000mm) | 0 | 0 | 0.00e+00 abs |
+| sigma_top(x=800mm) | 5.91425 | 5.91425 | 3.00e-16 rel |
+| sigma_top(x=1200mm) | 4.5281 | 4.5281 | 5.88e-16 rel |
+| sigma_top(x=1600mm) | 3.32677 | 3.32677 | 2.67e-16 rel |
+| sigma_top(x=2000mm) | 2.31026 | 2.31026 | 5.77e-16 rel |
+| sigma_top(x=2400mm) | 1.47856 | 1.47856 | 7.51e-16 rel |
+| sigma_top(x=2800mm) | 0.831692 | 0.831692 | 1.33e-15 rel |
+| sigma_top(x=3200mm) | 0.369641 | 0.369641 | 2.85e-15 rel |
+| sigma_top(x=3600mm) | 0.0924102 | 0.0924102 | 1.22e-14 rel |
+| sigma_top(x=4000mm) | 0 | 1.39698e-15 | 1.40e-15 abs |
 
 ### V3  interior-governing cantilever (both ends zero)
 
@@ -78,16 +78,16 @@ non-zero comparisons are several orders of magnitude better than that.
 |---|---:|---:|---:|
 | moment at end i (N.mm) | 0 | -1.49012e-08 | 1.49e-08 abs |
 | moment at end j (N.mm) | 0 | 0 | 0.00e+00 abs |
-| peak |sigma| at midspan (MPa) | 9.24102 | 9.24102 | 0.00e+00 rel |
-| D/C from the interior | 0.0264029 | 0.0264029 | 1.62e-10 rel |
+| peak |sigma| at midspan (MPa) | 9.24102 | 9.24102 | 3.84e-16 rel |
+| D/C from the interior | 0.0264029 | 0.0264029 | 1.31e-16 rel |
 
 ### V4  fixed-fixed with midspan node (moment reverses)
 
 | quantity | closed form | engine | error |
 |---|---:|---:|---:|
-| support moment (N.mm) | 4.51783e+07 | 4.51783e+07 | 0.00e+00 rel |
-| midspan moment (N.mm) | -2.87498e+07 | -2.87498e+07 | 0.00e+00 rel |
-| adjacent members agree at the shared node | 0 | 0 | 0.00e+00 abs |
+| support moment (N.mm) | 4.51783e+07 | 4.51783e+07 | 3.46e-15 rel |
+| midspan moment (N.mm) | -2.87498e+07 | -2.87498e+07 | 5.18e-15 rel |
+| adjacent members agree at the shared node | 0 | -7.45058e-09 | 7.45e-09 abs |
 
 ### V5  axial tension
 
@@ -105,8 +105,8 @@ non-zero comparisons are several orders of magnitude better than that.
 
 | quantity | closed form | engine | error |
 |---|---:|---:|---:|
-| total applied weight (N) | -295085 | -295085 | 0.00e+00 rel |
-| vertical reaction balances it (N) | 0 | 0 | 0.00e+00 abs |
+| total applied weight (N) | -295085 | -295085 | 4.73e-15 rel |
+| vertical reaction balances it (N) | 0 | 1.21072e-08 | 1.21e-08 abs |
 | horizontal equilibrium, x (N) | 0 | 0 | 0.00e+00 abs |
 | membrane force under transverse load (N/mm) | 0 | 0 | 0.00e+00 abs |
 | facets from an n x n slab | 64 | 64 | 0.00e+00 rel |
@@ -237,12 +237,14 @@ cross-section is its own plan.
 
 | elements (w × h) | aspect h/w | shear flow error | overturning error | self weight error |
 |---:|---:|---:|---:|---:|
-| 6 × 6 | 1 | 1.41e-03 | 2.13e-02 | 1.16e-10 |
-| 4 × 12 | 3 | 2.71e-05 | 6.80e-07 | 9.86e-11 |
-| 4 × 20 | 5 | 1.40e-07 | 7.49e-10 | 5.71e-11 |
-| 2 × 20 | 10 | 1.40e-07 | 1.82e-09 | 0.00e+00 |
+| 6 × 6 | 1 | 1.41e-03 | 2.13e-02 | 1.12e-14 |
+| 4 × 12 | 3 | 2.71e-05 | 6.81e-07 | 1.05e-13 |
+| 4 × 20 | 5 | 1.40e-07 | 6.68e-10 | 4.76e-13 |
+| 2 × 20 | 10 | 1.40e-07 | 1.76e-09 | 2.80e-12 |
 
-The slender walls agree with beam theory to 1e-7 and better, including one only
+Agreement improves with slenderness, as beam theory itself does: at h/w = 3 the
+shear flow is a few parts in 1e5 and the overturning a few in 1e7; from h/w = 5
+up, 1e-7 and 1e-9. The h/w >= 5 rows include a wall only
 **two elements wide** — which is the point of the QM6 incompatible membrane
 modes. Without them a four-node quad has no way to curve in its own plane, and
 the same walls reported their overturning fibre force 3.4% and 12.3% LOW, the
@@ -272,18 +274,33 @@ one warm-up; the cold process start is excluded because it happens once.
 
 | blocks | members | DOF | default (ms) | min | max | ms/member | no buckling (ms) | buckling |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 3 | 1 | 12 | 0.312 | 0.242 | 0.43 | 0.312 | 0.291 | x1.07 |
-| 6 | 3 | 24 | 0.895 | 0.789 | 1.126 | 0.298 | 0.689 | x1.30 |
-| 15 | 9 | 60 | 2.387 | 2.114 | 2.691 | 0.265 | 2.351 | x1.02 |
-| 30 | 19 | 120 | 4.626 | 4.358 | 5.691 | 0.243 | 4.404 | x1.05 |
-| 60 | 39 | 240 | 9.624 | 8.545 | 11.315 | 0.247 | 8.983 | x1.07 |
-| 90 | 59 | 360 | 13.925 | 13.396 | 19.035 | 0.236 | 13.889 | x1.00 |
-| 150 | 99 | 600 | 24.428 | 22.415 | 31.406 | 0.247 | 23.515 | x1.04 |
-| 300 | 199 | 1200 | 52.294 | 48.841 | 64.149 | 0.263 | 50.272 | x1.04 |
+| 3 | 1 | 12 | 0.51 | 0.464 | 0.647 | 0.510 | 0.505 | x1.01 |
+| 6 | 3 | 24 | 1.326 | 1.121 | 1.776 | 0.442 | 1.116 | x1.19 |
+| 15 | 9 | 60 | 3.408 | 3.183 | 5.748 | 0.379 | 3.335 | x1.02 |
+| 30 | 19 | 120 | 8.453 | 7.269 | 11.417 | 0.445 | 9.048 | x0.93 |
+| 60 | 39 | 240 | 18.476 | 16.379 | 27.42 | 0.474 | 17.578 | x1.05 |
+| 90 | 59 | 360 | 33.472 | 28.53 | 45.813 | 0.567 | 24.158 | x1.39 |
+| 150 | 99 | 600 | 40.687 | 37.249 | 49.356 | 0.411 | 62.511 | x0.65 |
+| 300 | 199 | 1200 | 117.358 | 100.137 | 245.327 | 0.590 | 91.001 | x1.29 |
 
-At 199 members the whole round trip is 52.3 ms,
+At 199 members the whole round trip is 117.4 ms,
 against a Minecraft tick of 50 ms — and the solve does not run on the tick
 thread, so this is latency to a result rather than time taken from the game.
+
+### Transport: shared memory vs JSON, same solves
+
+A 86-member, 360-DOF frame solved 20 times
+over each wire (median). The solve in the middle is identical; the
+difference is the transport.
+
+| wire | median (ms) | min (ms) | reply size |
+|---|---:|---:|---:|
+| JSON lines | 28.28 | 25.78 | 491037 bytes over the pipe |
+| shared memory | 4.49 | 3.5 | 132536 bytes in the region, ~60-byte doorbell |
+
+Transport saving: 23.79 ms per solve (84.1%).
+Measured by `scripts/bench_transport.py`, imported and run by this script
+so the record regenerates with everything else.
 
 The last two columns are the price of the default. Linear buckling is a second
 solve — an eigenvalue problem reusing the same factorisation — and it is on by

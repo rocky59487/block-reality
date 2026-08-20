@@ -36,12 +36,14 @@ if errorlevel 1 (
 rem ------------------------------------------------------------------- engine
 if not exist "forge\run\" mkdir "forge\run"
 
-if exist "dist\br-sidecar.exe" (
-    copy /y "dist\br-sidecar.exe" "forge\run\" >nul
-    echo   engine: forge\run\br-sidecar.exe
-) else if exist "sidecar\build-win\br-sidecar.exe" (
+rem A locally built engine beats the committed dist binary: after rebuilding the
+rem sidecar, the run must exercise what was just built, not the last release.
+if exist "sidecar\build-win\br-sidecar.exe" (
     copy /y "sidecar\build-win\br-sidecar.exe" "forge\run\" >nul
     echo   engine: forge\run\br-sidecar.exe ^(from sidecar\build-win^)
+) else if exist "dist\br-sidecar.exe" (
+    copy /y "dist\br-sidecar.exe" "forge\run\" >nul
+    echo   engine: forge\run\br-sidecar.exe ^(from dist - no local build found^)
 ) else (
     echo   No br-sidecar.exe in dist\ or sidecar\build-win\.
     echo   The game will still start; analysis will be off and will say so.

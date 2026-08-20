@@ -12,16 +12,19 @@ dependency，因此完整的打包只能在有它的機器上進行：
 scripts/package.sh /path/to/architect_simulator/Plugins/FrameSolver/Source/FrameCore
 ```
 
-這支腳本會依序：
+這支腳本把所有產物組進 **staging 目錄**，整條 pipeline 全綠才會原子替換 `dist/`——
+中途失敗不會留下半空的 dist/。依序：
 
 1. 編譯 `br-sidecar`（host），並在打包前跑 `sidecar/verify.py`。gate 沒過就不會有產物
 2. 若有 `x86_64-w64-mingw32-g++`，交叉編譯 `br-sidecar.exe`
 3. 執行 `scripts/evidence.py` 更新 `evidence/VERIFICATION.md` 與 `evidence/verification.json`。
-   這兩份**不進壓縮檔**——發行包裡放的是能玩所需的東西，證據留在倉庫裡
-4. 建置 mod jar
+   這兩份**不進壓縮檔**——發行包裡放的是能玩所需的東西，證據留在倉庫裡。
+   evidence 的 gate 要求引擎 provenance 可解析（commit SHA、clean tree）——查不到就整包紅
+4. **跑完整 Java 測試**（對剛編出來的引擎跑跨語言 gate），再建置 mod jar。
+   打包從不 `-x test`（#46）
 5. 從 `scripts/` 複製安裝器，從 `scripts/dist-docs/` 複製兩份說明文件
 6. 對 `dist/` 內每個檔案產生 `SHA256SUMS.txt`
-7. 打包成根目錄的 zip
+7. 打包成根目錄的 zip（zip 是本機產物，不進版控）
 
 Windows 版引擎需要 `apt-get install -y g++-mingw-w64-x86-64`；沒有就只出 Linux 版。
 
@@ -35,15 +38,27 @@ cp scripts/dist-docs/START-HERE.txt scripts/dist-docs/讀我-中文.txt dist/
 chmod +x dist/install.sh dist/br-sidecar
 rm -f dist/SHA256SUMS.txt
 (cd dist && sha256sum -- * > SHA256SUMS.txt)
-rm -f blockreality-0.1a.zip
-(cd dist && zip -q -r ../blockreality-0.1a.zip . -x '*.zip')
+v=$(basename dist/blockreality-*.jar .jar); v=${v#blockreality-}
+rm -f "blockreality-${v}.zip"
+(cd dist && zip -q -r "../blockreality-${v}.zip" . -x '*.zip')
 ```
+
+（版本號從 jar 推導，不寫死——這段曾經寫死 `0.1a`，版本一換就把新內容打進舊檔名。）
+這條捷徑不重編引擎，所以 evidence 記錄的 binary hash 仍與 `dist/br-sidecar` 一致，
+release workflow 的一致性 gate 照樣會過。
 
 ## 發到 GitHub Releases
 
 `.github/workflows/release.yml` 在推 tag 時觸發。它不編譯引擎——hosted runner 沒有
-FrameCore，重現不了——只把已經在 `dist/` 裡的東西打包發布，並且在發布前先驗
-`SHA256SUMS.txt`。內容與雜湊對不上就不會發。
+FrameCore，重現不了——只把已經在 `dist/` 裡的東西打包發布。發布前有兩道 gate：
+
+1. `SHA256SUMS.txt` 逐檔驗過，內容與雜湊對不上就不發
+2. **版本一致性**（#48）：tag、jar 檔名、jar 內 mods.toml 的 version、
+   evidence 記錄的引擎 binary hash 四者必須互相吻合——舊 binary 改個 tag
+   名重新發布這條路被封死
+
+另外 `.github/workflows/ci.yml` 在每個 PR 跑完整 gate（verify.py 對入庫二進位、
+mod 跨語言測試、forge 建置）。CI 綠是 merge 條件。
 
 ```bash
 git tag v0.1a

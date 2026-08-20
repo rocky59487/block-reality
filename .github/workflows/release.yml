@@ -44,6 +44,43 @@ jobs:
         run: |
           sha256sum -c SHA256SUMS.txt
 
+      # The tag names the release; dist/ provides its contents. Nothing else ties
+      # the two together, so without this gate a workflow_dispatch with any tag
+      # would happily publish an OLD binary under a NEW version (#48). The jar
+      # filename, the version inside its mods.toml, and the evidence record must
+      # all agree with the tag being published.
+      - name: Version consistency (tag vs jar vs mods.toml vs evidence)
+        run: |
+          v="${{ steps.v.outputs.version }}"
+          jar=$(ls dist/blockreality-*.jar)
+          [ "$(basename "$jar")" = "blockreality-${v}.jar" ] || {
+            echo "::error::tag says ${v} but dist ships $(basename "$jar")"; exit 1; }
+          unzip -p "$jar" META-INF/mods.toml | grep -Eq "^version *= *\"${v}\"" || {
+            echo "::error::mods.toml inside the jar disagrees with tag ${v}:"
+            unzip -p "$jar" META-INF/mods.toml | grep -E "^version" || true
+            exit 1
+          }
+          python3 - <<'PY'
+          import hashlib, json, sys
+          doc = json.load(open("evidence/verification.json"))
+          claimed = doc["identity"]["binary"]["sha256"]
+          h = hashlib.sha256()
+          with open("dist/br-sidecar", "rb") as f:
+              for chunk in iter(lambda: f.read(65536), b""):
+                  h.update(chunk)
+          actual = h.hexdigest()
+          if claimed != actual:
+              print(f"::error::evidence verified binary {claimed[:12]}... but dist "
+                    f"ships {actual[:12]}... — the record is stale (#47)")
+              sys.exit(1)
+          eng = doc["identity"]["engine"]
+          if eng["commit"] == "unavailable" or not eng["worktree_clean"]:
+              print(f"::error::evidence has no engine provenance "
+                    f"(commit={eng['commit']}, clean={eng['worktree_clean']}) (#47)")
+              sys.exit(1)
+          print("evidence matches the shipped engine:", claimed[:12], eng["commit"][:12])
+          PY
+
       - name: Build archive
         id: pack
         run: |
@@ -61,14 +98,39 @@ jobs:
           files: ${{ steps.pack.outputs.archive }}
           fail_on_unmatched_files: true
           body: |
-            Minecraft 1.20.1 + Forge 47.x.
+            **Structural Preview** for Minecraft 1.20.1 + Forge 47.x: real finite
+            element analysis on the blocks you place, from an engine running outside
+            the game process.
 
-            Download `${{ steps.pack.outputs.archive }}`, extract it, then run
-            `install.bat` on Windows or `./install.sh` on Linux and macOS. The
-            installer finds your Minecraft instance and copies the mod and the
-            analysis engine into it.
+            **What this preview does**
+            - extracts placed blocks into 6-DOF beam members and MITC4 shell facets
+              (floors and shear walls), one structure per connected component
+            - solves them with self weight plus point test loads (`/br load`, in kN,
+              any direction), off the tick thread, over a zero-copy shared-memory
+              transport
+            - reports per-member and per-plate demand/capacity with the governing
+              fibre named, stress contours on the block faces, a section readout
+              with the neutral axis, and a linear buckling factor — a slender column
+              that "looks safe" on stress says so
+            - nine structural blocks: three steel sections, plain concrete, timber,
+              a brick pier, two slab thicknesses, 20 mm steel plate
+            - every number is gated: 219 acceptance checks against closed forms and
+              invariants per build, record in `evidence/VERIFICATION.md`
 
-            Contents: the mod jar, the analysis engine for Windows and Linux, the
-            installers, and instructions in `START-HERE.txt` and `讀我-中文.txt`.
-            `SHA256SUMS.txt` lists the hash of every file. The verification record
-            for this build is in the repository at `evidence/VERIFICATION.md`.
+            **What it deliberately does not do yet**
+            - no fracture, collapse or falling-block consequences — analysis reports;
+              nothing breaks or falls
+            - no construction sequencing, no reinforced-concrete composite sections
+              (the concrete beam is honestly plain), no load combinations or wind
+            - linear elastic only; the buckling factor is the linear onset, an upper
+              bound on the real critical load
+
+            **Install**: download `${{ steps.pack.outputs.archive }}`, extract, then
+            run `install.bat` on Windows or `./install.sh` on Linux. The installer
+            finds your Minecraft instance and copies the mod and the engine in.
+            macOS: the mod installs and plays, but no macOS engine binary ships yet —
+            analysis stays off unless you build `br-sidecar` from source.
+
+            Contents: the mod jar, the analysis engine for Windows and Linux x86-64,
+            the installers, and instructions in `START-HERE.txt` and `讀我-中文.txt`.
+            `SHA256SUMS.txt` lists the hash of every file.

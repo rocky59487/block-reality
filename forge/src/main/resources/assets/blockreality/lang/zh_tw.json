@@ -18,11 +18,12 @@
   "br.legend.dc.safe": "安全",
   "br.legend.dc.watch": "接近極限",
   "br.legend.dc.limit": "達到或超過容量",
-  "br.load.added": "已施加測試荷載（20 kN）",
+  "br.load.added": "已施加測試荷載(向下 %s kN)",
   "br.load.removed": "已移除測試荷載",
   "br.engine.unavailable": "結構分析無法使用：%s",
   "br.hud.engine_off": "設定檔停用了分析",
   "br.hud.stale": "過期——計算之後世界已經改變",
+  "br.hud.truncated": "疊加層不完整——顯示 %s／%s 根構件、%s／%s 片板元素",
   "br.hint.first_use": "蹲下右鍵結構方塊可加測試荷載。/br status 顯示引擎狀態。",
   "br.hud.aim": "看向一根構件以顯示斷面",
   "br.hud.focus": "構件 #%s  %s",
@@ -51,5 +52,13 @@
   "br.hud.plate_faces": "上表面 %s MPa   下表面 %s MPa",
   "br.hud.plate_recovered": "此邊界的支承彎矩經外推還原",
   "br.hud.buckling": "挫屈  λ_cr %s",
-  "br.hud.buckling_critical": "挫屈  λ_cr %s — 已經失穩"
+  "br.hud.buckling_critical": "挫屈  λ_cr %s — 已經失穩",
+  "block.blockreality.steel_beam_150x300": "結構鋼 150x300",
+  "block.blockreality.steel_beam_100x200": "結構鋼 100x200",
+  "block.blockreality.concrete_beam": "素混凝土樑",
+  "block.blockreality.timber_beam": "木樑",
+  "block.blockreality.brick_pier": "磚柱",
+  "block.blockreality.concrete_slab_150": "混凝土樓板 150",
+  "block.blockreality.steel_plate": "鋼板 20",
+  "br.load.not_structural": "請對準結構方塊。/br load 會在你注視的方塊上施加測試荷載。"
 }

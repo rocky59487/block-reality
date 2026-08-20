@@ -74,15 +74,34 @@ public final class StressHud {
                     ClientStressState.engineDetail()), x, y, 0xFF6B6B);
             return;
         }
-        if (!ClientStressState.hasData()) {
-            g.drawString(mc.font, Component.translatable("br.hud.no_data"), x, y, 0xAAAAAA);
-            return;
-        }
-        if (ClientStressState.singular() && !ClientStressState.hasData()) {
+        // Mechanism BEFORE the no-data return: both states have empty member lists, so
+        // checking hasData first made this branch unreachable and told the player who
+        // built an unrestrained structure "No analysis yet" — the opposite of the one
+        // thing the analysis had actually concluded (#43).
+        if (ClientStressState.mechanism()) {
             // Not a failure and not a safe structure: nothing is holding it up, so there
             // are no stresses. Reporting "0 MPa" here would be a lie.
             g.drawString(mc.font, Component.translatable("br.hud.mechanism"), x, y, 0xFFCC00);
             return;
+        }
+        if (!ClientStressState.hasData()) {
+            g.drawString(mc.font, Component.translatable("br.hud.no_data"), x, y, 0xAAAAAA);
+            return;
+        }
+        // Stale is a label, not a blank: the numbers are real, for a world that has
+        // since changed. Saying so is the display track's half of invariant 5 (INV-4).
+        if (ClientStressState.stale()) {
+            g.drawString(mc.font, Component.translatable("br.hud.stale"), x, y, 0xC8860D);
+            y += 12;
+        }
+        if (ClientStressState.truncated()) {
+            // The picture is incomplete; the governing element is guaranteed drawn,
+            // but "what you see" is not "all there is" and the HUD must say so (#42).
+            g.drawString(mc.font, Component.translatable("br.hud.truncated",
+                    ClientStressState.members().size(), ClientStressState.totalMembers(),
+                    ClientStressState.shells().size(), ClientStressState.totalShells()),
+                    x, y, 0xC8860D);
+            y += 12;
         }
         if (ClientStressState.partialMechanism()) {
             // Some structure in the world is unrestrained and others are not. Returning
@@ -94,9 +113,10 @@ public final class StressHud {
             y += 12;
         }
 
+        // Red is the SERVER's over-capacity verdict, not a float comparison here (#55).
         g.drawString(mc.font, Component.translatable("br.hud.maxdc",
                 String.format(Locale.ROOT, "%.3f", ClientStressState.maxDc())), x, y,
-                ClientStressState.maxDc() > 1.0 ? 0xFF6B6B : 0xFFFFFF);
+                ClientStressState.overCapacity() ? 0xFF6B6B : 0xFFFFFF);
         y += 12;
         g.drawString(mc.font, Component.translatable("br.hud.members",
                 ClientStressState.members().size()), x, y, 0xAAAAAA);

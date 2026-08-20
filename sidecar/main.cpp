@@ -10,10 +10,21 @@
 //     FrameCore X = MC x      FrameCore Y = MC z      FrameCore Z = MC y
 // Gravity is -Z in FrameCore, which is -y in Minecraft. Correct by construction.
 //
+// NO MECHANICS ARE COMPUTED IN THIS FILE. Every stress, force, D/C, buckling
+// factor, neutral axis and recovery on the wire is the return value of a FrameCore
+// function, each behind the engine's own closed-form gates (F1..F76). What this
+// process owns is the MODEL — which blocks become members, plates and nodes
+// (D-006, D-010, D-016) — and the wire: JSON en/decoding, the axis map, the mm
+// scale, and one declared sign flip (compression-positive engine -> tension-
+// positive wire). The single deliberate exception is the equilibrium residual,
+// which is INDEPENDENTLY recomputed from geometry and density precisely so it can
+// cross-check the engine rather than quote it.
+//
 // Exits when stdin reaches EOF: if the parent JVM dies the pipe closes and this
 // process ends with it, so a crashed server cannot leave a zombie behind.
 
 #include "json.hpp"
+#include "shm.hpp"
 
 #include "FrameCore/FrameModel.h"
 #include "FrameCore/FrameSolver.h"
@@ -25,11 +36,13 @@
 #include "FrameCore/Section.h"
 #include "FrameCore/StressField.h"
 #include "FrameCore/StressKernel.h"
+#include "FrameCore/ShellEdgeRecovery.h"
 #include "FrameCore/MemberGeometry.h"
 #include "FrameCore/BucklingAnalysis.h"
 #include "FrameCore/BucklingResult.h"
 
 #include <iostream>
+#include <limits>
 #include <string>
 #include <vector>
 #include <map>
@@ -101,6 +114,12 @@ const std::map<std::string, frame::Section>& sectionCatalogue() {
         { "steel_rect_100x200",    frame::Section::Rectangular(100.0, 200.0) },
         { "concrete_rect_400x600", frame::Section::Rectangular(400.0, 600.0) },
         { "rebar_round_d25",       frame::Section::Circular(12.5) },
+        // Sawn-timber and masonry-pier sections for the timber/brick materials the
+        // catalogue always carried but no block ever declared. Both non-square, per
+        // the GATES.md fixture rule; both gated in verify.py [C15] against closed
+        // forms before any block was allowed to name them.
+        { "timber_rect_140x240",   frame::Section::Rectangular(140.0, 240.0) },
+        { "brick_rect_230x350",    frame::Section::Rectangular(230.0, 350.0) },
     };
     return kS;
 }
@@ -788,44 +807,43 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         return true;
     }
 
-    // ---- fibre stress field: the data the stress overlay actually draws ----
-    // Built here rather than taken from computeStressField.
+    // ---- member stress field: every number comes from the engine -------------
     //
-    // Two reasons, both measured (see verify.py C1c):
+    // This block used to rebuild the moment diagram, the fibre stresses, the shear
+    // peak, the neutral axis and the moment extremum BY HAND, because the engine's
+    // own field carried two measured defects: StressKernel paired cy with Iz (half
+    // the extreme-fibre stress on a 200x400), and computeStressField's UDL terms
+    // had inverted signs (a free tip reconstructed 2wL and wL^2 instead of zero).
     //
-    //  1. StressKernel::memberFiberSigma pairs Mz with cy and My with cz, while
-    //     the rest of the engine pairs them the other way: ElasticAllowable
-    //     screens against Wz = Iz/cz, and a cantilever's tip deflection is
-    //     exactly P L^3 / (3 E Iz) to machine precision. On a square section
-    //     cy == cz and the difference is invisible; on a 200x400 section the
-    //     kernel returns half the extreme-fibre stress.
+    // Both are now FIXED IN THE ENGINE, behind the engine's own gates — FrameCore
+    // F72 (non-square fiber closed form), F73 (UDL closed form on all three local
+    // axes), F74 (analytic extremum station), F75 (neutral axis) — carried as
+    // sidecar/patches/ until upstream merges them. So this process computes
+    // NOTHING here: it maps the engine's stations onto the wire. What remains on
+    // this side, all declared at the top of this file, is the axis map fcToMc, the
+    // block-to-mm scale, and the single compression-to-tension sign flip.
     //
-    //  2. computeStressField's station moments carry the distributed-load
-    //     curvature with the wrong sign: on a cantilever it reconstructs a
-    //     non-zero moment at the free tip, where the member's own end forces
-    //     (which ARE correct) report zero.
+    // Station layout: kUniformStations uniform samples PLUS the analytic interior
+    // extremum of each bending diagram (F74). Screening only uniform stations
+    // reports a propped cantilever's span peak (at x = 5L/8) low; screening only
+    // the two ends reports a simply supported beam under its own weight as
+    // UNSTRESSED — the silently-safe answer, the worst kind (issue #14).
     //
-    // The member end forces are trustworthy, so the diagram is rebuilt from them
-    // by textbook superposition:
-    //     M(x) = M_i (1-t) + M_j t + (w/2) x (L-x)          t = x/L
-    // — the straight line between the two verified end moments, plus the
-    // parabola a uniform load adds, which vanishes at both ends by construction.
-    // Shear is linear under a uniform load, so interpolating it is exact.
-    //
-    // D/C IS TAKEN FROM THESE STATIONS, NOT FROM THE TWO ENDS. Screening only the ends
-    // reports a simply supported beam under its own weight as unstressed: both end
-    // moments are zero while midspan carries wL^2/8. That is a "silently safe" answer,
-    // the most dangerous kind (issue #14). The uniform stations are joined by the
-    // ANALYTIC extremum of the moment diagram, so the controlling section is captured
-    // exactly rather than nearly.
+    // D/C at each station goes through ElasticAllowable::checkSection on the
+    // station's own section forces — the same engine screen, fed the same numbers
+    // the overlay draws. One recovery, one set of numbers: the picture and the
+    // decision cannot disagree.
     const int kUniformStations = 11;
     frame::ElasticAllowable strength;
+    const frame::StressField field = frame::computeStressField(m, r, kUniformStations,
+                                                               /*includeMomentExtrema=*/true);
 
-    for (size_t k = 0; k < r.memberForces.size() && k < mo.size(); ++k) {
+    for (const frame::MemberStressTrace& tr : field.members) {
+        const size_t k = static_cast<size_t>(tr.memberIdx);
+        if (k >= mo.size() || k >= m.members.size()) continue;
         const frame::Member&  mem = m.members[k];
         const frame::Section& sec = m.sections[mem.secIdx];
         const frame::Capacity& cap = m.materials[mem.matIdx].cap;
-        const frame::MemberForcePair& mf = r.memberForces[k];
 
         const int ii = m.nodeIndex(mem.i), ij = m.nodeIndex(mem.j);
         if (ii < 0 || ij < 0) continue;
@@ -839,45 +857,13 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         const McVec dPlusZ = fcToMc(az);
         const McVec dMinZ  = McVec{ -dPlusZ.x, -dPlusZ.y, -dPlusZ.z };
 
-        // Self-weight was added as a member UDL in local axes; read it back so the
-        // parabolic term uses the same numbers the solver did.
+        // The member's UDL, read back for the wire's field spec so the client
+        // evaluates the same distributed load the solver carried.
         double wy = 0, wz = 0;
         for (const frame::MemberUDL& u : m.memberUDLs)
-            if (u.member == mem.id) { wy = u.w_local.y; wz = u.w_local.z; }
-
-        // ---- end J into the SAME section convention as end I -------------------
-        //
-        // FrameCore reports end J as an ELEMENT END ACTION: what the element applies at
-        // its own end. Its sign therefore flips with the element's direction, and it is
-        // NOT the section force there. Measured, not assumed (probe in ENGINE_FINDINGS):
-        //
-        //   fixed-fixed beam under self weight, split at midspan into two members
-        //     member 1:  endI.Mz = +3.2857e7   endJ.Mz = +1.64285e7
-        //     member 2:  endI.Mz = -1.64285e7  endJ.Mz = -3.2857e7
-        //
-        //   The two members meet at midspan and report OPPOSITE signs for the same
-        //   section. Negating end J makes them agree, and makes the magnitudes match
-        //   the closed form wL^2/12 at the supports and wL^2/24 at midspan.
-        //
-        //   N is already a section force and must NOT be flipped: a bar in uniform
-        //   tension reads -100000 at BOTH ends. T, Vy, Vz, My, Mz are all end actions.
-        //
-        // Without this the reconstructed diagram never changes sign along a member. A
-        // cantilever hid it completely, because its free end carries no moment at all —
-        // which is why every fixture passed while a beam held at both ends came out
-        // reading tension along its whole length, supports and midspan alike.
-        frame::MemberEndForces fj = mf.endJ;
-        fj.Vy = -fj.Vy;
-        fj.Vz = -fj.Vz;
-        fj.T  = -fj.T;
-        fj.My = -fj.My;
-        fj.Mz = -fj.Mz;
+            if (u.member == mem.id) { wy += u.w_local.y; wz += u.w_local.z; }
 
         auto& dst = mo[k];
-        const double L = dst.lengthMm;
-        dst.fi = mf.endI;
-        dst.fj = fj;                      // the wire reports both ends as section forces
-
         dst.originMm = fcToMc(pi);
         dst.axisX = fcToMc(ax);
         dst.axisY = dTopY;
@@ -890,108 +876,59 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         dst.wy = wy;
         dst.wz = wz;
 
-        // Uniform stations for the picture, plus the analytic moment extremum for the
-        // check. M(x) = M_i(1-t) + M_j t + (w/2) x (L-x), so dM/dx = 0 at
-        //     x* = L/2 + (M_j - M_i) / (w L)
-        // which lands at midspan for a symmetric simply supported beam and outside the
-        // member (hence discarded) for a cantilever.
-        std::vector<double> ts;
-        ts.reserve(kUniformStations + 2);
-        for (int q = 0; q < kUniformStations; ++q) {
-            ts.push_back(static_cast<double>(q) / (kUniformStations - 1));
-        }
-        auto addExtremum = [&](double mi, double mj, double w) {
-            if (std::fabs(w) < 1e-12 || L <= 0) return;
-            const double xs = L / 2.0 + (mj - mi) / (w * L);
-            const double t = xs / L;
-            if (t > 1e-9 && t < 1 - 1e-9) ts.push_back(t);
+        // Both wire ends are SECTION forces, taken from the engine's reconstruction
+        // at x = 0 and x = L. At x = 0 that IS endI verbatim; at x = L it equals the
+        // engine's end action with the section-convention sign, but the number now
+        // comes out of the gated reconstruction (F73) instead of a hand-flip here.
+        auto endForcesAt = [](const frame::MemberStressSample& s) {
+            frame::MemberEndForces f;
+            f.N = s.N; f.Vy = s.Vy; f.Vz = s.Vz; f.T = s.T; f.My = s.My; f.Mz = s.Mz;
+            return f;
         };
-        addExtremum(mf.endI.Mz, fj.Mz, wy);
-        addExtremum(mf.endI.My, fj.My, wz);
-        std::sort(ts.begin(), ts.end());
-        ts.erase(std::unique(ts.begin(), ts.end(),
-                             [](double a, double b) { return std::fabs(a - b) < 1e-9; }),
-                 ts.end());
+        if (!tr.samples.empty()) {
+            dst.fi = endForcesAt(tr.samples.front());
+            dst.fj = endForcesAt(tr.samples.back());
+        }
 
-        for (size_t q = 0; q < ts.size(); ++q) {
-            const double t = ts[q];
-            const double x = t * L;
-
-            const double Nx  = mf.endI.N  * (1 - t) + fj.N  * t;
-            const double Vyx = mf.endI.Vy * (1 - t) + fj.Vy * t;
-            const double Mzx = mf.endI.Mz * (1 - t) + fj.Mz * t + (wy / 2.0) * x * (L - x);
-            const double Myx = mf.endI.My * (1 - t) + fj.My * t + (wz / 2.0) * x * (L - x);
+        for (size_t q = 0; q < tr.samples.size(); ++q) {
+            const frame::MemberStressSample& s = tr.samples[q];
+            const double t = (dst.lengthMm > 0) ? s.x / dst.lengthMm : 0.0;
 
             SolveOut::Station st;
-            st.xMm = x;
+            st.xMm = s.x;
             const frame::Vec3 wp{ pi.x + (pj.x - pi.x) * t,
                                   pi.y + (pj.y - pi.y) * t,
                                   pi.z + (pj.z - pi.z) * t };
             st.worldMm = fcToMc(wp);
 
-            // FrameCore's N is compression-positive; the axial term is negated for
-            // the tension-positive output. The bending sign is pinned by physics
-            // and locked by C1c: a cantilever pushed down must read TENSION on top.
-            // sigma(x, y, z) = -N/A + Mz*y/Iz - My*z/Iy      (tension-positive)
-            //
-            // THE TWO BENDING TERMS CARRY OPPOSITE SIGNS. That is not a typo: with a
-            // right-handed local triad, +Mz puts +y in tension while +My puts +z in
-            // COMPRESSION. Measured, not assumed — a cantilever pushed along local -z
-            // deflects that way and must therefore be in tension on +z, while
-            // +My*cy/Iy comes out negative there (probe in ENGINE_FINDINGS finding 5).
-            //
-            // Every fixture until now bent about one axis only, so the My term was
-            // always zero and its sign never mattered.
-            const double axial = toTensionPositive(Nx / sec.A);
-            const double bendY = (sec.Iz > 0) ? Mzx * sec.cz / sec.Iz : 0.0;  // varies along local y
-            const double bendZ = (sec.Iy > 0) ? Myx * sec.cy / sec.Iy : 0.0;  // varies along local z
+            // Engine fibre sigmas are COMPRESSION-POSITIVE; the wire is
+            // TENSION-POSITIVE. One flip, here, per the convention at the top.
+            st.fibres.push_back({ "TOP_Y",   dTopY,  sec.cz, toTensionPositive(s.sigmaFiberTopY) });
+            st.fibres.push_back({ "BOT_Y",   dBotY,  sec.cz, toTensionPositive(s.sigmaFiberBotY) });
+            st.fibres.push_back({ "PLUS_Z",  dPlusZ, sec.cy, toTensionPositive(s.sigmaFiberPlusZ) });
+            st.fibres.push_back({ "MINUS_Z", dMinZ,  sec.cy, toTensionPositive(s.sigmaFiberMinusZ) });
 
-            const double sTop = axial + bendY;
-            const double sBot = axial - bendY;
-            const double sPls = axial - bendZ;
-            const double sMin = axial + bendZ;
+            // Worst-corner demand magnitudes, same numbers ElasticAllowable screens
+            // (a corner governs under biaxial bending, where a face midpoint is low).
+            st.sigmaTens = s.sigmaTensMax;
+            st.sigmaComp = s.sigmaCompMax;
+            st.tauShear  = s.tauShear;   // k*V/A with the section's own k: 1.5 rect, 4/3 circle
 
-            st.fibres.push_back({ "TOP_Y",   dTopY,  sec.cz, sTop });
-            st.fibres.push_back({ "BOT_Y",   dBotY,  sec.cz, sBot });
-            st.fibres.push_back({ "PLUS_Z",  dPlusZ, sec.cy, sPls });
-            st.fibres.push_back({ "MINUS_Z", dMinZ,  sec.cy, sMin });
+            // Neutral axis, where the engine says the linear profile crosses zero
+            // (F75). Absent means the section is fully tensile or fully compressive.
+            st.hasNaY    = s.hasNaY;
+            st.naOffsetY = s.naY;
+            st.hasNaZ    = s.hasNaZ;
+            st.naOffsetZ = s.naZ;
 
-            st.sigmaTens = std::max({ 0.0, sTop, sBot, sPls, sMin });
-            st.sigmaComp = std::max({ 0.0, -sTop, -sBot, -sPls, -sMin });
-            st.tauShear  = (sec.A > 0) ? 1.5 * std::fabs(Vyx) / sec.A : 0.0;
-
-            // Neutral axis. Stress is linear across the depth, so along the TOP_Y
-            // direction sigma(y) = axial + bendY * (y / cz), which is zero at
-            //     y0 = -cz * (sTop + sBot) / (sTop - sBot)
-            //
-            // The MINUS SIGN IS NOT OPTIONAL and was missing here. Add tension to a
-            // beam and the neutral axis moves DOWN, towards the compression face; the
-            // unsigned version moved it up. Pure bending has (sTop + sBot) == 0, so
-            // both versions agree, and the only test that existed checked |naY| != 0 —
-            // which the wrong sign passes (issue #15).
-            //
-            // Reported only when it really falls inside the section. A fully tensile or
-            // fully compressive section has no neutral axis, and inventing one would
-            // draw a line through a member that does not have one.
-            if ((sTop > 0) != (sBot > 0) && std::fabs(sTop - sBot) > 1e-12) {
-                st.hasNaY    = true;
-                st.naOffsetY = -sec.cz * (sTop + sBot) / (sTop - sBot);
-            }
-            if ((sPls > 0) != (sMin > 0) && std::fabs(sPls - sMin) > 1e-12) {
-                st.hasNaZ    = true;
-                st.naOffsetZ = -sec.cy * (sPls + sMin) / (sPls - sMin);
-            }
-
-            // Capacity screen AT THIS STATION, from the same recovered section forces
-            // the overlay draws. One recovery, one set of numbers: the picture and the
-            // decision can no longer disagree.
+            // Capacity screen AT THIS STATION, on the engine's own station forces.
             frame::MemberEndForces fx;
-            fx.N  = Nx;
-            fx.Vy = Vyx;
-            fx.Vz = mf.endI.Vz * (1 - t) + fj.Vz * t;
-            fx.T  = mf.endI.T  * (1 - t) + fj.T  * t;
-            fx.My = Myx;
-            fx.Mz = Mzx;
+            fx.N  = s.N;
+            fx.Vy = s.Vy;
+            fx.Vz = s.Vz;
+            fx.T  = s.T;
+            fx.My = s.My;
+            fx.Mz = s.Mz;
             const frame::DemandResult d = strength.checkSection(fx, sec, cap);
             if (d.risk > dst.dc) {
                 dst.dc               = d.risk;
@@ -1009,21 +946,16 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         }
     }
 
-    // ---- shell facets: surface stress and the von Mises screen ---------------
+    // ---- shell facets: resultants, surface stress, and the engine's screen ---
     //
     // A beam's D/C is the argmax of five one-dimensional ratios. A plate's is not: the
     // state at a point on its surface is a 2-D stress TENSOR, so the screen goes through
     // the principal stresses and von Mises, on BOTH faces, at the centre and at all four
-    // corners. Reporting only the centre would flatten the peaks — for a clamped slab the
-    // support moment is more than twice the span moment.
+    // corners — frame::checkShellSurface, inside frame::recoverShellEdgeMoments below.
     //
     // Honest boundary, carried into the docs: this is an ELASTIC SURFACE SCREEN.
     // Transverse shear Qx/Qy is recovered and reported but NOT screened, there is no
     // plate buckling check, and there is no plate ultimate strength.
-    std::vector<double> cenX(so.size()), cenY(so.size()), cenZ(so.size());
-    std::vector<char>   frameOk(so.size(), 0);
-    std::vector<std::array<frame::Vec3, 2>> facetAxes(so.size());
-
     for (size_t k = 0; k < r.shellForces.size() && k < so.size(); ++k) {
         const frame::ShellQuad&          sh = m.shells[k];
         const frame::ShellElementForces& f  = r.shellForces[k];
@@ -1032,10 +964,6 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         dst.Nxx = f.Nxx; dst.Nyy = f.Nyy; dst.Nxy = f.Nxy;
         dst.Mxx = f.Mxx; dst.Myy = f.Myy; dst.Mxy = f.Mxy;
         dst.Qx  = f.Qx;  dst.Qy  = f.Qy;
-        for (int c = 0; c < 4; ++c) {
-            dst.Mc[static_cast<size_t>(c)]    = { f.MxxC[c], f.MyyC[c], f.MxyC[c] };
-            dst.McRaw[static_cast<size_t>(c)] = { f.MxxC[c], f.MyyC[c], f.MxyC[c] };
-        }
 
         // The facet frame, rebuilt exactly as MITC4ShellElement::prepare builds it, so the
         // axes on the wire are the axes the resultants are actually expressed in.
@@ -1062,12 +990,8 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         dst.ex     = fcToMc(e1);
         dst.ey     = fcToMc(e2);
         dst.normal = fcToMc(n);
-        facetAxes[k] = { e1, e2 };
-        frameOk[k]   = 1;
-        cenX[k] = 0.25 * (P0.x + P1.x + P2.x + P3.x);
-        cenY[k] = 0.25 * (P0.y + P1.y + P2.y + P3.y);
-        cenZ[k] = 0.25 * (P0.z + P1.z + P2.z + P3.z);
 
+        // Centre-face von Mises on both faces, through the engine's own layer kernel.
         double sx = 0, sy = 0, txy = 0;
         frame::shellLayerSigma(f.Nxx, f.Nyy, f.Nxy, f.Mxx, f.Myy, f.Mxy, sh.t,
                                frame::ShellLayer::Top, sx, sy, txy);
@@ -1077,86 +1001,32 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         dst.vmBot = frame::principalStress(sx, sy, txy).vonMises;
     }
 
-    // ---- support-moment recovery --------------------------------------------
+    // ---- support-moment recovery: owned by the engine ------------------------
     //
-    // MITC4's per-corner moments are NOT superconvergent, and at a clamped edge they are
-    // badly low: measured against Timoshenko's clamped square plate they under-report the
-    // support moment by 63% at 4 elements across and still 26% at 14. Under-reporting the
-    // one moment that governs a slab's supports is a silently-safe answer, and this
-    // project treats those as the worst kind of wrong.
-    //
-    // So the edge value is RECOVERED instead of read: the moment field is smooth in the
-    // interior, so it is extrapolated to the boundary from the two element CENTRES normal
-    // to that edge — the textbook interior-to-boundary recovery,
-    //     M_edge ~= 1.5*M_1 - 0.5*M_2
-    // which measures 14% low at 8 elements and 4% at 16, in place of 40% and 23%.
-    //
-    // It is applied only where it is defensible: an edge whose two corner nodes are fully
-    // fixed, with a neighbour facet whose local frame agrees with this one, so the two
-    // tensors being combined are expressed in the same axes. Anything else keeps the raw
-    // value. The recovery can only ever RAISE the reported demand — it is taken as the
-    // worse of the two — so a failure to recover cannot make a plate look safer.
-    std::map<std::array<long long, 3>, size_t> byCentre;
-    auto keyOf = [](double x, double y, double z) {
-        return std::array<long long, 3>{ llround(x), llround(y), llround(z) };
-    };
-    for (size_t k = 0; k < so.size(); ++k) {
-        if (frameOk[k]) byCentre[keyOf(cenX[k], cenY[k], cenZ[k])] = k;
-    }
-
-    for (size_t k = 0; k < r.shellForces.size() && k < so.size(); ++k) {
-        const frame::ShellQuad&          sh = m.shells[k];
-        const frame::ShellElementForces& f  = r.shellForces[k];
+    // MITC4's corner moments at a clamped edge are badly low — measured ~40% under
+    // Timoshenko's clamped-plate support moment at 8 elements across — and under-
+    // reporting the one moment that governs a slab's supports is a silently-safe
+    // answer, the worst kind. The interior-to-boundary extrapolation that fixes it
+    // (M_edge ~= 1.5*M1 - 0.5*M2, adopted only where it RAISES the screened demand)
+    // used to be implemented here, in the adapter; it now lives in the engine as
+    // frame::recoverShellEdgeMoments, behind FrameCore's own gate (F76: raw 39.7%
+    // low -> recovered 14.0% low at 8 elements). This side copies the verdicts —
+    // demand, governing face and corner, per-corner recovered and raw moments —
+    // onto the wire, and computes nothing.
+    const std::vector<frame::ShellEdgeRecoveryResult> rec = frame::recoverShellEdgeMoments(m, r);
+    for (const frame::ShellEdgeRecoveryResult& e : rec) {
+        const size_t k = static_cast<size_t>(e.shellIdx);
+        if (k >= so.size()) continue;
         auto& dst = so[k];
-        const frame::Capacity& cap = m.materials[static_cast<size_t>(sh.matIdx)].cap;
-
-        frame::ShellDemandResult d = frame::checkShellSurface(f, sh.t, cap);
-        dst.dcRaw = d.risk;
-
-        if (frameOk[k]) {
-            for (int e = 0; e < 4; ++e) {
-                const int a = e, b = (e + 1) % 4;
-                const int ia = m.nodeIndex(sh.n[a]), ib = m.nodeIndex(sh.n[b]);
-                if (ia < 0 || ib < 0) continue;
-                auto allFixed = [&](int idx) {
-                    for (int q = 0; q < 6; ++q) if (!m.nodes[static_cast<size_t>(idx)].fixed[q]) return false;
-                    return true;
-                };
-                if (!allFixed(ia) || !allFixed(ib)) continue;
-
-                const frame::Vec3& Pa = m.nodes[ia].pos;
-                const frame::Vec3& Pb = m.nodes[ib].pos;
-                const double mx = 0.5 * (Pa.x + Pb.x), my = 0.5 * (Pa.y + Pb.y), mz = 0.5 * (Pa.z + Pb.z);
-                // Step twice the centre-to-edge vector, inwards: that lands on the centre
-                // of the next facet in from the boundary.
-                auto it = byCentre.find(keyOf(cenX[k] + 2 * (cenX[k] - mx),
-                                              cenY[k] + 2 * (cenY[k] - my),
-                                              cenZ[k] + 2 * (cenZ[k] - mz)));
-                if (it == byCentre.end()) continue;
-                const size_t nb = it->second;
-                if (!frameOk[nb]) continue;
-                if (frame::dot(facetAxes[k][0], facetAxes[nb][0]) < 0.999 ||
-                    frame::dot(facetAxes[k][1], facetAxes[nb][1]) < 0.999) continue;
-
-                frame::ShellElementForces g = f;
-                const frame::ShellElementForces& h = r.shellForces[nb];
-                const double rxx = 1.5 * f.Mxx - 0.5 * h.Mxx;
-                const double ryy = 1.5 * f.Myy - 0.5 * h.Myy;
-                const double rxy = 1.5 * f.Mxy - 0.5 * h.Mxy;
-                for (int c : { a, b }) { g.MxxC[c] = rxx; g.MyyC[c] = ryy; g.MxyC[c] = rxy; }
-                const frame::ShellDemandResult dr = frame::checkShellSurface(g, sh.t, cap);
-                if (dr.risk > d.risk) {
-                    d = dr;
-                    dst.edgeRecovered = true;
-                    dst.Mc[static_cast<size_t>(a)] = { rxx, ryy, rxy };
-                    dst.Mc[static_cast<size_t>(b)] = { rxx, ryy, rxy };
-                }
-            }
+        dst.dcRaw           = e.riskRaw;
+        dst.dc              = e.risk;
+        dst.governingTop    = e.top;
+        dst.governingCorner = e.corner;
+        dst.edgeRecovered   = e.recovered;
+        for (size_t c = 0; c < 4; ++c) {
+            dst.Mc[c]    = { e.Mc[c][0],    e.Mc[c][1],    e.Mc[c][2] };
+            dst.McRaw[c] = { e.McRaw[c][0], e.McRaw[c][1], e.McRaw[c][2] };
         }
-
-        dst.dc              = d.risk;
-        dst.governingTop    = d.top;
-        dst.governingCorner = d.corner;
 
         if (dst.dc > out.maxDC) {
             out.maxDC = dst.dc;
@@ -1354,6 +1224,41 @@ void writeBlocks(bjson::Writer& w, const char* key, const std::vector<BlockPos>&
 // caller has no way to find out it asked one question and got the answer to another
 // (issue #18). Every one of them is now an error line.
 std::string errorLine(const std::string& msg, long long revision);
+double relativeResidual(const SolveOut& s);
+
+// Revision is the stale-result fence and is read EXACTLY (#29). The previous path
+// stored it in a double, which folds every integer above 2^53 onto its neighbours —
+// so two adjacent revisions could become the same value and a stale result could
+// pass the one check that exists to stop it. The parser keeps plain-integer
+// literals as int64; anything else — missing, fractional, exponent-form, negative,
+// beyond int64 — is refused here.
+bool readRevision(const bjson::Value& req, long long& out, std::string& err) {
+    if (!req.isExactInt("revision")) {
+        err = "'revision' missing or not a plain non-negative integer";
+        return false;
+    }
+    const long long r = req.exactI64("revision");
+    if (r < 0) {
+        err = "'revision' must be a non-negative integer";
+        return false;
+    }
+    out = r;
+    return true;
+}
+
+// Unknown-key policy (#30): the wire is a fixed vocabulary, and a key the engine
+// does not know is most likely a TYPO of one it does — "load" for "loads" would
+// otherwise solve an unloaded model and report it safe. Refused, with the key named.
+std::string unknownKeyIn(const bjson::Value& v, std::initializer_list<const char*> allowed) {
+    for (const auto& [key, _] : v.o) {
+        bool known = false;
+        for (const char* a : allowed) {
+            if (key == a) { known = true; break; }
+        }
+        if (!known) return key;
+    }
+    return "";
+}
 
 bool readCoord(const bjson::Value& v, const char* key, int& out, std::string& err) {
     if (!v.isFiniteNum(key)) { err = std::string("field '") + key + "' missing or not a finite number"; return false; }
@@ -1372,15 +1277,27 @@ bool readForce(const bjson::Value& v, const char* key, double& out, std::string&
 }
 
 std::string handleSolve(const bjson::Value& req) {
-    // revision travels as an integer field and must round-trip exactly. Rejecting a
-    // non-integer here is cheap; a revision that silently changed value would defeat the
-    // one mechanism that keeps stale results from causing damage.
-    if (!req.isFiniteNum("revision")) return errorLine("'revision' missing or not a finite number", 0);
-    const double revd = req.num("revision");
-    if (revd != std::floor(revd) || revd < 0 || revd > 9.007199254740992e15) {
-        return errorLine("'revision' must be a non-negative integer", 0);
+    long long revision = 0;
+    std::string revErr;
+    if (!readRevision(req, revision, revErr)) return errorLine(revErr, 0);
+
+    // Schema is a fixed vocabulary at EVERY level (#30). The permissive accessors
+    // (arr() returning empty on a wrong type, boolean() defaulting) must never be
+    // the thing standing between a malformed request and a solve: "loads": {...}
+    // read as zero loads, or a typo'd key silently dropped, both produce ok:true
+    // for a LIGHTER model than the caller asked about — the silently-safe answer.
+    {
+        const std::string bad = unknownKeyIn(req, { "op", "revision", "blocks", "loads", "buckling" });
+        if (!bad.empty()) return errorLine("unknown field '" + bad + "'", revision);
     }
-    const long long revision = static_cast<long long>(revd);
+    if (!req.isArr("blocks")) {
+        return errorLine("'blocks' missing or not an array", revision);
+    }
+    // Policy, frozen: `loads` may be ABSENT (meaning none), but if present it must
+    // be an array. Absence is an explicit vocabulary choice; a wrong type is not.
+    if (req.has("loads") && !req.isArr("loads")) {
+        return errorLine("'loads' is not an array", revision);
+    }
 
     const auto& matCat = materialCatalogue();
     const auto& secCat = sectionCatalogue();
@@ -1391,6 +1308,10 @@ std::string handleSolve(const bjson::Value& req) {
 
     for (const auto& bv : req.arr("blocks")) {
         if (bv.t != bjson::Value::T::Obj) return errorLine("blocks[] entry is not an object", revision);
+        {
+            const std::string bad = unknownKeyIn(bv, { "x", "y", "z", "mat", "section", "support" });
+            if (!bad.empty()) return errorLine("block: unknown field '" + bad + "'", revision);
+        }
         InBlock b;
         if (!readCoord(bv, "x", b.pos.x, err)) return errorLine("block: " + err, revision);
         if (!readCoord(bv, "y", b.pos.y, err)) return errorLine("block: " + err, revision);
@@ -1402,6 +1323,12 @@ std::string handleSolve(const bjson::Value& req) {
         }
         if (!bv.isStr("mat"))     return errorLine("block: 'mat' missing", revision);
         if (!bv.isStr("section")) return errorLine("block: 'section' missing", revision);
+        // Policy, frozen: `support` may be absent (not a support), but a present
+        // field must be a real boolean — "support": "true" defaulting to false
+        // turns a supported structure into a mechanism with a straight face.
+        if (bv.has("support") && !bv.isBool("support")) {
+            return errorLine("block: 'support' is not a boolean", revision);
+        }
 
         b.mat     = bv.str("mat");
         b.section = bv.str("section");
@@ -1422,6 +1349,10 @@ std::string handleSolve(const bjson::Value& req) {
     std::vector<BlockPos>              loadAt;
     for (const auto& lv : req.arr("loads")) {
         if (lv.t != bjson::Value::T::Obj) return errorLine("loads[] entry is not an object", revision);
+        {
+            const std::string bad = unknownKeyIn(lv, { "x", "y", "z", "fx", "fy", "fz", "mx", "my", "mz" });
+            if (!bad.empty()) return errorLine("load: unknown field '" + bad + "'", revision);
+        }
         BlockPos p;
         if (!readCoord(lv, "x", p.x, err)) return errorLine("load: " + err, revision);
         if (!readCoord(lv, "y", p.y, err)) return errorLine("load: " + err, revision);
@@ -1475,14 +1406,9 @@ std::string handleSolve(const bjson::Value& req) {
     w.key("equilibrium").beginObj();
     w.key("applied").beginArr().val(s.appliedN[0]).val(s.appliedN[1]).val(s.appliedN[2]).endArr();
     w.key("reaction").beginArr().val(s.reactionN[0]).val(s.reactionN[1]).val(s.reactionN[2]).endArr();
-    {
-        double scale = 0, resid = 0;
-        for (int d = 0; d < 3; ++d) {
-            scale = std::max(scale, std::fabs(s.appliedN[d]));
-            resid = std::max(resid, std::fabs(s.appliedN[d] + s.reactionN[d]));
-        }
-        w.kv("residual", scale > 0 ? resid / scale : resid);
-    }
+    // The same function the binary encoder quotes: the two transports must not be
+    // able to disagree about the residual of one solve.
+    w.kv("residual", relativeResidual(s));
     w.endObj();
     if (!s.error.empty())      w.kv("note", s.error);
     w.kv("maxDC", s.maxDC).kv("governing", s.governing);
@@ -1574,10 +1500,337 @@ std::string handleSolve(const bjson::Value& req) {
     return w.done();
 }
 
+// ------------------------------------------------------- binary (shm) protocol
+//
+// The shared-memory transport (D-019). The stdio line becomes a DOORBELL — it
+// carries the op, the revision and a byte count, never a number — and the numbers
+// cross as raw little-endian IEEE-754 in a file both processes have mapped. That
+// is the whole point: a double that is never textualised cannot be truncated,
+// rounded or re-parsed in transit. The JSON `solve` op remains, bit-equal in
+// meaning, as the fallback and the debug surface; T-gates in verify.py hold the
+// two transports to identical results.
+//
+// Strings never cross the binary wire. Materials, sections and plates travel as
+// indices into the SAME ordered lists the JSON hello announced (sections first,
+// then plates, each in catalogue order), so both ends agree by construction.
+// Request and reply reuse the same region front-to-back; the half-duplex doorbell
+// is the mutex.
+
+constexpr std::uint32_t kShmReqMagic  = 0x31515242;   // "BRQ1"
+constexpr std::uint32_t kShmRespMagic = 0x31505242;   // "BRP1"
+
+const std::vector<std::string>& tokenTable() {
+    static const std::vector<std::string> kT = [] {
+        std::vector<std::string> t;
+        for (const auto& [id, _] : sectionCatalogue()) t.push_back(id);
+        for (const auto& [id, _] : plateCatalogue())   t.push_back(id);
+        return t;
+    }();
+    return kT;
+}
+
+const std::vector<std::string>& materialTable() {
+    static const std::vector<std::string> kM = [] {
+        std::vector<std::string> t;
+        for (const auto& [id, _] : materialCatalogue()) t.push_back(id);
+        return t;
+    }();
+    return kM;
+}
+
+int indexIn(const std::vector<std::string>& table, const std::string& s) {
+    for (size_t k = 0; k < table.size(); ++k)
+        if (table[k] == s) return static_cast<int>(k);
+    return -1;
+}
+
+// governingFibre on the binary wire. The order is wire contract v1; verify.py's
+// transport gates compare it against the JSON string field on every case.
+std::uint32_t fibreEnumOf(const std::string& name) {
+    static const char* kNames[] = { "NONE", "CRUSH", "TENSION", "SHEAR",
+                                    "BENDING", "TORSION", "SHELL_VM" };
+    for (std::uint32_t k = 0; k < 7; ++k)
+        if (name == kNames[k]) return k;
+    return 0;
+}
+
+// One equilibrium residual, computed once, quoted by both encoders — the JSON
+// and the binary reply must not be able to disagree about the same solve.
+double relativeResidual(const SolveOut& s) {
+    double scale = 0, resid = 0;
+    for (int d = 0; d < 3; ++d) {
+        scale = std::max(scale, std::fabs(s.appliedN[d]));
+        resid = std::max(resid, std::fabs(s.appliedN[d] + s.reactionN[d]));
+    }
+    return scale > 0 ? resid / scale : resid;
+}
+
+brshm::Mapping g_shm;
+
+void writeVec3(brshm::Writer& w, const McVec& v) { w.f64(v.x); w.f64(v.y); w.f64(v.z); }
+void writeBlock(brshm::Writer& w, const BlockPos& p) { w.i32(p.x); w.i32(p.y); w.i32(p.z); }
+
+// Encode a SolveOut into the mapped region. Returns bytes written, or 0 if the
+// region is too small — the caller reports that as an error line and the JVM
+// grows the file and retries. Nothing is ever silently truncated.
+size_t encodeShmReply(const SolveOut& s, long long revision) {
+    brshm::Writer w{ g_shm.data(), g_shm.data() + g_shm.size() };
+    w.u32(kShmRespMagic);
+    w.u32(static_cast<std::uint32_t>(revision & 0xffffffffLL));
+    w.u32(static_cast<std::uint32_t>((revision >> 32) & 0xffffffffLL));
+    w.u32(1u);   // ok: a failed solve never reaches this encoder (doorbell errors)
+
+    auto writeStr = [&](const std::string& t) {
+        w.u32(static_cast<std::uint32_t>(t.size()));
+        if (!w.need(t.size())) return;
+        std::memcpy(w.p, t.data(), t.size());
+        w.p += t.size();
+    };
+
+    w.u32(s.singular ? 1u : 0u);
+    w.u32(static_cast<std::uint32_t>(s.islands));
+    w.u32(static_cast<std::uint32_t>(s.singularIslands));
+    writeStr(s.diagnostic);
+    writeStr(s.error);   // the "note" field: non-fatal, e.g. "no members extracted"
+    for (int d = 0; d < 3; ++d) w.f64(s.appliedN[d]);
+    for (int d = 0; d < 3; ++d) w.f64(s.reactionN[d]);
+    w.f64(relativeResidual(s));
+    w.f64(s.maxDC);
+    w.i32(s.governing);
+    w.u32(s.governingKind == "member" ? 1u : s.governingKind == "shell" ? 2u : 0u);
+    w.f64(s.bucklingFactor);
+    w.u32(static_cast<std::uint32_t>(s.nodes));
+    w.u32(static_cast<std::uint32_t>(s.nodes * 6));
+
+    w.u32(static_cast<std::uint32_t>(s.members.size()));
+    for (const auto& mm : s.members) {
+        w.i32(mm.id);
+        w.i32(indexIn(materialTable(), mm.mat));
+        w.i32(indexIn(tokenTable(), mm.section));
+        w.f64(mm.lengthMm);
+        w.f64(mm.dc);
+        w.u32(fibreEnumOf(mm.governingFibre));
+        w.i32(mm.governingStation);
+        w.f64(mm.fi.N); w.f64(mm.fi.Vy); w.f64(mm.fi.Vz);
+        w.f64(mm.fi.T); w.f64(mm.fi.My); w.f64(mm.fi.Mz);
+        w.f64(mm.fj.N); w.f64(mm.fj.Vy); w.f64(mm.fj.Vz);
+        w.f64(mm.fj.T); w.f64(mm.fj.My); w.f64(mm.fj.Mz);
+        writeVec3(w, mm.originMm);
+        writeVec3(w, mm.axisX);
+        writeVec3(w, mm.axisY);
+        writeVec3(w, mm.axisZ);
+        w.f64(mm.A); w.f64(mm.Iy); w.f64(mm.Iz); w.f64(mm.cy); w.f64(mm.cz);
+        w.f64(mm.wy); w.f64(mm.wz);
+        w.u32(static_cast<std::uint32_t>(mm.blocks.size()));
+        for (const BlockPos& p : mm.blocks) writeBlock(w, p);
+        w.u32(static_cast<std::uint32_t>(mm.stations.size()));
+        for (const auto& st : mm.stations) {
+            w.f64(st.xMm);
+            writeVec3(w, st.worldMm);
+            // Fibre order is fixed wire contract: TOP_Y, BOT_Y, PLUS_Z, MINUS_Z.
+            // Directions and offsets are NOT sent — they are ±ay/±az and cz/cy from
+            // the member header, which the decoder reassembles.
+            double f4[4] = { 0, 0, 0, 0 };
+            for (const auto& f : st.fibres) {
+                if      (f.name == "TOP_Y")   f4[0] = f.sigma;
+                else if (f.name == "BOT_Y")   f4[1] = f.sigma;
+                else if (f.name == "PLUS_Z")  f4[2] = f.sigma;
+                else if (f.name == "MINUS_Z") f4[3] = f.sigma;
+            }
+            for (double v : f4) w.f64(v);
+            w.f64(st.sigmaTens);
+            w.f64(st.sigmaComp);
+            w.f64(st.tauShear);
+            // NaN is the "absent" sentinel: a neutral-axis offset is always finite
+            // when it exists, and JSON's missing-key semantics map onto it exactly.
+            w.f64(st.hasNaY ? st.naOffsetY : std::numeric_limits<double>::quiet_NaN());
+            w.f64(st.hasNaZ ? st.naOffsetZ : std::numeric_limits<double>::quiet_NaN());
+        }
+    }
+
+    w.u32(static_cast<std::uint32_t>(s.shells.size()));
+    for (const auto& sh : s.shells) {
+        w.i32(sh.id);
+        w.i32(indexIn(materialTable(), sh.mat));
+        w.i32(indexIn(tokenTable(), sh.plate));
+        w.f64(sh.t);
+        w.f64(sh.dc);
+        w.f64(sh.dcRaw);
+        w.u32((sh.governingTop ? 1u : 0u) | (sh.edgeRecovered ? 2u : 0u));
+        w.i32(sh.governingCorner);
+        for (const BlockPos& p : sh.blocks) writeBlock(w, p);
+        for (const McVec& v : sh.world) writeVec3(w, v);
+        writeVec3(w, sh.ex);
+        writeVec3(w, sh.ey);
+        writeVec3(w, sh.normal);
+        w.f64(sh.Nxx); w.f64(sh.Nyy); w.f64(sh.Nxy);
+        w.f64(sh.Mxx); w.f64(sh.Myy); w.f64(sh.Mxy);
+        w.f64(sh.Qx);  w.f64(sh.Qy);
+        for (const auto& c : sh.Mc)    { w.f64(c[0]); w.f64(c[1]); w.f64(c[2]); }
+        for (const auto& c : sh.McRaw) { w.f64(c[0]); w.f64(c[1]); w.f64(c[2]); }
+        w.f64(sh.vmTop);
+        w.f64(sh.vmBot);
+    }
+
+    w.u32(static_cast<std::uint32_t>(s.unassigned.size()));
+    for (const BlockPos& p : s.unassigned) writeBlock(w, p);
+
+    return w.ok ? static_cast<size_t>(w.p - g_shm.data()) : 0;
+}
+
+std::string handleShmOpen(const bjson::Value& req) {
+    if (!brshm::hostIsLittleEndian()) {
+        return errorLine("shm: refused on a big-endian host; use the JSON transport", 0);
+    }
+    if (!req.isStr("path")) return errorLine("shm.open: 'path' missing", 0);
+    std::string err;
+    if (!g_shm.open(req.str("path"), err)) return errorLine(err, 0);
+    bjson::Writer w;
+    w.beginObj();
+    w.kv("ok", true).kv("op", "shm.open");
+    w.kv("bytes", static_cast<long long>(g_shm.size()));
+    w.endObj();
+    return w.done();
+}
+
+std::string handleSolveShm(const bjson::Value& req) {
+    long long revision = 0;
+    std::string revErr;
+    if (!readRevision(req, revision, revErr)) return errorLine(revErr, 0);
+    if (!g_shm.valid()) return errorLine("solve.shm before shm.open", revision);
+
+    // The doorbell carries the request's byte length, and that length — never the
+    // mapping capacity — is the frame (#27). Reading to the end of the mapping
+    // would let a truncated request keep parsing into whatever the LAST frame left
+    // behind, which is exactly the stale-tail corruption this field exists to stop.
+    if (!req.isExactInt("bytes")) {
+        return errorLine("solve.shm: 'bytes' missing or not a plain integer", revision);
+    }
+    const long long reqBytes = req.exactI64("bytes");
+    if (reqBytes <= 0 || static_cast<unsigned long long>(reqBytes) > g_shm.size()) {
+        return errorLine("solve.shm: 'bytes' out of range for the mapped region", revision);
+    }
+
+    brshm::Reader rd{ g_shm.data(), g_shm.data() + static_cast<size_t>(reqBytes) };
+    if (rd.u32() != kShmReqMagic) return errorLine("shm request: bad magic", revision);
+    // hi/lo are composed UNSIGNED first and range-checked before touching a signed
+    // value (#29): a corrupt hi word must be a protocol error, not a signed-shift
+    // excursion into implementation-defined territory.
+    const std::uint64_t revLo = rd.u32();
+    const std::uint64_t revHi = rd.u32();
+    const std::uint64_t shmRevU = revLo | (revHi << 32);
+    if (shmRevU > 0x7fffffffffffffffULL) {
+        return errorLine("shm request: revision out of range", revision);
+    }
+    const long long shmRev = static_cast<long long>(shmRevU);
+    // The doorbell and the region must agree about WHICH request this is; a skew
+    // means the two sides have lost sync, and answering would answer the wrong
+    // question with confident numbers.
+    if (shmRev != revision) {
+        return errorLine("shm request: revision skew between doorbell and region", revision);
+    }
+    const std::uint32_t flags = rd.u32();
+    // Unknown flag bits are refused, not ignored (#28): a future bit changes what
+    // the request MEANS, and an old engine that ignores it would answer a different
+    // question with a confident yes.
+    if ((flags & ~1u) != 0) return errorLine("shm request: unknown flags", revision);
+    const bool wantBuckling = (flags & 1u) != 0;
+
+    const auto& toks = tokenTable();
+    const auto& mats = materialTable();
+
+    // Same world-domain guard the JSON path applies (#28): the binary wire is not a
+    // side door around the coordinate contract.
+    auto coordOk = [](std::int32_t c) { return c >= -30000000 && c <= 30000000; };
+
+    std::vector<InBlock> blocks;
+    std::set<BlockPos>   seen;
+    const std::uint32_t nBlocks = rd.u32();
+    for (std::uint32_t k = 0; k < nBlocks && rd.ok; ++k) {
+        InBlock b;
+        b.pos.x = rd.i32();
+        b.pos.y = rd.i32();
+        b.pos.z = rd.i32();
+        if (!coordOk(b.pos.x) || !coordOk(b.pos.y) || !coordOk(b.pos.z)) {
+            return errorLine("shm block: coordinate out of world range", revision);
+        }
+        const std::int32_t matIdx = rd.i32();
+        const std::int32_t tokIdx = rd.i32();
+        const std::uint32_t bf    = rd.u32();
+        // A frame truncated mid-block must be diagnosed as a truncation. The zero-filled
+        // fields a failed read returns would otherwise pass the range checks and could
+        // trip the duplicate-coordinate error, pointing the debugger at block sync
+        // when the actual fault is the transport length.
+        if (!rd.ok) break;
+        if (matIdx < 0 || matIdx >= static_cast<std::int32_t>(mats.size())) {
+            return errorLine("shm block: material index out of range", revision);
+        }
+        if (tokIdx < 0 || tokIdx >= static_cast<std::int32_t>(toks.size())) {
+            return errorLine("shm block: section/plate index out of range", revision);
+        }
+        if ((bf & ~1u) != 0) return errorLine("shm block: unknown flags", revision);
+        b.mat     = mats[static_cast<size_t>(matIdx)];
+        b.section = toks[static_cast<size_t>(tokIdx)];
+        b.support = (bf & 1u) != 0;
+        if (!seen.insert(b.pos).second) {
+            return errorLine("duplicate block coordinate; the caller and the engine disagree "
+                             "about what is at that position", revision);
+        }
+        blocks.push_back(b);
+    }
+
+    std::vector<std::array<double, 6>> loads;
+    std::vector<BlockPos>              loadAt;
+    const std::uint32_t nLoads = rd.u32();
+    for (std::uint32_t k = 0; k < nLoads && rd.ok; ++k) {
+        BlockPos p;
+        p.x = rd.i32();
+        p.y = rd.i32();
+        p.z = rd.i32();
+        if (!coordOk(p.x) || !coordOk(p.y) || !coordOk(p.z)) {
+            return errorLine("shm load: coordinate out of world range", revision);
+        }
+        std::array<double, 6> f{};
+        for (int c = 0; c < 6; ++c) {
+            f[c] = rd.f64();
+            if (!std::isfinite(f[c])) return errorLine("shm load: component is not finite", revision);
+        }
+        if (!rd.ok) break;   // truncated mid-load: report truncation, not a junk row
+        loadAt.push_back(p);
+        loads.push_back(f);
+    }
+    if (!rd.ok) return errorLine("shm request: truncated", revision);
+    // The frame must be consumed EXACTLY (#27). Trailing bytes inside the declared
+    // length mean the two ends disagree about the schema, and a schema disagreement
+    // that still parses is the most dangerous kind.
+    if (rd.p != rd.end) return errorLine("shm request: trailing bytes after the frame", revision);
+
+    SolveOut s = runSolve(blocks, loads, loadAt, wantBuckling);
+    // A refused solve refuses identically on both transports: the doorbell carries
+    // the same error line JSON `solve` would have, and the region is not written.
+    if (!s.ok) return errorLine(s.error, revision);
+    const size_t bytes = encodeShmReply(s, revision);
+    if (bytes == 0) {
+        return errorLine("shm reply does not fit in " + std::to_string(g_shm.size())
+                       + " bytes; grow the region and retry", revision);
+    }
+
+    bjson::Writer w;
+    w.beginObj();
+    w.kv("ok", true).kv("op", "solve.shm").kv("revision", revision);
+    w.kv("bytes", static_cast<long long>(bytes));
+    w.endObj();
+    return w.done();
+}
+
 std::string handleHello() {
     bjson::Writer w;
     w.beginObj();
     w.kv("ok", true).kv("op", "hello").kv("engine", "FrameCore").kv("protocol", kProtocol);
+    // Capability, not version: protocol 1 clients that predate the shared-memory
+    // transport ignore the key and keep speaking JSON. shm=1 names the binary
+    // layout (BRQ1/BRP1); a layout change bumps this number, never reuses it.
+    w.kv("shm", 1);
     w.key("materials").beginArr();
     for (const auto& [id, _] : materialCatalogue()) w.val(id);
     w.endArr();
@@ -1624,8 +1877,10 @@ int main() {
         // Any failure below is reported as a normal error line. Nothing throws
         // across the protocol boundary, so a bad request never kills the sidecar.
         try {
-            if      (op == "hello") reply = handleHello();
-            else if (op == "solve") reply = handleSolve(req);
+            if      (op == "hello")     reply = handleHello();
+            else if (op == "solve")     reply = handleSolve(req);
+            else if (op == "shm.open")  reply = handleShmOpen(req);
+            else if (op == "solve.shm") reply = handleSolveShm(req);
             else if (op == "bye")   break;
             else                    reply = errorLine("unknown op: " + op, req.i64("revision", 0));
         } catch (const std::exception& e) {
