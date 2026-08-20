@@ -879,6 +879,262 @@ def main():
         above = h_mm - (ymid - (64 * BLOCK_MM + BLOCK_MM / 2.0))
         check(f"wall {nw - 1}x{nh - 1}: self weight above the cut", -mean, q_plate * above, 1e-6)
 
+    # ------------------------------------------------- T: transport equivalence
+    # The shared-memory transport must be the SAME sidecar answering the SAME
+    # question — so every number must match the JSON reply bit for bit. This
+    # simultaneously proves three things: the binary layout is decoded as
+    # specified, the 17-digit JSON path round-trips doubles exactly (a double
+    # that survives text unchanged and equals the raw bits cannot have been
+    # altered in transit), and the two encoders quote one solve, not two.
+    import mmap as mmap_mod
+    import os
+    import struct
+    import tempfile
+
+    print("\n[T] shared-memory transport: bit-exact against JSON")
+    hs = sc.call({"op": "hello"})
+    check_true("shm capability advertised", hs.get("shm") == 1, str(hs.get("shm")))
+    t_mats = list(hs.get("materials", []))
+    t_toks = list(hs.get("sections", [])) + [p["id"] for p in hs.get("plates", [])]
+    FIBRE_NAMES = ["NONE", "CRUSH", "TENSION", "SHEAR", "BENDING", "TORSION", "SHELL_VM"]
+
+    def f64bits(x):
+        return struct.pack("<d", float(x))
+
+    def num_eq(a, b):
+        if a == 0 and b == 0:      # +0 vs -0: JSON prints both as "0"
+            return True
+        return f64bits(a) == f64bits(b)
+
+    class Cur:
+        def __init__(self, mv):
+            self.mv = mv
+            self.o = 0
+
+        def u32(self):
+            v = struct.unpack_from("<I", self.mv, self.o)[0]
+            self.o += 4
+            return v
+
+        def i32(self):
+            v = struct.unpack_from("<i", self.mv, self.o)[0]
+            self.o += 4
+            return v
+
+        def f64(self):
+            v = struct.unpack_from("<d", self.mv, self.o)[0]
+            self.o += 8
+            return v
+
+        def f64n(self, n):
+            v = list(struct.unpack_from(f"<{n}d", self.mv, self.o))
+            self.o += 8 * n
+            return v
+
+        def i32n(self, n):
+            v = list(struct.unpack_from(f"<{n}i", self.mv, self.o))
+            self.o += 4 * n
+            return v
+
+        def s(self):
+            n = self.u32()
+            v = bytes(self.mv[self.o:self.o + n]).decode("utf-8")
+            self.o += n
+            return v
+
+    def shm_encode_request(mm, rev, blocks, loads, buckling=True):
+        o = struct.pack("<III", 0x31515242, rev & 0xffffffff, (rev >> 32) & 0xffffffff)
+        o += struct.pack("<I", 1 if buckling else 0)
+        o += struct.pack("<I", len(blocks))
+        for b in blocks:
+            o += struct.pack("<iiiiiI", b["x"], b["y"], b["z"],
+                             t_mats.index(b["mat"]), t_toks.index(b["section"]),
+                             1 if b.get("support") else 0)
+        o += struct.pack("<I", len(loads))
+        for l in loads:
+            o += struct.pack("<iii", l["x"], l["y"], l["z"])
+            o += struct.pack("<6d", l.get("fx", 0), l.get("fy", 0), l.get("fz", 0),
+                             l.get("mx", 0), l.get("my", 0), l.get("mz", 0))
+        mm.seek(0)
+        mm.write(o)
+
+    def shm_decode_reply(mm, nbytes):
+        c = Cur(memoryview(mm)[:nbytes])
+        magic = c.u32()
+        assert magic == 0x31505242, hex(magic)
+        rev = c.u32() | (c.u32() << 32)
+        ok = c.u32() == 1
+        if not ok:
+            return {"ok": False, "revision": rev, "error": c.s()}
+        r = {"ok": True, "revision": rev}
+        r["singular"] = c.u32() == 1
+        r["islands"] = c.u32()
+        r["singularIslands"] = c.u32()
+        diag = c.s()
+        if diag:
+            r["diagnostic"] = diag
+        note = c.s()
+        if note:
+            r["note"] = note
+        r["equilibrium"] = {"applied": c.f64n(3), "reaction": c.f64n(3), "residual": c.f64()}
+        r["maxDC"] = c.f64()
+        r["governing"] = c.i32()
+        gk = c.u32()
+        if gk:
+            r["governingKind"] = "member" if gk == 1 else "shell"
+        bf = c.f64()
+        if bf > 0:
+            r["bucklingFactor"] = bf
+        r["nodes"] = c.u32()
+        r["dof"] = c.u32()
+        r["members"] = []
+        for _ in range(c.u32()):
+            m = {"id": c.i32(), "mat": t_mats[c.i32()], "section": t_toks[c.i32()],
+                 "lengthMm": c.f64(), "dc": c.f64(),
+                 "governingFibre": FIBRE_NAMES[c.u32()], "governingStation": c.i32()}
+            for end in ("i", "j"):
+                N, Vy, Vz, T, My, Mz = c.f64n(6)
+                m[end] = {"N": N, "Vy": Vy, "Vz": Vz, "T": T, "My": My, "Mz": Mz}
+            f = {"origin": c.f64n(3), "ax": c.f64n(3), "ay": c.f64n(3), "az": c.f64n(3)}
+            f["A"], f["Iy"], f["Iz"], f["cy"], f["cz"], f["wy"], f["wz"] = c.f64n(7)
+            m["field"] = f
+            m["blocks"] = [c.i32n(3) for _ in range(c.u32())]
+            m["stations"] = []
+            for _ in range(c.u32()):
+                st = {"x": c.f64(), "world": c.f64n(3)}
+                sig = c.f64n(4)
+                st["fibres"] = [{"name": nm, "sigma": sv} for nm, sv in
+                                zip(("TOP_Y", "BOT_Y", "PLUS_Z", "MINUS_Z"), sig)]
+                st["sigmaTens"], st["sigmaComp"], st["tau"] = c.f64n(3)
+                naY, naZ = c.f64n(2)
+                if not math.isnan(naY):
+                    st["naY"] = naY
+                if not math.isnan(naZ):
+                    st["naZ"] = naZ
+                m["stations"].append(st)
+            r["members"].append(m)
+        r["shells"] = []
+        for _ in range(c.u32()):
+            sh = {"id": c.i32(), "mat": t_mats[c.i32()], "plate": t_toks[c.i32()],
+                  "t": c.f64(), "dc": c.f64(), "dcRaw": c.f64()}
+            fl = c.u32()
+            sh["face"] = "TOP" if (fl & 1) else "BOT"
+            sh["edgeRecovered"] = (fl & 2) != 0
+            sh["corner"] = c.i32()
+            sh["blocks"] = [c.i32n(3) for _ in range(4)]
+            sh["world"] = [c.f64n(3) for _ in range(4)]
+            sh["ex"], sh["ey"], sh["n"] = c.f64n(3), c.f64n(3), c.f64n(3)
+            nxx, nyy, nxy, mxx, myy, mxy, qx, qy = c.f64n(8)
+            sh["N"] = {"xx": nxx, "yy": nyy, "xy": nxy}
+            sh["M"] = {"xx": mxx, "yy": myy, "xy": mxy}
+            sh["Q"] = {"x": qx, "y": qy}
+            sh["Mc"] = [c.f64n(3) for _ in range(4)]
+            sh["McRaw"] = [c.f64n(3) for _ in range(4)]
+            sh["vmTop"], sh["vmBot"] = c.f64n(2)
+            r["shells"].append(sh)
+        r["unassigned"] = [c.i32n(3) for _ in range(c.u32())]
+        return r
+
+    def deep_eq(a, b, path):
+        if isinstance(a, dict) and isinstance(b, dict):
+            for k in a.keys() | b.keys():
+                if k not in a or k not in b:
+                    return f"{path}.{k}: present on one side only"
+                bad = deep_eq(a[k], b[k], f"{path}.{k}")
+                if bad:
+                    return bad
+            return None
+        if isinstance(a, list) and isinstance(b, list):
+            if len(a) != len(b):
+                return f"{path}: length {len(a)} vs {len(b)}"
+            for i, (x, y) in enumerate(zip(a, b)):
+                bad = deep_eq(x, y, f"{path}[{i}]")
+                if bad:
+                    return bad
+            return None
+        if isinstance(a, bool) or isinstance(b, bool) or isinstance(a, str) or isinstance(b, str):
+            return None if a == b else f"{path}: {a!r} vs {b!r}"
+        if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+            return None if num_eq(a, b) else f"{path}: {a!r} vs {b!r} (bit mismatch)"
+        return None if a == b else f"{path}: {a!r} vs {b!r}"
+
+    def strip_json_extras(r):
+        # Fibre dir/offset are geometry the binary wire derives from the member
+        # header instead of repeating per fibre; McRaw is emitted by JSON only
+        # when recovery fired but always by the binary layout.
+        out = json.loads(json.dumps(r))
+        for m in out.get("members", []):
+            for st in m.get("stations", []):
+                for f in st.get("fibres", []):
+                    f.pop("dir", None)
+                    f.pop("offsetMm", None)
+        for sh in out.get("shells", []):
+            if "McRaw" not in sh:
+                sh["McRaw"] = sh.get("Mc")
+        return out
+
+    shm_path = os.path.join(tempfile.mkdtemp(prefix="br-verify-shm"), "region.bin")
+    with open(shm_path, "wb") as f:
+        f.write(b"\0" * (8 * 1024 * 1024))
+    fshm = open(shm_path, "r+b")
+    mm = mmap_mod.mmap(fshm.fileno(), 0)
+
+    ro = sc.call({"op": "shm.open", "path": shm_path})
+    check_true("shm.open ok", ro.get("ok") is True, ro.get("error", ""))
+
+    t_cases = [
+        ("cantilever + tip load", beam_blocks(5),
+         [{"x": 4, "y": 64, "z": 0, "fy": -20000.0}]),
+        ("two supports + midspan load",
+         [{"x": i, "y": 64, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+           "support": i in (0, 6)} for i in range(7)],
+         [{"x": 3, "y": 64, "z": 0, "fy": -30000.0}]),
+        ("shear wall 2x4", *wall(3, 5, 100000.0)),
+    ]
+    for ti, (tag, tb, tl) in enumerate(t_cases):
+        rev = 9000 + ti
+        rj = sc.call({"op": "solve", "revision": rev, "blocks": tb, "loads": tl})
+        shm_encode_request(mm, rev, tb, tl)
+        bell = sc.call({"op": "solve.shm", "revision": rev})
+        check_true(f"T{ti} doorbell ok ({tag})", bell.get("ok") is True, bell.get("error", ""))
+        rb = shm_decode_reply(mm, bell["bytes"])
+        # `op` is doorbell-side framing, not solve content.
+        rjc = strip_json_extras(rj)
+        rjc.pop("op", None)
+        bad = deep_eq(rjc, rb, "$")
+        check_true(f"T{ti} shm reply bit-exact vs JSON ({tag})", bad is None, bad or "")
+
+    # Error path: a load on nothing must refuse identically on both transports.
+    rev = 9100
+    eb = beam_blocks(3)
+    el = [{"x": 40, "y": 64, "z": 0, "fy": -1000.0}]
+    rj = sc.call({"op": "solve", "revision": rev, "blocks": eb, "loads": el})
+    shm_encode_request(mm, rev, eb, el)
+    bell = sc.call({"op": "solve.shm", "revision": rev})
+    check_true("T-err doorbell still ok=false", bell.get("ok") is False, str(bell))
+    check_true("T-err same refusal text", bell.get("error") == rj.get("error"),
+               f"json={rj.get('error')!r} shm={bell.get('error')!r}")
+
+    # Capacity path: a region too small must refuse loudly, never truncate.
+    small_path = os.path.join(os.path.dirname(shm_path), "small.bin")
+    with open(small_path, "wb") as f:
+        f.write(b"\0" * 4096)
+    ro = sc.call({"op": "shm.open", "path": small_path})
+    check_true("shm.open small ok", ro.get("ok") is True, ro.get("error", ""))
+    fs2 = open(small_path, "r+b")
+    mm2 = mmap_mod.mmap(fs2.fileno(), 0)
+    rev = 9101
+    bb, bl = wall(3, 5, 100000.0)
+    shm_encode_request(mm2, rev, bb, bl)
+    bell = sc.call({"op": "solve.shm", "revision": rev})
+    check_true("T-cap overflow refused with grow hint",
+               bell.get("ok") is False and "grow" in bell.get("error", ""), str(bell))
+    mm2.close()
+    fs2.close()
+
+    mm.close()
+    fshm.close()
+
     sc.close()
 
     print()

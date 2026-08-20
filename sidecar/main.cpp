@@ -24,6 +24,7 @@
 // process ends with it, so a crashed server cannot leave a zombie behind.
 
 #include "json.hpp"
+#include "shm.hpp"
 
 #include "FrameCore/FrameModel.h"
 #include "FrameCore/FrameSolver.h"
@@ -41,6 +42,7 @@
 #include "FrameCore/BucklingResult.h"
 
 #include <iostream>
+#include <limits>
 #include <string>
 #include <vector>
 #include <map>
@@ -1284,6 +1286,7 @@ void writeBlocks(bjson::Writer& w, const char* key, const std::vector<BlockPos>&
 // caller has no way to find out it asked one question and got the answer to another
 // (issue #18). Every one of them is now an error line.
 std::string errorLine(const std::string& msg, long long revision);
+double relativeResidual(const SolveOut& s);
 
 bool readCoord(const bjson::Value& v, const char* key, int& out, std::string& err) {
     if (!v.isFiniteNum(key)) { err = std::string("field '") + key + "' missing or not a finite number"; return false; }
@@ -1405,14 +1408,9 @@ std::string handleSolve(const bjson::Value& req) {
     w.key("equilibrium").beginObj();
     w.key("applied").beginArr().val(s.appliedN[0]).val(s.appliedN[1]).val(s.appliedN[2]).endArr();
     w.key("reaction").beginArr().val(s.reactionN[0]).val(s.reactionN[1]).val(s.reactionN[2]).endArr();
-    {
-        double scale = 0, resid = 0;
-        for (int d = 0; d < 3; ++d) {
-            scale = std::max(scale, std::fabs(s.appliedN[d]));
-            resid = std::max(resid, std::fabs(s.appliedN[d] + s.reactionN[d]));
-        }
-        w.kv("residual", scale > 0 ? resid / scale : resid);
-    }
+    // The same function the binary encoder quotes: the two transports must not be
+    // able to disagree about the residual of one solve.
+    w.kv("residual", relativeResidual(s));
     w.endObj();
     if (!s.error.empty())      w.kv("note", s.error);
     w.kv("maxDC", s.maxDC).kv("governing", s.governing);
@@ -1504,10 +1502,297 @@ std::string handleSolve(const bjson::Value& req) {
     return w.done();
 }
 
+// ------------------------------------------------------- binary (shm) protocol
+//
+// The shared-memory transport (D-019). The stdio line becomes a DOORBELL — it
+// carries the op, the revision and a byte count, never a number — and the numbers
+// cross as raw little-endian IEEE-754 in a file both processes have mapped. That
+// is the whole point: a double that is never textualised cannot be truncated,
+// rounded or re-parsed in transit. The JSON `solve` op remains, bit-equal in
+// meaning, as the fallback and the debug surface; T-gates in verify.py hold the
+// two transports to identical results.
+//
+// Strings never cross the binary wire. Materials, sections and plates travel as
+// indices into the SAME ordered lists the JSON hello announced (sections first,
+// then plates, each in catalogue order), so both ends agree by construction.
+// Request and reply reuse the same region front-to-back; the half-duplex doorbell
+// is the mutex.
+
+constexpr std::uint32_t kShmReqMagic  = 0x31515242;   // "BRQ1"
+constexpr std::uint32_t kShmRespMagic = 0x31505242;   // "BRP1"
+
+const std::vector<std::string>& tokenTable() {
+    static const std::vector<std::string> kT = [] {
+        std::vector<std::string> t;
+        for (const auto& [id, _] : sectionCatalogue()) t.push_back(id);
+        for (const auto& [id, _] : plateCatalogue())   t.push_back(id);
+        return t;
+    }();
+    return kT;
+}
+
+const std::vector<std::string>& materialTable() {
+    static const std::vector<std::string> kM = [] {
+        std::vector<std::string> t;
+        for (const auto& [id, _] : materialCatalogue()) t.push_back(id);
+        return t;
+    }();
+    return kM;
+}
+
+int indexIn(const std::vector<std::string>& table, const std::string& s) {
+    for (size_t k = 0; k < table.size(); ++k)
+        if (table[k] == s) return static_cast<int>(k);
+    return -1;
+}
+
+// governingFibre on the binary wire. The order is wire contract v1; verify.py's
+// transport gates compare it against the JSON string field on every case.
+std::uint32_t fibreEnumOf(const std::string& name) {
+    static const char* kNames[] = { "NONE", "CRUSH", "TENSION", "SHEAR",
+                                    "BENDING", "TORSION", "SHELL_VM" };
+    for (std::uint32_t k = 0; k < 7; ++k)
+        if (name == kNames[k]) return k;
+    return 0;
+}
+
+// One equilibrium residual, computed once, quoted by both encoders — the JSON
+// and the binary reply must not be able to disagree about the same solve.
+double relativeResidual(const SolveOut& s) {
+    double scale = 0, resid = 0;
+    for (int d = 0; d < 3; ++d) {
+        scale = std::max(scale, std::fabs(s.appliedN[d]));
+        resid = std::max(resid, std::fabs(s.appliedN[d] + s.reactionN[d]));
+    }
+    return scale > 0 ? resid / scale : resid;
+}
+
+brshm::Mapping g_shm;
+
+void writeVec3(brshm::Writer& w, const McVec& v) { w.f64(v.x); w.f64(v.y); w.f64(v.z); }
+void writeBlock(brshm::Writer& w, const BlockPos& p) { w.i32(p.x); w.i32(p.y); w.i32(p.z); }
+
+// Encode a SolveOut into the mapped region. Returns bytes written, or 0 if the
+// region is too small — the caller reports that as an error line and the JVM
+// grows the file and retries. Nothing is ever silently truncated.
+size_t encodeShmReply(const SolveOut& s, long long revision) {
+    brshm::Writer w{ g_shm.data(), g_shm.data() + g_shm.size() };
+    w.u32(kShmRespMagic);
+    w.u32(static_cast<std::uint32_t>(revision & 0xffffffffLL));
+    w.u32(static_cast<std::uint32_t>((revision >> 32) & 0xffffffffLL));
+    w.u32(1u);   // ok: a failed solve never reaches this encoder (doorbell errors)
+
+    auto writeStr = [&](const std::string& t) {
+        w.u32(static_cast<std::uint32_t>(t.size()));
+        if (!w.need(t.size())) return;
+        std::memcpy(w.p, t.data(), t.size());
+        w.p += t.size();
+    };
+
+    w.u32(s.singular ? 1u : 0u);
+    w.u32(static_cast<std::uint32_t>(s.islands));
+    w.u32(static_cast<std::uint32_t>(s.singularIslands));
+    writeStr(s.diagnostic);
+    writeStr(s.error);   // the "note" field: non-fatal, e.g. "no members extracted"
+    for (int d = 0; d < 3; ++d) w.f64(s.appliedN[d]);
+    for (int d = 0; d < 3; ++d) w.f64(s.reactionN[d]);
+    w.f64(relativeResidual(s));
+    w.f64(s.maxDC);
+    w.i32(s.governing);
+    w.u32(s.governingKind == "member" ? 1u : s.governingKind == "shell" ? 2u : 0u);
+    w.f64(s.bucklingFactor);
+    w.u32(static_cast<std::uint32_t>(s.nodes));
+    w.u32(static_cast<std::uint32_t>(s.nodes * 6));
+
+    w.u32(static_cast<std::uint32_t>(s.members.size()));
+    for (const auto& mm : s.members) {
+        w.i32(mm.id);
+        w.i32(indexIn(materialTable(), mm.mat));
+        w.i32(indexIn(tokenTable(), mm.section));
+        w.f64(mm.lengthMm);
+        w.f64(mm.dc);
+        w.u32(fibreEnumOf(mm.governingFibre));
+        w.i32(mm.governingStation);
+        w.f64(mm.fi.N); w.f64(mm.fi.Vy); w.f64(mm.fi.Vz);
+        w.f64(mm.fi.T); w.f64(mm.fi.My); w.f64(mm.fi.Mz);
+        w.f64(mm.fj.N); w.f64(mm.fj.Vy); w.f64(mm.fj.Vz);
+        w.f64(mm.fj.T); w.f64(mm.fj.My); w.f64(mm.fj.Mz);
+        writeVec3(w, mm.originMm);
+        writeVec3(w, mm.axisX);
+        writeVec3(w, mm.axisY);
+        writeVec3(w, mm.axisZ);
+        w.f64(mm.A); w.f64(mm.Iy); w.f64(mm.Iz); w.f64(mm.cy); w.f64(mm.cz);
+        w.f64(mm.wy); w.f64(mm.wz);
+        w.u32(static_cast<std::uint32_t>(mm.blocks.size()));
+        for (const BlockPos& p : mm.blocks) writeBlock(w, p);
+        w.u32(static_cast<std::uint32_t>(mm.stations.size()));
+        for (const auto& st : mm.stations) {
+            w.f64(st.xMm);
+            writeVec3(w, st.worldMm);
+            // Fibre order is fixed wire contract: TOP_Y, BOT_Y, PLUS_Z, MINUS_Z.
+            // Directions and offsets are NOT sent — they are ±ay/±az and cz/cy from
+            // the member header, which the decoder reassembles.
+            double f4[4] = { 0, 0, 0, 0 };
+            for (const auto& f : st.fibres) {
+                if      (f.name == "TOP_Y")   f4[0] = f.sigma;
+                else if (f.name == "BOT_Y")   f4[1] = f.sigma;
+                else if (f.name == "PLUS_Z")  f4[2] = f.sigma;
+                else if (f.name == "MINUS_Z") f4[3] = f.sigma;
+            }
+            for (double v : f4) w.f64(v);
+            w.f64(st.sigmaTens);
+            w.f64(st.sigmaComp);
+            w.f64(st.tauShear);
+            // NaN is the "absent" sentinel: a neutral-axis offset is always finite
+            // when it exists, and JSON's missing-key semantics map onto it exactly.
+            w.f64(st.hasNaY ? st.naOffsetY : std::numeric_limits<double>::quiet_NaN());
+            w.f64(st.hasNaZ ? st.naOffsetZ : std::numeric_limits<double>::quiet_NaN());
+        }
+    }
+
+    w.u32(static_cast<std::uint32_t>(s.shells.size()));
+    for (const auto& sh : s.shells) {
+        w.i32(sh.id);
+        w.i32(indexIn(materialTable(), sh.mat));
+        w.i32(indexIn(tokenTable(), sh.plate));
+        w.f64(sh.t);
+        w.f64(sh.dc);
+        w.f64(sh.dcRaw);
+        w.u32((sh.governingTop ? 1u : 0u) | (sh.edgeRecovered ? 2u : 0u));
+        w.i32(sh.governingCorner);
+        for (const BlockPos& p : sh.blocks) writeBlock(w, p);
+        for (const McVec& v : sh.world) writeVec3(w, v);
+        writeVec3(w, sh.ex);
+        writeVec3(w, sh.ey);
+        writeVec3(w, sh.normal);
+        w.f64(sh.Nxx); w.f64(sh.Nyy); w.f64(sh.Nxy);
+        w.f64(sh.Mxx); w.f64(sh.Myy); w.f64(sh.Mxy);
+        w.f64(sh.Qx);  w.f64(sh.Qy);
+        for (const auto& c : sh.Mc)    { w.f64(c[0]); w.f64(c[1]); w.f64(c[2]); }
+        for (const auto& c : sh.McRaw) { w.f64(c[0]); w.f64(c[1]); w.f64(c[2]); }
+        w.f64(sh.vmTop);
+        w.f64(sh.vmBot);
+    }
+
+    w.u32(static_cast<std::uint32_t>(s.unassigned.size()));
+    for (const BlockPos& p : s.unassigned) writeBlock(w, p);
+
+    return w.ok ? static_cast<size_t>(w.p - g_shm.data()) : 0;
+}
+
+std::string handleShmOpen(const bjson::Value& req) {
+    if (!brshm::hostIsLittleEndian()) {
+        return errorLine("shm: refused on a big-endian host; use the JSON transport", 0);
+    }
+    if (!req.isStr("path")) return errorLine("shm.open: 'path' missing", 0);
+    std::string err;
+    if (!g_shm.open(req.str("path"), err)) return errorLine(err, 0);
+    bjson::Writer w;
+    w.beginObj();
+    w.kv("ok", true).kv("op", "shm.open");
+    w.kv("bytes", static_cast<long long>(g_shm.size()));
+    w.endObj();
+    return w.done();
+}
+
+std::string handleSolveShm(const bjson::Value& req) {
+    if (!req.isFiniteNum("revision")) return errorLine("'revision' missing or not a finite number", 0);
+    const double revd = req.num("revision");
+    if (revd != std::floor(revd) || revd < 0 || revd > 9.007199254740992e15) {
+        return errorLine("'revision' must be a non-negative integer", 0);
+    }
+    const long long revision = static_cast<long long>(revd);
+    if (!g_shm.valid()) return errorLine("solve.shm before shm.open", revision);
+
+    brshm::Reader rd{ g_shm.data(), g_shm.data() + g_shm.size() };
+    if (rd.u32() != kShmReqMagic) return errorLine("shm request: bad magic", revision);
+    const std::uint32_t revLo = rd.u32();
+    const std::uint32_t revHi = rd.u32();
+    const long long shmRev = static_cast<long long>(revLo)
+                           | (static_cast<long long>(revHi) << 32);
+    // The doorbell and the region must agree about WHICH request this is; a skew
+    // means the two sides have lost sync, and answering would answer the wrong
+    // question with confident numbers.
+    if (shmRev != revision) {
+        return errorLine("shm request: revision skew between doorbell and region", revision);
+    }
+    const std::uint32_t flags = rd.u32();
+    const bool wantBuckling = (flags & 1u) != 0;
+
+    const auto& toks = tokenTable();
+    const auto& mats = materialTable();
+
+    std::vector<InBlock> blocks;
+    std::set<BlockPos>   seen;
+    const std::uint32_t nBlocks = rd.u32();
+    for (std::uint32_t k = 0; k < nBlocks && rd.ok; ++k) {
+        InBlock b;
+        b.pos.x = rd.i32();
+        b.pos.y = rd.i32();
+        b.pos.z = rd.i32();
+        const std::int32_t matIdx = rd.i32();
+        const std::int32_t tokIdx = rd.i32();
+        const std::uint32_t bf    = rd.u32();
+        if (matIdx < 0 || matIdx >= static_cast<std::int32_t>(mats.size())) {
+            return errorLine("shm block: material index out of range", revision);
+        }
+        if (tokIdx < 0 || tokIdx >= static_cast<std::int32_t>(toks.size())) {
+            return errorLine("shm block: section/plate index out of range", revision);
+        }
+        b.mat     = mats[static_cast<size_t>(matIdx)];
+        b.section = toks[static_cast<size_t>(tokIdx)];
+        b.support = (bf & 1u) != 0;
+        if (!seen.insert(b.pos).second) {
+            return errorLine("duplicate block coordinate; the caller and the engine disagree "
+                             "about what is at that position", revision);
+        }
+        blocks.push_back(b);
+    }
+
+    std::vector<std::array<double, 6>> loads;
+    std::vector<BlockPos>              loadAt;
+    const std::uint32_t nLoads = rd.u32();
+    for (std::uint32_t k = 0; k < nLoads && rd.ok; ++k) {
+        BlockPos p;
+        p.x = rd.i32();
+        p.y = rd.i32();
+        p.z = rd.i32();
+        std::array<double, 6> f{};
+        for (int c = 0; c < 6; ++c) {
+            f[c] = rd.f64();
+            if (!std::isfinite(f[c])) return errorLine("shm load: component is not finite", revision);
+        }
+        loadAt.push_back(p);
+        loads.push_back(f);
+    }
+    if (!rd.ok) return errorLine("shm request: truncated", revision);
+
+    SolveOut s = runSolve(blocks, loads, loadAt, wantBuckling);
+    // A refused solve refuses identically on both transports: the doorbell carries
+    // the same error line JSON `solve` would have, and the region is not written.
+    if (!s.ok) return errorLine(s.error, revision);
+    const size_t bytes = encodeShmReply(s, revision);
+    if (bytes == 0) {
+        return errorLine("shm reply does not fit in " + std::to_string(g_shm.size())
+                       + " bytes; grow the region and retry", revision);
+    }
+
+    bjson::Writer w;
+    w.beginObj();
+    w.kv("ok", true).kv("op", "solve.shm").kv("revision", revision);
+    w.kv("bytes", static_cast<long long>(bytes));
+    w.endObj();
+    return w.done();
+}
+
 std::string handleHello() {
     bjson::Writer w;
     w.beginObj();
     w.kv("ok", true).kv("op", "hello").kv("engine", "FrameCore").kv("protocol", kProtocol);
+    // Capability, not version: protocol 1 clients that predate the shared-memory
+    // transport ignore the key and keep speaking JSON. shm=1 names the binary
+    // layout (BRQ1/BRP1); a layout change bumps this number, never reuses it.
+    w.kv("shm", 1);
     w.key("materials").beginArr();
     for (const auto& [id, _] : materialCatalogue()) w.val(id);
     w.endArr();
@@ -1554,8 +1839,10 @@ int main() {
         // Any failure below is reported as a normal error line. Nothing throws
         // across the protocol boundary, so a bad request never kills the sidecar.
         try {
-            if      (op == "hello") reply = handleHello();
-            else if (op == "solve") reply = handleSolve(req);
+            if      (op == "hello")     reply = handleHello();
+            else if (op == "solve")     reply = handleSolve(req);
+            else if (op == "shm.open")  reply = handleShmOpen(req);
+            else if (op == "solve.shm") reply = handleSolveShm(req);
             else if (op == "bye")   break;
             else                    reply = errorLine("unknown op: " + op, req.i64("revision", 0));
         } catch (const std::exception& e) {

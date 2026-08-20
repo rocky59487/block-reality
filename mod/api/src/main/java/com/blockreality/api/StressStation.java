@@ -17,7 +17,8 @@ import java.util.Optional;
  * @param fibres        the extreme fibres, tension-positive (see {@link Fibre})
  * @param sigmaTensMpa  largest tensile stress at this station, {@code >= 0}
  * @param sigmaCompMpa  largest compressive <em>magnitude</em> at this station, {@code >= 0}
- * @param tauMpa        shear stress estimate, {@code 1.5 |V| / A} for a solid section
+ * @param tauMpa        peak transverse shear stress, {@code k |V| / A} with the engine's
+ *                      section factor: 1.5 for a solid rectangle, 4/3 for a solid circle
  * @param naOffsetYMm   neutral-axis offset from the centroid along local y, if one exists
  * @param naOffsetZMm   neutral-axis offset from the centroid along local z, if one exists
  */

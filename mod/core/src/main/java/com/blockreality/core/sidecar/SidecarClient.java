@@ -3,10 +3,13 @@ package com.blockreality.core.sidecar;
 import com.blockreality.api.AnalysisResult;
 import com.blockreality.api.EngineCatalogue;
 import com.blockreality.api.WorldRevision;
+import com.blockreality.core.json.JsonValue;
+import com.blockreality.core.protocol.BinaryCodec;
 import com.blockreality.core.protocol.ProtocolCodec;
 import com.blockreality.core.protocol.SolveRequest;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -52,10 +55,15 @@ public final class SidecarClient implements AutoCloseable {
 
     private SidecarProcess process;
     private EngineCatalogue catalogue;
+    private ShmRegion shm;
     private Status status = Status.IDLE;
     private String disabledReason = "";
     private int consecutiveFailures;
     private long nextAttemptAtMs;
+
+    /** Initial shared region: comfortably above a building-scale reply (~0.5 MB). */
+    private static final long SHM_INITIAL_BYTES = 4L << 20;
+    private static final long SHM_MAX_BYTES = 256L << 20;
 
     public SidecarClient(SidecarConfig config, Consumer<String> log) {
         this.config = config;
@@ -63,6 +71,9 @@ public final class SidecarClient implements AutoCloseable {
     }
 
     public Status status() { return status; }
+
+    /** Which wire the next solve will use: {@code "shm"} or {@code "json"}. */
+    public String transport() { return shm != null ? "shm" : "json"; }
 
     public String disabledReason() { return disabledReason; }
 
@@ -97,6 +108,20 @@ public final class SidecarClient implements AutoCloseable {
         // here means one stale reply cannot fail every subsequent request.
         process.drain();
 
+        // The shared-memory wire when both ends speak it; JSON otherwise. A TRANSPORT
+        // failure (region cannot be created, grown or opened) downgrades to JSON and
+        // keeps playing — the JSON path is the contract, shm is the optimisation. A
+        // SOLVE failure is returned as-is on either wire: the engine refusing a
+        // malformed world is an answer, not a transport problem, and retrying it over
+        // JSON would just refuse again.
+        if (shm != null) {
+            AnalysisResult viaShm = solveViaShm(request);
+            if (viaShm != null) {
+                if (viaShm.ok()) consecutiveFailures = 0;
+                return viaShm;
+            }
+        }
+
         if (!process.send(ProtocolCodec.encodeSolve(request))) {
             return failAndRestart(rev, "sidecar pipe closed while sending");
         }
@@ -112,6 +137,111 @@ public final class SidecarClient implements AutoCloseable {
         if (result.ok()) consecutiveFailures = 0;
         return result;
     }
+
+    /**
+     * One solve over the shared region. Returns {@code null} only when the shm
+     * transport itself is unusable — the caller then falls through to JSON.
+     */
+    private AnalysisResult solveViaShm(SolveRequest request) {
+        WorldRevision rev = request.revision();
+
+        int need = BinaryCodec.requestBytes(request);
+        if (need > shm.size() && !reopenShm(Math.max((long) need * 2, shm.size() * 2))) {
+            return null;
+        }
+        if (!BinaryCodec.encodeSolve(request, catalogue, shm.buffer())) {
+            // A token the catalogue does not list cannot travel as an index. Let the
+            // JSON path answer; its fail-closed validation names the offending token.
+            return null;
+        }
+
+        if (!process.send(ProtocolCodec.encodeSolveShm(rev.value()))) {
+            return failAndRestart(rev, "sidecar pipe closed while sending");
+        }
+        String line = process.awaitLine(config.requestTimeoutMs());
+        if (line == null) {
+            return failAndRestart(rev, process.alive()
+                    ? "sidecar timed out after " + config.requestTimeoutMs() + " ms"
+                    : "sidecar exited during analysis");
+        }
+
+        JsonValue bell = JsonValue.parse(line);
+        if (!bell.isObject()) {
+            return AnalysisResult.failed(rev, "malformed shm doorbell reply");
+        }
+        if (!bell.bool("ok", false)) {
+            String error = bell.str("error", "engine reported failure");
+            // The one transport-shaped error on this path: the reply outgrew the
+            // region. Grow once and retry; a second failure is reported as-is.
+            if (error.contains("grow") && reopenShm(shm.size() * 2)) {
+                if (!BinaryCodec.encodeSolve(request, catalogue, shm.buffer())
+                        || !process.send(ProtocolCodec.encodeSolveShm(rev.value()))) {
+                    return null;
+                }
+                String retry = process.awaitLine(config.requestTimeoutMs());
+                if (retry == null) {
+                    return failAndRestart(rev, "sidecar timed out during shm retry");
+                }
+                JsonValue rb = JsonValue.parse(retry);
+                if (rb.isObject() && rb.bool("ok", false)) {
+                    return BinaryCodec.decodeSolve(shm.buffer(), rev, catalogue);
+                }
+                error = rb.isObject() ? rb.str("error", error) : error;
+            }
+            return AnalysisResult.failed(rev, error);
+        }
+
+        long bellRev = bell.i64("revision", -1);
+        if (bellRev != rev.value()) {
+            return AnalysisResult.failed(rev,
+                    "revision mismatch: asked for " + rev.value() + ", got " + bellRev);
+        }
+        return BinaryCodec.decodeSolve(shm.buffer(), rev, catalogue);
+    }
+
+    /** Creates (or replaces) the region and asks the sidecar to map it. */
+    private boolean reopenShm(long bytes) {
+        closeShm();
+        if (bytes > SHM_MAX_BYTES) {
+            log.accept("shm region would exceed " + SHM_MAX_BYTES + " bytes; staying on JSON");
+            return false;
+        }
+        ShmRegion next;
+        try {
+            next = ShmRegion.create(bytes);
+        } catch (IOException e) {
+            log.accept("shm region unavailable (" + e.getMessage() + "); staying on JSON");
+            return false;
+        }
+        if (!process.send(ProtocolCodec.encodeShmOpen(next.path().toAbsolutePath().toString()))) {
+            next.close();
+            return false;
+        }
+        String line = process.awaitLine(config.requestTimeoutMs());
+        JsonValue v = line == null ? JsonValue.parse("") : JsonValue.parse(line);
+        if (!v.isObject() || !v.bool("ok", false)) {
+            log.accept("sidecar could not map the shm region ("
+                    + (v.isObject() ? v.str("error", "no detail") : "no reply") + "); staying on JSON");
+            next.close();
+            return false;
+        }
+        shm = next;
+        return true;
+    }
+
+    private void closeShm() {
+        if (shm != null) {
+            shm.close();
+            shm = null;
+        }
+    }
+
+    /**
+     * Drops the shared region so the next solve runs over JSON. Test hook: the
+     * transport-equivalence test needs the SAME client to answer the SAME request on
+     * both wires, and the transport is otherwise chosen automatically.
+     */
+    void forceJsonTransportForTest() { closeShm(); }
 
     // ------------------------------------------------------------- lifecycle
     /** Starts and handshakes if needed. @return false if analysis is unavailable. */
@@ -155,9 +285,14 @@ public final class SidecarClient implements AutoCloseable {
         catalogue = cat.get();
         status = Status.READY;
         consecutiveFailures = 0;
+        // Zero-copy transport when the engine offers the layout this build decodes.
+        // Failure here costs nothing but the optimisation: JSON remains the contract.
+        if (catalogue.supportsShm()) {
+            reopenShm(SHM_INITIAL_BYTES);
+        }
         log.accept("sidecar ready: " + catalogue.engine() + " protocol " + catalogue.protocol()
                 + ", " + catalogue.materials().size() + " materials, "
-                + catalogue.sections().size() + " sections");
+                + catalogue.sections().size() + " sections, transport " + transport());
         return true;
     }
 
@@ -194,6 +329,7 @@ public final class SidecarClient implements AutoCloseable {
     }
 
     private void closeProcessQuietly() {
+        closeShm();
         if (process != null) {
             process.close();
             process = null;
@@ -203,6 +339,7 @@ public final class SidecarClient implements AutoCloseable {
 
     @Override
     public void close() {
+        closeShm();
         if (process != null) {
             process.send(ProtocolCodec.encodeBye());
             process.close();

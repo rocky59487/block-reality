@@ -41,6 +41,19 @@ public final class ProtocolCodec {
         return new JsonWriter().beginObj().kv("op", "bye").endObj().done();
     }
 
+    /** Doorbell: ask the sidecar to map the shared region at {@code path}. */
+    public static String encodeShmOpen(String path) {
+        return new JsonWriter().beginObj().kv("op", "shm.open").kv("path", path).endObj().done();
+    }
+
+    /**
+     * Doorbell: the request for {@code revision} is in the shared region; solve it and
+     * write the reply back. Carries no numbers — that is the point.
+     */
+    public static String encodeSolveShm(long revision) {
+        return new JsonWriter().beginObj().kv("op", "solve.shm").kv("revision", revision).endObj().done();
+    }
+
     public static String encodeSolve(SolveRequest req) {
         JsonWriter w = new JsonWriter();
         w.beginObj();
@@ -84,7 +97,8 @@ public final class ProtocolCodec {
         List<String> plates = new ArrayList<>();
         for (JsonValue s : v.arr("plates")) plates.add(s.str("id", ""));
         return Optional.of(new EngineCatalogue(
-                v.str("engine", "unknown"), v.i32("protocol", -1), mats, secs, plates));
+                v.str("engine", "unknown"), v.i32("protocol", -1), mats, secs, plates,
+                v.i32("shm", 0)));
     }
 
     /**

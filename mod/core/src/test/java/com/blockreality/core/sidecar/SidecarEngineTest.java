@@ -5,6 +5,7 @@ import com.blockreality.api.Fibre;
 import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.ShellFieldSpec;
 import com.blockreality.api.ShellSnapshot;
+import com.blockreality.api.StressFieldSpec;
 import com.blockreality.api.geom.Vec3d;
 import com.blockreality.core.render.ShellMesh;
 import com.blockreality.api.StressStation;
@@ -366,13 +367,126 @@ class SidecarEngineTest {
         assertTrue(last < 0, "sagging between supports puts the top in compression, got " + last);
 
         // Two members meeting at one node must report the same section moment there.
-        assertEquals(left.endJ().mz(), halves.get(1).endI().mz(), 1e-9);
+        //
+        // RELATIVE tolerance, deliberately. The old absolute 1e-9 against a ~2.9e7
+        // moment demanded agreement past the last bit of a double — which held only
+        // while both ends came off the SAME arithmetic path (the sidecar's hand-rolled
+        // flip). Now that both are the engine's gated reconstruction (FrameCore F73),
+        // end J is evaluated at x = L and end I natively, algebraically equal but
+        // rounded differently in the last ulp. 1e-12 relative is still three orders
+        // tighter than the commit track's 1e-9 promise. Logged in docs/GATES.md.
+        assertEquals(left.endJ().mz(), halves.get(1).endI().mz(),
+                1e-12 * Math.abs(left.endJ().mz()));
 
         // Closed form for what this is: fixed-fixed under self weight plus the stub's
         // weight as a central point load.
         double pStub = W_N_PER_MM * 2000.0;
         assertEquals(W_N_PER_MM * L * L / 12.0 + pStub * L / 8.0, left.endI().mz(), 1e-3);
         assertEquals(-(W_N_PER_MM * L * L / 24.0 + pStub * L / 8.0), left.endJ().mz(), 1e-3);
+    }
+
+    @Test
+    void shmAndJsonTransportsAgree() {
+        // The Java half of verify.py's T-gates. The C++ side already proves the two
+        // wires carry bit-identical bytes for one solve; this proves the two Java
+        // DECODERS read them into the same result — a drift between BinaryCodec and
+        // ProtocolCodec cannot hide behind a correct sidecar. Tolerance 0.0: the
+        // binary wire is the double, and the 17-digit JSON path round-trips it.
+        AnalysisResult viaShm = client.solve(cantilever(31, true));
+        assertTrue(viaShm.isUsable(), viaShm.diagnostic());
+        assertEquals("shm", client.transport(),
+                "the shm transport should have been negotiated by the handshake");
+
+        client.forceJsonTransportForTest();
+        AnalysisResult viaJson = client.solve(cantilever(31, true));
+        assertTrue(viaJson.isUsable(), viaJson.diagnostic());
+        assertEquals("json", client.transport());
+
+        assertEquals(viaJson.maxDc(), viaShm.maxDc(), 0.0);
+        assertEquals(viaJson.governing(), viaShm.governing());
+        assertEquals(viaJson.governingKind(), viaShm.governingKind());
+        assertEquals(viaJson.bucklingFactor(), viaShm.bucklingFactor(), 0.0);
+        assertEquals(viaJson.equilibriumResidual(), viaShm.equilibriumResidual(), 0.0);
+        assertEquals(viaJson.members().size(), viaShm.members().size());
+
+        MemberSnapshot mj = viaJson.members().get(0);
+        MemberSnapshot ms = viaShm.members().get(0);
+        assertEquals(mj.dc(), ms.dc(), 0.0);
+        assertEquals(mj.governingFibre(), ms.governingFibre());
+        assertEquals(mj.governingStation(), ms.governingStation());
+        assertEquals(mj.endI().mz(), ms.endI().mz(), 0.0);
+        assertEquals(mj.endJ().mz(), ms.endJ().mz(), 0.0);
+        assertEquals(mj.blocks(), ms.blocks());
+        assertEquals(mj.stations().size(), ms.stations().size());
+        for (int k = 0; k < mj.stations().size(); k++) {
+            StressStation sj = mj.stations().get(k);
+            StressStation ss = ms.stations().get(k);
+            assertEquals(sj.xMm(), ss.xMm(), 0.0);
+            assertEquals(sj.sigmaTensMpa(), ss.sigmaTensMpa(), 0.0);
+            assertEquals(sj.sigmaCompMpa(), ss.sigmaCompMpa(), 0.0);
+            assertEquals(sj.tauMpa(), ss.tauMpa(), 0.0);
+            assertEquals(sj.naOffsetYMm(), ss.naOffsetYMm());
+            for (String f : List.of("TOP_Y", "BOT_Y", "PLUS_Z", "MINUS_Z")) {
+                assertEquals(sj.fibre(f).orElseThrow().sigmaMpa(),
+                        ss.fibre(f).orElseThrow().sigmaMpa(), 0.0,
+                        "fibre " + f + " at station " + k);
+                assertEquals(sj.fibre(f).orElseThrow().direction(),
+                        ss.fibre(f).orElseThrow().direction(),
+                        "fibre direction " + f + " at station " + k);
+            }
+        }
+
+        // The member's stress-field spec must survive both wires identically too —
+        // it is what the overlay evaluates.
+        StressFieldSpec fj = mj.field().orElseThrow();
+        StressFieldSpec fs = ms.field().orElseThrow();
+        assertEquals(fj.area(), fs.area(), 0.0);
+        assertEquals(fj.iz(), fs.iz(), 0.0);
+        assertEquals(fj.wy(), fs.wy(), 0.0);
+        assertEquals(fj.originMm(), fs.originMm());
+        assertEquals(fj.ax(), fs.ax());
+    }
+
+    @Test
+    void shmTransportCarriesShellsIdentically() {
+        // Same equivalence, shell side: a 3-wide, 3-tall slab wall (base clamped)
+        // exercises facets, corner moments and the recovery flags on both wires.
+        SolveRequest.Builder b = SolveRequest.builder(new WorldRevision(32));
+        for (int x = 0; x < 3; x++) {
+            for (int y = 0; y < 3; y++) {
+                b.block(new BlockKey(x, 64 + y, 0), "concrete", "concrete_slab_200", y == 0);
+            }
+        }
+        AnalysisResult viaShm = client.solve(b.build());
+        assertTrue(viaShm.isUsable(), viaShm.diagnostic());
+        assertEquals("shm", client.transport());
+        assertFalse(viaShm.shells().isEmpty(), "the wall should mesh into facets");
+
+        client.forceJsonTransportForTest();
+        AnalysisResult viaJson = client.solve(b.build());
+        assertTrue(viaJson.isUsable(), viaJson.diagnostic());
+
+        assertEquals(viaJson.shells().size(), viaShm.shells().size());
+        for (int k = 0; k < viaJson.shells().size(); k++) {
+            ShellSnapshot sj = viaJson.shells().get(k);
+            ShellSnapshot ss = viaShm.shells().get(k);
+            assertEquals(sj.dc(), ss.dc(), 0.0);
+            assertEquals(sj.dcRaw(), ss.dcRaw(), 0.0);
+            assertEquals(sj.governingTopFace(), ss.governingTopFace());
+            assertEquals(sj.edgeRecovered(), ss.edgeRecovered());
+            assertEquals(sj.blocks(), ss.blocks());
+            ShellFieldSpec pj = sj.field().orElseThrow();
+            ShellFieldSpec ps = ss.field().orElseThrow();
+            assertEquals(pj.nxx(), ps.nxx(), 0.0);
+            assertEquals(pj.mxx(), ps.mxx(), 0.0);
+            assertEquals(pj.qx(), ps.qx(), 0.0);
+            assertEquals(pj.cornersMm(), ps.cornersMm());
+            for (int c = 0; c < 4; c++) {
+                assertEquals(pj.cornerM().get(c).mxx(), ps.cornerM().get(c).mxx(), 0.0);
+                assertEquals(pj.cornerM().get(c).myy(), ps.cornerM().get(c).myy(), 0.0);
+                assertEquals(pj.cornerM().get(c).mxy(), ps.cornerM().get(c).mxy(), 0.0);
+            }
+        }
     }
 
     @Test
