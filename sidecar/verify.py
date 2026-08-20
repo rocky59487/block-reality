@@ -879,6 +879,43 @@ def main():
         above = h_mm - (ymid - (64 * BLOCK_MM + BLOCK_MM / 2.0))
         check(f"wall {nw - 1}x{nh - 1}: self weight above the cut", -mean, q_plate * above, 1e-6)
 
+    # ------------------------- C15: timber and brick sections vs closed forms
+    # The material catalogue always carried timber and brick; no block could declare
+    # them because no beam section existed for either. These gates run BEFORE the
+    # game-side blocks were added — "no capability without a gate" — and pin the two
+    # new non-square sections to hand screens through the same closed forms C1 uses.
+    print("\n[C15] timber and brick sections")
+    h15 = sc.call({"op": "hello"})
+    check_true("timber section advertised", "timber_rect_140x240" in h15.get("sections", []))
+    check_true("brick section advertised", "brick_rect_230x350" in h15.get("sections", []))
+
+    # Timber cantilever under self weight. Timber's allowables are Rcomp 5 < Rtens 8,
+    # so like steel it reaches the compression face first: CRUSH, at the root.
+    tb, td, trho = 140.0, 240.0, 600.0
+    rt = sc.call({"op": "solve", "revision": 700,
+                  "blocks": beam_blocks(5, mat="timber", section="timber_rect_140x240")})
+    check_true("timber cantilever solves", rt.get("ok") is True, rt.get("error", ""))
+    wt = trho * (tb * td) * 1e-9 * G
+    dc_t = ((wt * L * L / 2.0) / (tb * td * td / 6.0)) / 5.0
+    check("timber D/C vs hand screen", rt["members"][0]["dc"], dc_t, 1e-6)
+    check_true("timber governs in CRUSH (Rcomp 5 < Rtens 8)",
+               rt["members"][0]["governingFibre"] == "CRUSH", rt["members"][0]["governingFibre"])
+
+    # Brick pier: a vertical stack under its own weight. At the supported base the
+    # axial stress is rho*g*L — independent of the section, which makes it a pure
+    # check of the density chain and the vertical-run extraction. The section only
+    # decides that D/C reads it against Rcomp = 10.
+    brho = 1800.0
+    rb15 = sc.call({"op": "solve", "revision": 701,
+                    "blocks": [{"x": 0, "y": 64 + i, "z": 0, "mat": "brick",
+                                "section": "brick_rect_230x350", "support": i == 0}
+                               for i in range(5)]})
+    check_true("brick pier solves", rb15.get("ok") is True, rb15.get("error", ""))
+    sigma_base = brho * 1e-9 * G * L          # MPa, at the supported end
+    check("brick pier D/C = rho*g*L / Rcomp", rb15["members"][0]["dc"], sigma_base / 10.0, 1e-6)
+    check_true("brick pier governs in CRUSH",
+               rb15["members"][0]["governingFibre"] == "CRUSH", rb15["members"][0]["governingFibre"])
+
     # ------------------------------------------------- T: transport equivalence
     # The shared-memory transport must be the SAME sidecar answering the SAME
     # question — so every number must match the JSON reply bit for bit. This

@@ -64,13 +64,27 @@ else can contain them, and there is no extract-and-play package.
 
 ## Using it
 
-The creative tab "Block Reality" holds Structural Steel, Concrete Slab and Stress Glasses.
-The two blocks are two different element types:
+The creative tab "Block Reality" holds the structural blocks and the Stress Glasses.
+A block's token decides which element it becomes — beams and plates are different
+element types, not different colours:
 
 | Block | Token | Element | Size |
 |---|---|---|---|
 | Structural Steel | `steel_rect_200x400` | 6-DOF beam | 200 × 400 mm section |
+| Structural Steel 150x300 | `steel_rect_150x300` | 6-DOF beam | 150 × 300 mm section |
+| Structural Steel 100x200 | `steel_rect_100x200` | 6-DOF beam | 100 × 200 mm section |
+| Plain Concrete Beam | `concrete_rect_400x600` | 6-DOF beam | 400 × 600 mm, unreinforced — cracks in tension at 3 MPa, as it should |
+| Timber Beam | `timber_rect_140x240` | 6-DOF beam | 140 × 240 mm sawn section |
+| Brick Pier | `brick_rect_230x350` | 6-DOF beam | 230 × 350 mm masonry pier |
 | Concrete Slab | `concrete_slab_200` | MITC4 shell facet | 200 mm thick |
+| Concrete Slab 150 | `concrete_slab_150` | MITC4 shell facet | 150 mm thick |
+| Steel Plate 20 | `steel_plate_20` | MITC4 shell facet | 20 mm thick |
+
+Every token is gated against a closed form before it got a block (`verify.py` C1/C1b/C15).
+There is deliberately no brick *wall* plate: the plate screen is an elastic von Mises
+check, which cannot see the tension/compression asymmetry that governs a brittle
+material — so brick only exists as a pier, where the beam screen's five separate
+ratios handle the asymmetry honestly.
 
 **What counts as grounded**: a structural block whose *directly below* neighbour is a
 solid, non-structural block. Nothing else grounds anything — a beam butted sideways
@@ -97,9 +111,12 @@ Right-click the air to change lens: Utilisation, Stress, Material.
 
 | Command | |
 |---|---|
-| `/br status` | engine state, every path searched, last result |
+| `/br status` | engine state, every path searched, transport, last result |
 | `/br members` | per member: D/C, governing fibre, governing section, peak stress |
 | `/br section <id>` | the whole stress profile of one member, as text |
+| `/br load <fx> <fy> <fz>` | apply a test load, in kN, to the block you aim at — `/br load 30 0 0` pushes a shear wall sideways |
+| `/br unload` / `/br unload all` | remove the aimed block's test load / all of them |
+| `/br loads` | list every test load |
 | `/br scan [radius]` | re-read the chunks around you, default radius 4 — for blocks placed by command or WorldEdit |
 | `/br resolve` | force re-analysis |
 | `/br reset` | restart the engine after it has been disabled (OP only) |
@@ -128,7 +145,7 @@ critical load.
 
 | | |
 |---|---|
-| Engine | `sidecar/verify.py`, 164 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
+| Engine | `sidecar/verify.py`, 172 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
 | Java | 109 tests, all passing; 28 of them start `br-sidecar` and run FrameCore for real |
 | Closed form | 31 non-zero references, worst relative error 1.2e-14; 10 zero references, worst absolute residual 1.5e-08. (Two earlier releases quoted 1.6e-10 here — that floor turned out to be the old wire's 10-digit truncation, not the engine) |
 | Transport | numbers cross as raw little-endian doubles in shared memory, never textualised; the JSON fallback prints 17 significant digits. Gate: three representative solves bit-identical across both transports |
@@ -226,12 +243,24 @@ Minecraft 與 Forge 不可轉散布，因此任何可以交給別人的壓縮檔
 
 ## 使用
 
-創造分頁「Block Reality」提供結構鋼、混凝土樓板與應力眼鏡。兩種方塊對應兩種元素型別：
+創造分頁「Block Reality」提供全部結構方塊與應力眼鏡。方塊的 token 決定它成為哪種元素——
+樑與板是不同的元素型別,不是不同顏色：
 
 | 方塊 | token | 元素 | 尺寸 |
 |---|---|---|---|
 | 結構鋼 | `steel_rect_200x400` | 6 自由度樑 | 斷面 200 × 400 mm |
+| 結構鋼 150x300 | `steel_rect_150x300` | 6 自由度樑 | 斷面 150 × 300 mm |
+| 結構鋼 100x200 | `steel_rect_100x200` | 6 自由度樑 | 斷面 100 × 200 mm |
+| 素混凝土樑 | `concrete_rect_400x600` | 6 自由度樑 | 400 × 600 mm,無筋——受拉 3 MPa 就裂,正該如此 |
+| 木樑 | `timber_rect_140x240` | 6 自由度樑 | 140 × 240 mm 製材斷面 |
+| 磚柱 | `brick_rect_230x350` | 6 自由度樑 | 230 × 350 mm 砌體柱 |
 | 混凝土樓板 | `concrete_slab_200` | MITC4 板殼 facet | 厚 200 mm |
+| 混凝土樓板 150 | `concrete_slab_150` | MITC4 板殼 facet | 厚 150 mm |
+| 鋼板 20 | `steel_plate_20` | MITC4 板殼 facet | 厚 20 mm |
+
+每個 token 在拿到方塊之前都先過閉合解 gate(`verify.py` C1/C1b/C15)。刻意**沒有**磚牆板：
+板的篩選是彈性 von Mises,看不見脆性材料的拉壓不對稱——磚因此只以柱存在,樑篩選的五個
+獨立比值(含受拉)能誠實處理不對稱。
 
 **什麼叫接地**：一個結構方塊，其*正下方*是實心且非結構的方塊。除此之外沒有別的接地方式——
 樑從側面頂著一面牆並不算被牆撐住，分析會正確地把結果判為機構。
@@ -252,9 +281,12 @@ HUD 因此以文字標明拉壓，不要求從顏色反推。
 
 | 指令 | |
 |---|---|
-| `/br status` | 引擎狀態、搜尋過的每一條路徑、上一次的結果 |
+| `/br status` | 引擎狀態、搜尋過的每一條路徑、傳輸方式、上一次的結果 |
 | `/br members` | 每根構件的 D/C、控制纖維、控制斷面、峰值應力 |
 | `/br section <id>` | 單一構件的完整應力剖面，純文字 |
+| `/br load <fx> <fy> <fz>` | 對注視的方塊施加測試荷載（kN）——`/br load 30 0 0` 就是把剪力牆往側面推 |
+| `/br unload` / `/br unload all` | 移除注視方塊的荷載／全部移除 |
+| `/br loads` | 列出所有測試荷載 |
 | `/br scan [半徑]` | 重讀你周圍的區塊，預設半徑 4——供指令或 WorldEdit 放置的方塊使用 |
 | `/br resolve` | 強制重新分析 |
 | `/br reset` | 引擎被停用後重新啟動（需 OP） |
@@ -276,7 +308,7 @@ fallback 與除錯面）。wire 上的每一個力學數值都是引擎函式的
 
 | | |
 |---|---|
-| 引擎 | `sidecar/verify.py` 164 項全過，每一項都對閉合解、不依賴求解器的不變量,或傳輸等價 oracle |
+| 引擎 | `sidecar/verify.py` 172 項全過，每一項都對閉合解、不依賴求解器的不變量,或傳輸等價 oracle |
 | Java | 109 項測試全過，其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore |
 | 對閉合解 | 31 項非零參考，最差相對誤差 1.2e-14；10 項零參考，最差絕對殘差 1.5e-08。（前兩版在這裡引用的 1.6e-10,後來查明是舊 wire 的 10 位截斷,不是引擎） |
 | 傳輸 | 數值以 raw little-endian double 走共用記憶體,從不文字化;JSON fallback 印 17 位有效數字。gate:三個代表案兩種傳輸逐位元相同 |

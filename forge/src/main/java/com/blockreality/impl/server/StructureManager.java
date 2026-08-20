@@ -61,8 +61,14 @@ public final class StructureManager {
     private final SidecarClient sidecar;
 
     private final Set<BlockPos> structural = ConcurrentHashMap.newKeySet();
-    /** Blocks carrying a demo test load, toggled with the stress glasses. */
-    private final Set<BlockPos> loaded = ConcurrentHashMap.newKeySet();
+    /**
+     * Test loads by block: {fx, fy, fz} in newtons, Minecraft axes (+y up). The stress
+     * glasses toggle the configured downward value; {@code /br load} writes any vector,
+     * which is what makes a shear wall loadable in its own plane from inside the game.
+     * In memory only, like {@code structural} itself: the world is the save file, the
+     * loads are the experiment.
+     */
+    private final Map<BlockPos, double[]> loaded = new ConcurrentHashMap<>();
 
     private final AtomicBoolean inFlight = new AtomicBoolean(false);
     private boolean dirty;
@@ -170,11 +176,47 @@ public final class StructureManager {
     /** Which wire the engine conversation uses: {@code "shm"} or {@code "json"}. */
     public String engineTransport() { return sidecar.transport(); }
 
+    /** Glasses affordance: toggle the configured downward test load on one block. */
     public boolean toggleLoad(BlockPos pos) {
-        boolean added = loaded.add(pos.immutable());
-        if (!added) loaded.remove(pos.immutable());
+        BlockPos key = pos.immutable();
+        boolean added = loaded.putIfAbsent(key,
+                new double[] { 0, -Math.abs(BRConfig.INSTANCE.demoLoadNewtons.get()), 0 }) == null;
+        if (!added) loaded.remove(key);
         markDirty();
         return added;
+    }
+
+    /**
+     * Sets an arbitrary test load on one block, for {@code /br load}. A zero vector
+     * clears it — "no load" is represented by absence, never by a stored zero that
+     * would still count as a loaded block.
+     *
+     * @return true if a load is now present, false if the call cleared it
+     */
+    public boolean setLoad(BlockPos pos, double fxN, double fyN, double fzN) {
+        BlockPos key = pos.immutable();
+        if (fxN == 0 && fyN == 0 && fzN == 0) {
+            loaded.remove(key);
+        } else {
+            loaded.put(key, new double[] { fxN, fyN, fzN });
+        }
+        markDirty();
+        return loaded.containsKey(key);
+    }
+
+    /** @return how many loads were removed */
+    public int clearAllLoads() {
+        int n = loaded.size();
+        if (n > 0) {
+            loaded.clear();
+            markDirty();
+        }
+        return n;
+    }
+
+    /** Read-only view of the current test loads, newtons in Minecraft axes. */
+    public Map<BlockPos, double[]> loads() {
+        return java.util.Collections.unmodifiableMap(loaded);
     }
 
     private void markDirty() {
@@ -298,12 +340,22 @@ public final class StructureManager {
         }
         structural.removeAll(stale);
 
-        for (BlockPos pos : loaded) {
-            if (!structural.contains(pos)) continue;
-            b.load(SolveRequest.PointLoad.downwards(
+        // A load whose block is gone goes with it — the load hangs ON the block — and
+        // the stale entry is removed rather than skipped, so loadedBlockCount() cannot
+        // drift away from what the next solve will actually carry.
+        List<BlockPos> staleLoads = new ArrayList<>();
+        for (Map.Entry<BlockPos, double[]> e : loaded.entrySet()) {
+            if (!structural.contains(e.getKey())) {
+                staleLoads.add(e.getKey());
+                continue;
+            }
+            BlockPos pos = e.getKey();
+            double[] f = e.getValue();
+            b.load(new SolveRequest.PointLoad(
                     new BlockKey(pos.getX(), pos.getY(), pos.getZ()),
-                    BRConfig.INSTANCE.demoLoadNewtons.get()));
+                    f[0], f[1], f[2], 0, 0, 0));
         }
+        staleLoads.forEach(loaded::remove);
         return b.build();
     }
 

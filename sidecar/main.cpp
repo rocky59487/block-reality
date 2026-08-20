@@ -114,6 +114,12 @@ const std::map<std::string, frame::Section>& sectionCatalogue() {
         { "steel_rect_100x200",    frame::Section::Rectangular(100.0, 200.0) },
         { "concrete_rect_400x600", frame::Section::Rectangular(400.0, 600.0) },
         { "rebar_round_d25",       frame::Section::Circular(12.5) },
+        // Sawn-timber and masonry-pier sections for the timber/brick materials the
+        // catalogue always carried but no block ever declared. Both non-square, per
+        // the GATES.md fixture rule; both gated in verify.py [C15] against closed
+        // forms before any block was allowed to name them.
+        { "timber_rect_140x240",   frame::Section::Rectangular(140.0, 240.0) },
+        { "brick_rect_230x350",    frame::Section::Rectangular(230.0, 350.0) },
     };
     return kS;
 }

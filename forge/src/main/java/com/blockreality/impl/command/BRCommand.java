@@ -6,7 +6,9 @@ import com.blockreality.api.StressStation;
 import com.blockreality.core.sidecar.SidecarClient;
 import com.blockreality.impl.server.SidecarLocator;
 import com.blockreality.impl.server.StructureManager;
+import com.blockreality.impl.block.StructuralBlock;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -14,10 +16,14 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * {@code /br} — the answer to "why is nothing happening?".
@@ -27,8 +33,9 @@ import java.util.Locale;
  * blocks are in the model, and what the last result said. Without this, a missing binary
  * and an unstressed structure look identical from inside the game.
  *
- * <p>Read-only except for {@code resolve} and {@code reset}, both of which only ask for
- * work to be redone. Nothing here can change the world.
+ * <p>Read-only except for {@code resolve} and {@code reset}, which only ask for work to
+ * be redone, and {@code load}/{@code unload}, which edit the TEST LOADS — an experiment
+ * layered on the model, never the world itself. Nothing here places or breaks a block.
  */
 public final class BRCommand {
 
@@ -55,10 +62,78 @@ public final class BRCommand {
                         .then(Commands.argument("chunkRadius", IntegerArgumentType.integer(0, 16))
                                 .executes(c -> scan(c.getSource(),
                                         IntegerArgumentType.getInteger(c, "chunkRadius")))))
+                // Arbitrary test loads, in kN because that is the unit an engineering
+                // reader thinks in (the wire stays in newtons). Available to everyone,
+                // like the glasses: a load is an experiment, not an edit.
+                .then(Commands.literal("load")
+                        .then(Commands.argument("fxKn", DoubleArgumentType.doubleArg(-1e6, 1e6))
+                                .then(Commands.argument("fyKn", DoubleArgumentType.doubleArg(-1e6, 1e6))
+                                        .then(Commands.argument("fzKn", DoubleArgumentType.doubleArg(-1e6, 1e6))
+                                                .executes(c -> load(c.getSource(),
+                                                        DoubleArgumentType.getDouble(c, "fxKn"),
+                                                        DoubleArgumentType.getDouble(c, "fyKn"),
+                                                        DoubleArgumentType.getDouble(c, "fzKn")))))))
+                .then(Commands.literal("unload")
+                        .executes(c -> load(c.getSource(), 0, 0, 0))
+                        .then(Commands.literal("all").executes(c -> unloadAll(c.getSource()))))
+                .then(Commands.literal("loads").executes(c -> loads(c.getSource())))
                 .then(Commands.literal("reset")
                         .requires(s -> s.hasPermission(2))
                         .executes(c -> reset(c.getSource())))
                 .executes(c -> status(c.getSource())));
+    }
+
+    /**
+     * Applies (or with a zero vector clears) a test load on the block the player is
+     * looking at. The block must be structural: a load anywhere else would be refused
+     * by the engine's fail-closed check anyway, and telling the player at the point of
+     * aim beats a refusal three ticks later.
+     */
+    private static int load(CommandSourceStack src, double fxKn, double fyKn, double fzKn) {
+        ServerPlayer player;
+        try {
+            player = src.getPlayerOrException();
+        } catch (Exception e) {
+            line(src, "A player has to aim this command.", ChatFormatting.RED);
+            return 0;
+        }
+        HitResult hit = player.pick(20.0, 0.0f, false);
+        if (!(hit instanceof BlockHitResult bh)
+                || !(src.getLevel().getBlockState(bh.getBlockPos()).getBlock() instanceof StructuralBlock)) {
+            line(src, Component.translatable("br.load.not_structural").getString(), ChatFormatting.YELLOW);
+            return 0;
+        }
+        BlockPos pos = bh.getBlockPos();
+        boolean present = managerFor(src).setLoad(pos, fxKn * 1000.0, fyKn * 1000.0, fzKn * 1000.0);
+        if (present) {
+            line(src, String.format(Locale.ROOT, "Load at %d %d %d: (%.1f, %.1f, %.1f) kN",
+                    pos.getX(), pos.getY(), pos.getZ(), fxKn, fyKn, fzKn), ChatFormatting.GREEN);
+        } else {
+            line(src, String.format(Locale.ROOT, "Load cleared at %d %d %d",
+                    pos.getX(), pos.getY(), pos.getZ()), ChatFormatting.GRAY);
+        }
+        return 1;
+    }
+
+    private static int unloadAll(CommandSourceStack src) {
+        int n = managerFor(src).clearAllLoads();
+        line(src, n + " test load" + (n == 1 ? "" : "s") + " removed.", ChatFormatting.GRAY);
+        return n;
+    }
+
+    private static int loads(CommandSourceStack src) {
+        Map<BlockPos, double[]> all = managerFor(src).loads();
+        if (all.isEmpty()) {
+            line(src, "No test loads. /br load <fx> <fy> <fz> (kN) applies one to the block you aim at.",
+                    ChatFormatting.GRAY);
+            return 0;
+        }
+        line(src, "Test loads (kN):", ChatFormatting.AQUA);
+        all.forEach((pos, f) -> line(src, String.format(Locale.ROOT,
+                "  %d %d %d   (%.1f, %.1f, %.1f)",
+                pos.getX(), pos.getY(), pos.getZ(),
+                f[0] / 1000.0, f[1] / 1000.0, f[2] / 1000.0), ChatFormatting.GRAY));
+        return all.size();
     }
 
     private static StructureManager managerFor(CommandSourceStack src) {

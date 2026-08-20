@@ -18,7 +18,7 @@
   "br.legend.dc.safe": "safe",
   "br.legend.dc.watch": "approaching limit",
   "br.legend.dc.limit": "at or over capacity",
-  "br.load.added": "Test load applied (20 kN)",
+  "br.load.added": "Test load applied (%s kN down)",
   "br.load.removed": "Test load removed",
   "br.engine.unavailable": "Structural analysis unavailable: %s",
   "br.hud.engine_off": "Analysis disabled in config",
@@ -51,5 +51,13 @@
   "br.hud.plate_faces": "top %s MPa   bottom %s MPa",
   "br.hud.plate_recovered": "support moment recovered at this edge",
   "br.hud.buckling": "buckling  λ_cr %s",
-  "br.hud.buckling_critical": "BUCKLING  λ_cr %s — already unstable"
+  "br.hud.buckling_critical": "BUCKLING  λ_cr %s — already unstable",
+  "block.blockreality.steel_beam_150x300": "Structural Steel 150x300",
+  "block.blockreality.steel_beam_100x200": "Structural Steel 100x200",
+  "block.blockreality.concrete_beam": "Plain Concrete Beam",
+  "block.blockreality.timber_beam": "Timber Beam",
+  "block.blockreality.brick_pier": "Brick Pier",
+  "block.blockreality.concrete_slab_150": "Concrete Slab 150",
+  "block.blockreality.steel_plate": "Steel Plate 20",
+  "br.load.not_structural": "Aim at a structural block. /br load applies a test load where you look."
 }
