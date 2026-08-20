@@ -5,6 +5,10 @@ out/
 *.class
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
+# The shipped mod jar is a release artifact, not a build output. Without this the
+# `*.jar` rule above silently drops it from dist/ and the release workflow fails
+# its own checksum gate on a file that is listed but not there.
+!dist/*.jar
 
 # Minecraft / Forge
 run/

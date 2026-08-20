@@ -16,7 +16,8 @@ scripts/package.sh /path/to/architect_simulator/Plugins/FrameSolver/Source/Frame
 
 1. 編譯 `br-sidecar`（host），並在打包前跑 `sidecar/verify.py`。gate 沒過就不會有產物
 2. 若有 `x86_64-w64-mingw32-g++`，交叉編譯 `br-sidecar.exe`
-3. 執行 `scripts/evidence.py` 產生 `VERIFICATION.md` 與 `verification.json`
+3. 執行 `scripts/evidence.py` 更新 `evidence/VERIFICATION.md` 與 `evidence/verification.json`。
+   這兩份**不進壓縮檔**——發行包裡放的是能玩所需的東西，證據留在倉庫裡
 4. 建置 mod jar
 5. 從 `scripts/` 複製安裝器，從 `scripts/dist-docs/` 複製兩份說明文件
 6. 對 `dist/` 內每個檔案產生 `SHA256SUMS.txt`
@@ -34,8 +35,8 @@ cp scripts/dist-docs/START-HERE.txt scripts/dist-docs/讀我-中文.txt dist/
 chmod +x dist/install.sh dist/br-sidecar
 rm -f dist/SHA256SUMS.txt
 (cd dist && sha256sum -- * > SHA256SUMS.txt)
-rm -f blockreality-0.0.1-demo.zip
-(cd dist && zip -q -r ../blockreality-0.0.1-demo.zip . -x '*.zip')
+rm -f blockreality-0.1a.zip
+(cd dist && zip -q -r ../blockreality-0.1a.zip . -x '*.zip')
 ```
 
 ## 發到 GitHub Releases
@@ -45,8 +46,8 @@ FrameCore，重現不了——只把已經在 `dist/` 裡的東西打包發布�
 `SHA256SUMS.txt`。內容與雜湊對不上就不會發。
 
 ```bash
-git tag v0.0.1-demo
-git push origin v0.0.1-demo
+git tag v0.1a
+git push origin v0.1a
 ```
 
 也可以從 Actions 分頁手動觸發，並自行指定 tag 名稱。
