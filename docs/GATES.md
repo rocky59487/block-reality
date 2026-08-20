@@ -85,6 +85,7 @@
 | 2026-08-20 | verify.py [S9] 跨材料板 vm 比（新 gate 的撰寫史,commit 前修訂兩次,照登） | 第一版:argmax 處 vm 比 = (ρs/ρc)(tc/ts),容差 5e-3 | FAIL 2.8%:推導漏掉夾支邊的切向伴隨彎矩 ν·M（vm 要乘 √(1−ν+ν²)）;補上後仍 FAIL 1.0%:argmax 取樣點在邊界層內半格,閉合解在那裡本來就只準 ~1% | 觀測點**移到場的駐點**（板中心,n=8 網格）,ν 因子化在該處二階精確;實測落在 1.6e-4 / 3.8e-4,容差維持 5e-3 | 無下游降級:此 gate 首度執行於本次,未曾支撐過任何能力宣稱;兩次失敗都是**參考解推導錯**,引擎數字自始未動 |
 | 2026-08-20 | evidence.py 總 gate | provenance 缺席可過（實際出貨過 commit=unavailable + dirty 的紀錄） | 兩版 release 的 verification.json 皆無可解析引擎 SHA（根因:WSL 讀 NTFS 的 dubious-ownership） | **收緊**:引擎 commit 可解析 + worktree 乾淨 + 失敗 case 為零,三者任缺 gate 即紅（#47） | 舊 evidence 的 identity 節追溯視為**無效**;數字本身由本次重生成覆蓋 |
 | 2026-08-20 | 紀律違規自登:SIDE-2/5/6 的 parser 修復先於 gate 一個 commit（鐵則 1 要求判準先 commit） | — | 修復在 23b0b37,gate（TS 深巢/溢位 revision 回顯/截斷診斷,+3 項）在下一個 commit 補上,三條全綠 | 順序滑失**照登**;gate 內容以修復後行為凍結 | 該三項修復的「已修」宣稱由補上的 gate 支撐;無其他下游 |
+| 2026-08-20 | verify.py `check()` 零參考語意（TEST-8） | expect=0 時 rel=\|got\|/1e-30,任何容差都退化成 exact-zero 斷言——呼叫者以為給了 slack,實際沒有 | 五個零參考站點:四個 tol=1e-30（新舊語意等效）,一個 tol=1e-10（C11 平衡殘差,舊語意實際要求恰為 0 且恰好一直是 0） | expect=0 改走**絕對比較** \|got\|≤tol,與 evidence.py 一貫的雙指標同構 | C11 那條從「恰為 0」放寬到「≤1e-10 絕對」——這是**放寬**,照登;放寬後的線即為作者當初寫下 1e-10 時的本意 |
 
 ## Evidence
 

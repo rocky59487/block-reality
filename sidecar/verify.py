@@ -18,11 +18,22 @@ fails = []
 
 
 def check(tag, got, expect, tol):
-    rel = abs(got - expect) / max(abs(expect), 1e-30)
-    ok = math.isfinite(got) and rel <= tol
+    # A zero reference has no relative error: |got| is compared ABSOLUTELY against
+    # tol. The old formula divided by 1e-30, which silently turned every zero-
+    # reference line into an exact-zero assertion and made the caller's tolerance
+    # a dead parameter (TEST-8) — the caller believed slack existed that did not.
+    # Same split evidence.py has always made, registered in GATES.md.
+    if expect == 0:
+        err = abs(got)
+        ok = math.isfinite(got) and err <= tol
+        label = f"abs={err:.2e}"
+    else:
+        err = abs(got - expect) / abs(expect)
+        ok = math.isfinite(got) and err <= tol
+        label = f"rel={err:.2e}"
     if not ok:
         fails.append(tag)
-    print(f"  {'[PASS]' if ok else '[FAIL]'} {tag:<38} got={got:<14.6g} exp={expect:<14.6g} rel={rel:.2e}")
+    print(f"  {'[PASS]' if ok else '[FAIL]'} {tag:<38} got={got:<14.6g} exp={expect:<14.6g} {label}")
 
 
 def check_true(tag, cond, detail=""):
