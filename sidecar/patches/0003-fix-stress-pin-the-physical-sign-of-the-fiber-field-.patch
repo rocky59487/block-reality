@@ -1,0 +1,207 @@
+From 10395c3c4c5f7442702318a22160b4920301de0d Mon Sep 17 00:00:00 2001
+From: rocky59487 <hankqaq.tmd.tw@gmail.com>
+Date: Thu, 20 Aug 2026 11:41:38 +0800
+Subject: [PATCH 3/3] fix(stress): pin the physical sign of the fiber field;
+ guard neutral axis against round-off
+
+The fiber kernel's Mz term was inverted relative to the solver's own end-force
+convention: a cantilever tip-loaded downward reports Mz_i = +PL at the root, where
+the top fibre is physically in TENSION, so compression-positive sigma is
+sN - Mz*y/Iz. The My term has the opposite hand (+My puts +z in compression) and
+was already correct. Every prior fiber gate compared magnitudes (pure bending is
+sign-blind), so 76 gates passed with the flip; F77 pins tension/compression on
+both bending axes with closed-form magnitudes.
+
+Neutral axis follows the corrected profile (y0 = +(N/A)*Iz/Mz) and now requires
+the bending term to exceed 1e-12 MPa before reporting a crossing, so an
+unstressed free tip (Mz ~ 1e-9 N*mm residue) no longer grows a neutral axis
+through its centroid.
+
+frametest: ALL PASS (F1..F77).
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+---
+ .../Source/FrameCore/Private/StressField.cpp  | 19 +++--
+ .../FrameCore/Public/FrameCore/StressKernel.h | 13 ++-
+ Plugins/FrameSolver/Standalone/main.cpp       | 84 +++++++++++++++++--
+ 3 files changed, 98 insertions(+), 18 deletions(-)
+
+diff --git a/Plugins/FrameSolver/Source/FrameCore/Private/StressField.cpp b/Plugins/FrameSolver/Source/FrameCore/Private/StressField.cpp
+index 60b1802..c845273 100644
+--- a/Plugins/FrameSolver/Source/FrameCore/Private/StressField.cpp
++++ b/Plugins/FrameSolver/Source/FrameCore/Private/StressField.cpp
+@@ -74,19 +74,20 @@ inline void fillSample(MemberStressSample& s,
+     s.tauShear   = memberShearPeak(Vy, Vz, sec.A, sec.shape);
+     s.tauTorsion = memberTorsionTau(T, sec.J, sec.cy, sec.cz, sec.shape);
+ 
+-    // Neutral axis (F75). sigma is linear across the depth: along local y,
+-    // sigma(y) = N/A + Mz*y/Iz, which crosses zero at y0 = -(N/A)*Iz/Mz. Reported
+-    // only when the crossing falls strictly INSIDE the section; a section whose two
+-    // extreme fibres carry the same sign has no neutral axis, and inventing one at
+-    // the centroid would draw a line through a member that does not have one. The
+-    // interlock is definitional: memberFiberSigma evaluated at y0 must return zero.
++    // Neutral axis (F75). sigma is linear across the depth: along local y (F77 sign),
++    // sigma(y) = N/A - Mz*y/Iz, which crosses zero at y0 = +(N/A)*Iz/Mz. Reported
++    // only when the crossing falls strictly INSIDE the section AND the bending term
++    // is not mere round-off: a section whose two extreme fibres carry the same sign
++    // has no neutral axis, and an unstressed free tip (Mz ~ 1e-9 residue) must not
++    // grow one through the centroid either. The interlock is definitional:
++    // memberFiberSigma evaluated at the offset must return zero.
+     const real safeA = (sec.A > 0) ? sec.A : real(1e-12);
+     const real sN = N / safeA;
+-    if (Mz != 0 && sec.Iz > 0) {
+-        const real y0 = -sN * sec.Iz / Mz;
++    if (sec.Iz > 0 && std::fabs((double)(Mz * sec.cz / sec.Iz)) > 1e-12) {
++        const real y0 = sN * sec.Iz / Mz;
+         if (std::fabs((double)y0) < sec.cz) { s.hasNaY = true; s.naY = y0; }
+     }
+-    if (My != 0 && sec.Iy > 0) {
++    if (sec.Iy > 0 && std::fabs((double)(My * sec.cy / sec.Iy)) > 1e-12) {
+         const real z0 = -sN * sec.Iy / My;
+         if (std::fabs((double)z0) < sec.cy) { s.hasNaZ = true; s.naZ = z0; }
+     }
+diff --git a/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/StressKernel.h b/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/StressKernel.h
+index f6552a9..2975b18 100644
+--- a/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/StressKernel.h
++++ b/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/StressKernel.h
+@@ -46,6 +46,15 @@ enum class MemberFiber : int { TopY = 0, BotY = 1, PlusZ = 2, MinusZ = 3 };
+ // local z, b/2). The pre-F72 pairing used cy with Iz, which on a square section is
+ // invisible (cy == cz) and on a 200x400 returned exactly half the extreme-fibre
+ // stress. Every fixture was square; F72 pins the non-square closed form.
++//
++// SIGN (F77): THE TWO BENDING TERMS CARRY OPPOSITE SIGNS, and that is measured, not
++// assumed. With this solver's end-force convention a cantilever tip-loaded along
++// local -y reports Mz_i = +PL at the root, where the top fibre is physically in
++// TENSION; so +Mz puts +y in tension, and the compression-positive fibre stress is
++// sN - Mz*y/Iz. The same probe along local -z reports My_i with the OTHER hand:
++// +My puts +z in compression, sN + My*z/Iy. Every pre-F77 gate compared magnitudes
++// (F68's pure-bending |M|/Wz is sign-blind), so the physical orientation was never
++// pinned; F77 pins it with tension/compression assertions on both axes.
+ [[nodiscard]] inline real memberFiberSigma(real N, real A,
+                                            real My, real Mz,
+                                            real Iy, real Iz,
+@@ -57,8 +66,8 @@ enum class MemberFiber : int { TopY = 0, BotY = 1, PlusZ = 2, MinusZ = 3 };
+     const real safeIz = (Iz > 0) ? Iz : real(1e-12);
+     const real sN = N / safeA;
+     switch (fiber) {
+-        case MemberFiber::TopY:   return sN + Mz * ( cz) / safeIz;
+-        case MemberFiber::BotY:   return sN + Mz * (-cz) / safeIz;
++        case MemberFiber::TopY:   return sN - Mz * ( cz) / safeIz;
++        case MemberFiber::BotY:   return sN - Mz * (-cz) / safeIz;
+         case MemberFiber::PlusZ:  return sN + My * ( cy) / safeIy;
+         case MemberFiber::MinusZ: return sN + My * (-cy) / safeIy;
+     }
+diff --git a/Plugins/FrameSolver/Standalone/main.cpp b/Plugins/FrameSolver/Standalone/main.cpp
+index 6406abb..9b52155 100644
+--- a/Plugins/FrameSolver/Standalone/main.cpp
++++ b/Plugins/FrameSolver/Standalone/main.cpp
+@@ -4432,12 +4432,12 @@ int main() {
+         std::printf("[F72] fiber kernel non-square oracle (200x400)\n");
+         const Section ns = Section::Rectangular(200.0, 400.0);   // b=200 (local z), d=400 (local y)
+         const real Mzb = 1.0e6, Myb = 2.0e6;
+-        checkClose("F72 TopY   = +Mz*cz/Iz (= Mz/Wz)",
++        checkClose("F72 TopY   = -Mz*cz/Iz (|.| = Mz/Wz; F77 sign)",
+                    memberFiberSigma(0, ns.A, 0, Mzb, ns.Iy, ns.Iz, ns.cy, ns.cz, MemberFiber::TopY),
+-                   Mzb * ns.cz / ns.Iz, 1e-12);
+-        checkClose("F72 BotY   = -Mz*cz/Iz",
+-                   memberFiberSigma(0, ns.A, 0, Mzb, ns.Iy, ns.Iz, ns.cy, ns.cz, MemberFiber::BotY),
+                    -Mzb * ns.cz / ns.Iz, 1e-12);
++        checkClose("F72 BotY   = +Mz*cz/Iz",
++                   memberFiberSigma(0, ns.A, 0, Mzb, ns.Iy, ns.Iz, ns.cy, ns.cz, MemberFiber::BotY),
++                   Mzb * ns.cz / ns.Iz, 1e-12);
+         checkClose("F72 PlusZ  = +My*cy/Iy (= My/Wy)",
+                    memberFiberSigma(0, ns.A, Myb, 0, ns.Iy, ns.Iz, ns.cy, ns.cz, MemberFiber::PlusZ),
+                    Myb * ns.cy / ns.Iy, 1e-12);
+@@ -4670,9 +4670,9 @@ int main() {
+             const StressField fld = computeStressField(m, r, 11);
+             const MemberStressSample& s0 = fld.members.front().samples.front();
+             checkTrue("F75(b) axial+bending: hasNaY", s0.hasNaY, "");
+-            const real y0 = -(s0.N / ns.A) * ns.Iz / s0.Mz;
+-            checkClose("F75(b) naY == -(N/A)*Iz/Mz", s0.naY, y0, 1e-12);
+-            const real sigmaAtNa = s0.N / ns.A + s0.Mz * s0.naY / ns.Iz;
++            const real y0 = (s0.N / ns.A) * ns.Iz / s0.Mz;
++            checkClose("F75(b) naY == +(N/A)*Iz/Mz (F77 sign)", s0.naY, y0, 1e-12);
++            const real sigmaAtNa = s0.N / ns.A - s0.Mz * s0.naY / ns.Iz;
+             checkTrue("F75(b) sigma(naY) == 0 (definitional interlock)",
+                       std::fabs((double)sigmaAtNa) < 1e-12 * std::fabs((double)s0.sigmaFiberTopY),
+                       "sigma=" + std::to_string((double)sigmaAtNa));
+@@ -4689,6 +4689,76 @@ int main() {
+         }
+     }
+ 
++    // ---------- F77: physical orientation of the fiber field ----------
++    // Every fiber gate before this one compared MAGNITUDES (pure bending makes
++    // sigmaCompMax == sigmaTensMax == |M|/W, which is sign-blind), so the physical
++    // orientation of the bending terms was never pinned and a flipped sign passed
++    // 76 gates. This one states the physics: a cantilever tip-loaded DOWNWARD is in
++    // TENSION on its top face at the root (compression-positive sigma < 0), on both
++    // bending axes, with the magnitude tied to the closed form.
++    {
++        std::printf("[F77] physical orientation of the fiber field\n");
++        Material smat(200000.0, 200000.0 / (2.0 * 1.29), 7850.0);
++        smat.nu  = 0.29;
++        smat.cap = Capacity::make(350.0, 500.0, 200.0);
++        const Section ns = Section::Rectangular(200.0, 400.0);
++        const real L = 2000.0, P = 1000.0;
++
++        auto tipDown = [&](const Vec3& refVec) {
++            FrameModel m;
++            Node ni(1, 0, 0, 0); ni.fixAll();
++            Node nj(2, L, 0, 0);
++            m.nodes.push_back(ni);
++            m.nodes.push_back(nj);
++            m.materials.push_back(smat);
++            m.sections.push_back(ns);
++            Member mem(1, 1, 2, 0, 0);
++            mem.refVec = refVec;
++            m.members.push_back(mem);
++            NodalLoad nl;
++            nl.node = 2;
++            nl.comp[Uz] = -P;          // global -Z: straight down
++            m.nodalLoads.push_back(nl);
++            return m;
++        };
++
++        // (a) default frame: local +y is global +Z, the top face is TopY.
++        {
++            FrameModel m = tipDown(Vec3{ 0, 0, 1 });
++            SolveResult r = solve(m);
++            checkTrue("F77(a) non-singular", !r.singular, r.diagnostic);
++            const StressField fld = computeStressField(m, r, 11);
++            const MemberStressSample& s0 = fld.members.front().samples.front();
++            checkTrue("F77(a) root TOP fibre in TENSION (comp-positive sigma < 0)",
++                      s0.sigmaFiberTopY < 0, "sigma=" + std::to_string((double)s0.sigmaFiberTopY));
++            checkTrue("F77(a) root BOTTOM fibre in COMPRESSION (sigma > 0)",
++                      s0.sigmaFiberBotY > 0, "sigma=" + std::to_string((double)s0.sigmaFiberBotY));
++            checkClose("F77(a) |sigma| = P*L/Wz",
++                       std::fabs((double)s0.sigmaFiberTopY), P * L / ns.Wz(), 1e-9);
++        }
++        // (b) refVec (0,1,0): local +z is global +Z, the top face is PlusZ.
++        {
++            FrameModel m = tipDown(Vec3{ 0, 1, 0 });
++            SolveResult r = solve(m);
++            checkTrue("F77(b) non-singular", !r.singular, r.diagnostic);
++            const StressField fld = computeStressField(m, r, 11);
++            const MemberStressSample& s0 = fld.members.front().samples.front();
++            const bool bendsAboutY = std::fabs((double)s0.My) > std::fabs((double)s0.Mz);
++            checkTrue("F77(b) load excites the My/PlusZ pair", bendsAboutY,
++                      "My=" + std::to_string((double)s0.My) + " Mz=" + std::to_string((double)s0.Mz));
++            // Which face is UP is measured from the actual frame, not assumed.
++            Vec3 axv, ayv, azv;
++            memberLocalAxes(m.nodes[0].pos, m.nodes[1].pos, m.members[0].refVec, axv, ayv, azv);
++            checkTrue("F77(b) local z is vertical under refVec (0,1,0)",
++                      std::fabs((double)azv.z) > 0.99, "az.z=" + std::to_string((double)azv.z));
++            const real sUp = (azv.z > 0) ? s0.sigmaFiberPlusZ : s0.sigmaFiberMinusZ;
++            checkTrue("F77(b) root upward fibre in TENSION (comp-positive sigma < 0)",
++                      sUp < 0, "sigma=" + std::to_string((double)sUp));
++            checkClose("F77(b) |sigma| = P*L/Wy",
++                       std::fabs((double)sUp), P * L / ns.Wy(), 1e-9);
++        }
++    }
++
+     // ---------- F76: clamped-edge support-moment recovery ----------
+     // MITC4 corner moments at a clamped edge are badly low (silently safe). The
+     // interior-to-boundary extrapolation 1.5*M1 - 0.5*M2 must cut the error against
+-- 
+2.53.0.windows.2
+

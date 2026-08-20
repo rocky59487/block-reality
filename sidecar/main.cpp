@@ -10,6 +10,16 @@
 //     FrameCore X = MC x      FrameCore Y = MC z      FrameCore Z = MC y
 // Gravity is -Z in FrameCore, which is -y in Minecraft. Correct by construction.
 //
+// NO MECHANICS ARE COMPUTED IN THIS FILE. Every stress, force, D/C, buckling
+// factor, neutral axis and recovery on the wire is the return value of a FrameCore
+// function, each behind the engine's own closed-form gates (F1..F76). What this
+// process owns is the MODEL — which blocks become members, plates and nodes
+// (D-006, D-010, D-016) — and the wire: JSON en/decoding, the axis map, the mm
+// scale, and one declared sign flip (compression-positive engine -> tension-
+// positive wire). The single deliberate exception is the equilibrium residual,
+// which is INDEPENDENTLY recomputed from geometry and density precisely so it can
+// cross-check the engine rather than quote it.
+//
 // Exits when stdin reaches EOF: if the parent JVM dies the pipe closes and this
 // process ends with it, so a crashed server cannot leave a zombie behind.
 
@@ -25,6 +35,7 @@
 #include "FrameCore/Section.h"
 #include "FrameCore/StressField.h"
 #include "FrameCore/StressKernel.h"
+#include "FrameCore/ShellEdgeRecovery.h"
 #include "FrameCore/MemberGeometry.h"
 #include "FrameCore/BucklingAnalysis.h"
 #include "FrameCore/BucklingResult.h"
@@ -788,44 +799,43 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         return true;
     }
 
-    // ---- fibre stress field: the data the stress overlay actually draws ----
-    // Built here rather than taken from computeStressField.
+    // ---- member stress field: every number comes from the engine -------------
     //
-    // Two reasons, both measured (see verify.py C1c):
+    // This block used to rebuild the moment diagram, the fibre stresses, the shear
+    // peak, the neutral axis and the moment extremum BY HAND, because the engine's
+    // own field carried two measured defects: StressKernel paired cy with Iz (half
+    // the extreme-fibre stress on a 200x400), and computeStressField's UDL terms
+    // had inverted signs (a free tip reconstructed 2wL and wL^2 instead of zero).
     //
-    //  1. StressKernel::memberFiberSigma pairs Mz with cy and My with cz, while
-    //     the rest of the engine pairs them the other way: ElasticAllowable
-    //     screens against Wz = Iz/cz, and a cantilever's tip deflection is
-    //     exactly P L^3 / (3 E Iz) to machine precision. On a square section
-    //     cy == cz and the difference is invisible; on a 200x400 section the
-    //     kernel returns half the extreme-fibre stress.
+    // Both are now FIXED IN THE ENGINE, behind the engine's own gates — FrameCore
+    // F72 (non-square fiber closed form), F73 (UDL closed form on all three local
+    // axes), F74 (analytic extremum station), F75 (neutral axis) — carried as
+    // sidecar/patches/ until upstream merges them. So this process computes
+    // NOTHING here: it maps the engine's stations onto the wire. What remains on
+    // this side, all declared at the top of this file, is the axis map fcToMc, the
+    // block-to-mm scale, and the single compression-to-tension sign flip.
     //
-    //  2. computeStressField's station moments carry the distributed-load
-    //     curvature with the wrong sign: on a cantilever it reconstructs a
-    //     non-zero moment at the free tip, where the member's own end forces
-    //     (which ARE correct) report zero.
+    // Station layout: kUniformStations uniform samples PLUS the analytic interior
+    // extremum of each bending diagram (F74). Screening only uniform stations
+    // reports a propped cantilever's span peak (at x = 5L/8) low; screening only
+    // the two ends reports a simply supported beam under its own weight as
+    // UNSTRESSED — the silently-safe answer, the worst kind (issue #14).
     //
-    // The member end forces are trustworthy, so the diagram is rebuilt from them
-    // by textbook superposition:
-    //     M(x) = M_i (1-t) + M_j t + (w/2) x (L-x)          t = x/L
-    // — the straight line between the two verified end moments, plus the
-    // parabola a uniform load adds, which vanishes at both ends by construction.
-    // Shear is linear under a uniform load, so interpolating it is exact.
-    //
-    // D/C IS TAKEN FROM THESE STATIONS, NOT FROM THE TWO ENDS. Screening only the ends
-    // reports a simply supported beam under its own weight as unstressed: both end
-    // moments are zero while midspan carries wL^2/8. That is a "silently safe" answer,
-    // the most dangerous kind (issue #14). The uniform stations are joined by the
-    // ANALYTIC extremum of the moment diagram, so the controlling section is captured
-    // exactly rather than nearly.
+    // D/C at each station goes through ElasticAllowable::checkSection on the
+    // station's own section forces — the same engine screen, fed the same numbers
+    // the overlay draws. One recovery, one set of numbers: the picture and the
+    // decision cannot disagree.
     const int kUniformStations = 11;
     frame::ElasticAllowable strength;
+    const frame::StressField field = frame::computeStressField(m, r, kUniformStations,
+                                                               /*includeMomentExtrema=*/true);
 
-    for (size_t k = 0; k < r.memberForces.size() && k < mo.size(); ++k) {
+    for (const frame::MemberStressTrace& tr : field.members) {
+        const size_t k = static_cast<size_t>(tr.memberIdx);
+        if (k >= mo.size() || k >= m.members.size()) continue;
         const frame::Member&  mem = m.members[k];
         const frame::Section& sec = m.sections[mem.secIdx];
         const frame::Capacity& cap = m.materials[mem.matIdx].cap;
-        const frame::MemberForcePair& mf = r.memberForces[k];
 
         const int ii = m.nodeIndex(mem.i), ij = m.nodeIndex(mem.j);
         if (ii < 0 || ij < 0) continue;
@@ -839,45 +849,13 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         const McVec dPlusZ = fcToMc(az);
         const McVec dMinZ  = McVec{ -dPlusZ.x, -dPlusZ.y, -dPlusZ.z };
 
-        // Self-weight was added as a member UDL in local axes; read it back so the
-        // parabolic term uses the same numbers the solver did.
+        // The member's UDL, read back for the wire's field spec so the client
+        // evaluates the same distributed load the solver carried.
         double wy = 0, wz = 0;
         for (const frame::MemberUDL& u : m.memberUDLs)
-            if (u.member == mem.id) { wy = u.w_local.y; wz = u.w_local.z; }
-
-        // ---- end J into the SAME section convention as end I -------------------
-        //
-        // FrameCore reports end J as an ELEMENT END ACTION: what the element applies at
-        // its own end. Its sign therefore flips with the element's direction, and it is
-        // NOT the section force there. Measured, not assumed (probe in ENGINE_FINDINGS):
-        //
-        //   fixed-fixed beam under self weight, split at midspan into two members
-        //     member 1:  endI.Mz = +3.2857e7   endJ.Mz = +1.64285e7
-        //     member 2:  endI.Mz = -1.64285e7  endJ.Mz = -3.2857e7
-        //
-        //   The two members meet at midspan and report OPPOSITE signs for the same
-        //   section. Negating end J makes them agree, and makes the magnitudes match
-        //   the closed form wL^2/12 at the supports and wL^2/24 at midspan.
-        //
-        //   N is already a section force and must NOT be flipped: a bar in uniform
-        //   tension reads -100000 at BOTH ends. T, Vy, Vz, My, Mz are all end actions.
-        //
-        // Without this the reconstructed diagram never changes sign along a member. A
-        // cantilever hid it completely, because its free end carries no moment at all —
-        // which is why every fixture passed while a beam held at both ends came out
-        // reading tension along its whole length, supports and midspan alike.
-        frame::MemberEndForces fj = mf.endJ;
-        fj.Vy = -fj.Vy;
-        fj.Vz = -fj.Vz;
-        fj.T  = -fj.T;
-        fj.My = -fj.My;
-        fj.Mz = -fj.Mz;
+            if (u.member == mem.id) { wy += u.w_local.y; wz += u.w_local.z; }
 
         auto& dst = mo[k];
-        const double L = dst.lengthMm;
-        dst.fi = mf.endI;
-        dst.fj = fj;                      // the wire reports both ends as section forces
-
         dst.originMm = fcToMc(pi);
         dst.axisX = fcToMc(ax);
         dst.axisY = dTopY;
@@ -890,108 +868,59 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         dst.wy = wy;
         dst.wz = wz;
 
-        // Uniform stations for the picture, plus the analytic moment extremum for the
-        // check. M(x) = M_i(1-t) + M_j t + (w/2) x (L-x), so dM/dx = 0 at
-        //     x* = L/2 + (M_j - M_i) / (w L)
-        // which lands at midspan for a symmetric simply supported beam and outside the
-        // member (hence discarded) for a cantilever.
-        std::vector<double> ts;
-        ts.reserve(kUniformStations + 2);
-        for (int q = 0; q < kUniformStations; ++q) {
-            ts.push_back(static_cast<double>(q) / (kUniformStations - 1));
-        }
-        auto addExtremum = [&](double mi, double mj, double w) {
-            if (std::fabs(w) < 1e-12 || L <= 0) return;
-            const double xs = L / 2.0 + (mj - mi) / (w * L);
-            const double t = xs / L;
-            if (t > 1e-9 && t < 1 - 1e-9) ts.push_back(t);
+        // Both wire ends are SECTION forces, taken from the engine's reconstruction
+        // at x = 0 and x = L. At x = 0 that IS endI verbatim; at x = L it equals the
+        // engine's end action with the section-convention sign, but the number now
+        // comes out of the gated reconstruction (F73) instead of a hand-flip here.
+        auto endForcesAt = [](const frame::MemberStressSample& s) {
+            frame::MemberEndForces f;
+            f.N = s.N; f.Vy = s.Vy; f.Vz = s.Vz; f.T = s.T; f.My = s.My; f.Mz = s.Mz;
+            return f;
         };
-        addExtremum(mf.endI.Mz, fj.Mz, wy);
-        addExtremum(mf.endI.My, fj.My, wz);
-        std::sort(ts.begin(), ts.end());
-        ts.erase(std::unique(ts.begin(), ts.end(),
-                             [](double a, double b) { return std::fabs(a - b) < 1e-9; }),
-                 ts.end());
+        if (!tr.samples.empty()) {
+            dst.fi = endForcesAt(tr.samples.front());
+            dst.fj = endForcesAt(tr.samples.back());
+        }
 
-        for (size_t q = 0; q < ts.size(); ++q) {
-            const double t = ts[q];
-            const double x = t * L;
-
-            const double Nx  = mf.endI.N  * (1 - t) + fj.N  * t;
-            const double Vyx = mf.endI.Vy * (1 - t) + fj.Vy * t;
-            const double Mzx = mf.endI.Mz * (1 - t) + fj.Mz * t + (wy / 2.0) * x * (L - x);
-            const double Myx = mf.endI.My * (1 - t) + fj.My * t + (wz / 2.0) * x * (L - x);
+        for (size_t q = 0; q < tr.samples.size(); ++q) {
+            const frame::MemberStressSample& s = tr.samples[q];
+            const double t = (dst.lengthMm > 0) ? s.x / dst.lengthMm : 0.0;
 
             SolveOut::Station st;
-            st.xMm = x;
+            st.xMm = s.x;
             const frame::Vec3 wp{ pi.x + (pj.x - pi.x) * t,
                                   pi.y + (pj.y - pi.y) * t,
                                   pi.z + (pj.z - pi.z) * t };
             st.worldMm = fcToMc(wp);
 
-            // FrameCore's N is compression-positive; the axial term is negated for
-            // the tension-positive output. The bending sign is pinned by physics
-            // and locked by C1c: a cantilever pushed down must read TENSION on top.
-            // sigma(x, y, z) = -N/A + Mz*y/Iz - My*z/Iy      (tension-positive)
-            //
-            // THE TWO BENDING TERMS CARRY OPPOSITE SIGNS. That is not a typo: with a
-            // right-handed local triad, +Mz puts +y in tension while +My puts +z in
-            // COMPRESSION. Measured, not assumed — a cantilever pushed along local -z
-            // deflects that way and must therefore be in tension on +z, while
-            // +My*cy/Iy comes out negative there (probe in ENGINE_FINDINGS finding 5).
-            //
-            // Every fixture until now bent about one axis only, so the My term was
-            // always zero and its sign never mattered.
-            const double axial = toTensionPositive(Nx / sec.A);
-            const double bendY = (sec.Iz > 0) ? Mzx * sec.cz / sec.Iz : 0.0;  // varies along local y
-            const double bendZ = (sec.Iy > 0) ? Myx * sec.cy / sec.Iy : 0.0;  // varies along local z
+            // Engine fibre sigmas are COMPRESSION-POSITIVE; the wire is
+            // TENSION-POSITIVE. One flip, here, per the convention at the top.
+            st.fibres.push_back({ "TOP_Y",   dTopY,  sec.cz, toTensionPositive(s.sigmaFiberTopY) });
+            st.fibres.push_back({ "BOT_Y",   dBotY,  sec.cz, toTensionPositive(s.sigmaFiberBotY) });
+            st.fibres.push_back({ "PLUS_Z",  dPlusZ, sec.cy, toTensionPositive(s.sigmaFiberPlusZ) });
+            st.fibres.push_back({ "MINUS_Z", dMinZ,  sec.cy, toTensionPositive(s.sigmaFiberMinusZ) });
 
-            const double sTop = axial + bendY;
-            const double sBot = axial - bendY;
-            const double sPls = axial - bendZ;
-            const double sMin = axial + bendZ;
+            // Worst-corner demand magnitudes, same numbers ElasticAllowable screens
+            // (a corner governs under biaxial bending, where a face midpoint is low).
+            st.sigmaTens = s.sigmaTensMax;
+            st.sigmaComp = s.sigmaCompMax;
+            st.tauShear  = s.tauShear;   // k*V/A with the section's own k: 1.5 rect, 4/3 circle
 
-            st.fibres.push_back({ "TOP_Y",   dTopY,  sec.cz, sTop });
-            st.fibres.push_back({ "BOT_Y",   dBotY,  sec.cz, sBot });
-            st.fibres.push_back({ "PLUS_Z",  dPlusZ, sec.cy, sPls });
-            st.fibres.push_back({ "MINUS_Z", dMinZ,  sec.cy, sMin });
+            // Neutral axis, where the engine says the linear profile crosses zero
+            // (F75). Absent means the section is fully tensile or fully compressive.
+            st.hasNaY    = s.hasNaY;
+            st.naOffsetY = s.naY;
+            st.hasNaZ    = s.hasNaZ;
+            st.naOffsetZ = s.naZ;
 
-            st.sigmaTens = std::max({ 0.0, sTop, sBot, sPls, sMin });
-            st.sigmaComp = std::max({ 0.0, -sTop, -sBot, -sPls, -sMin });
-            st.tauShear  = (sec.A > 0) ? 1.5 * std::fabs(Vyx) / sec.A : 0.0;
-
-            // Neutral axis. Stress is linear across the depth, so along the TOP_Y
-            // direction sigma(y) = axial + bendY * (y / cz), which is zero at
-            //     y0 = -cz * (sTop + sBot) / (sTop - sBot)
-            //
-            // The MINUS SIGN IS NOT OPTIONAL and was missing here. Add tension to a
-            // beam and the neutral axis moves DOWN, towards the compression face; the
-            // unsigned version moved it up. Pure bending has (sTop + sBot) == 0, so
-            // both versions agree, and the only test that existed checked |naY| != 0 —
-            // which the wrong sign passes (issue #15).
-            //
-            // Reported only when it really falls inside the section. A fully tensile or
-            // fully compressive section has no neutral axis, and inventing one would
-            // draw a line through a member that does not have one.
-            if ((sTop > 0) != (sBot > 0) && std::fabs(sTop - sBot) > 1e-12) {
-                st.hasNaY    = true;
-                st.naOffsetY = -sec.cz * (sTop + sBot) / (sTop - sBot);
-            }
-            if ((sPls > 0) != (sMin > 0) && std::fabs(sPls - sMin) > 1e-12) {
-                st.hasNaZ    = true;
-                st.naOffsetZ = -sec.cy * (sPls + sMin) / (sPls - sMin);
-            }
-
-            // Capacity screen AT THIS STATION, from the same recovered section forces
-            // the overlay draws. One recovery, one set of numbers: the picture and the
-            // decision can no longer disagree.
+            // Capacity screen AT THIS STATION, on the engine's own station forces.
             frame::MemberEndForces fx;
-            fx.N  = Nx;
-            fx.Vy = Vyx;
-            fx.Vz = mf.endI.Vz * (1 - t) + fj.Vz * t;
-            fx.T  = mf.endI.T  * (1 - t) + fj.T  * t;
-            fx.My = Myx;
-            fx.Mz = Mzx;
+            fx.N  = s.N;
+            fx.Vy = s.Vy;
+            fx.Vz = s.Vz;
+            fx.T  = s.T;
+            fx.My = s.My;
+            fx.Mz = s.Mz;
             const frame::DemandResult d = strength.checkSection(fx, sec, cap);
             if (d.risk > dst.dc) {
                 dst.dc               = d.risk;
@@ -1077,86 +1006,87 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         dst.vmBot = frame::principalStress(sx, sy, txy).vonMises;
     }
 
-    // ---- support-moment recovery --------------------------------------------
+    // ---- shell facets: resultants, surface stress, and the engine's screen ---
     //
-    // MITC4's per-corner moments are NOT superconvergent, and at a clamped edge they are
-    // badly low: measured against Timoshenko's clamped square plate they under-report the
-    // support moment by 63% at 4 elements across and still 26% at 14. Under-reporting the
-    // one moment that governs a slab's supports is a silently-safe answer, and this
-    // project treats those as the worst kind of wrong.
+    // A beam's D/C is the argmax of five one-dimensional ratios. A plate's is not: the
+    // state at a point on its surface is a 2-D stress TENSOR, so the screen goes through
+    // the principal stresses and von Mises, on BOTH faces, at the centre and at all four
+    // corners — frame::checkShellSurface, inside frame::recoverShellEdgeMoments below.
     //
-    // So the edge value is RECOVERED instead of read: the moment field is smooth in the
-    // interior, so it is extrapolated to the boundary from the two element CENTRES normal
-    // to that edge — the textbook interior-to-boundary recovery,
-    //     M_edge ~= 1.5*M_1 - 0.5*M_2
-    // which measures 14% low at 8 elements and 4% at 16, in place of 40% and 23%.
-    //
-    // It is applied only where it is defensible: an edge whose two corner nodes are fully
-    // fixed, with a neighbour facet whose local frame agrees with this one, so the two
-    // tensors being combined are expressed in the same axes. Anything else keeps the raw
-    // value. The recovery can only ever RAISE the reported demand — it is taken as the
-    // worse of the two — so a failure to recover cannot make a plate look safer.
-    std::map<std::array<long long, 3>, size_t> byCentre;
-    auto keyOf = [](double x, double y, double z) {
-        return std::array<long long, 3>{ llround(x), llround(y), llround(z) };
-    };
-    for (size_t k = 0; k < so.size(); ++k) {
-        if (frameOk[k]) byCentre[keyOf(cenX[k], cenY[k], cenZ[k])] = k;
-    }
-
+    // Honest boundary, carried into the docs: this is an ELASTIC SURFACE SCREEN.
+    // Transverse shear Qx/Qy is recovered and reported but NOT screened, there is no
+    // plate buckling check, and there is no plate ultimate strength.
     for (size_t k = 0; k < r.shellForces.size() && k < so.size(); ++k) {
         const frame::ShellQuad&          sh = m.shells[k];
         const frame::ShellElementForces& f  = r.shellForces[k];
         auto& dst = so[k];
-        const frame::Capacity& cap = m.materials[static_cast<size_t>(sh.matIdx)].cap;
 
-        frame::ShellDemandResult d = frame::checkShellSurface(f, sh.t, cap);
-        dst.dcRaw = d.risk;
+        dst.Nxx = f.Nxx; dst.Nyy = f.Nyy; dst.Nxy = f.Nxy;
+        dst.Mxx = f.Mxx; dst.Myy = f.Myy; dst.Mxy = f.Mxy;
+        dst.Qx  = f.Qx;  dst.Qy  = f.Qy;
 
-        if (frameOk[k]) {
-            for (int e = 0; e < 4; ++e) {
-                const int a = e, b = (e + 1) % 4;
-                const int ia = m.nodeIndex(sh.n[a]), ib = m.nodeIndex(sh.n[b]);
-                if (ia < 0 || ib < 0) continue;
-                auto allFixed = [&](int idx) {
-                    for (int q = 0; q < 6; ++q) if (!m.nodes[static_cast<size_t>(idx)].fixed[q]) return false;
-                    return true;
-                };
-                if (!allFixed(ia) || !allFixed(ib)) continue;
+        // The facet frame, rebuilt exactly as MITC4ShellElement::prepare builds it, so the
+        // axes on the wire are the axes the resultants are actually expressed in.
+        //
+        // NOTE for any reader of the wire: ex, ey, n form a right-handed triad in the
+        // ENGINE. The Minecraft axis map (x,y,z) -> (x,z,y) is a reflection, so the same
+        // three vectors read in Minecraft space are LEFT-handed: ex x ey = -n. Use them to
+        // project a point onto the facet, never to rebuild the normal by a cross product.
+        const int i0 = m.nodeIndex(sh.n[0]), i1 = m.nodeIndex(sh.n[1]);
+        const int i2 = m.nodeIndex(sh.n[2]), i3 = m.nodeIndex(sh.n[3]);
+        if (i0 < 0 || i1 < 0 || i2 < 0 || i3 < 0) continue;
+        const frame::Vec3 P0 = m.nodes[i0].pos, P1 = m.nodes[i1].pos;
+        const frame::Vec3 P2 = m.nodes[i2].pos, P3 = m.nodes[i3].pos;
+        frame::Vec3 n = frame::cross(P2 - P0, P3 - P1);
+        const double nl = frame::norm(n);
+        if (nl <= 0) continue;
+        n = n * (1.0 / nl);
+        frame::Vec3 e1 = P1 - P0;
+        e1 = e1 - n * frame::dot(e1, n);
+        const double e1l = frame::norm(e1);
+        if (e1l <= 0) continue;
+        e1 = e1 * (1.0 / e1l);
+        const frame::Vec3 e2 = frame::cross(n, e1);
+        dst.ex     = fcToMc(e1);
+        dst.ey     = fcToMc(e2);
+        dst.normal = fcToMc(n);
 
-                const frame::Vec3& Pa = m.nodes[ia].pos;
-                const frame::Vec3& Pb = m.nodes[ib].pos;
-                const double mx = 0.5 * (Pa.x + Pb.x), my = 0.5 * (Pa.y + Pb.y), mz = 0.5 * (Pa.z + Pb.z);
-                // Step twice the centre-to-edge vector, inwards: that lands on the centre
-                // of the next facet in from the boundary.
-                auto it = byCentre.find(keyOf(cenX[k] + 2 * (cenX[k] - mx),
-                                              cenY[k] + 2 * (cenY[k] - my),
-                                              cenZ[k] + 2 * (cenZ[k] - mz)));
-                if (it == byCentre.end()) continue;
-                const size_t nb = it->second;
-                if (!frameOk[nb]) continue;
-                if (frame::dot(facetAxes[k][0], facetAxes[nb][0]) < 0.999 ||
-                    frame::dot(facetAxes[k][1], facetAxes[nb][1]) < 0.999) continue;
+        // Centre-face von Mises on both faces, through the engine's own layer kernel.
+        double sx = 0, sy = 0, txy = 0;
+        frame::shellLayerSigma(f.Nxx, f.Nyy, f.Nxy, f.Mxx, f.Myy, f.Mxy, sh.t,
+                               frame::ShellLayer::Top, sx, sy, txy);
+        dst.vmTop = frame::principalStress(sx, sy, txy).vonMises;
+        frame::shellLayerSigma(f.Nxx, f.Nyy, f.Nxy, f.Mxx, f.Myy, f.Mxy, sh.t,
+                               frame::ShellLayer::Bot, sx, sy, txy);
+        dst.vmBot = frame::principalStress(sx, sy, txy).vonMises;
+    }
 
-                frame::ShellElementForces g = f;
-                const frame::ShellElementForces& h = r.shellForces[nb];
-                const double rxx = 1.5 * f.Mxx - 0.5 * h.Mxx;
-                const double ryy = 1.5 * f.Myy - 0.5 * h.Myy;
-                const double rxy = 1.5 * f.Mxy - 0.5 * h.Mxy;
-                for (int c : { a, b }) { g.MxxC[c] = rxx; g.MyyC[c] = ryy; g.MxyC[c] = rxy; }
-                const frame::ShellDemandResult dr = frame::checkShellSurface(g, sh.t, cap);
-                if (dr.risk > d.risk) {
-                    d = dr;
-                    dst.edgeRecovered = true;
-                    dst.Mc[static_cast<size_t>(a)] = { rxx, ryy, rxy };
-                    dst.Mc[static_cast<size_t>(b)] = { rxx, ryy, rxy };
-                }
-            }
+    // ---- support-moment recovery: owned by the engine ------------------------
+    //
+    // MITC4's corner moments at a clamped edge are badly low — measured ~40% under
+    // Timoshenko's clamped-plate support moment at 8 elements across — and under-
+    // reporting the one moment that governs a slab's supports is a silently-safe
+    // answer, the worst kind. The interior-to-boundary extrapolation that fixes it
+    // (M_edge ~= 1.5*M1 - 0.5*M2, adopted only where it RAISES the screened demand)
+    // used to be implemented here, in the adapter; it now lives in the engine as
+    // frame::recoverShellEdgeMoments, behind FrameCore's own gate (F76: raw 39.7%
+    // low -> recovered 14.0% low at 8 elements). This side copies the verdicts —
+    // demand, governing face and corner, per-corner recovered and raw moments —
+    // onto the wire, and computes nothing.
+    const std::vector<frame::ShellEdgeRecoveryResult> rec = frame::recoverShellEdgeMoments(m, r);
+    for (const frame::ShellEdgeRecoveryResult& e : rec) {
+        const size_t k = static_cast<size_t>(e.shellIdx);
+        if (k >= so.size()) continue;
+        auto& dst = so[k];
+        dst.dcRaw           = e.riskRaw;
+        dst.dc              = e.risk;
+        dst.governingTop    = e.top;
+        dst.governingCorner = e.corner;
+        dst.edgeRecovered   = e.recovered;
+        for (size_t c = 0; c < 4; ++c) {
+            dst.Mc[c]    = { e.Mc[c][0],    e.Mc[c][1],    e.Mc[c][2] };
+            dst.McRaw[c] = { e.McRaw[c][0], e.McRaw[c][1], e.McRaw[c][2] };
         }
-
-        dst.dc              = d.risk;
-        dst.governingTop    = d.top;
-        dst.governingCorner = d.corner;
 
         if (dst.dc > out.maxDC) {
             out.maxDC = dst.dc;

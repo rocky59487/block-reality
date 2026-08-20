@@ -1,0 +1,586 @@
+From 93f33a12519df09951d2db0c71c9eb453138eaaf Mon Sep 17 00:00:00 2001
+From: rocky59487 <hankqaq.tmd.tw@gmail.com>
+Date: Thu, 20 Aug 2026 11:30:50 +0800
+Subject: [PATCH 2/3] feat(stress): moment-extremum stations, neutral axis,
+ clamped-edge shell recovery
+
+Three post-processing capabilities that consumers (the Block Reality sidecar) were
+computing by hand outside the engine. Owning them here puts every mechanics number
+behind the engine's own gates and leaves adapters with nothing to compute:
+
+- computeStressField(.., includeMomentExtrema): additionally samples each member at
+  the analytic interior extremum of its moment diagrams (dM/dx = 0). A uniform grid
+  misses a propped cantilever's span peak at x = 5L/8; the screen must not. Default
+  off; layout bit-identical when off. Gate: F74 (9wL^2/128 closed form, rel 0).
+
+- MemberStressSample.naY/naZ (+hasNaY/hasNaZ): neutral-axis offset where the linear
+  sigma profile crosses zero, y0 = -(N/A)*Iz/Mz, reported only when strictly inside
+  the section. Gate: F75 (closed form + definitional sigma(y0) == 0 interlock).
+
+- recoverShellEdgeMoments(model, sr): clamped-edge support-moment recovery
+  M_edge ~= 1.5*M1 - 0.5*M2 with the adoption rule 'only ever raises the screened
+  demand'. Against Timoshenko's clamped square plate at 8 elements per side the raw
+  corner moment is 39.7% low; recovered is 14.0% low. Gate: F76.
+
+frametest: ALL PASS (F1..F76).
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+---
+ .../FrameCore/Private/ShellEdgeRecovery.cpp   | 137 +++++++++++++
+ .../Source/FrameCore/Private/StressField.cpp  |  58 +++++-
+ .../Public/FrameCore/ShellEdgeRecovery.h      |  58 ++++++
+ .../FrameCore/Public/FrameCore/StressField.h  |  21 +-
+ Plugins/FrameSolver/Standalone/main.cpp       | 191 ++++++++++++++++++
+ 5 files changed, 456 insertions(+), 9 deletions(-)
+ create mode 100644 Plugins/FrameSolver/Source/FrameCore/Private/ShellEdgeRecovery.cpp
+ create mode 100644 Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/ShellEdgeRecovery.h
+
+diff --git a/Plugins/FrameSolver/Source/FrameCore/Private/ShellEdgeRecovery.cpp b/Plugins/FrameSolver/Source/FrameCore/Private/ShellEdgeRecovery.cpp
+new file mode 100644
+index 0000000..90a18b8
+--- /dev/null
++++ b/Plugins/FrameSolver/Source/FrameCore/Private/ShellEdgeRecovery.cpp
+@@ -0,0 +1,137 @@
++#include "FrameCore/ShellEdgeRecovery.h"
++#include "FrameCore/FrameModel.h"
++#include "FrameCore/Shell.h"
++#include "FrameCore/Material.h"
++#include <cmath>
++#include <map>
++
++namespace frame {
++
++namespace {
++
++struct FacetGeom {
++    bool ok = false;
++    Vec3 e1{ 0, 0, 0 }, e2{ 0, 0, 0 };
++    real cx = 0, cy = 0, cz = 0;
++};
++
++// The facet frame, rebuilt exactly as MITC4ShellElement::prepare builds it, so the
++// tensors being compared are expressed in the axes the resultants actually use.
++FacetGeom facetGeom(const FrameModel& m, const ShellQuad& sh) {
++    FacetGeom g;
++    const int i0 = m.nodeIndex(sh.n[0]), i1 = m.nodeIndex(sh.n[1]);
++    const int i2 = m.nodeIndex(sh.n[2]), i3 = m.nodeIndex(sh.n[3]);
++    if (i0 < 0 || i1 < 0 || i2 < 0 || i3 < 0) return g;
++    const Vec3 P0 = m.nodes[(size_t)i0].pos, P1 = m.nodes[(size_t)i1].pos;
++    const Vec3 P2 = m.nodes[(size_t)i2].pos, P3 = m.nodes[(size_t)i3].pos;
++    Vec3 n = cross(P2 - P0, P3 - P1);
++    const real nl = norm(n);
++    if (!(nl > 0)) return g;
++    n = n * (real(1) / nl);
++    Vec3 e1 = P1 - P0;
++    e1 = e1 - n * dot(e1, n);
++    const real e1l = norm(e1);
++    if (!(e1l > 0)) return g;
++    g.e1 = e1 * (real(1) / e1l);
++    g.e2 = cross(n, g.e1);
++    g.cx = real(0.25) * (P0.x + P1.x + P2.x + P3.x);
++    g.cy = real(0.25) * (P0.y + P1.y + P2.y + P3.y);
++    g.cz = real(0.25) * (P0.z + P1.z + P2.z + P3.z);
++    g.ok = true;
++    return g;
++}
++
++} // namespace
++
++std::vector<ShellEdgeRecoveryResult> recoverShellEdgeMoments(const FrameModel& m,
++                                                             const SolveResult& sr) {
++    const size_t nS = std::min(m.shells.size(), sr.shellForces.size());
++
++    // Geometry pass + centre index. The neighbour search steps twice the
++    // centre-to-edge-midpoint vector inwards; on a regular mesh that lands exactly on
++    // the next facet's centre, keyed here to the nearest integer millimetre.
++    std::vector<FacetGeom> geom(nS);
++    std::map<std::array<long long, 3>, size_t> byCentre;
++    auto keyOf = [](real x, real y, real z) {
++        return std::array<long long, 3>{ llround((double)x), llround((double)y), llround((double)z) };
++    };
++    std::vector<size_t> slot(nS, (size_t)-1);
++    std::vector<ShellEdgeRecoveryResult> out;
++    out.reserve(nS);
++    for (size_t k = 0; k < nS; ++k) {
++        const ShellQuad& sh = m.shells[k];
++        if (!sh.active || !(sh.t > 0)) continue;
++        if (sh.matIdx < 0 || sh.matIdx >= (int)m.materials.size()) continue;
++        geom[k] = facetGeom(m, sh);
++        if (!geom[k].ok) continue;
++        byCentre[keyOf(geom[k].cx, geom[k].cy, geom[k].cz)] = k;
++
++        ShellEdgeRecoveryResult r;
++        r.shellIdx = (int)k;
++        r.shellId  = sh.id;
++        const ShellElementForces& f = sr.shellForces[k];
++        for (int c = 0; c < 4; ++c) {
++            r.McRaw[(size_t)c] = { f.MxxC[c], f.MyyC[c], f.MxyC[c] };
++            r.Mc[(size_t)c]    = r.McRaw[(size_t)c];
++        }
++        slot[k] = out.size();
++        out.push_back(r);
++    }
++
++    for (size_t k = 0; k < nS; ++k) {
++        if (slot[k] == (size_t)-1) continue;
++        ShellEdgeRecoveryResult& dst = out[slot[k]];
++        const ShellQuad& sh = m.shells[k];
++        const ShellElementForces& f = sr.shellForces[k];
++        const Capacity& cap = m.materials[(size_t)sh.matIdx].cap;
++
++        ShellDemandResult d = checkShellSurface(f, sh.t, cap);
++        dst.riskRaw = d.risk;
++
++        for (int e = 0; e < 4; ++e) {
++            const int a = e, b = (e + 1) % 4;
++            const int ia = m.nodeIndex(sh.n[a]), ib = m.nodeIndex(sh.n[b]);
++            if (ia < 0 || ib < 0) continue;
++            auto allFixed = [&](int idx) {
++                for (int q = 0; q < 6; ++q) if (!m.nodes[(size_t)idx].fixed[q]) return false;
++                return true;
++            };
++            if (!allFixed(ia) || !allFixed(ib)) continue;
++
++            const Vec3& Pa = m.nodes[(size_t)ia].pos;
++            const Vec3& Pb = m.nodes[(size_t)ib].pos;
++            const real mx = real(0.5) * (Pa.x + Pb.x);
++            const real my = real(0.5) * (Pa.y + Pb.y);
++            const real mz = real(0.5) * (Pa.z + Pb.z);
++            auto it = byCentre.find(keyOf(geom[k].cx + 2 * (geom[k].cx - mx),
++                                          geom[k].cy + 2 * (geom[k].cy - my),
++                                          geom[k].cz + 2 * (geom[k].cz - mz)));
++            if (it == byCentre.end()) continue;
++            const size_t nb = it->second;
++            if (dot(geom[k].e1, geom[nb].e1) < real(0.999) ||
++                dot(geom[k].e2, geom[nb].e2) < real(0.999)) continue;
++
++            ShellElementForces g = f;
++            const ShellElementForces& h = sr.shellForces[nb];
++            const real rxx = real(1.5) * f.Mxx - real(0.5) * h.Mxx;
++            const real ryy = real(1.5) * f.Myy - real(0.5) * h.Myy;
++            const real rxy = real(1.5) * f.Mxy - real(0.5) * h.Mxy;
++            for (int c : { a, b }) { g.MxxC[c] = rxx; g.MyyC[c] = ryy; g.MxyC[c] = rxy; }
++            const ShellDemandResult dr = checkShellSurface(g, sh.t, cap);
++            if (dr.risk > d.risk) {
++                d = dr;
++                dst.recovered = true;
++                dst.Mc[(size_t)a] = { rxx, ryy, rxy };
++                dst.Mc[(size_t)b] = { rxx, ryy, rxy };
++            }
++        }
++
++        dst.risk   = d.risk;
++        dst.top    = d.top;
++        dst.corner = d.corner;
++    }
++
++    return out;
++}
++
++} // namespace frame
+diff --git a/Plugins/FrameSolver/Source/FrameCore/Private/StressField.cpp b/Plugins/FrameSolver/Source/FrameCore/Private/StressField.cpp
+index f97a37e..60b1802 100644
+--- a/Plugins/FrameSolver/Source/FrameCore/Private/StressField.cpp
++++ b/Plugins/FrameSolver/Source/FrameCore/Private/StressField.cpp
+@@ -73,6 +73,23 @@ inline void fillSample(MemberStressSample& s,
+ 
+     s.tauShear   = memberShearPeak(Vy, Vz, sec.A, sec.shape);
+     s.tauTorsion = memberTorsionTau(T, sec.J, sec.cy, sec.cz, sec.shape);
++
++    // Neutral axis (F75). sigma is linear across the depth: along local y,
++    // sigma(y) = N/A + Mz*y/Iz, which crosses zero at y0 = -(N/A)*Iz/Mz. Reported
++    // only when the crossing falls strictly INSIDE the section; a section whose two
++    // extreme fibres carry the same sign has no neutral axis, and inventing one at
++    // the centroid would draw a line through a member that does not have one. The
++    // interlock is definitional: memberFiberSigma evaluated at y0 must return zero.
++    const real safeA = (sec.A > 0) ? sec.A : real(1e-12);
++    const real sN = N / safeA;
++    if (Mz != 0 && sec.Iz > 0) {
++        const real y0 = -sN * sec.Iz / Mz;
++        if (std::fabs((double)y0) < sec.cz) { s.hasNaY = true; s.naY = y0; }
++    }
++    if (My != 0 && sec.Iy > 0) {
++        const real z0 = -sN * sec.Iy / My;
++        if (std::fabs((double)z0) < sec.cy) { s.hasNaZ = true; s.naZ = z0; }
++    }
+ }
+ 
+ inline void fillShellPoint(ShellStressPoint& p, int cornerIdx,
+@@ -97,7 +114,8 @@ inline void fillShellPoint(ShellStressPoint& p, int cornerIdx,
+ 
+ StressField computeStressField(const FrameModel& model,
+                                const SolveResult& sr,
+-                               int samplesPerSpan)
++                               int samplesPerSpan,
++                               bool includeMomentExtrema)
+ {
+     StressField fld;
+     if (samplesPerSpan < 2) samplesPerSpan = 2;
+@@ -142,20 +160,44 @@ StressField computeStressField(const FrameModel& model,
+         const Vec3 w = findUdl(mem.id);
+         const MemberEndForces& endI = sr.memberForces[e].endI;
+ 
++        // Station layout: uniform stations, plus (F74) the analytic interior extrema of
++        // the two bending diagrams. M(x) is quadratic under a UDL, so its extremum is
++        // where the corresponding shear crosses zero: Vy(x) = Vy_i + w_y*x = 0 gives
++        // x* = -Vy_i/w_y (and Vz for My). Only interior crossings are inserted; with no
++        // UDL the shear is constant and the layout is exactly the uniform one.
++        std::vector<real> xs;
++        xs.reserve((size_t)samplesPerSpan + 2);
++        for (int k = 0; k < samplesPerSpan; ++k) {
++            xs.push_back((samplesPerSpan == 1) ? real(0)
++                                               : L * real(k) / real(samplesPerSpan - 1));
++        }
++        if (includeMomentExtrema) {
++            const real tolX = real(1e-9) * L;
++            auto addInteriorZero = [&](real V0, real wComp) {
++                if (wComp == 0) return;
++                const real xStar = -V0 / wComp;
++                if (!(xStar > tolX) || !(xStar < L - tolX)) return;
++                for (real xk : xs) if (std::fabs((double)(xk - xStar)) <= tolX) return;
++                xs.push_back(xStar);
++            };
++            addInteriorZero(endI.Vy, w.y);
++            addInteriorZero(endI.Vz, w.z);
++            std::sort(xs.begin(), xs.end());
++        }
++
+         MemberStressTrace trace;
+         trace.memberIdx = (int)e;
+         trace.memberId  = mem.id;
+-        trace.samples.resize((size_t)samplesPerSpan);
++        trace.samples.resize(xs.size());
+ 
+-        for (int k = 0; k < samplesPerSpan; ++k) {
+-            const real x = (samplesPerSpan == 1) ? real(0)
+-                                                 : L * real(k) / real(samplesPerSpan - 1);
++        for (size_t k = 0; k < xs.size(); ++k) {
++            const real x = xs[k];
+             real N=0, Vy=0, Vz=0, T=0, My=0, Mz=0;
+             internalForcesAtX(endI, w, x, N, Vy, Vz, T, My, Mz);
+-            fillSample(trace.samples[(size_t)k], x, sec, N, Vy, Vz, T, My, Mz);
++            fillSample(trace.samples[k], x, sec, N, Vy, Vz, T, My, Mz);
+ 
+-            const real worstHere = std::max(trace.samples[(size_t)k].sigmaCompMax,
+-                                            trace.samples[(size_t)k].sigmaTensMax);
++            const real worstHere = std::max(trace.samples[k].sigmaCompMax,
++                                            trace.samples[k].sigmaTensMax);
+             if (worstHere > worstMemberSigma) {
+                 worstMemberSigma = worstHere;
+                 worstMemberIdx   = static_cast<int>(e);
+diff --git a/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/ShellEdgeRecovery.h b/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/ShellEdgeRecovery.h
+new file mode 100644
+index 0000000..77984ba
+--- /dev/null
++++ b/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/ShellEdgeRecovery.h
+@@ -0,0 +1,58 @@
++#pragma once
++#include "FrameCore/FrameTypes.h"
++#include "FrameCore/SolveResult.h"
++#include "FrameCore/ElasticAllowable.h"
++#include <array>
++#include <vector>
++
++// Clamped-edge support-moment recovery for MITC4 shells (F76).
++//
++// MITC4's per-corner moments are NOT superconvergent, and at a clamped edge they are
++// badly low: against Timoshenko's clamped square plate they under-report the support
++// moment by ~63% at 4 elements across and still ~26% at 14. Under-reporting the one
++// moment that governs a slab's supports is a silently-safe answer — the worst kind.
++//
++// The edge value is therefore RECOVERED instead of read: the moment field is smooth in
++// the interior, so it is extrapolated to the boundary from the two element CENTRES
++// normal to that edge — the textbook interior-to-boundary recovery
++//     M_edge ~= 1.5*M_1 - 0.5*M_2
++// which measures ~14% low at 8 elements and ~4% at 16, in place of ~40% and ~23%.
++//
++// It is applied only where it is defensible: an edge whose two corner nodes are fully
++// fixed, with a neighbour facet found by stepping twice the centre-to-edge vector
++// inwards (a REGULAR mesh assumption — on an irregular mesh the step finds no centre
++// and the raw value is kept), whose local frame agrees with this facet's, so the two
++// tensors being combined are expressed in the same axes. The recovery is adopted only
++// when it RAISES the screened demand — it is taken as the worse of the two — so a
++// failure to recover can never make a plate look safer.
++
++namespace frame {
++
++struct FrameModel;
++
++struct ShellEdgeRecoveryResult {
++    int  shellIdx  = -1;      // index into FrameModel::shells
++    int  shellId   = 0;       // mirrors model.shells[shellIdx].id
++    bool recovered = false;   // a clamped edge fired and raised the screened demand
++    // Per-corner {Mxx, Myy, Mxy} (ShellQuad::n order): the element's own output, and
++    // the field with the recovery applied where it fired (equal to raw otherwise).
++    // Both are reported: a document that quotes the size of a correction has to be
++    // able to show the number before it as well as after.
++    std::array<std::array<real, 3>, 4> McRaw{};
++    std::array<std::array<real, 3>, 4> Mc{};
++    // The elastic surface screen on both fields, so the demand consumer reads ONE
++    // source: risk/top/corner are checkShellSurface on the recovered field, riskRaw
++    // on the element's own.
++    real risk    = 0;
++    real riskRaw = 0;
++    bool top     = true;
++    int  corner  = -1;
++};
++
++// One entry per ACTIVE shell with valid geometry, in FrameModel::shells index order
++// (inactive or degenerate shells leave no entry, mirroring computeStressField).
++// Pure function of (model, result); no Eigen, no thread state.
++[[nodiscard]] FRAMECORE_API std::vector<ShellEdgeRecoveryResult>
++recoverShellEdgeMoments(const FrameModel& model, const SolveResult& sr);
++
++} // namespace frame
+diff --git a/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/StressField.h b/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/StressField.h
+index c4bcea2..e900278 100644
+--- a/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/StressField.h
++++ b/Plugins/FrameSolver/Source/FrameCore/Public/FrameCore/StressField.h
+@@ -35,6 +35,15 @@ struct MemberStressSample {
+     real tauTorsion;       // torsional shear at extreme fibre (T * c / J)
+     // Raw internal forces at x (LOCAL, for downstream BMD/SFD visualisation).
+     real N, Vy, Vz, T, My, Mz;
++    // Neutral-axis offsets from the centroid, where the LINEAR sigma profile crosses
++    // zero (F75). sigma(y) = N/A + Mz*y/Iz is zero at y0 = -(N/A)*Iz/Mz; reported only
++    // when it falls strictly inside the section (|y0| < cz resp. |z0| < cy). A fully
++    // tensile or fully compressive section has NO neutral axis, and hasNaY/hasNaZ say
++    // so rather than defaulting the offset to a centroidal line that does not exist.
++    bool hasNaY = false;
++    real naY    = 0;       // offset along local y (crossing of the Mz bending profile)
++    bool hasNaZ = false;
++    real naZ    = 0;       // offset along local z (crossing of the My bending profile)
+ };
+ 
+ struct MemberStressTrace {
+@@ -89,8 +98,18 @@ struct StressField {
+ // Compute the stress field for a solved model. `samplesPerSpan` controls the number of
+ // along-axis samples per member (must be >= 2; default 11; sampled at x = k*L/(n-1)).
+ // Inactive members / shells are skipped (mirroring worstUtilization's contract).
++//
++// includeMomentExtrema (F74): additionally sample each member at the ANALYTIC interior
++// extremum of its bending moment diagrams, where dMz/dx = -Vy(x) = 0 resp. dMy/dx =
++// +Vz(x) = 0. Under a UDL the extremum generally falls between two uniform stations,
++// and a screen that only reads the uniform stations under-reports the very peak a
++// design check exists to find (a propped cantilever's span moment lives at x = 5L/8).
++// Extrema are inserted in x-order and deduplicated against existing stations; with no
++// UDL the shear is constant, no interior zero exists, and the samples are unchanged.
++// Default OFF: the uniform-station layout stays bit-identical to the pre-F74 contract.
+ [[nodiscard]] FRAMECORE_API StressField computeStressField(const FrameModel& model,
+                                                            const SolveResult& sr,
+-                                                           int samplesPerSpan = 11);
++                                                           int samplesPerSpan = 11,
++                                                           bool includeMomentExtrema = false);
+ 
+ } // namespace frame
+diff --git a/Plugins/FrameSolver/Standalone/main.cpp b/Plugins/FrameSolver/Standalone/main.cpp
+index 9d4cdc7..6406abb 100644
+--- a/Plugins/FrameSolver/Standalone/main.cpp
++++ b/Plugins/FrameSolver/Standalone/main.cpp
+@@ -15,6 +15,7 @@
+ #include "FrameCore/FrameSolver.h"
+ #include "FrameCore/ElasticAllowable.h"
+ #include "FrameCore/StressField.h"
++#include "FrameCore/ShellEdgeRecovery.h"
+ #include "FrameCore/Grillage.h"
+ #include "FrameCore/SelfWeight.h"
+ #include "FrameCore/Combination.h"
+@@ -4546,6 +4547,196 @@ int main() {
+         }
+     }
+ 
++    // ---------- F74: analytic moment-extremum stations ----------
++    // A screen that reads only uniform stations misses interior peaks that fall between
++    // them. Propped cantilever under UDL: the span extremum sits at x = 5L/8 with
++    // |M| = 9wL^2/128 -- never on an 11-station grid. With includeMomentExtrema the
++    // field must sample it exactly; without, the layout stays the uniform contract.
++    {
++        std::printf("[F74] analytic moment-extremum stations (propped cantilever, UDL)\n");
++        Material smat(200000.0, 200000.0 / (2.0 * 1.29), 7850.0);
++        smat.nu  = 0.29;
++        smat.cap = Capacity::make(350.0, 500.0, 200.0);
++        const Section ns = Section::Rectangular(200.0, 400.0);
++        const real L = 8000.0;
++        const real w = smat.rho * ns.A * 9810.0 * 1e-12;
++
++        FrameModel m;
++        Node ni(1, 0, 0, 0); ni.fixAll();
++        Node nj(2, L, 0, 0);
++        for (int q = 0; q < 3; ++q) nj.fixed[q] = true;   // pinned far end
++        m.nodes.push_back(ni);
++        m.nodes.push_back(nj);
++        m.materials.push_back(smat);
++        m.sections.push_back(ns);
++        m.members.push_back(Member(1, 1, 2, 0, 0));
++        addSelfWeight(m);
++        std::string why;
++        checkTrue("F74 model valid", m.validate(why), why);
++        SolveResult r = solve(m);
++        checkTrue("F74 non-singular", !r.singular, r.diagnostic);
++
++        const StressField uni = computeStressField(m, r, 11, false);
++        checkTrue("F74 uniform layout unchanged when OFF (11 stations)",
++                  uni.members.front().samples.size() == 11,
++                  "got=" + std::to_string(uni.members.front().samples.size()));
++
++        const StressField fld = computeStressField(m, r, 11, true);
++        const MemberStressTrace& tr = fld.members.front();
++        checkTrue("F74 one extremum inserted (12 stations)",
++                  tr.samples.size() == 12,
++                  "got=" + std::to_string(tr.samples.size()));
++        // Locate the non-uniform station and pin it to the closed form.
++        const real xStar = 5.0 * L / 8.0, mStar = 9.0 * w * L * L / 128.0;
++        bool found = false;
++        for (const MemberStressSample& s : tr.samples) {
++            if (std::fabs((double)(s.x - xStar)) < 1e-6 * L) {
++                found = true;
++                checkClose("F74 extremum |M| = 9wL^2/128", std::fabs((double)s.Mz), mStar, 1e-9);
++                checkTrue("F74 extremum V ~ 0", std::fabs((double)s.Vy) < 1e-9 * w * L,
++                          "V=" + std::to_string((double)s.Vy));
++            }
++        }
++        checkTrue("F74 extremum station at x = 5L/8", found, "");
++        // The cantilever's shear zero sits exactly AT the free tip: no interior
++        // extremum exists and the layout must stay uniform even when ON.
++        {
++            FrameModel mc;
++            Node ci(1, 0, 0, 0); ci.fixAll();
++            Node cj(2, L, 0, 0);
++            mc.nodes.push_back(ci);
++            mc.nodes.push_back(cj);
++            mc.materials.push_back(smat);
++            mc.sections.push_back(ns);
++            mc.members.push_back(Member(1, 1, 2, 0, 0));
++            addSelfWeight(mc);
++            SolveResult rc = solve(mc);
++            const StressField fc = computeStressField(mc, rc, 11, true);
++            checkTrue("F74 cantilever: no interior extremum, 11 stations",
++                      fc.members.front().samples.size() == 11,
++                      "got=" + std::to_string(fc.members.front().samples.size()));
++        }
++    }
++
++    // ---------- F75: neutral-axis offset ----------
++    // sigma is linear across the depth, so its zero crossing is at y0 = -(N/A)*Iz/Mz.
++    // Pure bending puts it at the centroid; axial compression pushes it towards the
++    // tension face; enough axial and the section has NO neutral axis at all, which the
++    // field must say rather than defaulting a line through the centroid.
++    {
++        std::printf("[F75] neutral-axis offset (axial + bending closed form)\n");
++        Material smat(200000.0, 200000.0 / (2.0 * 1.29), 7850.0);
++        smat.nu  = 0.29;
++        smat.cap = Capacity::make(350.0, 500.0, 200.0);
++        const Section ns = Section::Rectangular(200.0, 400.0);
++        // F sized so the crossing falls INSIDE the section: |y0| = (F/A)*Iz/(P*L)
++        // = 133 mm < cz = 200 mm. (At 2e5 the crossing sits at 1333 mm, far outside,
++        // and hasNaY == false is the CORRECT answer -- case (c) covers that regime.)
++        const real L = 2000.0, P = 1000.0, F = 2.0e4;
++
++        auto tipLoaded = [&](real axialN, real transZ) {
++            FrameModel m;
++            Node ni(1, 0, 0, 0); ni.fixAll();
++            Node nj(2, L, 0, 0);
++            m.nodes.push_back(ni);
++            m.nodes.push_back(nj);
++            m.materials.push_back(smat);
++            m.sections.push_back(ns);
++            Member mem(1, 1, 2, 0, 0);
++            m.members.push_back(mem);
++            NodalLoad nl;
++            nl.node = 2;
++            nl.comp[Ux] = axialN;    // along the member axis
++            nl.comp[Uz] = transZ;    // global +Z -> local +y (default frame)
++            m.nodalLoads.push_back(nl);
++            return m;
++        };
++
++        // (a) pure bending: neutral axis exists at the centroid.
++        {
++            FrameModel m = tipLoaded(0, P);
++            SolveResult r = solve(m);
++            const StressField fld = computeStressField(m, r, 11);
++            const MemberStressSample& s0 = fld.members.front().samples.front();
++            checkTrue("F75(a) pure bending: hasNaY", s0.hasNaY, "");
++            checkTrue("F75(a) pure bending: naY == 0 (centroid)",
++                      std::fabs((double)s0.naY) < 1e-9 * ns.cz,
++                      "naY=" + std::to_string((double)s0.naY));
++        }
++        // (b) axial + bending: y0 = -(N/A)*Iz/Mz, and sigma(y0) == 0 by the kernel.
++        {
++            FrameModel m = tipLoaded(-F, P);   // compression + bending
++            SolveResult r = solve(m);
++            const StressField fld = computeStressField(m, r, 11);
++            const MemberStressSample& s0 = fld.members.front().samples.front();
++            checkTrue("F75(b) axial+bending: hasNaY", s0.hasNaY, "");
++            const real y0 = -(s0.N / ns.A) * ns.Iz / s0.Mz;
++            checkClose("F75(b) naY == -(N/A)*Iz/Mz", s0.naY, y0, 1e-12);
++            const real sigmaAtNa = s0.N / ns.A + s0.Mz * s0.naY / ns.Iz;
++            checkTrue("F75(b) sigma(naY) == 0 (definitional interlock)",
++                      std::fabs((double)sigmaAtNa) < 1e-12 * std::fabs((double)s0.sigmaFiberTopY),
++                      "sigma=" + std::to_string((double)sigmaAtNa));
++            checkTrue("F75(b) crossing is strictly inside the section",
++                      std::fabs((double)s0.naY) < ns.cz, "");
++        }
++        // (c) axial dominates: no crossing inside the section -> no neutral axis.
++        {
++            FrameModel m = tipLoaded(-100.0 * F, P);
++            SolveResult r = solve(m);
++            const StressField fld = computeStressField(m, r, 11);
++            const MemberStressSample& s0 = fld.members.front().samples.front();
++            checkTrue("F75(c) axial-dominated: hasNaY == false", !s0.hasNaY, "");
++        }
++    }
++
++    // ---------- F76: clamped-edge support-moment recovery ----------
++    // MITC4 corner moments at a clamped edge are badly low (silently safe). The
++    // interior-to-boundary extrapolation 1.5*M1 - 0.5*M2 must cut the error against
++    // Timoshenko's clamped-plate support moment (|M| = 0.0513 q a^2 at the edge
++    // midpoint) roughly in half or better, and by contract can only RAISE the screened
++    // demand, never lower it.
++    {
++        std::printf("[F76] clamped-edge support-moment recovery (Timoshenko plate)\n");
++        const real a = 1000.0, t = 10.0, q = 0.01;
++        Material smat(210000.0, 80769.0, 7850.0);
++        smat.nu = 0.3;
++        smat.cap = Capacity::make(300.0, 300.0, 180.0);
++        FrameModel m; fixtures::clampedPlateShell(m, a, t, 8, q, smat);
++        SolveResult r = solve(m);
++        checkTrue("F76 solve non-singular", !r.singular, r.diagnostic);
++
++        const std::vector<ShellEdgeRecoveryResult> rec = recoverShellEdgeMoments(m, r);
++        checkTrue("F76 one entry per active shell (64)", rec.size() == 64,
++                  "got=" + std::to_string(rec.size()));
++
++        const real mRef = 0.0513 * q * a * a;   // Timoshenko, clamped square, edge midpoint
++        real worstRaw = 0, worstRec = 0;
++        int nRecovered = 0;
++        bool monotone = true;
++        for (const ShellEdgeRecoveryResult& e : rec) {
++            if (e.recovered) ++nRecovered;
++            if (e.risk < e.riskRaw - 1e-12) monotone = false;
++            for (int c = 0; c < 4; ++c) {
++                worstRaw = std::max(worstRaw, std::max(std::fabs((double)e.McRaw[(size_t)c][0]),
++                                                       std::fabs((double)e.McRaw[(size_t)c][1])));
++                worstRec = std::max(worstRec, std::max(std::fabs((double)e.Mc[(size_t)c][0]),
++                                                       std::fabs((double)e.Mc[(size_t)c][1])));
++            }
++        }
++        checkTrue("F76 recovery fired on boundary facets", nRecovered > 0,
++                  "recovered=" + std::to_string(nRecovered));
++        checkTrue("F76 risk >= riskRaw on every facet (recovery can only raise demand)",
++                  monotone, "");
++        const double errRaw = std::fabs(worstRaw - mRef) / mRef;
++        const double errRec = std::fabs(worstRec - mRef) / mRef;
++        checkTrue("F76 raw support moment is badly low (err > 30%)", errRaw > 0.30,
++                  "errRaw=" + std::to_string(errRaw));
++        checkTrue("F76 recovered support moment within 16% at 8 elements", errRec < 0.16,
++                  "errRec=" + std::to_string(errRec));
++        checkTrue("F76 recovery reduces the error", errRec < errRaw,
++                  "raw=" + std::to_string(errRaw) + " rec=" + std::to_string(errRec));
++    }
++
+     std::printf("\n%s  (failures=%d)\n", g_fail == 0 ? "ALL PASS" : "FAILURES", g_fail);
+     return g_fail == 0 ? 0 : 1;
+ }
+-- 
+2.53.0.windows.2
+

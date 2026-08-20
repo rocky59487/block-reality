@@ -200,7 +200,13 @@ public:
         sep();
         if (!std::isfinite(d)) os_ << "null";
         else {
-            std::ostringstream t; t.precision(10); t << d; os_ << t.str();
+            // 17 significant digits: the smallest precision that round-trips every
+            // IEEE-754 double exactly. The previous value, 10, silently truncated
+            // every number on the wire to ~1e-10 relative — an adapter that alters
+            // values in transit, which is the one thing a transport must never do.
+            // (The shared-memory transport sidesteps text entirely; this floor is
+            // for the JSON path, which remains the fallback and the debug surface.)
+            std::ostringstream t; t.precision(17); t << d; os_ << t.str();
         }
         mark();
         return *this;
