@@ -133,7 +133,12 @@ if [[ ! -d "$TARGET" ]]; then
 fi
 
 # ---------------------------------------------------------------- 安裝
-mkdir -p "$TARGET/mods"
+# 每一步複製都要驗過才往下走：報「裝好了」但其實半路失敗（唯讀目錄、磁碟滿），
+# 比直接失敗更糟——使用者會去遊戲裡找一個不存在的 mod。
+if ! mkdir -p "$TARGET/mods"; then
+    echo "  無法建立 / cannot create: $TARGET/mods"
+    exit 1
+fi
 
 JAR=$(ls "$HERE"/blockreality-*.jar 2>/dev/null | head -1 || true)
 if [[ -z "$JAR" ]]; then
@@ -144,7 +149,10 @@ fi
 
 # mods/ 裡放兩份同一個 mod 會直接載入失敗，所以舊的先移掉。
 rm -f "$TARGET"/mods/blockreality-*.jar
-cp "$JAR" "$TARGET/mods/"
+if ! cp "$JAR" "$TARGET/mods/"; then
+    echo "  複製 mod 失敗 / copying the mod failed — nothing was installed."
+    exit 1
+fi
 echo "  mod    -> $TARGET/mods/$(basename "$JAR")"
 
 # 引擎放在遊戲目錄，那正是 mod 會去找的地方。
@@ -162,8 +170,11 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
     echo "    on a Mac, build br-sidecar from source (see sidecar/README.md in the"
     echo "    repository) and drop it into the game directory above."
 elif [[ -f "$HERE/br-sidecar" ]]; then
-    cp "$HERE/br-sidecar" "$TARGET/"
-    chmod +x "$TARGET/br-sidecar"
+    if ! cp "$HERE/br-sidecar" "$TARGET/" || ! chmod +x "$TARGET/br-sidecar"; then
+        echo "  複製引擎失敗 / copying the engine failed. The mod IS installed and plays;"
+        echo "  analysis will stay off until br-sidecar is copied into: $TARGET"
+        exit 1
+    fi
     echo "  engine -> $TARGET/br-sidecar"
 else
     echo "  警告：旁邊沒有 br-sidecar。mod 照樣載入照樣玩，但分析是關的。"

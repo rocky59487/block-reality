@@ -8,21 +8,21 @@ binary named below; none is transcribed by hand.
 | | |
 |---|---|
 | engine | FrameCore |
-| commit | `unavailable` (unavailable) |
-| worktree clean | False |
+| commit | `10395c3c4c5f7442702318a22160b4920301de0d` (2026-08-20T11:41:38+08:00) |
+| worktree clean | True |
 | solver lane | compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT |
-| binary sha256 | `1cd9534d6a71e3707d0a382e4468784fe389fc90e0640c563dfee00a7df9495f` |
+| binary sha256 | `aac6b57a83fd3155f3e370fc602583f06c01e61f7207dc64d36e99724c4ad907` |
 | host | Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35 |
 
 Source hashes:
 
 | file | sha256 |
 |---|---|
-| `sidecar/main.cpp` | `628445167f78c54a4f05a7a45568df88e657bda973031f90f3030147d0d97bc3` |
-| `sidecar/json.hpp` | `8a9b6d6cf6d3a33486e4ef8cb9abbb766460ff53db517367e9a409bffb5a6e68` |
-| `sidecar/verify.py` | `8545f8a9c4ec325c865adcb7829cbc31dd6bde8894fde796871307020e13a206` |
-| `sidecar/CMakeLists.txt` | `e20f43a8705a2fd1c9a8a378156540ae28eb0115ec6ed6a328fe966bdbdab27c` |
-| `scripts/evidence.py` | `ac07708e0363a10e3f297b1edeea5685c6a9f7c278b7493fdfad49da55095d12` |
+| `sidecar/main.cpp` | `c596ac99169c4f08dd90de5a9fc4f7cd2e2eb9a8c6234517d7d77c970fd3effb` |
+| `sidecar/json.hpp` | `1c9b71510fe56a6a2439d273a7a1c58b4bffe1177e6b10085bf02163514c4cb0` |
+| `sidecar/verify.py` | `7f4bb610c54b72aaaf49af8e81b6579cd794816f47b1b28c8162585aeb04e8ff` |
+| `sidecar/CMakeLists.txt` | `7d272beffe52d0e69047f59771a333da0e9e17c0af9894ceff1f4453dfc30fa5` |
+| `scripts/evidence.py` | `d9ec33586226ff36ab239cdb33da046a05b953ff4428f81f60bd6e431e253925` |
 
 ## Accuracy against closed-form solutions
 
@@ -242,7 +242,9 @@ cross-section is its own plan.
 | 4 × 20 | 5 | 1.40e-07 | 6.68e-10 | 4.76e-13 |
 | 2 × 20 | 10 | 1.40e-07 | 1.76e-09 | 2.80e-12 |
 
-The slender walls agree with beam theory to 1e-7 and better, including one only
+Agreement improves with slenderness, as beam theory itself does: at h/w = 3 the
+shear flow is a few parts in 1e5 and the overturning a few in 1e7; from h/w = 5
+up, 1e-7 and 1e-9. The h/w >= 5 rows include a wall only
 **two elements wide** — which is the point of the QM6 incompatible membrane
 modes. Without them a four-node quad has no way to curve in its own plane, and
 the same walls reported their overturning fibre force 3.4% and 12.3% LOW, the
@@ -272,18 +274,33 @@ one warm-up; the cold process start is excluded because it happens once.
 
 | blocks | members | DOF | default (ms) | min | max | ms/member | no buckling (ms) | buckling |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 3 | 1 | 12 | 0.327 | 0.305 | 0.666 | 0.327 | 0.321 | x1.02 |
-| 6 | 3 | 24 | 0.765 | 0.709 | 1.404 | 0.255 | 0.708 | x1.08 |
-| 15 | 9 | 60 | 2.123 | 1.966 | 2.608 | 0.236 | 2.095 | x1.01 |
-| 30 | 19 | 120 | 4.531 | 4.14 | 4.928 | 0.238 | 4.413 | x1.03 |
-| 60 | 39 | 240 | 9.354 | 8.73 | 11.423 | 0.240 | 9.229 | x1.01 |
-| 90 | 59 | 360 | 15.834 | 13.584 | 20.844 | 0.268 | 15.01 | x1.05 |
-| 150 | 99 | 600 | 27.059 | 24.049 | 31.617 | 0.273 | 27.205 | x0.99 |
-| 300 | 199 | 1200 | 56.269 | 51.475 | 64.977 | 0.283 | 52.608 | x1.07 |
+| 3 | 1 | 12 | 0.51 | 0.464 | 0.647 | 0.510 | 0.505 | x1.01 |
+| 6 | 3 | 24 | 1.326 | 1.121 | 1.776 | 0.442 | 1.116 | x1.19 |
+| 15 | 9 | 60 | 3.408 | 3.183 | 5.748 | 0.379 | 3.335 | x1.02 |
+| 30 | 19 | 120 | 8.453 | 7.269 | 11.417 | 0.445 | 9.048 | x0.93 |
+| 60 | 39 | 240 | 18.476 | 16.379 | 27.42 | 0.474 | 17.578 | x1.05 |
+| 90 | 59 | 360 | 33.472 | 28.53 | 45.813 | 0.567 | 24.158 | x1.39 |
+| 150 | 99 | 600 | 40.687 | 37.249 | 49.356 | 0.411 | 62.511 | x0.65 |
+| 300 | 199 | 1200 | 117.358 | 100.137 | 245.327 | 0.590 | 91.001 | x1.29 |
 
-At 199 members the whole round trip is 56.3 ms,
+At 199 members the whole round trip is 117.4 ms,
 against a Minecraft tick of 50 ms — and the solve does not run on the tick
 thread, so this is latency to a result rather than time taken from the game.
+
+### Transport: shared memory vs JSON, same solves
+
+A 86-member, 360-DOF frame solved 20 times
+over each wire (median). The solve in the middle is identical; the
+difference is the transport.
+
+| wire | median (ms) | min (ms) | reply size |
+|---|---:|---:|---:|
+| JSON lines | 28.28 | 25.78 | 491037 bytes over the pipe |
+| shared memory | 4.49 | 3.5 | 132536 bytes in the region, ~60-byte doorbell |
+
+Transport saving: 23.79 ms per solve (84.1%).
+Measured by `scripts/bench_transport.py`, imported and run by this script
+so the record regenerates with everything else.
 
 The last two columns are the price of the default. Linear buckling is a second
 solve — an eigenvalue problem reusing the same factorisation — and it is on by

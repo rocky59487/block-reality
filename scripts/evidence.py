@@ -19,6 +19,7 @@ import json
 import math
 import os
 import platform
+import re
 import subprocess
 import statistics
 import sys
@@ -557,17 +558,52 @@ def sha256(path):
 
 
 def identity(exe, framecore_dir):
+    # The engine checkout on this project's reference machine is a LINKED WORKTREE
+    # created by Windows git, whose .git file stores an absolute Windows path
+    # ("gitdir: C:/Users/..."). WSL git reads that as a relative path, fails, and
+    # every provenance query returns "unavailable" — which the gate now rightly
+    # refuses to ship. The fallback finds the .git file, translates the drive
+    # letter to its /mnt mount, and addresses the gitdir directly, with
+    # core.autocrlf=true for parity with the Windows git that manages the
+    # checkout (without it, every CRLF text file reads as locally modified and
+    # a clean tree reports 959 changes — measured).
+    def _worktree_gitdir():
+        d = os.path.abspath(framecore_dir)
+        while True:
+            gf = os.path.join(d, ".git")
+            if os.path.isdir(gf):
+                return None, None                      # ordinary repo: no fallback needed
+            if os.path.isfile(gf):
+                line = open(gf, encoding="utf-8").read().strip()
+                if not line.startswith("gitdir:"):
+                    return None, None
+                p = line[len("gitdir:"):].strip().replace("\\", "/")
+                m = re.match(r"^([A-Za-z]):/(.*)$", p)
+                if m and os.name != "nt":
+                    p = "/mnt/" + m.group(1).lower() + "/" + m.group(2)
+                return p, d
+            parent = os.path.dirname(d)
+            if parent == d:
+                return None, None
+            d = parent
+
+    gitdir, worktree = _worktree_gitdir()
+
     def git(*args):
-        # safe.directory: the engine checkout usually sits on NTFS and this script
-        # usually runs under WSL, where git refuses "dubious ownership" and every
-        # query below would come back "unavailable". Provenance that silently
-        # degrades to "unavailable" is exactly what the gate now refuses to ship.
-        try:
-            return subprocess.check_output(
-                ["git", "-c", "safe.directory=*", "-C", framecore_dir, *args],
-                text=True, stderr=subprocess.DEVNULL).strip()
-        except Exception:
-            return "unavailable"
+        # safe.directory: on NTFS under newer gits, "dubious ownership" would
+        # otherwise fail every query the same silent way.
+        cmds = [["git", "-c", "safe.directory=*", "-C", framecore_dir, *args]]
+        if gitdir:
+            cmds.append(["git", "-c", "safe.directory=*", "-c", "core.autocrlf=true",
+                         "--git-dir", gitdir, "--work-tree", worktree, "-C", worktree,
+                         *args])
+        for cmd in cmds:
+            try:
+                return subprocess.check_output(cmd, text=True,
+                                               stderr=subprocess.DEVNULL).strip()
+            except Exception:
+                continue
+        return "unavailable"
 
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     files = {}

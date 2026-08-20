@@ -147,15 +147,15 @@ critical load.
 
 | | |
 |---|---|
-| Engine | `sidecar/verify.py`, 208 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
-| Java | 136 tests, all passing; 28 of them start `br-sidecar` and run FrameCore for real |
+| Engine | `sidecar/verify.py`, 219 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
+| Java | 184 tests, all passing (155 pure-Java, 29 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real |
 | Closed form | 31 non-zero references, worst relative error 1.2e-14; 10 zero references, worst absolute residual 1.5e-08. (Two earlier releases quoted 1.6e-10 here — that floor turned out to be the old wire's 10-digit truncation, not the engine) |
 | Transport | numbers cross as raw little-endian doubles in shared memory, never textualised; the JSON fallback prints 17 significant digits. Gate: three representative solves bit-identical across both transports |
 | Shell convergence | clamped square plate at 20 elements per side: span moment 0.57%, recovered support moment 2.7% |
-| Shear wall | slender walls (h/w ≥ 3) agree with beam theory to 1e-7 on both shear flow and overturning; a square wall is 1e-3 to 1e-2 |
+| Shear wall | h/w ≥ 5 agrees with beam theory to 1.4e-7 (shear flow) and ~1e-9 (overturning); h/w = 3 is 2.7e-5 / 6.8e-7; a square wall is a deep beam, where beam theory itself is the wrong model (1e-3 to 2e-2 is the reference's error) |
 | Buckling | single-element column against the textbook value, 1.6e-05; the 1/L² law, 2.3e-10 |
 | Determinism | 8/8 cases byte-for-byte identical, Linux native against the Windows cross-build |
-| Performance | 202 members and 768 DOF: 7.0 ms for the whole round trip including buckling over shared memory (40.9 ms over JSON), and not on the tick thread |
+| Performance | transport, same 86-member solve both ways: 4.5 ms over shared memory vs 28.3 ms over JSON (84% saving); a 199-member, 1200-DOF frame completes its full round trip including buckling in ~0.1 s on the noisy reference laptop — and never on the tick thread, so this is latency to a result, not time taken from the game |
 
 Every solve returns a global equilibrium residual recomputed from geometry and density
 rather than read back out of the assembled load vector. The full record is in

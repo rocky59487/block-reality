@@ -114,7 +114,7 @@ jobs:
               that "looks safe" on stress says so
             - nine structural blocks: three steel sections, plain concrete, timber,
               a brick pier, two slab thicknesses, 20 mm steel plate
-            - every number is gated: 208 acceptance checks against closed forms and
+            - every number is gated: 219 acceptance checks against closed forms and
               invariants per build, record in `evidence/VERIFICATION.md`
 
             **What it deliberately does not do yet**
