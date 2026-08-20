@@ -21,7 +21,7 @@ unrestrained and therefore reported as mechanisms rather than given stresses.
 ## Install
 
 1. Download
-   [**`blockreality-0.1a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.1a/blockreality-0.1a.zip)
+   [**`blockreality-0.2a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.2a/blockreality-0.2a.zip)
    (2.4 MB). Later versions are on the
    [Releases page](https://github.com/rocky59487/block-reality/releases/latest).
 2. Extract it, then run `install.bat` on Windows or `./install.sh` on Linux and macOS.
@@ -111,8 +111,11 @@ More cases — slabs, shear walls, slender column buckling, loads inside a membe
 
 Implemented: 6-DOF beam members, MITC4 shells including floors and shear walls, linear
 buckling with geometric stiffness for both beams and shells, per-member and per-plate D/C,
-and stress contours on the block surfaces. The design and construction-sequence layers
-have not been started.
+stress contours on the block surfaces, and a zero-copy shared-memory transport between
+the mod and the engine (JSON remains the fallback and the debug surface). Every mechanics
+number on the wire is the return value of an engine function behind the engine's own
+closed-form gates — the adapter computes nothing. The design and construction-sequence
+layers have not been started.
 
 Not implemented: the plate D/C is an elastic surface screen only — transverse shear is
 recovered and reported but not screened, there is no per-plate buckling check and no plate
@@ -125,14 +128,15 @@ critical load.
 
 | | |
 |---|---|
-| Engine | `sidecar/verify.py`, 151 checks, all passing, each against a closed form or a solver-independent invariant |
-| Java | 107 tests, all passing; 26 of them start `br-sidecar` and run FrameCore for real |
-| Closed form | 31 non-zero references, worst relative error 1.6e-10; 10 zero references, worst absolute residual 1.5e-08 |
+| Engine | `sidecar/verify.py`, 164 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
+| Java | 109 tests, all passing; 28 of them start `br-sidecar` and run FrameCore for real |
+| Closed form | 31 non-zero references, worst relative error 1.2e-14; 10 zero references, worst absolute residual 1.5e-08. (Two earlier releases quoted 1.6e-10 here — that floor turned out to be the old wire's 10-digit truncation, not the engine) |
+| Transport | numbers cross as raw little-endian doubles in shared memory, never textualised; the JSON fallback prints 17 significant digits. Gate: three representative solves bit-identical across both transports |
 | Shell convergence | clamped square plate at 20 elements per side: span moment 0.57%, recovered support moment 2.7% |
 | Shear wall | slender walls (h/w ≥ 3) agree with beam theory to 1e-7 on both shear flow and overturning; a square wall is 1e-3 to 1e-2 |
 | Buckling | single-element column against the textbook value, 1.6e-05; the 1/L² law, 2.3e-10 |
 | Determinism | 8/8 cases byte-for-byte identical, Linux native against the Windows cross-build |
-| Performance | 199 members and 1200 DOF: 52 ms for the whole round trip including buckling, and not on the tick thread |
+| Performance | 202 members and 768 DOF: 7.0 ms for the whole round trip including buckling over shared memory (40.9 ms over JSON), and not on the tick thread |
 
 Every solve returns a global equilibrium residual recomputed from geometry and density
 rather than read back out of the assembled load vector. The full record is in
@@ -182,7 +186,7 @@ Minecraft 1.20.1 的結構分析模組。放置的方塊會被擷取為 6 自由
 ## 安裝
 
 1. 下載
-   [**`blockreality-0.1a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.1a/blockreality-0.1a.zip)
+   [**`blockreality-0.2a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.2a/blockreality-0.2a.zip)
    （2.4 MB）。之後的版本在
    [Releases 頁](https://github.com/rocky59487/block-reality/releases/latest)
 2. 解壓縮後，Windows 執行 `install.bat`，Linux 與 macOS 執行 `./install.sh`
@@ -259,7 +263,9 @@ HUD 因此以文字標明拉壓，不要求從顏色反推。
 ## 範圍
 
 已實作：6 自由度樑構件、MITC4 板殼（含樓板與剪力牆）、含樑與板殼幾何勁度的線性挫屈、每構件
-與每片板的 D/C、方塊表面的應力等值圖。設計層與工法層尚未開始。
+與每片板的 D/C、方塊表面的應力等值圖，以及模組與引擎之間的零拷貝共用記憶體傳輸（JSON 保留為
+fallback 與除錯面）。wire 上的每一個力學數值都是引擎函式的回傳值,由引擎自己的閉合解 gate
+把關——轉接層不算任何東西。設計層與工法層尚未開始。
 
 未實作：板的 D/C 只是彈性表面篩選——橫向剪力有算出來也有回報，但不納入篩選；沒有逐片板的挫屈
 檢核，也沒有板的極限強度。沒有 RC 複合斷面，斷面目錄裡是實心矩形與實心圓形，命名也照實寫。
@@ -269,14 +275,15 @@ HUD 因此以文字標明拉壓，不要求從顏色反推。
 
 | | |
 |---|---|
-| 引擎 | `sidecar/verify.py` 151 項全過，每一項都對閉合解或不依賴求解器的不變量 |
-| Java | 107 項測試全過，其中 26 項會實際啟動 `br-sidecar` 執行 FrameCore |
-| 對閉合解 | 31 項非零參考，最差相對誤差 1.6e-10；10 項零參考，最差絕對殘差 1.5e-08 |
+| 引擎 | `sidecar/verify.py` 164 項全過，每一項都對閉合解、不依賴求解器的不變量,或傳輸等價 oracle |
+| Java | 109 項測試全過，其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore |
+| 對閉合解 | 31 項非零參考，最差相對誤差 1.2e-14；10 項零參考，最差絕對殘差 1.5e-08。（前兩版在這裡引用的 1.6e-10,後來查明是舊 wire 的 10 位截斷,不是引擎） |
+| 傳輸 | 數值以 raw little-endian double 走共用記憶體,從不文字化;JSON fallback 印 17 位有效數字。gate:三個代表案兩種傳輸逐位元相同 |
 | 板元素收斂 | 固端方形板每邊 20 元素：跨中彎矩 0.57%，還原後的支承彎矩 2.7% |
 | 剪力牆 | 細長牆（h/w ≥ 3）的面內剪力流與傾覆軸力對梁理論到 1e-7；方形牆則是 1e-3 至 1e-2 |
 | 線性挫屈 | 單元素柱對課本值 1.6e-05；1/L² 關係 2.3e-10 |
 | 跨平台決定性 | 8/8 逐位元相同，Linux 原生對 Windows 交叉編譯 |
-| 效能 | 199 根構件、1200 自由度：完整往返 52 ms（含挫屈），且不在 tick 執行緒上 |
+| 效能 | 202 根構件、768 自由度：共用記憶體完整往返 7.0 ms（JSON 40.9 ms）,含挫屈,且不在 tick 執行緒上 |
 
 每一次求解的回覆都附帶全域平衡殘差，該值由幾何與密度重算，而非從組裝後的載重向量讀回。完整
 紀錄見 [`evidence/VERIFICATION.md`](evidence/VERIFICATION.md)，由 `scripts/evidence.py` 產生。

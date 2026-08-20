@@ -115,19 +115,26 @@ wire 上必須有一份雙方同意的材料/角色詞彙表。這跑不掉。
 
 **不可以放上 wire 的**：`Section` 的具體參數（A、Iy、Iz、J、Wy、Wz）、節點編號、DOF 索引、元素型別。那些是引擎的內部詞彙，一旦洩漏就等於把 frame 抽象寫死在 Java 側。
 
-## 傳輸
+## 傳輸（實作現況，D-013 + D-019）
 
-實作端先用 `frame_capi_v2`（D-002）。它的形狀已經適合：
+引擎跑在**獨立程序** `br-sidecar` 裡（D-013：C++ 的錯誤只賠一次分析，不賠伺服器與
+存檔）。兩條 wire，一個語意：
 
-- **12 byte 固定 header**：`'F' 'C'` + FLAGS + LE u32 header 長度 + LE u32 payload 長度
-- header 是 JSON（加欄位不破 wire），payload 是 raw little-endian double
-- 不透明 handle、無全域狀態、**無 C++ exception 跨界**
-- `frame_v2_abi_version()` 是嚴格單調整數，**兩個 minor 版本的相容 SLA**
-- `transport.async`：send 非阻塞排隊 + 背景 worker
+- **控制通道**：stdio 上的 JSON-lines。握手（`hello`，宣告材料/斷面/板目錄與 `shm`
+  能力）、關閉（`bye` 或 EOF）、錯誤,以及完整的 `solve`——JSON `solve` 是 wire
+  契約、fallback 與除錯面,double 以 17 位有效數字序列化（無損下限）。
+- **資料通道**：檔案背書的共用記憶體（D-019）。JVM 建立並映射 scratch 檔,
+  `shm.open` 讓 sidecar 映射同一個檔;之後 `solve.shm` 的請求與回覆以 raw
+  little-endian IEEE-754 直接躺在映射區裡,stdio 行縮成 ~60 byte 門鈴。一個從未
+  文字化的 double 不可能在傳輸中被改變——這條性質由 verify.py 的 T 系列 gate
+  押著：兩傳輸的回覆**逐位元相同**。
 
-最後一項天然適配 tick 迴圈：**送出 → 不阻塞 → 下一個 tick 收**。不要在 tick thread 上等。
+半雙工、一問一答;JVM 側每個 dimension 一個 client、一條分析執行緒,**不在 tick
+thread 上等**（送出 → 下一個 tick 收,見 `AnalysisExecutor`）。這同時滿足了
+OpenBLAS 執行緒數 process-global 的序列化要求。
 
-JVM 側用 Panama FFM 而非 JNI——`MemorySegment` 可以直接映射 12-byte header + double payload，不需要額外的序列化層。
+`frame_capi_v2`（D-002 原案的 in-process C ABI）仍是日後換裝方向之一;屆時 wire
+概念不變——門鈴變函式呼叫,映射區變 `MemorySegment`。
 
 ## 已知限制
 

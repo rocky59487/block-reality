@@ -1,6 +1,6 @@
 # 上手
 
-`blockreality-0.1a.zip` 就是發行包，`dist/` 是它的內容。安裝不需要建置任何東西。
+`blockreality-0.2a.zip` 就是發行包，`dist/` 是它的內容。安裝不需要建置任何東西。
 
 ---
 
@@ -33,7 +33,7 @@ zip 內容（約 2.4 MB）：
 
 | | |
 |---|---|
-| `blockreality-0.1a.jar` | Forge mod，api + core + impl 全在裡面 |
+| `blockreality-0.2a.jar` | Forge mod，api + core + impl 全在裡面 |
 | `br-sidecar.exe` | Windows 引擎，只 import KERNEL32 與 msvcrt，無額外 DLL |
 | `br-sidecar` | Linux 引擎，只依賴 libc/libm |
 | `install.bat` / `install.sh` | 安裝器 |

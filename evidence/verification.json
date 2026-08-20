@@ -8,15 +8,15 @@
       "supernodal_lane": "compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT"
     },
     "binary": {
-      "path": "/home/rocky/br-build-linux/br-sidecar",
+      "path": "/mnt/c/Users/wmc02/Desktop/block-reality/dist/br-sidecar",
       "sha256": "bd971af1556e187aa9b6845f3e19ba0af1f045e927bfb09e66455dfb48db5c99"
     },
     "sources": {
       "sidecar/main.cpp": "7c8d301be9b22dac3d9d9d2141ff64ae2b21be7b9febba2c4a68b8ee379fa95a",
       "sidecar/json.hpp": "14620fe97a851cbb85dde4e9ff263634fc3cdb9f56460c7086dc581faab4ca05",
-      "sidecar/verify.py": "24191a7426fc6886f8df50b1074fda2f849463cd004fff60fbf27489f4f4402a",
+      "sidecar/verify.py": "5f9ac6a03db334b71681cd153367ccaedb2cceeef48b5290d6de7c21f779e83d",
       "sidecar/CMakeLists.txt": "e20f43a8705a2fd1c9a8a378156540ae28eb0115ec6ed6a328fe966bdbdab27c",
-      "scripts/evidence.py": "b7abb87a4a6985e915463d171becea72f81b6fe46603f954b0f5a0c61c1f5816"
+      "scripts/evidence.py": "ac07708e0363a10e3f297b1edeea5685c6a9f7c278b7493fdfad49da55095d12"
     },
     "host": {
       "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
@@ -648,81 +648,81 @@
       "blocks": 3,
       "members": 1,
       "dof": 12,
-      "with_buckling_ms": 0.335,
-      "min_ms": 0.318,
-      "max_ms": 0.47,
-      "without_buckling_ms": 0.345,
-      "median_ms": 0.335
+      "with_buckling_ms": 0.3,
+      "min_ms": 0.281,
+      "max_ms": 0.402,
+      "without_buckling_ms": 0.282,
+      "median_ms": 0.3
     },
     {
       "blocks": 6,
       "members": 3,
       "dof": 24,
-      "with_buckling_ms": 0.799,
-      "min_ms": 0.751,
-      "max_ms": 1.28,
-      "without_buckling_ms": 0.764,
-      "median_ms": 0.799
+      "with_buckling_ms": 0.738,
+      "min_ms": 0.698,
+      "max_ms": 0.891,
+      "without_buckling_ms": 0.692,
+      "median_ms": 0.738
     },
     {
       "blocks": 15,
       "members": 9,
       "dof": 60,
-      "with_buckling_ms": 2.306,
-      "min_ms": 2.196,
-      "max_ms": 2.879,
-      "without_buckling_ms": 2.121,
-      "median_ms": 2.306
+      "with_buckling_ms": 2.27,
+      "min_ms": 2.116,
+      "max_ms": 2.934,
+      "without_buckling_ms": 1.919,
+      "median_ms": 2.27
     },
     {
       "blocks": 30,
       "members": 19,
       "dof": 120,
-      "with_buckling_ms": 4.881,
-      "min_ms": 4.537,
-      "max_ms": 5.449,
-      "without_buckling_ms": 4.737,
-      "median_ms": 4.881
+      "with_buckling_ms": 4.557,
+      "min_ms": 4.206,
+      "max_ms": 5.469,
+      "without_buckling_ms": 4.162,
+      "median_ms": 4.557
     },
     {
       "blocks": 60,
       "members": 39,
       "dof": 240,
-      "with_buckling_ms": 10.419,
-      "min_ms": 9.552,
-      "max_ms": 11.958,
-      "without_buckling_ms": 9.741,
-      "median_ms": 10.419
+      "with_buckling_ms": 10.046,
+      "min_ms": 8.841,
+      "max_ms": 11.273,
+      "without_buckling_ms": 9.292,
+      "median_ms": 10.046
     },
     {
       "blocks": 90,
       "members": 59,
       "dof": 360,
-      "with_buckling_ms": 15.383,
-      "min_ms": 14.872,
-      "max_ms": 17.582,
-      "without_buckling_ms": 15.05,
-      "median_ms": 15.383
+      "with_buckling_ms": 15.55,
+      "min_ms": 13.896,
+      "max_ms": 18.387,
+      "without_buckling_ms": 14.636,
+      "median_ms": 15.55
     },
     {
       "blocks": 150,
       "members": 99,
       "dof": 600,
-      "with_buckling_ms": 24.611,
-      "min_ms": 23.81,
-      "max_ms": 27.55,
-      "without_buckling_ms": 24.837,
-      "median_ms": 24.611
+      "with_buckling_ms": 24.4,
+      "min_ms": 23.062,
+      "max_ms": 27.487,
+      "without_buckling_ms": 23.628,
+      "median_ms": 24.4
     },
     {
       "blocks": 300,
       "members": 199,
       "dof": 1200,
-      "with_buckling_ms": 52.344,
-      "min_ms": 50.67,
-      "max_ms": 61.257,
-      "without_buckling_ms": 54.409,
-      "median_ms": 52.344
+      "with_buckling_ms": 51.814,
+      "min_ms": 48.723,
+      "max_ms": 56.096,
+      "without_buckling_ms": 49.857,
+      "median_ms": 51.814
     }
   ]
 }

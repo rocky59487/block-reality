@@ -167,6 +167,9 @@ public final class StructureManager {
 
     public SidecarClient.Status engineStatus() { return sidecar.status(); }
 
+    /** Which wire the engine conversation uses: {@code "shm"} or {@code "json"}. */
+    public String engineTransport() { return sidecar.transport(); }
+
     public boolean toggleLoad(BlockPos pos) {
         boolean added = loaded.add(pos.immutable());
         if (!added) loaded.remove(pos.immutable());

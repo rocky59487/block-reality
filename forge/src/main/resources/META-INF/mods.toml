@@ -5,7 +5,7 @@ issueTrackerURL = "https://github.com/rocky59487/block-reality/issues"
 
 [[mods]]
 modId = "blockreality"
-version = "0.1a"
+version = "0.2a"
 displayName = "Block Reality"
 authors = "rocky59487"
 description = '''

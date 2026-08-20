@@ -3,7 +3,7 @@ plugins {
     id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
 }
 
-version = '0.1a'
+version = '0.2a'
 group = 'com.blockreality'
 base { archivesName = 'blockreality' }
 

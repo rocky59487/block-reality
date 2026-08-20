@@ -20,9 +20,9 @@ Source hashes:
 |---|---|
 | `sidecar/main.cpp` | `7c8d301be9b22dac3d9d9d2141ff64ae2b21be7b9febba2c4a68b8ee379fa95a` |
 | `sidecar/json.hpp` | `14620fe97a851cbb85dde4e9ff263634fc3cdb9f56460c7086dc581faab4ca05` |
-| `sidecar/verify.py` | `24191a7426fc6886f8df50b1074fda2f849463cd004fff60fbf27489f4f4402a` |
+| `sidecar/verify.py` | `5f9ac6a03db334b71681cd153367ccaedb2cceeef48b5290d6de7c21f779e83d` |
 | `sidecar/CMakeLists.txt` | `e20f43a8705a2fd1c9a8a378156540ae28eb0115ec6ed6a328fe966bdbdab27c` |
-| `scripts/evidence.py` | `b7abb87a4a6985e915463d171becea72f81b6fe46603f954b0f5a0c61c1f5816` |
+| `scripts/evidence.py` | `ac07708e0363a10e3f297b1edeea5685c6a9f7c278b7493fdfad49da55095d12` |
 
 ## Accuracy against closed-form solutions
 
@@ -272,16 +272,16 @@ one warm-up; the cold process start is excluded because it happens once.
 
 | blocks | members | DOF | default (ms) | min | max | ms/member | no buckling (ms) | buckling |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 3 | 1 | 12 | 0.335 | 0.318 | 0.47 | 0.335 | 0.345 | x0.97 |
-| 6 | 3 | 24 | 0.799 | 0.751 | 1.28 | 0.266 | 0.764 | x1.05 |
-| 15 | 9 | 60 | 2.306 | 2.196 | 2.879 | 0.256 | 2.121 | x1.09 |
-| 30 | 19 | 120 | 4.881 | 4.537 | 5.449 | 0.257 | 4.737 | x1.03 |
-| 60 | 39 | 240 | 10.419 | 9.552 | 11.958 | 0.267 | 9.741 | x1.07 |
-| 90 | 59 | 360 | 15.383 | 14.872 | 17.582 | 0.261 | 15.05 | x1.02 |
-| 150 | 99 | 600 | 24.611 | 23.81 | 27.55 | 0.249 | 24.837 | x0.99 |
-| 300 | 199 | 1200 | 52.344 | 50.67 | 61.257 | 0.263 | 54.409 | x0.96 |
+| 3 | 1 | 12 | 0.3 | 0.281 | 0.402 | 0.300 | 0.282 | x1.06 |
+| 6 | 3 | 24 | 0.738 | 0.698 | 0.891 | 0.246 | 0.692 | x1.07 |
+| 15 | 9 | 60 | 2.27 | 2.116 | 2.934 | 0.252 | 1.919 | x1.18 |
+| 30 | 19 | 120 | 4.557 | 4.206 | 5.469 | 0.240 | 4.162 | x1.09 |
+| 60 | 39 | 240 | 10.046 | 8.841 | 11.273 | 0.258 | 9.292 | x1.08 |
+| 90 | 59 | 360 | 15.55 | 13.896 | 18.387 | 0.264 | 14.636 | x1.06 |
+| 150 | 99 | 600 | 24.4 | 23.062 | 27.487 | 0.246 | 23.628 | x1.03 |
+| 300 | 199 | 1200 | 51.814 | 48.723 | 56.096 | 0.260 | 49.857 | x1.04 |
 
-At 199 members the whole round trip is 52.3 ms,
+At 199 members the whole round trip is 51.8 ms,
 against a Minecraft tick of 50 ms — and the solve does not run on the tick
 thread, so this is latency to a result rather than time taken from the game.
 

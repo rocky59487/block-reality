@@ -72,7 +72,9 @@ public final class BRCommand {
 
         line(src, "Block Reality", ChatFormatting.AQUA);
         line(src, "  dimension       " + m.dimension().location(), ChatFormatting.GRAY);
-        line(src, "  engine          " + s,
+        line(src, "  engine          " + s
+                        + (s == SidecarClient.Status.READY
+                                ? "   (transport: " + m.engineTransport() + ")" : ""),
                 s == SidecarClient.Status.READY ? ChatFormatting.GREEN
                         : s == SidecarClient.Status.DISABLED ? ChatFormatting.RED
                         : ChatFormatting.YELLOW);
