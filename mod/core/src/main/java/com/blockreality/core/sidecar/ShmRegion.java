@@ -20,8 +20,13 @@ import java.nio.file.StandardOpenOption;
  *
  * <p>Growing is replacement: map a bigger new file, tell the sidecar to open it, let
  * this one go. A mapped file cannot be truncated portably, and Windows will refuse to
- * delete it while either side still holds a view — hence best-effort delete now,
- * {@code deleteOnExit} as the fallback, and a name that says what the file is.
+ * delete it while either side still holds a view — which is why {@link #close} unmaps
+ * <em>explicitly</em> before deleting. Waiting for the GC to collect the buffer
+ * (the old behaviour) meant the delete always failed on Windows, and so did the
+ * {@code deleteOnExit} fallback, because the mapping was usually still live at JVM
+ * shutdown too: every session leaked its regions into the temp directory
+ * permanently (CONC-7). After {@code close()} the buffers must not be touched —
+ * an access to an unmapped buffer is a JVM crash, hence the closed flag.
  */
 final class ShmRegion implements AutoCloseable {
 
@@ -60,6 +65,8 @@ final class ShmRegion implements AutoCloseable {
         }
     }
 
+    private boolean closed;
+
     Path path() { return path; }
 
     long size() { return map.capacity(); }
@@ -69,6 +76,7 @@ final class ShmRegion implements AutoCloseable {
      * underlying pages are shared — this is a window, not a copy.
      */
     ByteBuffer buffer() {
+        if (closed) throw new IllegalStateException("shm region is closed");
         ByteBuffer b = map.duplicate().order(ByteOrder.LITTLE_ENDIAN);
         b.clear();
         return b;
@@ -76,15 +84,39 @@ final class ShmRegion implements AutoCloseable {
 
     @Override
     public void close() {
+        if (closed) return;
+        closed = true;
         try {
             channel.close();
         } catch (IOException ignored) {
-            // Nothing to do differently; the mapping dies with the buffer.
+            // The unmap below is what actually releases the file on Windows.
         }
+        unmap(map);
         try {
             Files.deleteIfExists(path);
         } catch (IOException ignored) {
-            // Windows keeps the file while a view exists; deleteOnExit covers it.
+            // The sidecar may still hold its own view for a moment; deleteOnExit
+            // (registered in create) covers that narrowing race.
+        }
+    }
+
+    /**
+     * Releases the mapping now instead of at some future GC. {@code Unsafe.invokeCleaner}
+     * is the supported way to do this on JDK 9+ (the java.nio buffer cleaner it calls is
+     * exactly what the GC would eventually run). Duplicated views become invalid with
+     * their parent, which is why {@link #buffer} refuses after close.
+     */
+    private static void unmap(MappedByteBuffer m) {
+        try {
+            Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+            java.lang.reflect.Field f = unsafeClass.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            Object unsafe = f.get(null);
+            unsafeClass.getMethod("invokeCleaner", ByteBuffer.class).invoke(unsafe, m);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            // No unmap available on this JVM: fall back to the old GC-dependent
+            // behaviour. The delete below may then fail on Windows and the file
+            // lingers until deleteOnExit — degraded, not broken.
         }
     }
 }

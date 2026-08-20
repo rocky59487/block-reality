@@ -405,17 +405,27 @@ class SidecarEngineTest {
         assertEquals(viaJson.maxDc(), viaShm.maxDc(), 0.0);
         assertEquals(viaJson.governing(), viaShm.governing());
         assertEquals(viaJson.governingKind(), viaShm.governingKind());
+        assertEquals(viaJson.singular(), viaShm.singular());
+        assertEquals(viaJson.islands(), viaShm.islands());
+        assertEquals(viaJson.singularIslands(), viaShm.singularIslands());
         assertEquals(viaJson.bucklingFactor(), viaShm.bucklingFactor(), 0.0);
         assertEquals(viaJson.equilibriumResidual(), viaShm.equilibriumResidual(), 0.0);
+        assertEquals(viaJson.unassigned(), viaShm.unassigned());
         assertEquals(viaJson.members().size(), viaShm.members().size());
 
         MemberSnapshot mj = viaJson.members().get(0);
         MemberSnapshot ms = viaShm.members().get(0);
+        assertEquals(mj.material(), ms.material());
+        assertEquals(mj.section(), ms.section());
+        assertEquals(mj.lengthMm(), ms.lengthMm(), 0.0);
         assertEquals(mj.dc(), ms.dc(), 0.0);
         assertEquals(mj.governingFibre(), ms.governingFibre());
         assertEquals(mj.governingStation(), ms.governingStation());
-        assertEquals(mj.endI().mz(), ms.endI().mz(), 0.0);
-        assertEquals(mj.endJ().mz(), ms.endJ().mz(), 0.0);
+        // ALL six end-force components, both ends. The old spot check compared Mz
+        // alone, so a swap of two adjacent doubles in the binary layout — T with My,
+        // N with Vy — decoded green (TEST-2).
+        assertEquals(mj.endI(), ms.endI());
+        assertEquals(mj.endJ(), ms.endJ());
         assertEquals(mj.blocks(), ms.blocks());
         assertEquals(mj.stations().size(), ms.stations().size());
         for (int k = 0; k < mj.stations().size(); k++) {
@@ -437,14 +447,23 @@ class SidecarEngineTest {
         }
 
         // The member's stress-field spec must survive both wires identically too —
-        // it is what the overlay evaluates.
+        // it is what the overlay evaluates. Every component, not a sample of them:
+        // the unchecked ones (Iy, cy, cz, wz, ay, az) were exactly where a silent
+        // field swap could live (TEST-2).
         StressFieldSpec fj = mj.field().orElseThrow();
         StressFieldSpec fs = ms.field().orElseThrow();
         assertEquals(fj.area(), fs.area(), 0.0);
+        assertEquals(fj.iy(), fs.iy(), 0.0);
         assertEquals(fj.iz(), fs.iz(), 0.0);
+        assertEquals(fj.cy(), fs.cy(), 0.0);
+        assertEquals(fj.cz(), fs.cz(), 0.0);
         assertEquals(fj.wy(), fs.wy(), 0.0);
+        assertEquals(fj.wz(), fs.wz(), 0.0);
+        assertEquals(fj.lengthMm(), fs.lengthMm(), 0.0);
         assertEquals(fj.originMm(), fs.originMm());
         assertEquals(fj.ax(), fs.ax());
+        assertEquals(fj.ay(), fs.ay());
+        assertEquals(fj.az(), fs.az());
     }
 
     @Test
@@ -470,6 +489,9 @@ class SidecarEngineTest {
         for (int k = 0; k < viaJson.shells().size(); k++) {
             ShellSnapshot sj = viaJson.shells().get(k);
             ShellSnapshot ss = viaShm.shells().get(k);
+            assertEquals(sj.material(), ss.material());
+            assertEquals(sj.plate(), ss.plate());
+            assertEquals(sj.thicknessMm(), ss.thicknessMm(), 0.0);
             assertEquals(sj.dc(), ss.dc(), 0.0);
             assertEquals(sj.dcRaw(), ss.dcRaw(), 0.0);
             assertEquals(sj.governingTopFace(), ss.governingTopFace());
@@ -477,9 +499,20 @@ class SidecarEngineTest {
             assertEquals(sj.blocks(), ss.blocks());
             ShellFieldSpec pj = sj.field().orElseThrow();
             ShellFieldSpec ps = ss.field().orElseThrow();
+            // All eight resultants and the full facet frame, not the x-components
+            // only: Nyy/Nxy/Myy/Mxy/Qy and ex/ey/n were unchecked, which is exactly
+            // the hole a component swap hides in (TEST-2).
             assertEquals(pj.nxx(), ps.nxx(), 0.0);
+            assertEquals(pj.nyy(), ps.nyy(), 0.0);
+            assertEquals(pj.nxy(), ps.nxy(), 0.0);
             assertEquals(pj.mxx(), ps.mxx(), 0.0);
+            assertEquals(pj.myy(), ps.myy(), 0.0);
+            assertEquals(pj.mxy(), ps.mxy(), 0.0);
             assertEquals(pj.qx(), ps.qx(), 0.0);
+            assertEquals(pj.qy(), ps.qy(), 0.0);
+            assertEquals(pj.ex(), ps.ex());
+            assertEquals(pj.ey(), ps.ey());
+            assertEquals(pj.normal(), ps.normal());
             assertEquals(pj.cornersMm(), ps.cornersMm());
             for (int c = 0; c < 4; c++) {
                 assertEquals(pj.cornerM().get(c).mxx(), ps.cornerM().get(c).mxx(), 0.0);

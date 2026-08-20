@@ -43,10 +43,14 @@ import java.util.function.Consumer;
  * through one backoff path whose counter is capped — so a sidecar that desyncs on
  * every request converges to DISABLED instead of a restart storm.
  *
- * <p>Not thread-safe by design. One instance per dimension, driven from that dimension's
- * analysis thread. A shared instance behind a lock would serialise every dimension behind
- * the slowest one, and a global singleton is exactly the mistake the previous codebase's
- * audit flagged.
+ * <p><strong>Threading:</strong> one instance per dimension. {@link #solve}, {@link #close},
+ * {@link #reset} and {@link #ensureReady} are mutually exclusive (one internal lock), so a
+ * close or reset issued while a solve is in flight waits for the conversation to finish
+ * rather than pulling the process out from under it. Instances are not shared between
+ * dimensions, so the lock is per-dimension and never serialises one dimension behind
+ * another. Status accessors ({@link #status}, {@link #transport},
+ * {@link #disabledReason}) are volatile reads and safe from any thread — they are
+ * display data, read by the server thread for {@code /br status}.
  */
 public final class SidecarClient implements AutoCloseable {
 
@@ -57,17 +61,28 @@ public final class SidecarClient implements AutoCloseable {
         /** Restarting after a failure; requests fail until it is back. */
         RECOVERING,
         /** Given up for this session. Only an explicit {@link #reset()} revives it. */
-        DISABLED
+        DISABLED,
+        /**
+         * Closed for good — the dimension is gone. Terminal: unlike {@link #DISABLED},
+         * not even {@link #reset()} revives it, because a client revived after its
+         * dimension unloaded would spawn a sidecar process nothing will ever close
+         * (CONC-3). A reloaded dimension gets a fresh client.
+         */
+        CLOSED
     }
 
     private final SidecarConfig config;
     private final Consumer<String> log;
+    /** Guards the conversation: solve/close/reset/ensureReady hold it end to end. */
+    private final Object lock = new Object();
 
     private SidecarProcess process;
-    private EngineCatalogue catalogue;
-    private ShmRegion shm;
-    private Status status = Status.IDLE;
-    private String disabledReason = "";
+    private volatile EngineCatalogue catalogue;
+    private volatile ShmRegion shm;
+    private volatile Status status = Status.IDLE;
+    private volatile String disabledReason = "";
+    /** Terminal flag, checked before anything can (re)start a process. */
+    private volatile boolean closed;
     private int consecutiveFailures;
     private long nextAttemptAtMs;
 
@@ -89,12 +104,18 @@ public final class SidecarClient implements AutoCloseable {
 
     public Optional<EngineCatalogue> catalogue() { return Optional.ofNullable(catalogue); }
 
-    /** Clears a {@link Status#DISABLED} state, e.g. after the user installs the binary. */
+    /**
+     * Clears a {@link Status#DISABLED} state, e.g. after the user installs the binary.
+     * A {@link Status#CLOSED} client stays closed — see the enum constant.
+     */
     public void reset() {
-        status = Status.IDLE;
-        disabledReason = "";
-        consecutiveFailures = 0;
-        nextAttemptAtMs = 0;
+        synchronized (lock) {
+            if (closed) return;
+            status = Status.IDLE;
+            disabledReason = "";
+            consecutiveFailures = 0;
+            nextAttemptAtMs = 0;
+        }
     }
 
     // ------------------------------------------------------------------ solve
@@ -111,24 +132,26 @@ public final class SidecarClient implements AutoCloseable {
     public AnalysisResult solve(SolveRequest request) {
         WorldRevision rev = request.revision();
 
-        if (!ensureReady()) {
-            return AnalysisResult.failed(rev, disabledReason.isEmpty() ? "analysis unavailable" : disabledReason);
-        }
+        synchronized (lock) {
+            if (!ensureReadyLocked()) {
+                return AnalysisResult.failed(rev, disabledReason.isEmpty() ? "analysis unavailable" : disabledReason);
+            }
 
-        // A reply left over from a timed-out earlier request would otherwise be read as
-        // this one's. The revision check in the triage would catch it, but discarding it
-        // here means one stale reply cannot fail every subsequent request.
-        process.drain();
+            // A reply left over from a timed-out earlier request would otherwise be read as
+            // this one's. The revision check in the triage would catch it, but discarding it
+            // here means one stale reply cannot fail every subsequent request.
+            process.drain();
 
-        // The shared-memory wire when both ends speak it; JSON otherwise. A TRANSPORT
-        // failure of the region itself (cannot be created, grown or opened) downgrades
-        // to JSON and keeps playing — the JSON path is the contract, shm is the
-        // optimisation, and losing it may cost speed but never an analysis (#32).
-        if (shm != null) {
-            AnalysisResult viaShm = solveViaShm(request);
-            if (viaShm != null) return viaShm;
+            // The shared-memory wire when both ends speak it; JSON otherwise. A TRANSPORT
+            // failure of the region itself (cannot be created, grown or opened) downgrades
+            // to JSON and keeps playing — the JSON path is the contract, shm is the
+            // optimisation, and losing it may cost speed but never an analysis (#32).
+            if (shm != null) {
+                AnalysisResult viaShm = solveViaShm(request);
+                if (viaShm != null) return viaShm;
+            }
+            return solveViaJson(request);
         }
-        return solveViaJson(request);
     }
 
     // ---------------------------------------------------------------- triage
@@ -343,11 +366,24 @@ public final class SidecarClient implements AutoCloseable {
      * transport-equivalence test needs the SAME client to answer the SAME request on
      * both wires, and the transport is otherwise chosen automatically.
      */
-    void forceJsonTransportForTest() { closeShm(); }
+    void forceJsonTransportForTest() {
+        synchronized (lock) {
+            closeShm();
+        }
+    }
 
     // ------------------------------------------------------------- lifecycle
     /** Starts and handshakes if needed. @return false if analysis is unavailable. */
     public boolean ensureReady() {
+        synchronized (lock) {
+            return ensureReadyLocked();
+        }
+    }
+
+    private boolean ensureReadyLocked() {
+        // Terminal states first. CLOSED outranks everything: a closed client must not
+        // start a process even if a concurrent caller raced the close (CONC-3).
+        if (closed) return false;
         if (status == Status.DISABLED) return false;
         if (status == Status.READY && process != null && process.alive()) return true;
 
@@ -442,17 +478,33 @@ public final class SidecarClient implements AutoCloseable {
             process.close();
             process = null;
         }
-        if (status != Status.DISABLED) status = Status.IDLE;
+        if (status != Status.DISABLED && status != Status.CLOSED) status = Status.IDLE;
     }
 
+    /**
+     * Shuts the conversation down for good. Terminal and idempotent: after this,
+     * {@link #solve} fails immediately, {@link #ensureReady} refuses to start a
+     * process, and {@link #reset} is a no-op. The old behaviour set the status back
+     * to IDLE, which let an in-flight solve's ensureReady re-spawn a sidecar for a
+     * dimension that had already unloaded — an orphan process nobody would ever
+     * close (CONC-3).
+     *
+     * <p>May block for as long as one conversation plus process teardown; callers on
+     * a latency-sensitive thread should invoke it from a background thread.
+     */
     @Override
     public void close() {
-        closeShm();
-        if (process != null) {
-            process.send(ProtocolCodec.encodeBye());
-            process.close();
-            process = null;
+        closed = true;   // volatile: visible before the lock is taken, so a solve that
+                         // wins the race still cannot restart after it releases.
+        synchronized (lock) {
+            closeShm();
+            if (process != null) {
+                process.send(ProtocolCodec.encodeBye());
+                process.close();
+                process = null;
+            }
+            status = Status.CLOSED;
+            disabledReason = "engine connection closed";
         }
-        status = Status.IDLE;
     }
 }

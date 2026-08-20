@@ -260,6 +260,60 @@ class BinaryCodecTest {
         assertTrue(r.diagnostic().contains("cannot fit the frame"), r.diagnostic());
     }
 
+    @Test
+    void aRevisionMismatchIsRejected() {
+        // The frame answers a question that was not asked. Accepting it would let a
+        // stale reply masquerade as the current one — the exact confusion the
+        // revision field exists to make impossible.
+        ByteBuffer b = reply(valid());
+        AnalysisResult r = BinaryCodec.decodeSolve(b, b.position(), new WorldRevision(8), CAT);
+        assertFalse(r.ok());
+        assertTrue(r.diagnostic().contains("revision mismatch"), r.diagnostic());
+        assertEquals(new WorldRevision(8), r.revision(),
+                "the failure is stamped with the EXPECTED revision, so the gate can route it");
+    }
+
+    @Test
+    void aNonOkFrameInTheRegionIsRejected() {
+        // A failed solve errors on the doorbell and never writes the region; a non-ok
+        // flag here means the two sides disagree about the conversation itself.
+        ByteBuffer b = reply(valid());
+        int frame = b.position();
+        b.putInt(12, 0);   // ok flag sits at magic(4) + revision(8)
+        AnalysisResult r = decode(b, frame);
+        assertFalse(r.ok());
+        assertTrue(r.diagnostic().contains("non-ok"), r.diagnostic());
+    }
+
+    @Test
+    void aNegativeCountIsRejected() {
+        ByteBuffer b = reply(valid());
+        ByteBuffer broken = ByteBuffer.allocate(256).order(ByteOrder.LITTLE_ENDIAN);
+        b.limit(124).position(0);
+        broken.put(b);                 // header prefix only
+        broken.putInt(-1);             // member count
+        AnalysisResult r = BinaryCodec.decodeSolve(broken, broken.position(), REV, CAT);
+        assertFalse(r.ok());
+        assertTrue(r.diagnostic().contains("count"), r.diagnostic());
+    }
+
+    @Test
+    void decodeNeverThrowsForAnyTruncationOfAValidFrame() {
+        // The never-throws contract, exhaustively: every prefix of a well-formed frame
+        // must come back as a failed result, not as an exception into the caller —
+        // SidecarClient.solve() promises its callers exactly that (TEST-4).
+        ByteBuffer full = reply(valid());
+        int frame = full.position();
+        for (int len = 0; len <= frame; len += 1) {
+            AnalysisResult r = BinaryCodec.decodeSolve(full, len, REV, CAT);
+            if (len == frame) {
+                assertTrue(r.ok(), "the full frame is the baseline and must decode");
+            } else {
+                assertFalse(r.ok(), "prefix of " + len + " bytes must fail, not throw");
+            }
+        }
+    }
+
     // ---------------------------------------------------------------- request
     @Test
     void encodeReturnsTheExactByteCountTheDoorbellNeeds() {

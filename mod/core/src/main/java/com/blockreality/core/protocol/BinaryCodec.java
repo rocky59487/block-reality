@@ -25,9 +25,14 @@ import java.util.Optional;
  * The binary wire (shm layout 1): little-endian IEEE-754, no text, no parse.
  *
  * <p>This is the SAME conversation as {@link ProtocolCodec}, over a different medium.
- * The layout mirrors the sidecar's {@code encodeShmReply} field for field, and
- * {@code verify.py}'s T-gates hold the two transports to bit-identical results, so a
- * drift between this file and the C++ encoder cannot survive a verification run.
+ * The layout mirrors the sidecar's {@code encodeShmReply} field for field. What holds
+ * the two in agreement: {@code verify.py}'s T-gates pin the C++ encoder against a
+ * <em>Python</em> reimplementation of this layout — they never execute this class —
+ * and the Java side is pinned by {@code SidecarEngineTest.shmAndJsonTransportsAgree},
+ * which runs THIS decoder against the real sidecar over a real region and compares
+ * the result with the JSON transport field for field. That test only runs when
+ * {@code -Dbr.sidecar} points at a binary; without it, drift in this file is caught
+ * by {@code BinaryCodecTest}'s hand-written frames only.
  *
  * <p>Strings never cross this wire. Materials and section/plate tokens travel as
  * indices into the ordered lists the JSON hello announced (sections first, then
