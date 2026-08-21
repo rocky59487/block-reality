@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use Block Reality in teaching or research, please cite the software and the exact release."
+title: "Block Reality: Structural Analysis in Minecraft"
+type: software
+authors:
+  - name: "Rocky"
+    alias: "rocky59487"
+abstract: >-
+  An open-source Minecraft 1.20.1 mod that extracts structural blocks into
+  6-DOF beam members and MITC4 shell facets, solves them in an out-of-process
+  finite-element backend, and returns stress contours, demand/capacity ratios,
+  mechanism diagnostics, and linear buckling results to the game.
+keywords:
+  - finite element method
+  - structural analysis
+  - engineering education
+  - Minecraft
+  - MITC4
+  - beam element
+repository-code: "https://github.com/rocky59487/block-reality"
+url: "https://github.com/rocky59487/block-reality"
+license: "Apache-2.0"
+version: "0.1a"
+date-released: "2026-08-20"

@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Download Block Reality v0.1a
+    url: https://github.com/rocky59487/block-reality/releases/download/v0.1a/blockreality-0.1a.zip
+    about: Install the current structural preview.
+  - name: Read the research brief
+    url: https://github.com/rocky59487/block-reality/blob/Main/docs/RESEARCH_BRIEF.md
+    about: Review the numerical scope, evidence and open questions first.
+  - name: Inspect the verification record
+    url: https://github.com/rocky59487/block-reality/blob/Main/evidence/VERIFICATION.md
+    about: See the generated benchmark, convergence, determinism and timing evidence.
