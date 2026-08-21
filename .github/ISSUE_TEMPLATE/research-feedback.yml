@@ -1,0 +1,82 @@
+name: Research or engineering feedback
+description: Reproduce, question, or extend a mechanics result with enough detail to investigate it.
+title: "[Research feedback] "
+labels: []
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for evaluating Block Reality. Independent criticism is welcome.
+        Please reduce the case as far as practical and include the reference that
+        makes the expected result checkable.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Beam or column response
+        - MITC4 plate or shear wall
+        - Mechanism or support semantics
+        - Linear buckling
+        - Demand/capacity interpretation
+        - Stress or utilisation rendering
+        - Installation or reproducibility
+        - Teaching use
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: For example, v0.1a or a full commit SHA.
+      placeholder: v0.1a
+    validations:
+      required: true
+
+  - type: textarea
+    id: model
+    attributes:
+      label: Smallest reproducible model
+      description: Describe block coordinates or dimensions, tokens, supports and every load.
+      placeholder: |
+        Five steel_rect_200x400 blocks in a straight run...
+        Grounded at...
+        20 kN applied at...
+    validations:
+      required: true
+
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed result
+      description: Include units and the relevant /br members or /br section output.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result and reference
+      description: Show a derivation, closed form, published source, or independent solver result.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment and supporting material
+      description: OS, Java, launcher, Forge, screenshots, logs, world save, or a small script.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This report does not ask Block Reality to make a real-world structural safety decision.
+          required: true
