@@ -2,16 +2,56 @@
 
 **English** · [中文](#中文)
 
-A structural analysis mod for Minecraft 1.20.1. Blocks placed in the world are extracted
-into 6-DOF beam members and MITC4 shell facets, solved by a finite element engine running
-outside the game process, and the result comes back as stress contours on the block
-surfaces and a demand-over-capacity ratio for every member and plate.
+> **A playable structural-analysis laboratory inside Minecraft.** Build a structure,
+> apply loads, and inspect its load path instead of guessing why it works.
+
+[Download v0.1a](https://github.com/rocky59487/block-reality/releases/download/v0.1a/blockreality-0.1a.zip)
+· [Quick start](QUICKSTART.md)
+· [Research brief](docs/RESEARCH_BRIEF.md)
+· [Verification record](evidence/VERIFICATION.md)
+· [Share technical feedback](https://github.com/rocky59487/block-reality/issues/new?template=research-feedback.yml)
+
+![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A)
+![Release v0.1a](https://img.shields.io/badge/release-v0.1a-3B82F6)
+![Verification](https://img.shields.io/badge/verification-151_engine_%2B_107_Java_checks-passing)
+[![License](https://img.shields.io/github/license/rocky59487/block-reality)](LICENSE)
+
+Block Reality is a structural analysis mod for Minecraft 1.20.1. Blocks placed in the
+world are extracted into 6-DOF beam members and MITC4 shell facets, solved by a finite
+element engine running outside the game process, and returned as stress contours on the
+block surfaces and a demand-over-capacity ratio for every member and plate.
 
 ![Utilisation lens](docs/images/utilisation-lens.jpg)
 
 The utilisation lens. The corner readout is the result of the solve behind it: member
 count, plate facet count, peak D/C, and how many of the structures in the world are
 unrestrained and therefore reported as mechanisms rather than given stresses.
+
+## Why Block Reality
+
+- **Auditable mechanics:** structural blocks become explicit beam members or shell facets;
+  the model, result fields and limitations are documented.
+- **Honest failure states:** an unrestrained structure is reported as a mechanism instead
+  of being assigned plausible-looking stresses.
+- **Reproducible evidence:** the release records closed-form comparisons, convergence,
+  equilibrium, determinism and end-to-end timing.
+- **Game-safe isolation:** the C++ mechanics backend runs as a sidecar process, so a solver
+  fault cannot take the Minecraft server or world save down with it.
+
+Block Reality is experimental research and education software. It is **not** a building-code
+checker and must not be used for real-world structural design or safety decisions.
+
+## Help evaluate it
+
+Independent use is the most valuable contribution at this stage. Try the first cantilever,
+then a slab, shear wall or slender column from the quick start. If a result surprises you,
+the [research feedback form](https://github.com/rocky59487/block-reality/issues/new?template=research-feedback.yml)
+asks for the exact model and reference needed to investigate it.
+
+Researchers and engineers can start with the [one-page research brief](docs/RESEARCH_BRIEF.md)
+and the generated [verification record](evidence/VERIFICATION.md). If the project earns a
+place in your bookmarks, a GitHub star is the simplest signal that this work should
+continue.
 
 ## Requirements
 
@@ -165,14 +205,43 @@ components keep their own licences and copyright notices.
 
 [English](#block-reality) · **中文**
 
-Minecraft 1.20.1 的結構分析模組。放置的方塊會被擷取為 6 自由度樑構件與 MITC4 板殼 facet，
-交由遊戲程序之外的有限元素求解器計算，結果以方塊表面的應力等值圖，以及每根構件、每片板的
-需求容量比（D/C）回到畫面上。
+> **Minecraft 裡可直接玩的結構分析實驗室。** 蓋出結構、施加荷載，再沿著荷載路徑理解它為什麼成立，
+> 而不是只看一場預先編好的倒塌動畫。
+
+[下載 v0.1a](https://github.com/rocky59487/block-reality/releases/download/v0.1a/blockreality-0.1a.zip)
+· [快速上手](QUICKSTART.md)
+· [研究簡報](docs/RESEARCH_BRIEF.md)
+· [驗證紀錄](evidence/VERIFICATION.md)
+· [提供技術回饋](https://github.com/rocky59487/block-reality/issues/new?template=research-feedback.yml)
+
+Block Reality 是 Minecraft 1.20.1 的結構分析模組。放置的方塊會被擷取為 6 自由度樑構件與 MITC4
+板殼 facet，交由遊戲程序之外的有限元素求解器計算，再以方塊表面的應力等值圖，以及每根構件、
+每片板的需求容量比（D/C）回到畫面上。
 
 ![利用率鏡頭](docs/images/utilisation-lens.jpg)
 
 利用率鏡頭。角落的讀數就是這一次求解的結果：構件數、板 facet 數、最大 D/C，以及世界中有幾棟
 結構未獲拘束、因而被判定為機構而不給應力。
+
+## 為什麼做 Block Reality
+
+- **力學過程可稽核：** 結構方塊會成為明確的樑構件或板殼 facet；模型、結果欄位與限制都有文件。
+- **不偽造合理結果：** 未獲拘束的結構會回報為機構，不會硬塞一組看起來合理的應力。
+- **證據可重現：** 發行版保留閉合解、收斂、平衡、跨平台決定性與完整往返時間的紀錄。
+- **不拖垮遊戲：** C++ 力學後端以 sidecar 子程序執行；求解器故障不會一起帶走伺服器或世界存檔。
+
+Block Reality 是實驗性的研究與教育軟體，**不是**建築法規檢核器，也不能用於真實結構設計或安全判斷。
+
+## 幫我實際檢驗它
+
+現階段最有價值的不是泛泛稱讚，而是有人真的安裝、蓋出案例並指出哪裡值得追查。先跑快速上手的
+懸臂，再試樓板、剪力牆或細長柱；如果結果出乎預期，可以用
+[研究回饋表單](https://github.com/rocky59487/block-reality/issues/new?template=research-feedback.yml)
+附上模型與參考值。
+
+研究者與工程師可直接從[一頁研究簡報](docs/RESEARCH_BRIEF.md)與自動產生的
+[驗證紀錄](evidence/VERIFICATION.md)開始。如果你認為這個方向值得繼續，GitHub star 就是最簡單、
+最清楚的支持訊號。
 
 ## 需求
 
