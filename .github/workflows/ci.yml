@@ -44,6 +44,13 @@ jobs:
       # it EXISTS and that its bytes are the ones the evidence record verified.
       # Without this, `scripts/package.sh` on a machine without mingw deletes the
       # committed .exe and every gate in the repository stays green (A-7).
+      # Installing the mod is now dropping one jar into mods/ (D-027), so "the jar
+      # contains an engine" is a claim with a build step behind it and no gate. Three
+      # hashes have to agree: the bytes in the jar, the manifest beside them, and the
+      # binary the acceptance suite and evidence.py actually ran.
+      - name: the jar carries the engines the evidence verified
+        run: python3 scripts/check_bundle.py dist
+
       - name: Windows engine present and matching the evidence record
         run: |
           test -f dist/br-sidecar.exe

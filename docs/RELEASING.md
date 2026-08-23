@@ -18,6 +18,10 @@
 reply 檔的第一行記著產生它那顆二進位的 sha256,對不上就**拒絕**——否則一個過期的
 reply 檔會變成一組偽造的「8/8 相同」。
 
+> 自 v0.3a 起 Windows 建置加了 `-Wl,--no-insert-timestamp`,**同樣的原始碼產生同樣的
+> .exe**。所以只要 `sidecar/` 沒動,舊的 reply 檔仍然對得上,第 1 步就會自己把
+> determinism 補完,第 2、3 步只有在引擎真的改了才需要跑。
+
 ## 重新打包（需要 FrameCore）
 
 `br-sidecar` 靜態連結 FrameCore，而 FrameCore 是本倉庫不收錄的外部 source

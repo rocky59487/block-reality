@@ -84,6 +84,19 @@ if(BR_STATIC_RUNTIME)
     endif()
 endif()
 
+# A PE file carries a link TIMESTAMP in its header, and mingw's ld fills it in with the
+# clock. Two builds of identical sources therefore differ in exactly four bytes — the
+# stamp at 0x88 and its echo at 0xd8 — measured, not assumed. That is enough to break
+# every hash comparison this project relies on: the evidence record, the archive's
+# SHA256SUMS, the jar's engine manifest, and a reader who wants to rebuild the engine and
+# check they got the same one. The last is the point. An engine you are asked to trust
+# because its hash is published is worth much less if the hash cannot be reproduced.
+#
+# The Linux build has no such field and has always been byte-identical across rebuilds.
+if(MINGW)
+    target_link_options(br-sidecar PRIVATE -Wl,--no-insert-timestamp)
+endif()
+
 # Build (portable, no dependencies but Eigen):
 #   cmake -S sidecar -B sidecar/build -DCMAKE_BUILD_TYPE=Release \
 #         -DFRAMECORE_DIR=/path/to/Plugins/FrameSolver/Source/FrameCore

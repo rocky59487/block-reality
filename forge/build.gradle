@@ -3,7 +3,7 @@ plugins {
     id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
 }
 
-version = '0.2a'
+version = '0.3a'
 group = 'com.blockreality'
 base { archivesName = 'blockreality' }
 
@@ -72,6 +72,78 @@ test {
     useJUnitPlatform()
     testLogging { events 'passed', 'skipped', 'failed'; exceptionFormat 'full' }
 }
+
+// ---------------------------------------------------------------- bundled engine
+//
+// The analysis engine travels INSIDE the jar and unpacks itself on first use (D-027).
+// On CurseForge and Modrinth a mod is one jar dropped into mods/; an engine the player
+// has to fetch and place separately is not a distribution, and the installer scripts that
+// made it bearable cannot run at all when the jar arrives through a launcher.
+//
+// Nothing is downloaded, here or at runtime. These are bytes that scripts/package.sh has
+// already built and gated, copied in with their SHA-256 recorded beside them; the runtime
+// refuses anything whose hash does not match (BundledEngine).
+//
+//   -PbrEngineDir=<dir>    where to take br-sidecar / br-sidecar.exe from
+//   -PbrEngineDir=none     build a jar with no engine in it
+//
+// A jar built with no engine is a legitimate outcome, not a failure: it is the normal
+// development flow, and the mod still finds an engine through sidecarPath, -Dbr.sidecar,
+// BR_SIDECAR, the game directory or PATH. What must never happen is a jar that SAYS it
+// carries an engine and does not, which is why the manifest is generated from the files
+// actually copied rather than written ahead of them.
+def brEngineDir = project.findProperty('brEngineDir') ?: '../dist'
+def brEngineOut = layout.buildDirectory.dir('generated/engine').get().asFile
+
+tasks.register('bundleEngines') {
+    description = 'Copies the built engines into the jar, with a hash manifest.'
+    group = 'build'
+    def src = brEngineDir == 'none' ? null : file(brEngineDir)
+    if (src != null) inputs.files(fileTree(src) { include 'br-sidecar', 'br-sidecar.exe' })
+    outputs.dir(brEngineOut)
+    doLast {
+        // The WHOLE generated directory is cleared, not just the destination below. It
+        // used to clear only its own subdirectory, and renaming that subdirectory left
+        // the previous one behind — so the next jar shipped BOTH copies of both engines
+        // and grew from 2.4 MB to 4.5 MB. This task owns brEngineOut (it declares it as
+        // an output); anything in there that this run did not write does not belong in
+        // the jar.
+        brEngineOut.deleteDir()
+        // Hyphenated so the directory can never be read as a JPMS package name —
+        // see BundledEngine.DIR. Changing it here means changing it there.
+        def dest = new File(brEngineOut, 'blockreality-engine')
+        dest.mkdirs()
+        def lines = []
+        // (file name, os, arch). Only x86-64 binaries are built today; a platform with no
+        // entry gets a clear "nothing shipped for you" at runtime rather than a binary for
+        // the wrong architecture.
+        [['br-sidecar.exe', 'windows', 'x86_64'], ['br-sidecar', 'linux', 'x86_64']].each { name, os, arch ->
+            if (src == null) return
+            def f = new File(src, name)
+            if (!f.isFile()) return
+            def md = java.security.MessageDigest.getInstance('SHA-256')
+            f.withInputStream { ins ->
+                byte[] buf = new byte[65536]
+                int n
+                while ((n = ins.read(buf)) > 0) md.update(buf, 0, n)
+            }
+            def hex = md.digest().collect { String.format('%02x', it) }.join('')
+            new File(dest, name).bytes = f.bytes
+            lines << "${os} ${arch} ${name} ${hex} ${f.length()}"
+        }
+        if (lines.isEmpty()) {
+            logger.lifecycle("bundleEngines: no engine found in ${src ?: 'none'} — " +
+                    'building a jar without one (development build)')
+        } else {
+            new File(dest, 'engine.manifest').setText(
+                    "# os arch file sha256 size\n" + lines.join('\n') + '\n', 'UTF-8')
+            logger.lifecycle("bundleEngines: ${lines.size()} engine(s) from ${src}")
+        }
+    }
+}
+
+sourceSets.main.resources.srcDirs += brEngineOut
+tasks.named('processResources') { dependsOn 'bundleEngines' }
 
 tasks.named('jar') {
     manifest {

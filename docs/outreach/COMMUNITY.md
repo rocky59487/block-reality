@@ -18,8 +18,11 @@
   引擎是**開源、可自建、隨 zip 附 SHA-256**,mod 不下載任何東西,引擎缺席時
   mod 正常運作(分析停用)。第一次送審被打回就引用這段與 repo 的
   `docs/RELEASING.md`
-- 上傳的是 **mod jar 單檔**(CurseForge 慣例);完整 zip 放 GitHub release,
-  描述裡連過去(「引擎下載見 GitHub release」)。install.bat/sh 流程照舊
+- 上傳的是 **mod jar 單檔**——自 v0.3a 起引擎就在 jar 裡(D-027),玩家不需要再下載
+  任何東西,install.bat/sh 變成選配。完整 zip 仍放 GitHub release 供查驗
+
+> **逐欄位的上架文案與原生執行檔申報,見 [`LISTING.md`](LISTING.md)。** 本檔只留發佈
+> 節奏與社群貼文;兩邊重複的那份以 LISTING.md 為準。
 
 ### 描述(英文,短版)
 

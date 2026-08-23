@@ -1,5 +1,6 @@
 package com.blockreality.impl.server;
 
+import com.blockreality.core.sidecar.BundledEngine;
 import com.blockreality.impl.BRConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
 
@@ -52,6 +53,18 @@ public final class SidecarLocator {
             }
         }
 
+        // The engine that travelled inside the jar, unpacked on first use (D-027).
+        //
+        // It sits AFTER the three explicit settings and BEFORE the loose binaries, and the
+        // order is the whole point of both halves. A player who set sidecarPath, -Dbr.sidecar
+        // or BR_SIDECAR said which engine they want and must keep getting it. A br-sidecar
+        // that merely happens to be in the game directory or on PATH is any version at all —
+        // most often the one an older release's installer left there — while the bundled one
+        // is the exact binary this build's acceptance suite ran against.
+        for (String line : bundled().tried) tried.add(line);
+        Path fromJar = bundled().path;
+        if (fromJar != null && usable(fromJar)) return new Result(Optional.of(fromJar), tried);
+
         try {
             Path gameDir = FMLPaths.GAMEDIR.get();
             for (Path p : new Path[]{ gameDir.resolve(EXE), gameDir.resolve("blockreality").resolve(EXE) }) {
@@ -83,6 +96,41 @@ public final class SidecarLocator {
         return Files.isRegularFile(p) && Files.isExecutable(p);
     }
 
+    /** What the unpack decided, and what it said. Computed once per launch. */
+    private record Bundled(Path path, List<String> tried) { }
+
+    private static volatile Bundled bundledOnce;
+
+    /**
+     * Unpacks the bundled engine, at most once per JVM.
+     *
+     * <p>Once, because there is one {@link SidecarLocator} call per dimension and the
+     * check that the file on disk is the right one hashes several megabytes. Doing that
+     * three times because a world has three dimensions is a cost with nothing to show for
+     * it — and unlike the search itself, the answer cannot differ between calls.
+     */
+    private static Bundled bundled() {
+        Bundled b = bundledOnce;
+        if (b != null) return b;
+        synchronized (SidecarLocator.class) {
+            if (bundledOnce != null) return bundledOnce;
+            List<String> said = new ArrayList<>();
+            Path found = null;
+            try {
+                Path root = FMLPaths.GAMEDIR.get().resolve("blockreality").resolve("engine");
+                found = BundledEngine.ensure(root, BundledEngine.class::getResourceAsStream,
+                        System.getProperty("os.name"), System.getProperty("os.arch"),
+                        msg -> said.add("bundled: " + msg)).orElse(null);
+            } catch (Throwable t) {
+                // FMLPaths outside a running game, a security manager, a broken jar: the
+                // mod plays without analysis rather than failing to load (D-013).
+                said.add("bundled: unavailable (" + t + ")");
+            }
+            bundledOnce = new Bundled(found, List.copyOf(said));
+            return bundledOnce;
+        }
+    }
+
     /** One line per place looked, for the log and for {@code /br status}. */
     public static String describe(Result r) {
         StringBuilder b = new StringBuilder();
@@ -94,8 +142,12 @@ public final class SidecarLocator {
             // SERVER-type config: Forge writes it into the world save, not into the
             // global config/ folder — pointing players at config/ sent them editing a
             // file the mod never reads (FORGE-9).
-            b.append("\nSet 'sidecarPath' in <world save>/serverconfig/blockreality-server.toml, or drop ")
-             .append(EXE).append(" in the game directory.");
+            b.append("\nThe engine normally travels inside the mod jar and unpacks itself on first "
+                    + "use; if it did not, the lines above say why. You can also build ")
+             .append(EXE)
+             .append(" from source and name it in 'sidecarPath' in "
+                    + "<world save>/serverconfig/blockreality-server.toml, or drop it in the game "
+                    + "directory.");
         }
         return b.toString();
     }
