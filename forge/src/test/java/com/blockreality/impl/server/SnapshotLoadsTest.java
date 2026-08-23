@@ -76,6 +76,26 @@ class SnapshotLoadsTest {
     }
 
     @Test
+    void aLoadOnABlockThatFormsNoElementIsIdentifiedByTheProbe() {
+        // The fourth fate (A-5): the block IS in the request, so the first three rules all
+        // let the load travel — and the engine refuses the whole request, every tick, with
+        // no block named. The probe solve carries no loads, so it answers, and its
+        // `unassigned` list is what finally names the culprit.
+        BlockKey lone = new BlockKey(9, 70, 9);
+        List<BlockKey> refused = SnapshotLoads.refusedBy(Set.of(IN, lone), List.of(lone));
+        assertEquals(List.of(lone), refused);
+    }
+
+    @Test
+    void aBlockThatFormsNoElementButCarriesNoLoadIsLeftAlone() {
+        // unassigned is a report about BLOCKS. Only the ones a player actually loaded may
+        // be touched: dropping loads that do not exist would be a no-op, but treating an
+        // unassigned block as evidence about an unrelated load would not.
+        BlockKey lone = new BlockKey(9, 70, 9);
+        assertTrue(SnapshotLoads.refusedBy(Set.of(IN), List.of(lone)).isEmpty());
+    }
+
+    @Test
     void momentsAreNotInventedForPointLoads() {
         SolveRequest.Builder b = SolveRequest.builder(new WorldRevision(4));
         b.block(IN, "steel", "steel_rect_200x400", true);

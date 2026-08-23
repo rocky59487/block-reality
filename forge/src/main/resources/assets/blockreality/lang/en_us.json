@@ -25,6 +25,7 @@
   "br.hud.stale": "stale — world changed since this was computed",
   "br.hud.truncated": "overlay incomplete — showing %s of %s members, %s of %s facets",
   "br.hint.first_use": "Sneak-right-click a structural block to add a test load. /br status shows the engine.",
+  "br.msg.load_dropped": "Test load at %s %s %s removed: that block forms no structural element on its own.",
   "br.hud.aim": "Look at a member for its section",
   "br.hud.focus": "member #%s  %s",
   "br.hud.focus_dc": "D/C %s   governing fibre: %s",

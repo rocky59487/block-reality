@@ -25,6 +25,7 @@
   "br.hud.stale": "過期——計算之後世界已經改變",
   "br.hud.truncated": "疊加層不完整——顯示 %s／%s 根構件、%s／%s 片板元素",
   "br.hint.first_use": "蹲下右鍵結構方塊可加測試荷載。/br status 顯示引擎狀態。",
+  "br.msg.load_dropped": "已移除 %s %s %s 的測試荷載：該方塊本身構不成結構元素。",
   "br.hud.aim": "看向一根構件以顯示斷面",
   "br.hud.focus": "構件 #%s  %s",
   "br.hud.focus_dc": "D/C %s   控制纖維：%s",

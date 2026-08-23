@@ -4,6 +4,7 @@ import com.blockreality.api.geom.BlockKey;
 import com.blockreality.core.protocol.SolveRequest;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,19 @@ import java.util.Set;
  *   <li><strong>Not tracked at all</strong> (block gone) → the load is stale and is
  *       reported for removal — the load hangs ON the block and goes with it.
  * </ul>
+ *
+ * <p>There is a fourth fate the first three could not express, and it is the one that
+ * hurt: an <em>included</em> block the engine forms no element from — a single structural
+ * block, a plate block closing no facet. The load travels, the engine refuses the whole
+ * request, and it refuses it again every tick, so the dimension's analysis stays dark
+ * until the player thinks to remove a load nothing told them about. Placing one block and
+ * sneak-clicking it is the first thing {@code br.hint.first_use} tells a player to do
+ * (PR26_REVIEW A-5).
+ *
+ * <p>The refusal reply carries no block list — it is written before the {@code unassigned}
+ * field — so the recovery is a probe: re-solve the same world with NO loads, which cannot
+ * be refused for this reason, and read {@code unassigned} off it. {@link #refusedBy} is
+ * that rule.
  *
  * <p>No Minecraft imports: this rule is the one #38 shipped broken, so it is the one
  * that gets a plain JUnit harness (6.3).
@@ -60,5 +74,21 @@ final class SnapshotLoads {
             // waits with its block (#38).
         }
         return stale;
+    }
+
+    /**
+     * Loads that must be dropped after a no-load probe solve: those sitting on a block the
+     * engine could form no element from.
+     *
+     * @param loaded     blocks currently carrying a test load
+     * @param unassigned the probe's report of blocks that became no element
+     * @return the subset of {@code loaded} the engine will keep refusing
+     */
+    static List<BlockKey> refusedBy(Set<BlockKey> loaded, Collection<BlockKey> unassigned) {
+        List<BlockKey> out = new ArrayList<>();
+        for (BlockKey k : unassigned) {
+            if (loaded.contains(k)) out.add(k);
+        }
+        return out;
     }
 }

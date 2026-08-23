@@ -10,10 +10,13 @@ import com.blockreality.impl.BRConfig;
 import com.blockreality.impl.BlockRealityMod;
 import com.blockreality.impl.block.StructuralBlock;
 import com.blockreality.impl.net.BRNetwork;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -76,6 +79,15 @@ public final class StructureManager {
     private final Map<BlockPos, double[]> loaded = new ConcurrentHashMap<>();
 
     private final AtomicBoolean inFlight = new AtomicBoolean(false);
+    /**
+     * The engine refused the last request and there are loads in play, so the next one
+     * goes out WITHOUT them: a refusal reply names no block, but a solve that carries no
+     * load cannot be refused for carrying one, and its {@code unassigned} list says
+     * exactly which loads have nowhere to stand (A-5).
+     */
+    private boolean probeWithoutLoads;
+    /** The reply now arriving is that probe: use it to drop loads, do not draw it. */
+    private final AtomicBoolean probeInFlight = new AtomicBoolean(false);
     private boolean dirty;
     private int ticksSinceSolve;
     private AnalysisResult latest;
@@ -437,8 +449,11 @@ public final class StructureManager {
         }
         // Loads travel only with blocks that are IN this request; the rest wait or die
         // with their block. The rule lives in SnapshotLoads, where JUnit can reach it.
-        List<BlockKey> staleLoads = SnapshotLoads.append(
-                cycleBuilder, loadsByKey, cycleIncluded, tracked);
+        //
+        // ...unless this is the recovery probe, which deliberately carries none of them.
+        List<BlockKey> staleLoads = probeWithoutLoads
+                ? SnapshotLoads.append(cycleBuilder, Map.of(), cycleIncluded, tracked)
+                : SnapshotLoads.append(cycleBuilder, loadsByKey, cycleIncluded, tracked);
         for (BlockKey k : staleLoads) {
             BlockPos p = posOf.get(k);
             if (p != null) loaded.remove(p);
@@ -454,6 +469,8 @@ public final class StructureManager {
     private void dispatch(ServerLevel level, SolveRequest request) {
         ticksSinceSolve = 0;
         inFlight.set(true);
+        probeInFlight.set(probeWithoutLoads);
+        probeWithoutLoads = false;
 
         MinecraftServer server = level.getServer();
         boolean accepted = AnalysisExecutor.submit(() -> SolveDispatch.run(
@@ -471,7 +488,7 @@ public final class StructureManager {
                         inFlight.set(false);
                     }
                 }),
-                () -> inFlight.set(false),
+                () -> { probeInFlight.set(false); inFlight.set(false); },
                 (msg, t) -> BlockRealityMod.LOG.error("[{}] {}", dimension.location(), msg, t)));
 
         if (!accepted) {
@@ -515,6 +532,16 @@ public final class StructureManager {
      * {@code /br status} and travels no further.
      */
     private void apply(ServerLevel level, AnalysisResult result) {
+        if (probeInFlight.getAndSet(false) && result.ok()) {
+            // The probe answered. Every load standing on a block that became no element
+            // is dropped, the player is told which, and the world is marked dirty so the
+            // next tick solves the real request — with the surviving loads. The probe
+            // itself is never drawn: it is a picture of the structure with the player's
+            // experiment removed, and showing that as the answer would understate it.
+            dropRefusedLoads(level, result);
+            dirty = true;
+            return;
+        }
         // The display-track classification (INV-4): what, if anything, the clients
         // should be shown. This is displayState's real call site — it was designed
         // for exactly this decision and then never wired in, which left the audit
@@ -524,6 +551,14 @@ public final class StructureManager {
         if (display == RevisionGate.Display.UNAVAILABLE) {
             latest = result;
             BRNetwork.sendEngineStatus(level, sidecar.status(), result.diagnostic());
+            // A failure used to leave `dirty` false, so the dimension went quiet until the
+            // player next edited a block: one engine timeout and analysis was over for the
+            // session (DF-03). Retrying is throttled by minTicksBetweenSolves and bounded
+            // by the client's own restart budget, so "keep trying" cannot become a spin.
+            dirty = true;
+            // ...and if loads are in play, the very next request finds out whether one of
+            // them is the reason (A-5).
+            if (!result.ok() && !loaded.isEmpty()) probeWithoutLoads = true;
             return;
         }
         if (gate.isStale(result)) {
@@ -540,6 +575,23 @@ public final class StructureManager {
         if (committed || display == RevisionGate.Display.MECHANISM) {
             BRNetwork.sendResult(level, result);
             lastAnnouncedRevision = result.revision().value();
+        }
+    }
+
+    /** Removes every load the engine has nowhere to put, and says so out loud. */
+    private void dropRefusedLoads(ServerLevel level, AnalysisResult probe) {
+        Map<BlockKey, BlockPos> posOf = new HashMap<>();
+        for (BlockPos p : loaded.keySet()) {
+            posOf.put(new BlockKey(p.getX(), p.getY(), p.getZ()), p);
+        }
+        for (BlockKey k : SnapshotLoads.refusedBy(posOf.keySet(), probe.unassigned())) {
+            BlockPos p = posOf.get(k);
+            if (p == null || loaded.remove(p) == null) continue;
+            Component msg = Component.translatable("br.msg.load_dropped",
+                    p.getX(), p.getY(), p.getZ()).withStyle(ChatFormatting.YELLOW);
+            for (ServerPlayer sp : level.players()) sp.sendSystemMessage(msg);
+            BlockRealityMod.LOG.info("[{}] dropped a test load at {}: the block forms no element",
+                    dimension.location(), p);
         }
     }
 }
