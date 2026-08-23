@@ -223,7 +223,7 @@ public final class StressResultPacket {
             // regenerates stations from the field, so an INDEX into the server's
             // station list would not survive the trip; a position does (INV-5).
             buf.writeFloat((float) governingXmm(m));
-            buf.writeUtf(m.section(), 48);
+            buf.writeUtf(clip(m.section(), TOKEN_MAX), TOKEN_MAX);
 
             List<BlockKey> blocks = m.blocks();
             int nb = Math.min(blocks.size(), MAX_BLOCKS);
@@ -244,7 +244,7 @@ public final class StressResultPacket {
         for (int i = 0; i < p.shells.size() && i < MAX_SHELLS; i++) {
             ShellSnapshot s = p.shells.get(i);
             buf.writeVarInt(s.id());
-            buf.writeUtf(s.plate(), 48);
+            buf.writeUtf(clip(s.plate(), TOKEN_MAX), TOKEN_MAX);
             buf.writeFloat((float) s.thicknessMm());
             buf.writeFloat((float) s.dc());
             buf.writeBoolean(s.dc() > 1.0);
@@ -266,6 +266,24 @@ public final class StressResultPacket {
             buf.writeBoolean(hasField);
             if (hasField) writeShellField(buf, s.field().get());
         }
+    }
+
+    /** Longest token this packet will carry. The engine's own catalogue is well inside it. */
+    private static final int TOKEN_MAX = 48;
+
+    /**
+     * Truncates rather than throws.
+     *
+     * <p>{@code writeUtf(s, max)} throws when {@code s} is longer, and this encode runs
+     * inside the broadcast loop — one over-long token from an engine that is not the one
+     * this build ships would take out the send to every player, not just the drawing of
+     * one member. {@code EngineStatusPacket} already guards its two strings this way; the
+     * two element tokens did not (PR26_REVIEW ATK-10 / DF-11). Tokens come from the
+     * engine, so this should never fire; a guard that never fires is the point.
+     */
+    private static String clip(String s, int max) {
+        if (s == null) return "";
+        return s.length() <= max ? s : s.substring(0, max);
     }
 
     private static double governingXmm(MemberSnapshot m) {

@@ -13,7 +13,7 @@
 
 ![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A)
 ![Release v0.2a](https://img.shields.io/badge/release-v0.2a-3B82F6)
-![Verification](https://img.shields.io/badge/verification-251_engine_%2B_187_Java_checks-passing)
+![Verification](https://img.shields.io/badge/verification-251_engine_%2B_188_Java_checks-passing)
 [![License](https://img.shields.io/github/license/rocky59487/block-reality)](LICENSE)
 
 Block Reality is a structural analysis mod for Minecraft 1.20.1. Blocks placed in the
@@ -191,12 +191,21 @@ catalogue is solid rectangles and circles and is named accordingly. There is no 
 post-buckling: the buckling factor is the linear onset, an upper bound on the real
 critical load.
 
+**Two of the five D/C modes have no closed-form gate.** `ElasticAllowable` takes the
+argmax of five ratios, and the acceptance suite pins three of them — CRUSH, TENSION and
+the bending fibres — against closed forms. **SHEAR and TORSION are reported but ungated**:
+nothing in `sidecar/verify.py` compares either against a reference, and an independent
+hand calculation of the torsion ratio differed from the engine by about 20%. Until that
+is settled, read a member whose governing fibre says SHEAR or TORSION as indicative, not
+as a number this project has verified. Rule 2 of `docs/GATES.md` — no capability without
+a gate that has run — is why this paragraph exists rather than a quieter omission.
+
 ## Verification
 
 | | |
 |---|---|
 | Engine | `sidecar/verify.py`, 251 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
-| Java | 187 tests, all passing (155 pure-Java, 32 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real |
+| Java | 188 tests, all passing (155 pure-Java, 33 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real |
 | Closed form | 31 non-zero references, worst relative error 1.2e-14; 10 zero references, worst absolute residual 1.5e-08. (Two earlier releases quoted 1.6e-10 here — that floor turned out to be the old wire's 10-digit truncation, not the engine) |
 | Transport | numbers cross as raw little-endian doubles in shared memory, never textualised; the JSON fallback prints 17 significant digits. Gate: three representative solves bit-identical across both transports |
 | Shell convergence | clamped square plate: span moment 1.75% at 8 elements down to 0.28% at 20, observed convergence order 2.06; recovered support moment 2.7% at 20 |
@@ -392,12 +401,19 @@ fallback 與除錯面）。wire 上的每一個力學數值都是引擎函式的
 檢核，也沒有板的極限強度。沒有 RC 複合斷面，斷面目錄裡是實心矩形與實心圓形，命名也照實寫。
 沒有非線性後挫屈：挫屈倍數是線性起始點，是真實臨界載重的上界。
 
+**五個 D/C 模式裡有兩個沒有閉合解 gate。** `ElasticAllowable` 取五個比值的 argmax，
+驗收套件釘住其中三個（CRUSH、TENSION、彎曲纖維）對閉合解。**SHEAR 與 TORSION 有回報、
+沒有 gate**：`sidecar/verify.py` 裡沒有任何一條拿它們對參考值，而獨立手算的扭轉比值與
+引擎差約 20%。在這件事釐清之前，控制纖維顯示 SHEAR 或 TORSION 的構件請當作**指示值**，
+不是本專案已驗證過的數字。`docs/GATES.md` 鐵則 2（沒有 gate 執行過的能力不得寫進能力
+清單）就是這段話存在的理由，而不是安靜地略過。
+
 ## 驗證
 
 | | |
 |---|---|
 | 引擎 | `sidecar/verify.py` 251 項全過，每一項都對閉合解、不依賴求解器的不變量,或傳輸等價 oracle |
-| Java | 187 項測試全過（純 Java 155、Forge 側 32），其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore |
+| Java | 188 項測試全過（純 Java 155、Forge 側 33），其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore |
 | 對閉合解 | 31 項非零參考，最差相對誤差 1.2e-14；10 項零參考，最差絕對殘差 1.5e-08。（前兩版在這裡引用的 1.6e-10,後來查明是舊 wire 的 10 位截斷,不是引擎） |
 | 傳輸 | 數值以 raw little-endian double 走共用記憶體,從不文字化;JSON fallback 印 17 位有效數字。gate:三個代表案兩種傳輸逐位元相同 |
 | 板元素收斂 | 固端方形板：跨中彎矩 8 元素 1.75%、20 元素 0.28%，實測收斂階 2.06；還原後的支承彎矩 20 元素 2.7% |
