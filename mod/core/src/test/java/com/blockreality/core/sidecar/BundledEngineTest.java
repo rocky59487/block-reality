@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * The engine now travels inside the jar, so the unpacking is the install (D-027).
@@ -195,6 +196,90 @@ class BundledEngineTest {
         assertTrue(BundledEngine.ensure(notADirectory, jar(), "Linux", "amd64", log::add).isEmpty());
         assertTrue(BundledEngine.ensure(root, path -> { throw new IOException("boom"); },
                 "Linux", "amd64", log::add).isEmpty());
+    }
+
+    // ------------------------------------------------------ the manifest is untrusted
+
+    @Test
+    void aFileNameThatIsAPathIsRefused() {
+        // The manifest's third field went straight into resolve(), and Path.resolve drops
+        // the root when handed an absolute path. A modified jar could write anywhere the
+        // process can write. That is not a privilege escalation — somebody who can edit
+        // the jar can already run Java — but it is the difference between "recompile the
+        // mod" and "zip -u one line of text", it falsifies the promise that a binary the
+        // player placed is never touched, and no zip-slip scanner would see it, because
+        // the attack surface is the manifest and not the entry names.
+        for (String evil : new String[] { "../escape", "sub/dir", "sub" + java.io.File.separator + "x",
+                                          "/abs/path", "C:/abs", "..", ".", "" }) {
+            assertThrows(IllegalArgumentException.class,
+                    () -> BundledEngine.parse("linux x86_64 " + evil + " " + sha(LIN) + " " + LIN.length),
+                    "accepted: " + evil);
+        }
+        // ...and a plain name still is one.
+        assertEquals("br-sidecar", BundledEngine.parse(
+                "linux x86_64 br-sidecar " + sha(LIN) + " " + LIN.length).get(0).fileName());
+    }
+
+    @Test
+    void darwinIsNotWindows() {
+        // "darwin" contains "win". The macOS branch below it could never run, and the
+        // author wrote that branch, so the string is expected to turn up. The day a macOS
+        // binary enters the manifest, every environment reporting Darwin would be handed
+        // an .exe — which is the one thing the platform rule exists to prevent.
+        assertEquals("macos", BundledEngine.normaliseOs("Darwin"));
+        assertEquals("macos", BundledEngine.normaliseOs("Mac OS X"));
+        assertEquals("windows", BundledEngine.normaliseOs("Windows 11"));
+        assertEquals("linux", BundledEngine.normaliseOs("Linux"));
+        // Not Linux, and there is no AIX binary: saying "linux" would hand it one.
+        assertEquals(null, BundledEngine.normaliseOs("AIX"));
+    }
+
+    // ------------------------------------------------------ concurrency and permissions
+
+    @Test
+    void whatComesBackIsWhatIsONDISK(@TempDir Path root) throws Exception {
+        // The digest was taken on the SOURCE stream while the move took whatever happened
+        // to be sitting at the fixed .part name — so two processes sharing a game
+        // directory could rename each other's half-written file into place and have it
+        // declared correct. Reproduced at 87% failure with eight threads; the fix is a
+        // unique temporary name AND a re-read of the target after the move, so the bytes
+        // that were checked are the bytes that stayed.
+        int threads = 8;
+        var pool = java.util.concurrent.Executors.newFixedThreadPool(threads);
+        var results = new java.util.concurrent.ConcurrentLinkedQueue<Path>();
+        var latch = new java.util.concurrent.CountDownLatch(1);
+        for (int i = 0; i < threads; i++) {
+            pool.submit(() -> {
+                latch.await();
+                BundledEngine.ensure(root, jar(), "Linux", "amd64", s -> { }).ifPresent(results::add);
+                return null;
+            });
+        }
+        latch.countDown();
+        pool.shutdown();
+        assertTrue(pool.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS));
+        assertEquals(threads, results.size(), "every caller must get an engine");
+        for (Path p : results) assertArrayEqualsOnDisk(LIN, p);
+        try (var stray = Files.walk(root)) {
+            assertTrue(stray.noneMatch(f -> f.getFileName().toString().contains(".part")),
+                    "a temporary file was left behind");
+        }
+    }
+
+    @Test
+    void theUnpackedEngineIsExecutable(@TempDir Path root) throws IOException {
+        // The one step of the manual install this code replaces that nothing checked.
+        // With chmod turned into a no-op the whole suite stayed green, while the engine
+        // came out rw-r--r-- and the locator rejected it — a new Linux player would get
+        // analysis silently switched off with no error to search for.
+        assumeTrue(root.getFileSystem().supportedFileAttributeViews().contains("posix"),
+                "POSIX permissions only");
+        Path p = BundledEngine.ensure(root, jar(), "Linux", "amd64", log::add).orElseThrow();
+        assertTrue(Files.isExecutable(p), "unpacked engine is not executable");
+        var perms = Files.getPosixFilePermissions(p);
+        assertTrue(perms.contains(java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE));
+        assertFalse(perms.contains(java.nio.file.attribute.PosixFilePermission.OTHERS_WRITE),
+                "an executable this process wrote must not be world-writable");
     }
 
     private static void assertArrayEqualsOnDisk(byte[] expected, Path p) throws IOException {
