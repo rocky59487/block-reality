@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Builds everything and assembles dist/ — the folder you copy to another machine.
+# Builds everything, runs every gate, and assembles dist/ — the folder you copy
+# to another machine.
 #
 #   scripts/package.sh /path/to/architect_simulator/Plugins/FrameSolver/Source/FrameCore
 #
@@ -29,9 +30,15 @@ if [[ -z "$FRAMECORE_DIR" || ! -f "$FRAMECORE_DIR/Public/FrameCore/FrameSolver.h
     exit 2
 fi
 
+# Everything is assembled into a STAGING directory and only swapped into dist/
+# once the whole pipeline has passed. The previous version deleted dist/ first,
+# so any mid-pipeline failure left the repository with an empty, half-written
+# dist — and dist/ is tracked, so that state was one commit away from shipping.
 DIST="$ROOT/dist"
-rm -rf "$DIST"
-mkdir -p "$DIST"
+STAGE="$ROOT/dist.stage"
+rm -rf "$STAGE"
+mkdir -p "$STAGE"
+trap 'rm -rf "$STAGE"' EXIT
 
 # ---------------------------------------------------------------- engine (host)
 echo "==> building br-sidecar (host)"
@@ -39,12 +46,12 @@ cmake -S "$ROOT/sidecar" -B "$ROOT/sidecar/build" \
       -DCMAKE_BUILD_TYPE=Release -DBR_STATIC_RUNTIME=ON \
       -DFRAMECORE_DIR="$FRAMECORE_DIR" >/dev/null
 cmake --build "$ROOT/sidecar/build" --parallel >/dev/null
-cp "$ROOT/sidecar/build/br-sidecar" "$DIST/"
+cp "$ROOT/sidecar/build/br-sidecar" "$STAGE/"
 
 # The gate runs before anything is packaged. Shipping an engine that has not passed
 # its own acceptance checks would make every number downstream meaningless.
 echo "==> verifying engine"
-python3 "$ROOT/sidecar/verify.py" "$DIST/br-sidecar" | tail -1
+python3 "$ROOT/sidecar/verify.py" "$STAGE/br-sidecar" | tail -1
 
 # ------------------------------------------------------------- engine (Windows)
 if command -v x86_64-w64-mingw32-g++ >/dev/null 2>&1; then
@@ -54,10 +61,23 @@ if command -v x86_64-w64-mingw32-g++ >/dev/null 2>&1; then
           -DCMAKE_TOOLCHAIN_FILE="$ROOT/sidecar/toolchain-mingw64.cmake" \
           -DFRAMECORE_DIR="$FRAMECORE_DIR" >/dev/null
     cmake --build "$ROOT/sidecar/build-win" --parallel >/dev/null
-    cp "$ROOT/sidecar/build-win/br-sidecar.exe" "$DIST/"
+    cp "$ROOT/sidecar/build-win/br-sidecar.exe" "$STAGE/"
+elif [[ "${ALLOW_NO_WINDOWS:-0}" == "1" ]]; then
+    echo "==> skipping Windows build (ALLOW_NO_WINDOWS=1, no x86_64-w64-mingw32-g++)"
+    echo "    dist/br-sidecar.exe will NOT be in this build"
 else
-    echo "==> skipping Windows build (no x86_64-w64-mingw32-g++)"
-    echo "    apt-get install -y g++-mingw-w64-x86-64"
+    # Refusing is the whole point. dist/ is TRACKED, and the last two lines of this
+    # script are `rm -rf dist` and `mv stage dist` — so on a machine without mingw this
+    # used to DELETE the committed, already-verified br-sidecar.exe, and every gate in
+    # the repository stayed green afterwards: sha256sum -c regenerates over whatever is
+    # there, the release version check never looks at the .exe, and no acceptance suite
+    # names it. One `git add` and half the shipped product was gone (PR26_REVIEW A-7).
+    echo "no x86_64-w64-mingw32-g++ on PATH, and dist/ already ships a Windows engine." >&2
+    echo "Packaging here would delete it. Install the cross compiler:" >&2
+    echo "    apt-get install -y g++-mingw-w64-x86-64" >&2
+    echo "or, if you really mean to cut a Linux-only build:" >&2
+    echo "    ALLOW_NO_WINDOWS=1 scripts/package.sh ..." >&2
+    exit 1
 fi
 
 # -------------------------------------------------------------- evidence
@@ -66,18 +86,38 @@ fi
 # It runs BEFORE packaging and its exit status gates the release, so a build whose
 # numbers moved cannot be shipped with a stale table claiming they did not.
 echo "==> generating verification evidence"
-EVIDENCE_ARGS=("$DIST/br-sidecar")
+EVIDENCE_ARGS=("$STAGE/br-sidecar")
 # Wine is not always on PATH even when installed; the distro package puts it under
 # /usr/lib/wine. Without it the determinism section is simply absent, never faked.
 WINE=$(command -v wine64 || command -v wine || echo /usr/lib/wine/wine64)
-if [[ -f "$DIST/br-sidecar.exe" && -x "$WINE" ]]; then
+if [[ -f "$STAGE/br-sidecar.exe" && -x "$WINE" ]]; then
     cat > "$ROOT/.br-winewrap" <<WRAP
 #!/bin/sh
 export WINEDEBUG=-all
-exec "$WINE" "$DIST/br-sidecar.exe" "\$@"
+exec "$WINE" "$STAGE/br-sidecar.exe" "\$@"
 WRAP
     chmod +x "$ROOT/.br-winewrap"
     EVIDENCE_ARGS+=(--windows "$ROOT/.br-winewrap")
+fi
+# Hashed even when wine is absent: the determinism section needs to RUN the Windows
+# engine, the identity section only needs to read its bytes.
+if [[ -f "$STAGE/br-sidecar.exe" ]]; then
+    EVIDENCE_ARGS+=(--windows-binary "$STAGE/br-sidecar.exe")
+fi
+# Cross-platform determinism WITHOUT wine, and with better evidence than wine gives:
+# the .exe run natively on Windows, its replies recorded, compared here byte for byte.
+# The file is used only when its header names the binary that was just built, so it can
+# never turn into a stale agreement. See docs/RELEASING.md for the three-step order.
+REPLIES="$ROOT/evidence/replies-windows.jsonl"
+if [[ -f "$STAGE/br-sidecar.exe" && -f "$REPLIES" ]]; then
+    want=$(sha256sum "$STAGE/br-sidecar.exe" | cut -d' ' -f1)
+    have=$(head -1 "$REPLIES" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("sha256",""))')
+    if [[ "$want" == "$have" ]]; then
+        EVIDENCE_ARGS+=(--replies "$REPLIES")
+    else
+        echo "    (evidence/replies-windows.jsonl is for another binary; determinism will be"
+        echo "     unchecked in this record — see docs/RELEASING.md)"
+    fi
 fi
 FRAMECORE_DIR="$FRAMECORE_DIR" python3 "$ROOT/scripts/evidence.py" "${EVIDENCE_ARGS[@]}"
 rm -f "$ROOT/.br-winewrap"
@@ -85,25 +125,47 @@ rm -f "$ROOT/.br-winewrap"
 # player needs in order to play: the mod, the engine, and how to install them. The
 # evidence belongs to the repository, where it can be read without downloading a zip.
 
+# ------------------------------------------------------------------- Java tests
+# The Java suite runs against the engine THIS run just built — the cross-language
+# gates then bind the jar about to be packaged to the binary about to be packaged.
+# A release used to be cut with `build -x test` (#46); a package that skips its
+# own tests is a capability claim without a gate.
+echo "==> running the Java suite against the fresh engine"
+(cd "$ROOT/mod" && ./gradlew --no-daemon test -q "-Dbr.sidecar=$STAGE/br-sidecar")
+
 # ------------------------------------------------------------------------- mod
 echo "==> building the mod jar"
-(cd "$ROOT/forge" && ./gradlew --no-daemon build -x test -q)
-cp "$ROOT"/forge/build/libs/blockreality-*.jar "$DIST/"
+# Stale jars from earlier versions would be swept up by the copy glob below and
+# ship two mods in one zip, each installer picking whichever sorts last. Clear
+# first, then ASSERT the glob resolved to exactly one file.
+rm -f "$ROOT"/forge/build/libs/blockreality-*.jar
+(cd "$ROOT/forge" && ./gradlew --no-daemon build -q)
+jars=("$ROOT"/forge/build/libs/blockreality-*.jar)
+if [[ ${#jars[@]} -ne 1 || ! -f "${jars[0]}" ]]; then
+    echo "expected exactly one mod jar in forge/build/libs, found: ${jars[*]}" >&2
+    exit 1
+fi
+cp "${jars[0]}" "$STAGE/"
 
-cp "$ROOT/scripts/install.sh" "$ROOT/scripts/install.bat" "$DIST/"
-chmod +x "$DIST/install.sh" "$DIST/br-sidecar"
+cp "$ROOT/scripts/install.sh" "$ROOT/scripts/install.bat" "$STAGE/"
+chmod +x "$STAGE/install.sh" "$STAGE/br-sidecar"
 
 # The two READMEs that go in the archive live in scripts/dist-docs/ rather than in
 # a heredoc here, so that editing them does not mean editing the packaging script.
-cp "$ROOT/scripts/dist-docs/START-HERE.txt" "$DIST/"
-cp "$ROOT/scripts/dist-docs/讀我-中文.txt" "$DIST/"
+cp "$ROOT/scripts/dist-docs/START-HERE.txt" "$STAGE/"
+cp "$ROOT/scripts/dist-docs/讀我-中文.txt" "$STAGE/"
 
 # Hashes of everything that is about to be shipped, so a download can be checked
-# against the archive it claims to be. Generated last, over the finished dist/.
+# against the archive it claims to be. Generated last, over the finished stage.
 echo "==> hashing"
-(cd "$DIST" && sha256sum -- * > SHA256SUMS.txt)
+(cd "$STAGE" && sha256sum -- * > SHA256SUMS.txt)
 
-# ------------------------------------------------------------------- release zip
+# ------------------------------------------------------------------- swap + zip
+# Only now does dist/ change: the pipeline passed end to end.
+rm -rf "$DIST"
+mv "$STAGE" "$DIST"
+trap - EXIT
+
 # One file to hand to someone. The scripts inside it are the whole interface.
 VERSION=$(basename "$(ls "$DIST"/blockreality-*.jar)" .jar)
 VERSION=${VERSION#blockreality-}

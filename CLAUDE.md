@@ -11,7 +11,10 @@ Block Reality 開發指引。
 Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析。
 
 力學不在這個 process 裡跑。這個倉庫是 **Minecraft 側**：方塊、材料、工法狀態機、CAD 工具、渲染。
-力學引擎（FrameCore v4，日後 tectonic）在 process 之外，透過凍結的 C ABI 呼叫。
+力學引擎（FrameCore v4，日後 tectonic）在 process 之外，走本倉庫自訂的
+line-JSON + 共用記憶體協定（D-019；契約在 `docs/ENGINE_BOUNDARY.md`）。
+FrameCore 以 C++ 原始碼靜態連結進 br-sidecar；`frame_capi_v2` 是換裝方向，
+不是現況——這裡曾寫「凍結的 C ABI」，那從未發生（D-002/D-013 的實況修正）。
 
 ## 力學模型（必讀，決定了所有其他事）
 

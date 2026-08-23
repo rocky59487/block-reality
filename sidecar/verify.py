@@ -15,17 +15,39 @@ BLOCK_MM = 1000.0
 G = 9.81
 
 fails = []
+# Checks are COUNTED here, and the count is printed with the verdict. Every number
+# quoted in a document or a release body has to come from that line, because a
+# human counting `grep -c PASS` counts the trailing "ALL PASS" too: that off-by-one
+# shipped as "219" across two generations of documents and reached the public
+# release body (PR26_REVIEW A-8 / DOC-1). One counter, one printed number, no
+# second source.
+total = 0
 
 
 def check(tag, got, expect, tol):
-    rel = abs(got - expect) / max(abs(expect), 1e-30)
-    ok = math.isfinite(got) and rel <= tol
+    global total
+    total += 1
+    # A zero reference has no relative error: |got| is compared ABSOLUTELY against
+    # tol. The old formula divided by 1e-30, which silently turned every zero-
+    # reference line into an exact-zero assertion and made the caller's tolerance
+    # a dead parameter (TEST-8) — the caller believed slack existed that did not.
+    # Same split evidence.py has always made, registered in GATES.md.
+    if expect == 0:
+        err = abs(got)
+        ok = math.isfinite(got) and err <= tol
+        label = f"abs={err:.2e}"
+    else:
+        err = abs(got - expect) / abs(expect)
+        ok = math.isfinite(got) and err <= tol
+        label = f"rel={err:.2e}"
     if not ok:
         fails.append(tag)
-    print(f"  {'[PASS]' if ok else '[FAIL]'} {tag:<38} got={got:<14.6g} exp={expect:<14.6g} rel={rel:.2e}")
+    print(f"  {'[PASS]' if ok else '[FAIL]'} {tag:<38} got={got:<14.6g} exp={expect:<14.6g} {label}")
 
 
 def check_true(tag, cond, detail=""):
+    global total
+    total += 1
     if not cond:
         fails.append(tag)
     print(f"  {'[PASS]' if cond else '[FAIL]'} {tag:<38} {detail}")
@@ -44,6 +66,15 @@ class Sidecar:
             raise RuntimeError("sidecar closed the pipe")
         return json.loads(line)
 
+    def raw(self, line):
+        """One raw request line, for malformed-input gates the dict API cannot express."""
+        self.p.stdin.write(line + "\n")
+        self.p.stdin.flush()
+        reply = self.p.stdout.readline()
+        if not reply:
+            raise RuntimeError("sidecar closed the pipe")
+        return json.loads(reply)
+
     def close(self):
         try:
             self.p.stdin.write('{"op":"bye"}\n')
@@ -51,6 +82,12 @@ class Sidecar:
         except Exception:
             pass
         self.p.wait(timeout=5)
+
+
+def grounded_end(mem, nd, n):
+    """True when member end `nd` sits on one of the run's two grounded ends."""
+    xs = [b[0] for b in mem["blocks"]]
+    return (min(xs) if nd == "i" else max(xs)) in (0, n - 1)
 
 
 def beam_blocks(n, mat="steel", section="steel_rect_200x400", y=64):
@@ -673,11 +710,27 @@ def main():
     G_MM = 9810.0
     q_plate = T_RHO * T_T * G_MM * 1e-12          # N/mm^2, the slab's own weight
 
-    # The tabulated centre coefficient 0.0231 is for nu = 0.3. At the centre of a square
-    # clamped plate the two curvatures are equal by symmetry, so M = D*k*(1+nu) and the
-    # coefficient rescales as (1+nu)/1.3. The EDGE coefficient does not: the tangential
-    # curvature vanishes along a clamped edge, so M_edge = -D*w,nn is nu-free.
-    C_CENTRE = 0.0231 / 1.3 * (1 + T_NU)
+    # Clamped-plate coefficients. At the centre of a square clamped plate the two
+    # curvatures are equal by symmetry, so M = D*k*(1+nu) and the coefficient rescales
+    # as (1+nu)/1.3 from its nu = 0.3 value. The EDGE coefficient does not: the
+    # tangential curvature vanishes along a clamped edge, so M_edge = -D*w,nn is nu-free.
+    #
+    # THE CENTRE COEFFICIENT IS NOT THE TABULATED ONE. Timoshenko Table 35 and Roark
+    # Table 11.4 case 8a both give 0.0231. A 13-point finite-difference solution of the
+    # biharmonic at n = 20/40/80 with Richardson extrapolation gives 0.02290512 — and the
+    # same run reproduces the other two entries of that table to every printed digit
+    # (w_max 0.00126532 vs 0.00126, M_edge -0.0513338 vs -0.0513). Two of three agree,
+    # one does not, and the one that does not is 0.85% out: three-digit rounding can only
+    # carry +-0.217%. Independent spectral and Ritz solutions agree with the FD value, and
+    # so does this project's own MITC4 under Richardson extrapolation. The table entry is
+    # wrong, and changing textbooks does not help because both trace to the same source.
+    #
+    # Consequence, logged rather than smoothed over (iron rule 3): three checks that were
+    # green against 0.0231 go red against the true value. Nothing got worse — they were
+    # being compared against a reference 0.85% off in the direction that flatters a coarse
+    # mesh. The line move is registered in docs/GATES.md.
+    C_CENTRE_NU30 = 0.0229051
+    C_CENTRE = C_CENTRE_NU30 / 1.3 * (1 + T_NU)
     C_EDGE = 0.0513
 
     def slab(n, y=64, mat="concrete", plate="concrete_slab_200", clamped=True):
@@ -735,21 +788,31 @@ def main():
     # membrane and bending blocks are coupled where they must not be.
     check("no membrane force under transverse load", sh0["N"]["xx"], 0.0, 1e-30)
 
-    print("\n[S4] clamped plate: span moment vs Timoshenko, and it converges")
-    prev_err = None
-    for nn in (9, 13):
+    print("\n[S4] clamped plate: span moment vs the biharmonic solution, and its ORDER")
+    # A single "within 1%" line on one mesh says almost nothing: it can be met by a
+    # discretisation that is right by luck and broken in its convergence. What is
+    # actually claimed here is second-order convergence, so that is what is gated —
+    # the per-mesh lines below are the measured errors with headroom, and the ratio
+    # check is the real content. Against the corrected reference the errors form a
+    # clean O(h^2) sequence with no floor; the "convergence floor" the previous
+    # evidence record described was an artefact of the wrong reference constant,
+    # not a property of MITC4.
+    errs = {}
+    for nn, line in ((9, 0.020), (13, 0.010), (21, 0.004)):
         rr = sc.call({"op": "solve", "revision": 60 + nn, "blocks": slab(nn), "loads": []})
         aa = (nn - 1) * BLOCK_MM
         c = (nn - 1) / 2.0 * BLOCK_MM + BLOCK_MM / 2.0
         got = corner_moment(rr, c, c, 0)
         ref = C_CENTRE * q_plate * aa * aa
         err = abs(abs(got) - ref) / ref
-        check_true(f"span moment within 1% at {nn - 1} elements", err < 0.01,
+        errs[nn - 1] = err
+        check_true(f"span moment within {line * 100:.1f}% at {nn - 1} elements", err < line,
                    f"got={got:.1f} ref={-ref:.1f} err={err * 100:.2f}%")
-        if prev_err is not None:
-            check_true("and it got better with more elements", err < prev_err,
-                       f"{prev_err * 100:.2f}% -> {err * 100:.2f}%")
-        prev_err = err
+    # p from two mesh pairs. h halves as the element count doubles, so the error ratio
+    # between two meshes is (n2/n1)^p, and p is the property actually being claimed.
+    for na, nb in ((8, 12), (12, 20)):
+        p_obs = math.log(errs[na] / errs[nb]) / math.log(nb / na)
+        check(f"convergence order {na}->{nb} elements", p_obs, 2.0, 0.075)
 
     print("\n[S5] support moment is recovered, not read")
     # Corner-sampled MITC4 moments are not superconvergent and are badly LOW at a clamped
@@ -879,13 +942,645 @@ def main():
         above = h_mm - (ymid - (64 * BLOCK_MM + BLOCK_MM / 2.0))
         check(f"wall {nw - 1}x{nh - 1}: self weight above the cut", -mean, q_plate * above, 1e-6)
 
+    # --------------------- S9: every plate token, not just concrete_slab_200
+    # The catalogue ships three plate tokens; S1-S8 exercised only one. A token whose
+    # thickness or material is wired wrong would pass every existing gate untouched —
+    # "no capability without a gate" applies per token, not per code path.
+    print("\n[S9] the other plate tokens: concrete_slab_150, steel_plate_20")
+    S_NU, S_RHO = 0.29, 7850.0                     # engine catalogue: steel
+    n9 = 9
+    a9 = (n9 - 1) * BLOCK_MM
+    c9 = (n9 - 1) / 2.0 * BLOCK_MM + BLOCK_MM / 2.0
+    r200 = sc.call({"op": "solve", "revision": 90, "blocks": slab(n9), "loads": []})
+
+    def slab_token_gate(tag, rev, mat, plate, t_mm, rho, nu):
+        rr = sc.call({"op": "solve", "revision": rev,
+                      "blocks": slab(n9, mat=mat, plate=plate), "loads": []})
+        check_true(f"{tag}: ok", rr.get("ok") is True, rr.get("error", ""))
+        q = rho * t_mm * G_MM * 1e-12
+        # Thickness enters the model twice, independently: linearly through MASS
+        # (self weight), and inversely-squared through the SURFACE STRESS kernel.
+        # This pins the first; the vm ratio checks below pin the second.
+        check(f"{tag}: self weight = rho*t*g*area", rr["equilibrium"]["applied"][1],
+              -q * a9 * a9, 1e-12)
+        # Centre coefficient at this material's nu: the edge coefficient is nu-free, the
+        # centre rescales by (1+nu)/1.3 from the same corrected 0.0229051 base as C_CENTRE.
+        got = corner_moment(rr, c9, c9, 0)
+        ref = C_CENTRE_NU30 / 1.3 * (1 + nu) * q * a9 * a9
+        err = abs(abs(got) - ref) / ref
+        # 8 elements, so the same 2.0% line S4 measures there. This gate pins the TOKEN —
+        # thickness, density, nu — which move the answer by tens of percent. It is not a
+        # second, weaker convergence claim.
+        check_true(f"{tag}: centre span moment within 2%", err < 0.020,
+                   f"got={got:.4g} ref={ref:.4g} err={err * 100:.2f}%")
+        return rr
+
+    r150 = slab_token_gate("slab_150", 91, "concrete", "concrete_slab_150", 150.0, T_RHO, T_NU)
+    r020 = slab_token_gate("plate_20", 92, "steel", "steel_plate_20", 20.0, S_RHO, S_NU)
+
+    # Thickness-squared in the STRESS kernel, pinned by ratios of the centre-face
+    # von Mises. The comparison point is the plate CENTRE — the field's stationary
+    # point — on an n=8 mesh (7x7 facets), whose central facet centre lands exactly
+    # there. Two earlier cuts of this gate compared at the argmax instead, which
+    # sits half an element inside the clamped-edge boundary layer where the closed
+    # form is only ~1% good; both cuts and the move are registered in docs/GATES.md.
+    def centre_vm(rev, mat, plate):
+        n8 = 8
+        rr = sc.call({"op": "solve", "revision": rev,
+                      "blocks": slab(n8, mat=mat, plate=plate), "loads": []})
+        cx = (n8 - 1) / 2.0 * BLOCK_MM + BLOCK_MM / 2.0   # plate centre, world mm
+        best, bd = None, None
+        for sh in rr["shells"]:
+            wx = sum(w[0] for w in sh["world"]) / 4.0
+            wz = sum(w[2] for w in sh["world"]) / 4.0
+            d = (wx - cx) ** 2 + (wz - cx) ** 2
+            if bd is None or d < bd:
+                best, bd = sh, d
+        return best["vmTop"]
+
+    v200 = centre_vm(93, "concrete", "concrete_slab_200")
+    v150 = centre_vm(94, "concrete", "concrete_slab_150")
+    v020 = centre_vm(95, "steel", "steel_plate_20")
+    # Same material: the whole moment field scales with q = rho*g*t and the surface
+    # stress with M/t^2, so vm(150)/vm(200) = t200/t150 = 4/3 pointwise.
+    check("centre vm ratio 150/200 = t200/t150", v150 / v200, 200.0 / 150.0, 1e-3)
+    # Across materials, at the centre the two curvatures are equal by symmetry, so
+    # both surface stresses are s = 6*q*f,xx*(1+nu)/t^2 and vm of the equal biaxial
+    # pair is s itself: E drops out, nu enters only as (1+nu).
+    check("centre vm ratio steel20/conc200 = (rho_s/rho_c)*(t_c/t_s)*(1+nu_s)/(1+nu_c)",
+          v020 / v200, (S_RHO / T_RHO) * (200.0 / 20.0) * (1 + S_NU) / (1 + T_NU), 5e-3)
+
+    # ------------------------- C15: timber and brick sections vs closed forms
+    # The material catalogue always carried timber and brick; no block could declare
+    # them because no beam section existed for either. These gates run BEFORE the
+    # game-side blocks were added — "no capability without a gate" — and pin the two
+    # new non-square sections to hand screens through the same closed forms C1 uses.
+    print("\n[C15] timber and brick sections")
+    h15 = sc.call({"op": "hello"})
+    check_true("timber section advertised", "timber_rect_140x240" in h15.get("sections", []))
+    check_true("brick section advertised", "brick_rect_230x350" in h15.get("sections", []))
+
+    # Timber cantilever under self weight. Timber's allowables are Rcomp 5 < Rtens 8,
+    # so like steel it reaches the compression face first: CRUSH, at the root.
+    tb, td, trho = 140.0, 240.0, 600.0
+    rt = sc.call({"op": "solve", "revision": 700,
+                  "blocks": beam_blocks(5, mat="timber", section="timber_rect_140x240")})
+    check_true("timber cantilever solves", rt.get("ok") is True, rt.get("error", ""))
+    wt = trho * (tb * td) * 1e-9 * G
+    dc_t = ((wt * L * L / 2.0) / (tb * td * td / 6.0)) / 5.0
+    check("timber D/C vs hand screen", rt["members"][0]["dc"], dc_t, 1e-6)
+    check_true("timber governs in CRUSH (Rcomp 5 < Rtens 8)",
+               rt["members"][0]["governingFibre"] == "CRUSH", rt["members"][0]["governingFibre"])
+
+    # Brick pier: a vertical stack under its own weight. At the supported base the
+    # axial stress is rho*g*L — independent of the section, which makes it a pure
+    # check of the density chain and the vertical-run extraction. The section only
+    # decides that D/C reads it against Rcomp = 10.
+    brho = 1800.0
+    rb15 = sc.call({"op": "solve", "revision": 701,
+                    "blocks": [{"x": 0, "y": 64 + i, "z": 0, "mat": "brick",
+                                "section": "brick_rect_230x350", "support": i == 0}
+                               for i in range(5)]})
+    check_true("brick pier solves", rb15.get("ok") is True, rb15.get("error", ""))
+    sigma_base = brho * 1e-9 * G * L          # MPa, at the supported end
+    check("brick pier D/C = rho*g*L / Rcomp", rb15["members"][0]["dc"], sigma_base / 10.0, 1e-6)
+    check_true("brick pier governs in CRUSH",
+               rb15["members"][0]["governingFibre"] == "CRUSH", rb15["members"][0]["governingFibre"])
+
+    # ------------------------------------------------ C16: the other steel section
+    # steel_rect_150x300 had a block and a README line claiming "every token is gated
+    # against a closed form", and was the one token appearing in no check in this file
+    # and no Java test (PR26_REVIEW R-02). Same cantilever as C1, its own section.
+    print("\n[C16] steel_rect_150x300 against the cantilever closed form")
+    b16, d16 = 150.0, 300.0
+    n16 = 5
+    L16 = (n16 - 1) * BLOCK_MM
+    w16 = 7850.0 * (b16 * d16) * 1e-9 * G
+    P16 = 15000.0
+    r16 = sc.call({"op": "solve", "revision": 16,
+                   "blocks": beam_blocks(n16, section="steel_rect_150x300"),
+                   "loads": [{"x": n16 - 1, "y": 64, "z": 0, "fy": -P16}]})
+    check_true("ok", r16.get("ok") is True, r16.get("error", ""))
+    m16 = r16["members"][0]
+    root16 = math.hypot(m16["i"]["My"], m16["i"]["Mz"])
+    check("150x300 root moment", root16, P16 * L16 + w16 * L16 * L16 / 2.0, 1e-6)
+    check("150x300 D/C vs hand screen", m16["dc"],
+          (root16 / (b16 * d16 * d16 / 6.0)) / 350.0, 1e-6)
+
+    # ============================================================== JOINTS =====
+    # Two runs of DIFFERENT materials that touch face to face are one structure
+    # (MEMBER_SEMANTICS 7.4 rule 2, 7.6). They were not: runs break at a change of
+    # material, nothing else joined them, and a timber beam on brick piers came back as
+    # three islands with the beam's one unsupported. The beam then left the answer
+    # entirely - no member row, no self weight in `applied`, and a load a player put on
+    # it reported ok:true with nothing moved (PR26_REVIEW A-1).
+    print("\n[J1] a timber beam on brick piers is ONE structure")
+
+    def piers_and_beam(gap=0):
+        bl = []
+        for x in (0, 4):
+            for h in range(3):
+                bl.append({"x": x, "y": 64 + h, "z": 0, "mat": "brick",
+                           "section": "brick_rect_230x350", "support": h == 0})
+        for x in range(5):
+            bl.append({"x": x, "y": 67 + gap, "z": 0, "mat": "timber",
+                       "section": "timber_rect_140x240", "support": False})
+        return bl
+
+    rj = sc.call({"op": "solve", "revision": 200, "blocks": piers_and_beam(), "loads": []})
+    check_true("ok", rj.get("ok") is True, rj.get("error", ""))
+    check_true("one island, not three", rj.get("islands") == 1, f"islands={rj.get('islands')}")
+    check_true("not a mechanism", rj.get("singular") is False, rj.get("diagnostic", ""))
+    check_true("three members", len(rj.get("members", [])) == 3,
+               f"members={len(rj.get('members', []))}")
+    check_true("nothing unassigned", len(rj.get("unassigned", [])) == 0,
+               str(rj.get("unassigned")))
+    # Self weight of ALL THREE members, computed here from the catalogue. The beam's
+    # 791 N is the term that used to be missing: it was solved, found itself alone in a
+    # singular island, and was dropped before `applied` was summed.
+    a_br, a_ti = 230.0 * 350.0, 140.0 * 240.0
+    w_piers = 2 * 1800.0 * a_br * 3000.0 * 1e-9 * G     # each pier ends ON the beam node
+    w_beam = 600.0 * a_ti * 4000.0 * 1e-9 * G
+    check("self weight includes the beam", -rj["equilibrium"]["applied"][1],
+          w_piers + w_beam, 1e-9)
+
+    # ...and a load a player hangs on that beam is CARRIED, not swallowed.
+    rjl = sc.call({"op": "solve", "revision": 201, "blocks": piers_and_beam(),
+                   "loads": [{"x": 2, "y": 67, "z": 0, "fy": -500000.0}]})
+    check_true("ok", rjl.get("ok") is True, rjl.get("error", ""))
+    check("a 500 kN load on the beam reaches `applied`",
+          -rjl["equilibrium"]["applied"][1], w_piers + w_beam + 500000.0, 1e-9)
+    check_true("and it moves the answer", rjl.get("maxDC", 0) > 10 * rj.get("maxDC", 0),
+               f"{rj.get('maxDC')} -> {rjl.get('maxDC')}")
+
+    # The negative control: the SAME beam one block higher touches nothing. Sharing a
+    # node must need face adjacency, not proximity - a rule that connects everything
+    # near everything is not a fix, it is a different wrong answer.
+    rjf = sc.call({"op": "solve", "revision": 202, "blocks": piers_and_beam(gap=1), "loads": []})
+    check_true("a beam that touches nothing is still its own island",
+               rjf.get("islands") == 3 and rjf.get("singularIslands") == 1,
+               f"islands={rjf.get('islands')} singular={rjf.get('singularIslands')}")
+
+    # A COLLINEAR butt joint: brick pier with a timber post directly on top. Only one of
+    # the two runs may extend into the other, or the joint metre is modelled twice, in
+    # parallel, with two different sections - which would show up here as four members.
+    print("\n[J2] a collinear butt joint makes exactly two members")
+    stack = [{"x": 0, "y": 64 + h, "z": 0, "mat": "brick",
+              "section": "brick_rect_230x350", "support": h == 0} for h in range(3)]
+    stack += [{"x": 0, "y": 67 + h, "z": 0, "mat": "timber",
+               "section": "timber_rect_140x240", "support": False} for h in range(3)]
+    rj2 = sc.call({"op": "solve", "revision": 203, "blocks": stack, "loads": []})
+    check_true("ok", rj2.get("ok") is True, rj2.get("error", ""))
+    check_true("one island", rj2.get("islands") == 1, f"islands={rj2.get('islands')}")
+    check_true("exactly two members", len(rj2.get("members", [])) == 2,
+               f"members={len(rj2.get('members', []))}")
+    secs = sorted(m["section"] for m in rj2.get("members", []))
+    check_true("each member keeps its OWN section",
+               secs == ["brick_rect_230x350", "timber_rect_140x240"], str(secs))
+
+    # A lone frame block next to a plate is not a member. The bearing rule fires on all
+    # three axes, so before the run-length filter moved ahead of it, a single beam block
+    # resting on a slab was extended into the slab node and shipped as a one-metre member
+    # carrying the beam's whole section (PR26_REVIEW MECH-03).
+    print("\n[J3] a single block does not become a member by touching a plate")
+    slab3 = [{"x": i, "y": 64, "z": j, "mat": "concrete", "section": "concrete_slab_200",
+              "support": i in (0, 2) or j in (0, 2)} for i in range(3) for j in range(3)]
+    lone = slab3 + [{"x": 1, "y": 65, "z": 1, "mat": "steel",
+                     "section": "steel_rect_200x400", "support": False}]
+    rj3 = sc.call({"op": "solve", "revision": 204, "blocks": lone, "loads": []})
+    check_true("ok", rj3.get("ok") is True, rj3.get("error", ""))
+    check_true("no member was invented", len(rj3.get("members", [])) == 0,
+               f"members={len(rj3.get('members', []))}")
+    check_true("the lone block is reported instead",
+               [1, 65, 1] in rj3.get("unassigned", []), str(rj3.get("unassigned")))
+
+    # ============================================================== SPANS =====
+    # A beam resting on the ground at BOTH ends had a node at each end and none between,
+    # so every DOF in the model was constrained: FrameCore reported "fully constrained
+    # (no free DOF)", this file counted that as singular, and the HUD told the player
+    # nothing was holding up a beam lying on the ground (PR26_REVIEW A-6). The extraction
+    # now puts one node mid-span, which is enough: Euler-Bernoulli elements with
+    # consistent load vectors are exact AT THEIR NODES.
+    print("\n[P1] a beam supported at both ends is solved, not called a mechanism")
+    n_p = 5
+    ends = [{"x": i, "y": 64, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+             "support": i in (0, n_p - 1)} for i in range(n_p)]
+    rp = sc.call({"op": "solve", "revision": 210, "blocks": ends, "loads": []})
+    check_true("ok", rp.get("ok") is True, rp.get("error", ""))
+    check_true("not a mechanism", rp.get("singular") is False, rp.get("diagnostic", ""))
+    check_true("split into two elements at mid-span", len(rp.get("members", [])) == 2,
+               f"members={len(rp.get('members', []))}")
+    # Fixed-fixed under its own weight, exact: M_end = wL^2/12, M_mid = wL^2/24.
+    Lp = (n_p - 1) * BLOCK_MM
+    wp = 7850.0 * (200.0 * 400.0) * 1e-9 * G
+    ends_m, mids = [], []
+    for mem in rp.get("members", []):
+        for nd in ("i", "j"):
+            mm = math.hypot(mem[nd]["My"], mem[nd]["Mz"])
+            (ends_m if grounded_end(mem, nd, n_p) else mids).append(mm)
+    check("support moment = wL^2/12", max(ends_m or [0]), wp * Lp * Lp / 12.0, 1e-6)
+    check("mid-span moment = wL^2/24", max(mids or [0]), wp * Lp * Lp / 24.0, 1e-6)
+
+    # Everything grounded: nothing can move, and that is NOT a mechanism. It is counted
+    # as a structure, it is not counted as one that fell down, and its blocks are
+    # reported so the game can say why no member appeared for them.
+    print("\n[P2] a run lying flat on the ground is fully supported, not a mechanism")
+    flat = [{"x": i, "y": 64, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+             "support": True} for i in range(3)]
+    rf = sc.call({"op": "solve", "revision": 211, "blocks": flat, "loads": []})
+    check_true("ok", rf.get("ok") is True, rf.get("error", ""))
+    check_true("not a mechanism", rf.get("singular") is False, rf.get("diagnostic", ""))
+    check_true("no mechanism island", rf.get("singularIslands") == 0,
+               str(rf.get("singularIslands")))
+    check_true("counted as one structure", rf.get("islands") == 1, str(rf.get("islands")))
+    check_true("its blocks are reported", len(rf.get("unassigned", [])) == 3,
+               str(rf.get("unassigned")))
+    check_true("and the diagnostic says why", "fully supported" in rf.get("diagnostic", ""),
+               rf.get("diagnostic", ""))
+
+    # ------------------------------------------------- T: transport equivalence
+    # The shared-memory transport must be the SAME sidecar answering the SAME
+    # question — so every number must match the JSON reply bit for bit. This
+    # simultaneously proves three things: the binary layout is decoded as
+    # specified, the 17-digit JSON path round-trips doubles exactly (a double
+    # that survives text unchanged and equals the raw bits cannot have been
+    # altered in transit), and the two encoders quote one solve, not two.
+    import mmap as mmap_mod
+    import os
+    import struct
+    import tempfile
+
+    print("\n[T] shared-memory transport: bit-exact against JSON")
+    hs = sc.call({"op": "hello"})
+    check_true("shm capability advertised", hs.get("shm") == 1, str(hs.get("shm")))
+    t_mats = list(hs.get("materials", []))
+    t_toks = list(hs.get("sections", [])) + [p["id"] for p in hs.get("plates", [])]
+    FIBRE_NAMES = ["NONE", "CRUSH", "TENSION", "SHEAR", "BENDING", "TORSION", "SHELL_VM"]
+
+    def f64bits(x):
+        return struct.pack("<d", float(x))
+
+    def num_eq(a, b):
+        if a == 0 and b == 0:      # +0 vs -0: JSON prints both as "0"
+            return True
+        return f64bits(a) == f64bits(b)
+
+    class Cur:
+        def __init__(self, mv):
+            self.mv = mv
+            self.o = 0
+
+        def u32(self):
+            v = struct.unpack_from("<I", self.mv, self.o)[0]
+            self.o += 4
+            return v
+
+        def i32(self):
+            v = struct.unpack_from("<i", self.mv, self.o)[0]
+            self.o += 4
+            return v
+
+        def f64(self):
+            v = struct.unpack_from("<d", self.mv, self.o)[0]
+            self.o += 8
+            return v
+
+        def f64n(self, n):
+            v = list(struct.unpack_from(f"<{n}d", self.mv, self.o))
+            self.o += 8 * n
+            return v
+
+        def i32n(self, n):
+            v = list(struct.unpack_from(f"<{n}i", self.mv, self.o))
+            self.o += 4 * n
+            return v
+
+        def s(self):
+            n = self.u32()
+            v = bytes(self.mv[self.o:self.o + n]).decode("utf-8")
+            self.o += n
+            return v
+
+    def shm_encode_request(mm, rev, blocks, loads, buckling=True):
+        o = struct.pack("<III", 0x31515242, rev & 0xffffffff, (rev >> 32) & 0xffffffff)
+        o += struct.pack("<I", 1 if buckling else 0)
+        o += struct.pack("<I", len(blocks))
+        for b in blocks:
+            o += struct.pack("<iiiiiI", b["x"], b["y"], b["z"],
+                             t_mats.index(b["mat"]), t_toks.index(b["section"]),
+                             1 if b.get("support") else 0)
+        o += struct.pack("<I", len(loads))
+        for l in loads:
+            o += struct.pack("<iii", l["x"], l["y"], l["z"])
+            o += struct.pack("<6d", l.get("fx", 0), l.get("fy", 0), l.get("fz", 0),
+                             l.get("mx", 0), l.get("my", 0), l.get("mz", 0))
+        mm.seek(0)
+        mm.write(o)
+        return len(o)
+
+    def shm_decode_reply(mm, nbytes):
+        c = Cur(memoryview(mm)[:nbytes])
+        magic = c.u32()
+        assert magic == 0x31505242, hex(magic)
+        rev = c.u32() | (c.u32() << 32)
+        ok = c.u32() == 1
+        if not ok:
+            return {"ok": False, "revision": rev, "error": c.s()}
+        r = {"ok": True, "revision": rev}
+        r["singular"] = c.u32() == 1
+        r["islands"] = c.u32()
+        r["singularIslands"] = c.u32()
+        diag = c.s()
+        if diag:
+            r["diagnostic"] = diag
+        note = c.s()
+        if note:
+            r["note"] = note
+        r["equilibrium"] = {"applied": c.f64n(3), "reaction": c.f64n(3), "residual": c.f64()}
+        r["maxDC"] = c.f64()
+        r["governing"] = c.i32()
+        gk = c.u32()
+        if gk:
+            r["governingKind"] = "member" if gk == 1 else "shell"
+        bf = c.f64()
+        if bf > 0:
+            r["bucklingFactor"] = bf
+        r["nodes"] = c.u32()
+        r["dof"] = c.u32()
+        r["members"] = []
+        for _ in range(c.u32()):
+            m = {"id": c.i32(), "mat": t_mats[c.i32()], "section": t_toks[c.i32()],
+                 "lengthMm": c.f64(), "dc": c.f64(),
+                 "governingFibre": FIBRE_NAMES[c.u32()], "governingStation": c.i32()}
+            for end in ("i", "j"):
+                N, Vy, Vz, T, My, Mz = c.f64n(6)
+                m[end] = {"N": N, "Vy": Vy, "Vz": Vz, "T": T, "My": My, "Mz": Mz}
+            f = {"origin": c.f64n(3), "ax": c.f64n(3), "ay": c.f64n(3), "az": c.f64n(3)}
+            f["A"], f["Iy"], f["Iz"], f["cy"], f["cz"], f["wy"], f["wz"] = c.f64n(7)
+            m["field"] = f
+            m["blocks"] = [c.i32n(3) for _ in range(c.u32())]
+            m["stations"] = []
+            for _ in range(c.u32()):
+                st = {"x": c.f64(), "world": c.f64n(3)}
+                sig = c.f64n(4)
+                st["fibres"] = [{"name": nm, "sigma": sv} for nm, sv in
+                                zip(("TOP_Y", "BOT_Y", "PLUS_Z", "MINUS_Z"), sig)]
+                st["sigmaTens"], st["sigmaComp"], st["tau"] = c.f64n(3)
+                naY, naZ = c.f64n(2)
+                if not math.isnan(naY):
+                    st["naY"] = naY
+                if not math.isnan(naZ):
+                    st["naZ"] = naZ
+                m["stations"].append(st)
+            r["members"].append(m)
+        r["shells"] = []
+        for _ in range(c.u32()):
+            sh = {"id": c.i32(), "mat": t_mats[c.i32()], "plate": t_toks[c.i32()],
+                  "t": c.f64(), "dc": c.f64(), "dcRaw": c.f64()}
+            fl = c.u32()
+            sh["face"] = "TOP" if (fl & 1) else "BOT"
+            sh["edgeRecovered"] = (fl & 2) != 0
+            sh["corner"] = c.i32()
+            sh["blocks"] = [c.i32n(3) for _ in range(4)]
+            sh["world"] = [c.f64n(3) for _ in range(4)]
+            sh["ex"], sh["ey"], sh["n"] = c.f64n(3), c.f64n(3), c.f64n(3)
+            nxx, nyy, nxy, mxx, myy, mxy, qx, qy = c.f64n(8)
+            sh["N"] = {"xx": nxx, "yy": nyy, "xy": nxy}
+            sh["M"] = {"xx": mxx, "yy": myy, "xy": mxy}
+            sh["Q"] = {"x": qx, "y": qy}
+            sh["Mc"] = [c.f64n(3) for _ in range(4)]
+            sh["McRaw"] = [c.f64n(3) for _ in range(4)]
+            sh["vmTop"], sh["vmBot"] = c.f64n(2)
+            r["shells"].append(sh)
+        r["unassigned"] = [c.i32n(3) for _ in range(c.u32())]
+        return r
+
+    def deep_eq(a, b, path):
+        if isinstance(a, dict) and isinstance(b, dict):
+            for k in a.keys() | b.keys():
+                if k not in a or k not in b:
+                    return f"{path}.{k}: present on one side only"
+                bad = deep_eq(a[k], b[k], f"{path}.{k}")
+                if bad:
+                    return bad
+            return None
+        if isinstance(a, list) and isinstance(b, list):
+            if len(a) != len(b):
+                return f"{path}: length {len(a)} vs {len(b)}"
+            for i, (x, y) in enumerate(zip(a, b)):
+                bad = deep_eq(x, y, f"{path}[{i}]")
+                if bad:
+                    return bad
+            return None
+        if isinstance(a, bool) or isinstance(b, bool) or isinstance(a, str) or isinstance(b, str):
+            return None if a == b else f"{path}: {a!r} vs {b!r}"
+        if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+            return None if num_eq(a, b) else f"{path}: {a!r} vs {b!r} (bit mismatch)"
+        return None if a == b else f"{path}: {a!r} vs {b!r}"
+
+    def strip_json_extras(r):
+        # Fibre dir/offset are geometry the binary wire derives from the member
+        # header instead of repeating per fibre; McRaw is emitted by JSON only
+        # when recovery fired but always by the binary layout.
+        out = json.loads(json.dumps(r))
+        for m in out.get("members", []):
+            for st in m.get("stations", []):
+                for f in st.get("fibres", []):
+                    f.pop("dir", None)
+                    f.pop("offsetMm", None)
+        for sh in out.get("shells", []):
+            if "McRaw" not in sh:
+                sh["McRaw"] = sh.get("Mc")
+        return out
+
+    shm_path = os.path.join(tempfile.mkdtemp(prefix="br-verify-shm"), "region.bin")
+    with open(shm_path, "wb") as f:
+        f.write(b"\0" * (8 * 1024 * 1024))
+    fshm = open(shm_path, "r+b")
+    mm = mmap_mod.mmap(fshm.fileno(), 0)
+
+    ro = sc.call({"op": "shm.open", "path": shm_path})
+    check_true("shm.open ok", ro.get("ok") is True, ro.get("error", ""))
+
+    t_cases = [
+        ("cantilever + tip load", beam_blocks(5),
+         [{"x": 4, "y": 64, "z": 0, "fy": -20000.0}]),
+        ("two supports + midspan load",
+         [{"x": i, "y": 64, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+           "support": i in (0, 6)} for i in range(7)],
+         [{"x": 3, "y": 64, "z": 0, "fy": -30000.0}]),
+        ("shear wall 2x4", *wall(3, 5, 100000.0)),
+    ]
+    for ti, (tag, tb, tl) in enumerate(t_cases):
+        rev = 9000 + ti
+        rj = sc.call({"op": "solve", "revision": rev, "blocks": tb, "loads": tl})
+        nreq = shm_encode_request(mm, rev, tb, tl)
+        bell = sc.call({"op": "solve.shm", "revision": rev, "bytes": nreq})
+        check_true(f"T{ti} doorbell ok ({tag})", bell.get("ok") is True, bell.get("error", ""))
+        rb = shm_decode_reply(mm, bell["bytes"])
+        # `op` is doorbell-side framing, not solve content.
+        rjc = strip_json_extras(rj)
+        rjc.pop("op", None)
+        bad = deep_eq(rjc, rb, "$")
+        check_true(f"T{ti} shm reply bit-exact vs JSON ({tag})", bad is None, bad or "")
+
+    # Error path: a load on nothing must refuse identically on both transports.
+    rev = 9100
+    eb = beam_blocks(3)
+    el = [{"x": 40, "y": 64, "z": 0, "fy": -1000.0}]
+    rj = sc.call({"op": "solve", "revision": rev, "blocks": eb, "loads": el})
+    nreq = shm_encode_request(mm, rev, eb, el)
+    bell = sc.call({"op": "solve.shm", "revision": rev, "bytes": nreq})
+    check_true("T-err doorbell still ok=false", bell.get("ok") is False, str(bell))
+    check_true("T-err same refusal text", bell.get("error") == rj.get("error"),
+               f"json={rj.get('error')!r} shm={bell.get('error')!r}")
+
+    # ---------------------------------- TF: frame boundary and fail-closed wire
+    # The byte length on the doorbell IS the frame (#27); the mapping capacity is
+    # not. Every refusal here must name the problem, not solve a lighter model.
+    print("\n[TF] shm framing and fail-closed decode")
+    fb, fl = beam_blocks(3), []
+    nreq = shm_encode_request(mm, 9200, fb, fl)
+    check_true("TF bytes missing refused",
+               sc.call({"op": "solve.shm", "revision": 9200}).get("ok") is False, "")
+    check_true("TF bytes zero refused",
+               sc.call({"op": "solve.shm", "revision": 9200, "bytes": 0}).get("ok") is False, "")
+    check_true("TF bytes beyond region refused",
+               sc.call({"op": "solve.shm", "revision": 9200,
+                        "bytes": 1 << 30}).get("ok") is False, "")
+    r = sc.call({"op": "solve.shm", "revision": 9200, "bytes": nreq + 8})
+    check_true("TF trailing bytes refused", r.get("ok") is False and "trailing" in r.get("error", ""),
+               str(r.get("error", "")))
+    r = sc.call({"op": "solve.shm", "revision": 9200, "bytes": nreq - 8})
+    check_true("TF truncated frame refused", r.get("ok") is False and "truncat" in r.get("error", ""),
+               str(r.get("error", "")))
+    check_true("TF exact frame still solves",
+               sc.call({"op": "solve.shm", "revision": 9200, "bytes": nreq}).get("ok") is True, "")
+
+    # Unknown request flags / block flags / out-of-world coordinates: refused (#28).
+    def patched(rev, patch_at, value):
+        n = shm_encode_request(mm, rev, fb, fl)
+        mm.seek(patch_at)
+        mm.write(struct.pack("<I", value))
+        return n
+    n = patched(9201, 12, 3)   # flags word: unknown bit 1 set
+    r = sc.call({"op": "solve.shm", "revision": 9201, "bytes": n})
+    check_true("TF unknown request flags refused",
+               r.get("ok") is False and "flags" in r.get("error", ""), str(r.get("error", "")))
+    n = patched(9202, 20 + 20, 2)   # first block's flags word (header 20 + x,y,z,mat,tok)
+    r = sc.call({"op": "solve.shm", "revision": 9202, "bytes": n})
+    check_true("TF unknown block flags refused",
+               r.get("ok") is False and "flags" in r.get("error", ""), str(r.get("error", "")))
+    n = patched(9203, 20, 0x7fffffff)   # first block x: far outside the world
+    r = sc.call({"op": "solve.shm", "revision": 9203, "bytes": n})
+    check_true("TF out-of-world coordinate refused",
+               r.get("ok") is False and "range" in r.get("error", ""), str(r.get("error", "")))
+
+    # ------------------------------------ TR: revision is exact 64-bit (#29)
+    # A double folds every integer above 2^53; the fence must not. Adjacent
+    # revisions on both sides of the fold, echoed exactly, on both transports.
+    print("\n[TR] revision domain is exact int64")
+    for rev in (2 ** 53 - 1, 2 ** 53, 2 ** 53 + 1, 2 ** 63 - 1):
+        rj = sc.call({"op": "solve", "revision": rev, "blocks": fb, "loads": fl})
+        check_true(f"TR json echoes {rev}", rj.get("ok") is True and rj.get("revision") == rev,
+                   str(rj.get("revision")))
+        n = shm_encode_request(mm, rev, fb, fl)
+        bell = sc.call({"op": "solve.shm", "revision": rev, "bytes": n})
+        check_true(f"TR shm echoes {rev}", bell.get("ok") is True and bell.get("revision") == rev,
+                   str(bell.get("revision")))
+        rb = shm_decode_reply(mm, bell["bytes"])
+        check_true(f"TR region echoes {rev}", rb.get("revision") == rev, str(rb.get("revision")))
+    check_true("TR fractional revision refused",
+               sc.raw('{"op":"solve","revision":1.5,"blocks":[]}').get("ok") is False, "")
+    check_true("TR exponent-form revision refused",
+               sc.raw('{"op":"solve","revision":1e3,"blocks":[]}').get("ok") is False, "")
+    check_true("TR negative revision refused",
+               sc.call({"op": "solve", "revision": -1, "blocks": []}).get("ok") is False, "")
+    check_true("TR beyond-int64 revision refused",
+               sc.raw('{"op":"solve","revision":9223372036854775808,"blocks":[]}').get("ok") is False, "")
+
+    # -------------------------------- TS: JSON request schema is strict (#30)
+    # A wrong-typed or misspelled field must refuse, never quietly become a
+    # lighter model that still answers ok:true.
+    print("\n[TS] strict JSON request schema")
+    base = {"op": "solve", "revision": 9300, "blocks": beam_blocks(3)}
+    check_true("TS baseline solves", sc.call(base).get("ok") is True, "")
+    check_true("TS loads as object refused",
+               sc.call({**base, "loads": {}}).get("ok") is False, "")
+    check_true("TS loads as string refused",
+               sc.call({**base, "loads": "none"}).get("ok") is False, "")
+    r = sc.call({**base, "load": [{"x": 0, "y": 64, "z": 0, "fy": -1.0}]})
+    check_true("TS typo'd 'load' key refused", r.get("ok") is False and "load" in r.get("error", ""),
+               str(r.get("error", "")))
+    check_true("TS blocks as object refused",
+               sc.call({"op": "solve", "revision": 9301, "blocks": {}}).get("ok") is False, "")
+    check_true("TS blocks missing refused",
+               sc.call({"op": "solve", "revision": 9302}).get("ok") is False, "")
+    bad_support = [dict(beam_blocks(3)[0], support="true")] + beam_blocks(3)[1:]
+    check_true("TS string 'support' refused",
+               sc.call({"op": "solve", "revision": 9303, "blocks": bad_support}).get("ok") is False, "")
+    check_true("TS unknown block field refused",
+               sc.call({"op": "solve", "revision": 9304,
+                        "blocks": [dict(beam_blocks(1)[0], colour="red")]}).get("ok") is False, "")
+    check_true("TS trailing garbage line refused",
+               sc.raw('{"op":"solve","revision":1,"blocks":[]} tail').get("ok") is False, "")
+    check_true("TS malformed number refused",
+               sc.raw('{"op":"solve","revision":1,"blocks":[{"x":1.2.3,"y":64,"z":0,'
+                      '"mat":"steel","section":"steel_rect_200x400"}]}').get("ok") is False, "")
+    check_true("TS invalid escape refused",
+               sc.raw('{"op":"solve","revision":1,"blocks":[],"loads":[],"buckling":true,'
+                      '"op":"so\\qlve"}').get("ok") is False, "")
+
+    # Parser-hardening gates (SIDE-2 / SIDE-5 / SIDE-6). Discipline note, logged
+    # in GATES.md: the fixes for these three landed one commit before their gates
+    # — an ordering slip registered as such, not laundered.
+    r = sc.raw("[" * 200000 + "]" * 200000)
+    h = sc.call({"op": "hello"})
+    check_true("TS 200k-deep nesting refused, process alive",
+               r.get("ok") is False and "materials" in h, str(r)[:60])
+    r = sc.raw('{"op":"nonsense","revision":1e999}')
+    check_true("TS overflow revision echoes 0, not cast garbage",
+               r.get("ok") is False and r.get("revision") == 0, str(r.get("revision")))
+    tb = [{"x": 0, "y": 0, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+           "support": True},
+          {"x": 1, "y": 0, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+           "support": False}]
+    shm_encode_request(mm, 9310, tb, [])
+    # Cut exactly after block 1 of 2: the zero-filled reads of block 2 land on
+    # (0,0,0), which IS block 1 — the old code reported "duplicate block
+    # coordinate" and sent the debugger to block sync instead of the transport.
+    r = sc.call({"op": "solve.shm", "revision": 9310, "bytes": 20 + 24})
+    check_true("TS mid-block truncation says truncated, not duplicate",
+               r.get("ok") is False and "truncat" in r.get("error", "")
+               and "duplicate" not in r.get("error", ""), str(r.get("error", "")))
+
+    # Capacity path: a region too small must refuse loudly, never truncate.
+    small_path = os.path.join(os.path.dirname(shm_path), "small.bin")
+    with open(small_path, "wb") as f:
+        f.write(b"\0" * 4096)
+    ro = sc.call({"op": "shm.open", "path": small_path})
+    check_true("shm.open small ok", ro.get("ok") is True, ro.get("error", ""))
+    fs2 = open(small_path, "r+b")
+    mm2 = mmap_mod.mmap(fs2.fileno(), 0)
+    rev = 9101
+    bb, bl = wall(3, 5, 100000.0)
+    nreq = shm_encode_request(mm2, rev, bb, bl)
+    bell = sc.call({"op": "solve.shm", "revision": rev, "bytes": nreq})
+    check_true("T-cap overflow refused with grow hint",
+               bell.get("ok") is False and "grow" in bell.get("error", ""), str(bell))
+    mm2.close()
+    fs2.close()
+
+    mm.close()
+    fshm.close()
+
     sc.close()
 
     print()
     if fails:
-        print(f"FAILED {len(fails)}: {', '.join(fails)}")
+        print(f"FAILED {len(fails)} of {total}: {', '.join(fails)}")
         return 1
-    print("ALL PASS")
+    print(f"ALL PASS ({total} checks)")
     return 0
 
 

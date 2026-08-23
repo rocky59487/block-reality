@@ -27,6 +27,12 @@ public final class JsonValue {
     private final Type type;
     private boolean bool;
     private double num;
+    // Exact-integer sidecar of `num`, mirroring the C++ parser. A double folds every
+    // integer above 2^53 onto its neighbours, and the world revision — the one field
+    // whose whole job is telling two adjacent values apart — is a 64-bit long. The
+    // parser fills these whenever the literal was a plain integer that fits a long.
+    private long exact;
+    private boolean isExact;
     private String str = "";
     private List<JsonValue> arr = List.of();
     private Map<String, JsonValue> obj = Map.of();
@@ -36,6 +42,14 @@ public final class JsonValue {
     static JsonValue ofBool(boolean b) { JsonValue v = new JsonValue(Type.BOOL); v.bool = b; return v; }
 
     static JsonValue ofNum(double d) { JsonValue v = new JsonValue(Type.NUM); v.num = d; return v; }
+
+    static JsonValue ofExact(long l) {
+        JsonValue v = new JsonValue(Type.NUM);
+        v.num = l;
+        v.exact = l;
+        v.isExact = true;
+        return v;
+    }
 
     static JsonValue ofStr(String s) { JsonValue v = new JsonValue(Type.STR); v.str = s; return v; }
 
@@ -82,6 +96,36 @@ public final class JsonValue {
 
     public boolean has(String key) { return obj.containsKey(key); }
 
+    // Strict interrogators. The defaulted accessors above are for fields where a
+    // default is an honest reading; a REQUIRED field goes through these first, so
+    // the codec can refuse a missing or wrong-typed value instead of substituting
+    // one and letting the reply claim more than the wire actually said.
+    public boolean isNum(String key) { return get(key).type == Type.NUM; }
+
+    public boolean isFiniteNum(String key) {
+        JsonValue v = get(key);
+        return v.type == Type.NUM && Double.isFinite(v.num);
+    }
+
+    public boolean isStr(String key) { return get(key).type == Type.STR; }
+
+    public boolean isBool(String key) { return get(key).type == Type.BOOL; }
+
+    public boolean isArr(String key) { return get(key).type == Type.ARR; }
+
+    public boolean isObj(String key) { return get(key).type == Type.OBJ; }
+
+    /** Present, numeric, and written as a plain integer that fits a long — exactly. */
+    public boolean isExactInt(String key) {
+        JsonValue v = get(key);
+        return v.type == Type.NUM && v.isExact;
+    }
+
+    public long exactI64(String key) {
+        JsonValue v = get(key);
+        return (v.type == Type.NUM && v.isExact) ? v.exact : 0L;
+    }
+
     /** Array field, or an empty list — never null, never a wrong-type failure. */
     public List<JsonValue> arr(String key) {
         JsonValue v = get(key);
@@ -102,13 +146,17 @@ public final class JsonValue {
         if (src == null) return NULL;
         P p = new P(src);
         JsonValue v = p.value();
+        // Trailing tokens are a parse error, mirroring the C++ side: accepting a
+        // valid prefix would make "{...}garbage" indistinguishable from a good line.
+        p.ws();
+        if (p.i != src.length()) return NULL;
         return p.ok ? v : NULL;
     }
 
     private static final class P {
         private final String s;
-        private int i;
-        private boolean ok = true;
+        int i;
+        boolean ok = true;
         // A malformed document could otherwise recurse until the stack gives out; the
         // protocol never nests more than four deep.
         private static final int MAX_DEPTH = 64;
@@ -116,7 +164,7 @@ public final class JsonValue {
 
         P(String s) { this.s = s; }
 
-        private void ws() { while (i < s.length() && s.charAt(i) <= ' ') i++; }
+        void ws() { while (i < s.length() && s.charAt(i) <= ' ') i++; }
 
         private boolean eat(char c) {
             ws();
@@ -198,12 +246,16 @@ public final class JsonValue {
                         case 'r' -> b.append('\r');
                         case 'b' -> b.append('\b');
                         case 'f' -> b.append('\f');
+                        case '"' -> b.append('"');
+                        case '\\' -> b.append('\\');
+                        case '/' -> b.append('/');
                         case 'u' -> {
                             if (i + 4 <= s.length()) {
                                 try {
                                     b.append((char) Integer.parseInt(s.substring(i, i + 4), 16));
                                 } catch (NumberFormatException nfe) {
-                                    b.append('?');
+                                    ok = false;
+                                    return "";
                                 }
                                 i += 4;
                             } else {
@@ -211,7 +263,12 @@ public final class JsonValue {
                                 return "";
                             }
                         }
-                        default -> b.append(e);
+                        // "\x" is not JSON. Reading it as a literal x accepts input
+                        // no other parser would, and both ends must reject alike.
+                        default -> {
+                            ok = false;
+                            return "";
+                        }
                     }
                 } else {
                     b.append(c);
@@ -225,10 +282,11 @@ public final class JsonValue {
             ws();
             int start = i;
             if (i < s.length() && (s.charAt(i) == '-' || s.charAt(i) == '+')) i++;
-            boolean any = false;
+            boolean any = false, plain = true;   // plain: digits only after the sign
             while (i < s.length()) {
                 char c = s.charAt(i);
                 if (Character.isDigit(c) || c == '.' || c == 'e' || c == 'E' || c == '-' || c == '+') {
+                    if (!Character.isDigit(c)) plain = false;
                     any = true;
                     i++;
                 } else {
@@ -236,8 +294,25 @@ public final class JsonValue {
                 }
             }
             if (!any) { ok = false; return NULL; }
+            String lit = s.substring(start, i);
+            // A plain integer that fits a long is kept EXACT, so revision survives
+            // above 2^53 where the double representation cannot. One carve-out: "-0"
+            // must stay a double, because long has no negative zero — routing it
+            // through ofExact would read it as +0.0, and the shm transport carries
+            // the engine's raw -0.0 bits, so the two wires would disagree about a
+            // value the equivalence gate compares bit-for-bit.
+            if (plain) {
+                try {
+                    long lv = Long.parseLong(lit);
+                    if (lv != 0 || lit.charAt(0) != '-') {
+                        return ofExact(lv);
+                    }
+                } catch (NumberFormatException e) {
+                    // Beyond long range: falls through to the double reading below.
+                }
+            }
             try {
-                return ofNum(Double.parseDouble(s.substring(start, i)));
+                return ofNum(Double.parseDouble(lit));
             } catch (NumberFormatException e) {
                 ok = false;
                 return NULL;

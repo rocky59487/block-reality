@@ -2,6 +2,12 @@
   "replace": false,
   "values": [
     "blockreality:steel_beam",
-    "blockreality:concrete_slab"
+    "blockreality:concrete_slab",
+    "blockreality:steel_beam_150x300",
+    "blockreality:steel_beam_100x200",
+    "blockreality:concrete_beam",
+    "blockreality:brick_pier",
+    "blockreality:concrete_slab_150",
+    "blockreality:steel_plate"
   ]
 }

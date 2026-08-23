@@ -12,6 +12,9 @@ import com.blockreality.core.render.ShellMesh;
 import com.blockreality.core.render.SectionDiagram;
 import com.blockreality.core.render.StressRibbon;
 import com.blockreality.core.render.StressRibbonBuilder;
+import com.blockreality.impl.BlockRealityMod;
+import com.blockreality.impl.net.AnalysisPendingPacket;
+import com.blockreality.core.sidecar.SidecarClient;
 import com.blockreality.impl.net.EngineStatusPacket;
 import com.blockreality.impl.net.StressResultPacket;
 import net.minecraft.client.Minecraft;
@@ -40,17 +43,26 @@ public final class ClientStressState {
     private static StressPalette palette = StressPalette.SIGNED_DEFAULT;
 
     private static long revision = -1;
+    /** The dimension the data belongs to; drawn only while the player is in it (#41). */
+    private static String dimension = "";
     private static boolean singular;
     private static double maxDc;
+    /** Server-side double verdicts; the client displays them, never re-derives (#55). */
+    private static boolean overCapacity;
+    private static boolean bucklingCriticalFlag;
     private static List<MemberSnapshot> members = List.of();
     private static List<ShellSnapshot> shells = List.of();
     private static List<BlockKey> plateBlocks = List.of();
     private static int islands;
     private static int singularIslands;
     private static double bucklingFactor;
+    private static int totalMembers;
+    private static int totalShells;
     private static List<StressRibbon> ribbons = List.of();
     private static String engineStatus = "";
     private static String engineDetail = "";
+    /** Newest world revision the server has announced; above {@link #revision} = stale. */
+    private static long pendingRevision = -1;
 
     public static ScanMode mode() { return mode; }
 
@@ -71,8 +83,15 @@ public final class ClientStressState {
 
     public static double bucklingFactor() { return bucklingFactor; }
 
-    /** Some structure is at or past its linear buckling load. */
-    public static boolean bucklingCritical() { return bucklingFactor > 0 && bucklingFactor <= 1.0; }
+    /**
+     * Some structure is at or past its linear buckling load — the SERVER's verdict,
+     * carried by the packet. Comparing the float32-degraded factor against 1.0 here
+     * could flip the judgement within a ulp of the boundary (#55).
+     */
+    public static boolean bucklingCritical() { return bucklingCriticalFlag; }
+
+    /** Whether max D/C exceeds 1 — the server's double-precision verdict (#55). */
+    public static boolean overCapacity() { return overCapacity; }
 
     public static long revision() { return revision; }
 
@@ -85,6 +104,25 @@ public final class ClientStressState {
     public static String engineDetail() { return engineDetail; }
 
     public static boolean hasData() { return revision >= 0 && (!members.isEmpty() || !shells.isEmpty()); }
+
+    /**
+     * The world was solved and NOTHING is restrained: a mechanism verdict, which has a
+     * revision but no members or shells. Distinct from "no analysis yet" — the check
+     * must run before {@link #hasData}, which is false for both (#43).
+     */
+    public static boolean mechanism() { return revision >= 0 && singular && members.isEmpty() && shells.isEmpty(); }
+
+    /** The world has moved past what is on screen; the HUD labels it stale (INV-4). */
+    public static boolean stale() { return hasData() && pendingRevision > revision; }
+
+    /** Solved totals before the packet cap; when larger than the lists, the HUD says so. */
+    public static int totalMembers() { return totalMembers; }
+
+    public static int totalShells() { return totalShells; }
+
+    public static boolean truncated() {
+        return totalMembers > members.size() || totalShells > shells.size();
+    }
 
     // ------------------------------------------------------------------- focus
     private static int focusedMemberId = -1;
@@ -143,16 +181,74 @@ public final class ClientStressState {
     }
 
     public static void accept(StressResultPacket p) {
+        // The handler already dropped invalid packets; this is defence in depth for
+        // any future caller that skips it.
+        if (!p.valid()) return;
+        // A result for another dimension is not data about the world on screen. The
+        // events in ClientEvents clear the state on travel; this guard covers the
+        // packet that was already in flight when the player left (#41).
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null
+                && !p.dimension().equals(mc.level.dimension().location().toString())) {
+            BlockRealityMod.LOG.debug("dropping stress result for {} while in {}",
+                    p.dimension(), mc.level.dimension().location());
+            return;
+        }
         revision = p.revision();
+        dimension = p.dimension();
         singular = p.singular();
         maxDc = p.maxDc();
+        overCapacity = p.overCapacity();
         islands = p.islands();
         singularIslands = p.singularIslands();
         bucklingFactor = p.bucklingFactor();
+        bucklingCriticalFlag = p.bucklingCritical();
+        totalMembers = p.totalMembers();
+        totalShells = p.totalShells();
         members = p.members();
         shells = p.shells();
         engineStatus = "";
+        if (pendingRevision < revision) pendingRevision = revision;
         rebuild();
+    }
+
+    /** The server says the world moved on; what is on screen becomes stale (INV-4). */
+    public static void acceptPending(AnalysisPendingPacket p) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null
+                && !p.dimension().equals(mc.level.dimension().location().toString())) {
+            return;
+        }
+        if (p.revision() > pendingRevision) pendingRevision = p.revision();
+    }
+
+    /**
+     * Forgets everything. Called on logout, respawn and dimension change: stress state
+     * is keyed to one world's coordinates, and carrying it across a travel paints the
+     * old world's overlay onto whatever now occupies those positions (#41).
+     */
+    public static void clear() {
+        revision = -1;
+        dimension = "";
+        singular = false;
+        maxDc = 0;
+        overCapacity = false;
+        bucklingCriticalFlag = false;
+        islands = 0;
+        singularIslands = 0;
+        bucklingFactor = 0;
+        totalMembers = 0;
+        totalShells = 0;
+        members = List.of();
+        shells = List.of();
+        plateBlocks = List.of();
+        ribbons = List.of();
+        occupied = java.util.Set.of();
+        colourScaleMpa = 1;
+        engineStatus = "";
+        engineDetail = "";
+        pendingRevision = -1;
+        focusedMemberId = -1;
     }
 
     /**
@@ -166,13 +262,21 @@ public final class ClientStressState {
     public static void acceptStatus(EngineStatusPacket p) {
         engineStatus = p.status();
         engineDetail = p.detail();
-        // The old ribbons are kept and the HUD says the engine is unavailable. Clearing
-        // them would look identical to "this structure is unstressed", which is a
-        // different and much more reassuring claim than the truth.
+        // The old ribbons are kept either way. Clearing them would look identical to
+        // "this structure is unstressed", which is a different and much more reassuring
+        // claim than the truth.
+        //
+        // Two different things arrive on this packet and they were saying the same
+        // sentence. A HEALTHY engine that refused THIS MODEL — a load on a block that
+        // forms no element, an unknown token — is not an unavailable engine, and telling
+        // the player it is sends them to look at their install while /br status prints a
+        // green READY next to it (PR26_REVIEW DF-04). The status field already
+        // distinguishes them; only the message did not.
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null) {
-            mc.player.displayClientMessage(
-                    Component.translatable("br.engine.unavailable", p.detail()), true);
+            String key = SidecarClient.Status.READY.name().equals(p.status())
+                    ? "br.engine.refused" : "br.engine.unavailable";
+            mc.player.displayClientMessage(Component.translatable(key, p.detail()), true);
         }
     }
 

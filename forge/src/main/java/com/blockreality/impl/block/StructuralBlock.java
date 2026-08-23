@@ -29,4 +29,19 @@ public class StructuralBlock extends Block {
     public String materialToken() { return materialToken; }
 
     public String sectionToken() { return sectionToken; }
+
+    /**
+     * A piston cannot move a structural block.
+     *
+     * <p>Not a gameplay preference — a modelling one. Every other way a block moves fires
+     * an event this mod listens to; a piston push moves it with none, so the analysis
+     * would keep solving a member at the position it used to occupy and report stresses
+     * for a structure that is not there (PR26_REVIEW DF-01). Refusing the push is honest
+     * and reversible; silently modelling the wrong building is neither.
+     */
+    @Override
+    public net.minecraft.world.level.material.PushReaction getPistonPushReaction(
+            net.minecraft.world.level.block.state.BlockState state) {
+        return net.minecraft.world.level.material.PushReaction.BLOCK;
+    }
 }

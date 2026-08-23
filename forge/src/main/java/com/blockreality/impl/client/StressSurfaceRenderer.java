@@ -93,7 +93,10 @@ public final class StressSurfaceRenderer {
         if (!ClientStressState.hasData()) return;
 
         List<MemberSnapshot> members = ClientStressState.members();
-        if (members.isEmpty()) return;
+        // Empty MEMBERS must not blank the pass: a pure-slab build has zero members
+        // and every one of its stresses lives in the plate facets that drawPlates
+        // renders below (FORGE-3). Only nothing-at-all means nothing to draw.
+        if (members.isEmpty() && ClientStressState.shells().isEmpty()) return;
 
         // Which cells are occupied, so shared faces can be skipped. Built from every
         // member, not just the one being drawn: two members meeting at a joint hide each
@@ -127,8 +130,12 @@ public final class StressSurfaceRenderer {
             if (member.field().isEmpty() || member.blocks().isEmpty()) continue;
             StressFieldSpec f = member.field().get();
 
+            // OR, not AND: outside the box means beyond the distance on EITHER axis.
+            // The old conjunction only culled members far away on BOTH axes, which
+            // kept everything in a cross-shaped corridor along the camera's axes
+            // rendering at unlimited range (#44).
             if (Math.abs(f.originMm().x() / 1000.0 - cam.x) > DRAW_DISTANCE
-                    && Math.abs(f.originMm().z() / 1000.0 - cam.z) > DRAW_DISTANCE) continue;
+                    || Math.abs(f.originMm().z() / 1000.0 - cam.z) > DRAW_DISTANCE) continue;
 
             // In the utilisation lens the whole member takes one colour, so the surface
             // answers "which member is in trouble" instead of "what is happening inside

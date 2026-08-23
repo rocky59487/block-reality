@@ -8,26 +8,29 @@ binary named below; none is transcribed by hand.
 | | |
 |---|---|
 | engine | FrameCore |
-| commit | `6b40c08f0e2c077bf041b0259870077420b9d6b8` (2026-08-11T21:24:40+08:00) |
+| commit | `10395c3c4c5f7442702318a22160b4920301de0d` (2026-08-20T11:41:38+08:00) |
 | worktree clean | True |
 | solver lane | compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT |
-| binary sha256 | `93a918785aa868993a3269eaa106b4ea4e20a2c0e62561d57397cf8ffe81cedc` |
-| host | Linux-6.18.5-fc-v20-x86_64-with-glibc2.39 |
+| binary sha256 | `96ce970e99f3571b4d8221c8338b080433dbf05b4bef2e2eebad23d2ffb94932` |
+| windows binary sha256 | `618368c45164f9731e9953ed4e04f9aa5815c6f650ba6ad5a5929b739b7f9634` |
+| host | Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35 |
 
-Source hashes:
+Source hashes, over content with line endings normalised to LF so the
+record is checkable from a clean checkout on either platform:
 
 | file | sha256 |
 |---|---|
-| `sidecar/main.cpp` | `5f23af6275734f0cc03013b8752f43082da1f0f8c9e56847c103602fec830696` |
-| `sidecar/json.hpp` | `e6daed262ca85e77cd177498d51b541a72b13a330e2904702eab778cd967a98e` |
-| `sidecar/verify.py` | `b0d08767f95058a1a3f622d21f161cbcb3f6acb0945cb2ff5302819432bbab92` |
-| `sidecar/CMakeLists.txt` | `e9351f417fa6d3e0c33d42d0095b5d3ab25b433794258cb51732a474b701f700` |
-| `scripts/evidence.py` | `ac07708e0363a10e3f297b1edeea5685c6a9f7c278b7493fdfad49da55095d12` |
+| `sidecar/main.cpp` | `18d14456fc4f082c68aa7b4a32f87d1fc342a0eec7d251808e6c4dbfad94d7fc` |
+| `sidecar/json.hpp` | `f3418ff18ee405ecc77a3fcb9bb7c349e55c2f85ee37f217f4fe69a621c430dc` |
+| `sidecar/shm.hpp` | `dde97360c39dbf69ad17245667ae8f6f30a88cfebc2b7d9193228b2e3cd4b5ef` |
+| `sidecar/verify.py` | `05d31b305a963860b9754bf72aaa5241b788479b3e90b67482c2c8df84b94d44` |
+| `sidecar/CMakeLists.txt` | `7d272beffe52d0e69047f59771a333da0e9e17c0af9894ceff1f4453dfc30fa5` |
+| `scripts/evidence.py` | `c619105aed0be47bb6b7674b2cd364ce00706a6f13145cc14d726f17e465cc35` |
 
 ## Accuracy against closed-form solutions
 
 **31 comparisons against non-zero references: worst relative
-error 1.623e-10, RMS 3.008e-11.**
+error 1.216e-14, RMS 2.756e-15.**
 
 **10 comparisons against exactly-zero references: worst absolute
 residual 1.490e-08 N·mm.**
@@ -42,35 +45,35 @@ non-zero comparisons are several orders of magnitude better than that.
 
 | quantity | closed form | engine | error |
 |---|---:|---:|---:|
-| sigma_top(x=0mm) | 24.241 | 24.241 | 1.47e-16 rel |
+| sigma_top(x=0mm) | 24.241 | 24.241 | 2.93e-16 rel |
 | sigma_top(x=400mm) | 20.9852 | 20.9852 | 1.69e-16 rel |
-| sigma_top(x=800mm) | 17.9143 | 17.9143 | 0.00e+00 rel |
-| sigma_top(x=1200mm) | 15.0281 | 15.0281 | 0.00e+00 rel |
-| sigma_top(x=1600mm) | 12.3268 | 12.3268 | 0.00e+00 rel |
-| sigma_top(x=2000mm) | 9.81025 | 9.81025 | 0.00e+00 rel |
-| sigma_top(x=2400mm) | 7.47856 | 7.47856 | 0.00e+00 rel |
-| sigma_top(x=2800mm) | 5.33169 | 5.33169 | 1.67e-16 rel |
-| sigma_top(x=3200mm) | 3.36964 | 3.36964 | 1.32e-16 rel |
-| sigma_top(x=3600mm) | 1.59241 | 1.59241 | 1.39e-16 rel |
-| sigma_top(x=4000mm) | 0 | 0 | 0.00e+00 abs |
-| D/C | 0.0692601 | 0.0692601 | 4.13e-11 rel |
+| sigma_top(x=800mm) | 17.9143 | 17.9143 | 1.98e-16 rel |
+| sigma_top(x=1200mm) | 15.0281 | 15.0281 | 3.55e-16 rel |
+| sigma_top(x=1600mm) | 12.3268 | 12.3268 | 4.32e-16 rel |
+| sigma_top(x=2000mm) | 9.81025 | 9.81026 | 5.43e-16 rel |
+| sigma_top(x=2400mm) | 7.47856 | 7.47856 | 7.13e-16 rel |
+| sigma_top(x=2800mm) | 5.33169 | 5.33169 | 1.00e-15 rel |
+| sigma_top(x=3200mm) | 3.36964 | 3.36964 | 1.45e-15 rel |
+| sigma_top(x=3600mm) | 1.59241 | 1.59241 | 3.21e-15 rel |
+| sigma_top(x=4000mm) | 0 | 5.58794e-15 | 5.59e-15 abs |
+| D/C | 0.0692601 | 0.0692601 | 0.00e+00 rel |
 | member length (mm) | 4000 | 4000 | 0.00e+00 rel |
 
 ### V2  cantilever, self weight only
 
 | quantity | closed form | engine | error |
 |---|---:|---:|---:|
-| sigma_top(x=0mm) | 9.24102 | 9.24102 | 0.00e+00 rel |
+| sigma_top(x=0mm) | 9.24102 | 9.24102 | 1.92e-16 rel |
 | sigma_top(x=400mm) | 7.48523 | 7.48523 | 1.19e-16 rel |
-| sigma_top(x=800mm) | 5.91425 | 5.91425 | 0.00e+00 rel |
-| sigma_top(x=1200mm) | 4.5281 | 4.5281 | 0.00e+00 rel |
-| sigma_top(x=1600mm) | 3.32677 | 3.32677 | 0.00e+00 rel |
-| sigma_top(x=2000mm) | 2.31026 | 2.31026 | 0.00e+00 rel |
-| sigma_top(x=2400mm) | 1.47856 | 1.47856 | 0.00e+00 rel |
-| sigma_top(x=2800mm) | 0.831692 | 0.831692 | 0.00e+00 rel |
-| sigma_top(x=3200mm) | 0.369641 | 0.369641 | 0.00e+00 rel |
-| sigma_top(x=3600mm) | 0.0924102 | 0.0924102 | 0.00e+00 rel |
-| sigma_top(x=4000mm) | 0 | 0 | 0.00e+00 abs |
+| sigma_top(x=800mm) | 5.91425 | 5.91425 | 3.00e-16 rel |
+| sigma_top(x=1200mm) | 4.5281 | 4.5281 | 5.88e-16 rel |
+| sigma_top(x=1600mm) | 3.32677 | 3.32677 | 2.67e-16 rel |
+| sigma_top(x=2000mm) | 2.31026 | 2.31026 | 5.77e-16 rel |
+| sigma_top(x=2400mm) | 1.47856 | 1.47856 | 7.51e-16 rel |
+| sigma_top(x=2800mm) | 0.831692 | 0.831692 | 1.33e-15 rel |
+| sigma_top(x=3200mm) | 0.369641 | 0.369641 | 2.85e-15 rel |
+| sigma_top(x=3600mm) | 0.0924102 | 0.0924102 | 1.22e-14 rel |
+| sigma_top(x=4000mm) | 0 | 1.39698e-15 | 1.40e-15 abs |
 
 ### V3  interior-governing cantilever (both ends zero)
 
@@ -78,16 +81,16 @@ non-zero comparisons are several orders of magnitude better than that.
 |---|---:|---:|---:|
 | moment at end i (N.mm) | 0 | -1.49012e-08 | 1.49e-08 abs |
 | moment at end j (N.mm) | 0 | 0 | 0.00e+00 abs |
-| peak |sigma| at midspan (MPa) | 9.24102 | 9.24102 | 0.00e+00 rel |
-| D/C from the interior | 0.0264029 | 0.0264029 | 1.62e-10 rel |
+| peak |sigma| at midspan (MPa) | 9.24102 | 9.24102 | 3.84e-16 rel |
+| D/C from the interior | 0.0264029 | 0.0264029 | 1.31e-16 rel |
 
 ### V4  fixed-fixed with midspan node (moment reverses)
 
 | quantity | closed form | engine | error |
 |---|---:|---:|---:|
-| support moment (N.mm) | 4.51783e+07 | 4.51783e+07 | 0.00e+00 rel |
-| midspan moment (N.mm) | -2.87498e+07 | -2.87498e+07 | 0.00e+00 rel |
-| adjacent members agree at the shared node | 0 | 0 | 0.00e+00 abs |
+| support moment (N.mm) | 4.51783e+07 | 4.51783e+07 | 3.46e-15 rel |
+| midspan moment (N.mm) | -2.87498e+07 | -2.87498e+07 | 5.18e-15 rel |
+| adjacent members agree at the shared node | 0 | -7.45058e-09 | 7.45e-09 abs |
 
 ### V5  axial tension
 
@@ -105,8 +108,8 @@ non-zero comparisons are several orders of magnitude better than that.
 
 | quantity | closed form | engine | error |
 |---|---:|---:|---:|
-| total applied weight (N) | -295085 | -295085 | 0.00e+00 rel |
-| vertical reaction balances it (N) | 0 | 0 | 0.00e+00 abs |
+| total applied weight (N) | -295085 | -295085 | 4.73e-15 rel |
+| vertical reaction balances it (N) | 0 | 1.21072e-08 | 1.21e-08 abs |
 | horizontal equilibrium, x (N) | 0 | 0 | 0.00e+00 abs |
 | membrane force under transverse load (N/mm) | 0 | 0 | 0.00e+00 abs |
 | facets from an n x n slab | 64 | 64 | 0.00e+00 rel |
@@ -145,60 +148,69 @@ plate under a uniform load, the load being the slab's own weight
 (q = 0.0046107 N/mm²). One block is one element, so the mesh
 density is set by how large the slab is.
 
-Two coefficients are used and only one of them needed correcting. The
-tabulated centre coefficient 0.0231 is quoted for ν = 0.3; at the centre of a
-square clamped plate the two curvatures are equal by symmetry, so M = D·κ·(1+ν)
-and it rescales to **0.021323** for this plate's ν = 0.2.
-The edge coefficient **0.0513** needs no correction, because the tangential
-curvature vanishes along a clamped edge and M_edge = −D·w,nn carries no ν.
-Using 0.0231 directly makes the error appear to *grow* as the mesh is refined,
-which reads as a divergent element and is really a wrong reference.
+**The centre coefficient is not the tabulated one.** Timoshenko Table 35 and
+Roark Table 11.4 case 8a both print 0.0231 for ν = 0.3. A 13-point finite
+difference solution of the biharmonic at n = 20/40/80 with Richardson
+extrapolation gives **0.02290512**, and the same run reproduces the other two
+entries of that table to every digit they print — w_max 0.00126532 against
+0.00126, M_edge −0.0513338 against −0.0513. Two of three agree and the third is
+0.85% out, where three-significant-figure rounding can only carry ±0.217%.
+Independent spectral and Ritz solutions agree with the FD value, and so does
+this project's own MITC4 under Richardson extrapolation. Changing textbooks
+does not help: both trace to the same source.
 
-Both coefficients are tabulated to three significant figures. Where the
-agreement below reaches a fraction of a per cent, the reference is the less
-precise of the two numbers being compared — see the thickness control below,
-which is what establishes that rather than assuming it.
+At the centre of a square clamped plate the two curvatures are equal by
+symmetry, so M = D·κ·(1+ν) and the coefficient rescales to
+**0.021143** for this plate's ν = 0.2. The edge coefficient
+**0.0513** needs no such correction, because the tangential curvature vanishes
+along a clamped edge and M_edge = −D·w,nn carries no ν; it is tabulated to
+three significant figures, so agreement better than about 0.2% there is
+comparing against the table's rounding rather than against the theory.
+
+> **Two earlier releases quoted this table computed against 0.0231**, and built
+> an argument about a "convergence floor" on top of it. Both the numbers and
+> the argument are withdrawn. The 20-element span error published as 0.57% was
+> really 0.28% — better, but the published figure was not trustworthy, and that
+> is the part worth recording. Registered in `docs/GATES.md`.
 
 | elements per side | span | span error | support (raw corner) | support (recovered) | reference |
 |---:|---:|---:|---:|---:|---:|
-| 4 | -1680.5 | 6.83% | 1400.4  (63.0%) | 2137.8  (43.5%) | 3784.5 |
-| 6 | -3625.1 | 2.42% | 4368.1  (48.7%) | 6536.5  (23.2%) | 8515.0 |
-| 8 | -6348.5 | 0.90% | 9110.7  (39.8%) | 12967.2  (14.3%) | 15137.9 |
-| 10 | -9858.8 | 0.28% | 15700.5  (33.6%) | 21345.6  (9.8%) | 23652.9 |
-| 12 | -14148.0 | 0.07% | 24153.9  (29.1%) | 31658.1  (7.1%) | 34060.2 |
-| 14 | -19217.1 | 0.27% | 34482.4  (25.6%) | 43888.6  (5.3%) | 46359.7 |
-| 16 | -25065.9 | 0.41% | 46692.0  (22.9%) | 58029.4  (4.2%) | 60551.4 |
-| 20 | -39103.3 | 0.57% | 76768.1  (18.9%) | 92024.0  (2.7%) | 94611.6 |
+| 4 | -1680.5 | 7.74% | 1400.4  (63.0%) | 2137.8  (43.5%) | 3784.5 |
+| 6 | -3625.1 | 3.30% | 4368.1  (48.7%) | 6536.5  (23.2%) | 8515.0 |
+| 8 | -6348.5 | 1.75% | 9110.7  (39.8%) | 12967.2  (14.3%) | 15137.9 |
+| 10 | -9858.8 | 1.13% | 15700.5  (33.6%) | 21345.6  (9.8%) | 23652.9 |
+| 12 | -14148.0 | 0.79% | 24153.9  (29.1%) | 31658.1  (7.1%) | 34060.2 |
+| 14 | -19217.1 | 0.58% | 34482.4  (25.6%) | 43888.6  (5.3%) | 46359.7 |
+| 16 | -25065.9 | 0.44% | 46692.0  (22.9%) | 58029.4  (4.2%) | 60551.4 |
+| 20 | -39103.3 | 0.28% | 76768.1  (18.9%) | 92024.0  (2.7%) | 94611.6 |
 
 Moments are per unit width, N·mm/mm.
 
-### The span moment, and what the residual actually is
+### The span moment, and the order it converges at
 
-The span error falls steeply, passes through zero at about twelve elements and
-then settles at a few tenths of a per cent on the other side. It does not keep
-shrinking, so something other than mesh density is setting the floor, and
-saying "converges cleanly" and stopping there would be describing the first
-half of the table only.
+Every row above has the same sign and each is smaller than the last. From
+4 to 20 elements the error falls by a factor of 27.59, where h² predicts 25.00 — an observed order of
+**2.06**. That is second-order convergence with no floor, which is what a
+correctly implemented MITC4 should do, and what the acceptance suite now gates
+directly ([S4], order 2.0 ± 0.075 measured over two mesh pairs).
 
-The obvious suspect is transverse shear: MITC4 is a Reissner–Mindlin element
-and Timoshenko's coefficient is thin-plate. That suspect is testable, because
-shear deformation scales with t/a and discretisation does not — so the same
+It is still worth ruling out transverse shear as a contributor, because MITC4
+is a Reissner–Mindlin element and the reference is thin-plate. That is testable:
+shear deformation scales with t/a and discretisation does not, so the same
 meshes were run at two thicknesses.
 
 | elements per side | t = 200 mm | t/a | t = 150 mm | t/a |
 |---:|---:|---:|---:|---:|
-| 8 | +0.896% | 0.0250 | +0.873% | 0.0187 |
-| 12 | -0.065% | 0.0167 | -0.080% | 0.0125 |
-| 16 | -0.408% | 0.0125 | -0.417% | 0.0094 |
-| 20 | -0.566% | 0.0100 | -0.572% | 0.0075 |
+| 8 | +1.754% | 0.0250 | +1.731% | 0.0187 |
+| 12 | +0.785% | 0.0167 | +0.770% | 0.0125 |
+| 16 | +0.440% | 0.0125 | +0.431% | 0.0094 |
+| 20 | +0.281% | 0.0100 | +0.274% | 0.0075 |
 
 The two columns track each other to within a hundredth of a per cent while
-t/a changes by a factor of three. **The residual is not shear deformation.**
-What is left is the element's own converged answer differing from the
-tabulated coefficient by well under one per cent — and that coefficient is a
-truncated series quoted to three significant figures. At this level the
-reference is the less precise of the two numbers being compared, which is
-the honest place to stop rather than tune anything to close the gap.
+t/a changes by a factor of three. **The residual is not shear deformation** —
+it is discretisation error, and the order above says so independently. The
+control is kept because it is the measurement that distinguishes the two,
+and because it is what showed the earlier "floor" was not physical either.
 
 ### Why the support column has two numbers
 
@@ -237,12 +249,14 @@ cross-section is its own plan.
 
 | elements (w × h) | aspect h/w | shear flow error | overturning error | self weight error |
 |---:|---:|---:|---:|---:|
-| 6 × 6 | 1 | 1.41e-03 | 2.13e-02 | 1.16e-10 |
-| 4 × 12 | 3 | 2.71e-05 | 6.80e-07 | 9.86e-11 |
-| 4 × 20 | 5 | 1.40e-07 | 7.49e-10 | 5.71e-11 |
-| 2 × 20 | 10 | 1.40e-07 | 1.82e-09 | 0.00e+00 |
+| 6 × 6 | 1 | 1.41e-03 | 2.13e-02 | 1.12e-14 |
+| 4 × 12 | 3 | 2.71e-05 | 6.81e-07 | 1.05e-13 |
+| 4 × 20 | 5 | 1.40e-07 | 6.68e-10 | 4.76e-13 |
+| 2 × 20 | 10 | 1.40e-07 | 1.76e-09 | 2.80e-12 |
 
-The slender walls agree with beam theory to 1e-7 and better, including one only
+Agreement improves with slenderness, as beam theory itself does: at h/w = 3 the
+shear flow is a few parts in 1e5 and the overturning a few in 1e7; from h/w = 5
+up, 1e-7 and 1e-9. The h/w >= 5 rows include a wall only
 **two elements wide** — which is the point of the QM6 incompatible membrane
 modes. Without them a four-node quad has no way to curve in its own plane, and
 the same walls reported their overturning fibre force 3.4% and 12.3% LOW, the
@@ -264,6 +278,10 @@ nothing else, and it matches to 1e-10.
 native Linux binary and the Windows cross-build. Comparison is of the whole
 reply line, not of selected fields.
 
+Method: native Windows replies from binary 618368c45164, compared byte for byte against this host's. The reply file names the sha256 of the binary that
+produced it and is refused if that is not the binary this record is about,
+so a stale file cannot become a fabricated agreement.
+
 ## Performance
 
 Wall clock per solve, measured from the client side over the protocol, so it
@@ -272,18 +290,33 @@ one warm-up; the cold process start is excluded because it happens once.
 
 | blocks | members | DOF | default (ms) | min | max | ms/member | no buckling (ms) | buckling |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 3 | 1 | 12 | 0.312 | 0.242 | 0.43 | 0.312 | 0.291 | x1.07 |
-| 6 | 3 | 24 | 0.895 | 0.789 | 1.126 | 0.298 | 0.689 | x1.30 |
-| 15 | 9 | 60 | 2.387 | 2.114 | 2.691 | 0.265 | 2.351 | x1.02 |
-| 30 | 19 | 120 | 4.626 | 4.358 | 5.691 | 0.243 | 4.404 | x1.05 |
-| 60 | 39 | 240 | 9.624 | 8.545 | 11.315 | 0.247 | 8.983 | x1.07 |
-| 90 | 59 | 360 | 13.925 | 13.396 | 19.035 | 0.236 | 13.889 | x1.00 |
-| 150 | 99 | 600 | 24.428 | 22.415 | 31.406 | 0.247 | 23.515 | x1.04 |
-| 300 | 199 | 1200 | 52.294 | 48.841 | 64.149 | 0.263 | 50.272 | x1.04 |
+| 3 | 1 | 12 | 0.274 | 0.261 | 0.442 | 0.274 | 0.259 | x1.06 |
+| 6 | 3 | 24 | 0.664 | 0.644 | 1.044 | 0.221 | 0.661 | x1.00 |
+| 15 | 9 | 60 | 1.878 | 1.811 | 2.329 | 0.209 | 1.788 | x1.05 |
+| 30 | 19 | 120 | 3.997 | 3.862 | 4.145 | 0.210 | 3.92 | x1.02 |
+| 60 | 39 | 240 | 8.386 | 7.829 | 9.519 | 0.215 | 8.135 | x1.03 |
+| 90 | 59 | 360 | 13.441 | 12.43 | 15.305 | 0.228 | 12.577 | x1.07 |
+| 150 | 99 | 600 | 22.608 | 21.118 | 24.353 | 0.228 | 23.112 | x0.98 |
+| 300 | 199 | 1200 | 45.793 | 44.577 | 51.881 | 0.230 | 48.088 | x0.95 |
 
-At 199 members the whole round trip is 52.3 ms,
+At 199 members the whole round trip is 45.8 ms,
 against a Minecraft tick of 50 ms — and the solve does not run on the tick
 thread, so this is latency to a result rather than time taken from the game.
+
+### Transport: shared memory vs JSON, same solves
+
+A 86-member, 360-DOF frame solved 20 times
+over each wire (median). The solve in the middle is identical; the
+difference is the transport.
+
+| wire | median (ms) | min (ms) | reply size |
+|---|---:|---:|---:|
+| JSON lines | 14.42 | 14.08 | 491037 bytes over the pipe |
+| shared memory | 2.2 | 2.12 | 132536 bytes in the region, ~60-byte doorbell |
+
+Transport saving: 12.22 ms per solve (84.7%).
+Measured by `scripts/bench_transport.py`, imported and run by this script
+so the record regenerates with everything else.
 
 The last two columns are the price of the default. Linear buckling is a second
 solve — an eigenvalue problem reusing the same factorisation — and it is on by

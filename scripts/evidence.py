@@ -19,6 +19,7 @@ import json
 import math
 import os
 import platform
+import re
 import subprocess
 import statistics
 import sys
@@ -44,20 +45,31 @@ PLATE_RHO = 2350.0
 G_MM = 9810.0                                        # SelfWeight.h works in mm/s^2
 Q_PLATE = PLATE_RHO * PLATE_T * G_MM * 1e-12         # N/mm^2, the slab's own weight
 
-# Timoshenko & Woinowsky-Krieger, clamped square plate under a uniform load.
+# Clamped square plate under a uniform load.
 #
-# The tabulated CENTRE coefficient 0.0231 is quoted for nu = 0.3. At the centre of a
-# square clamped plate the two curvatures are equal by symmetry, so M = D*k*(1+nu) and the
-# coefficient rescales as (1+nu)/1.3. Using 0.0231 directly against a nu = 0.2 plate makes
-# the error appear to GROW as the mesh is refined, which reads as a divergent element and
-# is really a wrong reference.
+# The CENTRE coefficient is quoted for nu = 0.3. At the centre of a square clamped plate
+# the two curvatures are equal by symmetry, so M = D*k*(1+nu) and the coefficient rescales
+# as (1+nu)/1.3.
+#
+# IT IS NOT THE TABULATED VALUE. Timoshenko Table 35 and Roark 11.4 case 8a both print
+# 0.0231; a 13-point finite-difference solution of the biharmonic at n = 20/40/80 with
+# Richardson extrapolation gives 0.02290512, and the same run reproduces the other two
+# entries of that table to every printed digit (w_max 0.00126532 vs 0.00126, M_edge
+# -0.0513338 vs -0.0513). Two of three agree; the third is 0.85% out, and three-digit
+# rounding carries only +-0.217%. Independent spectral and Ritz solutions agree with the
+# FD value, and so does this project's own MITC4 under Richardson extrapolation.
+#
+# Two earlier releases quoted convergence numbers computed against 0.0231, and built a
+# narrative about a "convergence floor" on top of them. There is no floor: against the
+# true value the error is a clean O(h^2) sequence. The floor was the reference being
+# wrong by more than the discretisation error at the meshes being reported.
 #
 # The EDGE coefficient needs no such correction: the tangential curvature vanishes along a
-# clamped edge, so M_edge = -D*w,nn carries no nu.
-#
-# Both coefficients are tabulated to three significant figures, so an agreement better
-# than about 0.2% is comparing against the table's own rounding, not against the theory.
-PLATE_C_CENTRE = 0.0231 / 1.3 * (1 + PLATE_NU)
+# clamped edge, so M_edge = -D*w,nn carries no nu. It is tabulated to three significant
+# figures, so agreement better than about 0.2% there is comparing against the table's own
+# rounding rather than against the theory.
+PLATE_C_CENTRE_NU30 = 0.0229051
+PLATE_C_CENTRE = PLATE_C_CENTRE_NU30 / 1.3 * (1 + PLATE_NU)
 PLATE_C_EDGE = 0.0513
 
 
@@ -556,21 +568,79 @@ def sha256(path):
     return h.hexdigest()
 
 
-def identity(exe, framecore_dir):
+def identity(exe, framecore_dir, win_binary=None):
+    # The engine checkout on this project's reference machine is a LINKED WORKTREE
+    # created by Windows git, whose .git file stores an absolute Windows path
+    # ("gitdir: C:/Users/..."). WSL git reads that as a relative path, fails, and
+    # every provenance query returns "unavailable" — which the gate now rightly
+    # refuses to ship. The fallback finds the .git file, translates the drive
+    # letter to its /mnt mount, and addresses the gitdir directly, with
+    # core.autocrlf=true for parity with the Windows git that manages the
+    # checkout (without it, every CRLF text file reads as locally modified and
+    # a clean tree reports 959 changes — measured).
+    def _worktree_gitdir():
+        d = os.path.abspath(framecore_dir)
+        while True:
+            gf = os.path.join(d, ".git")
+            if os.path.isdir(gf):
+                return None, None                      # ordinary repo: no fallback needed
+            if os.path.isfile(gf):
+                line = open(gf, encoding="utf-8").read().strip()
+                if not line.startswith("gitdir:"):
+                    return None, None
+                p = line[len("gitdir:"):].strip().replace("\\", "/")
+                m = re.match(r"^([A-Za-z]):/(.*)$", p)
+                if m and os.name != "nt":
+                    p = "/mnt/" + m.group(1).lower() + "/" + m.group(2)
+                return p, d
+            parent = os.path.dirname(d)
+            if parent == d:
+                return None, None
+            d = parent
+
+    gitdir, worktree = _worktree_gitdir()
+
     def git(*args):
-        try:
-            return subprocess.check_output(["git", "-C", framecore_dir, *args],
-                                           text=True, stderr=subprocess.DEVNULL).strip()
-        except Exception:
-            return "unavailable"
+        # safe.directory: on NTFS under newer gits, "dubious ownership" would
+        # otherwise fail every query the same silent way.
+        cmds = [["git", "-c", "safe.directory=*", "-C", framecore_dir, *args]]
+        if gitdir:
+            cmds.append(["git", "-c", "safe.directory=*", "-c", "core.autocrlf=true",
+                         "--git-dir", gitdir, "--work-tree", worktree, "-C", worktree,
+                         *args])
+        for cmd in cmds:
+            try:
+                return subprocess.check_output(cmd, text=True,
+                                               stderr=subprocess.DEVNULL).strip()
+            except Exception:
+                continue
+        return "unavailable"
 
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    def sha256_source(path):
+        """Hash of the file's CONTENT, not of this checkout's line endings.
+
+        These hashes exist so a reader can tell whether the sources that produced a
+        record are the sources in front of them. Hashing the working-directory bytes
+        made that impossible across platforms: .cpp and .hpp are not pinned in
+        .gitattributes, so a Windows checkout hands back CRLF and a Linux one LF, and
+        the same commit produced two different hashes. Normalising line endings before
+        hashing is what makes the record checkable from any clean checkout.
+        """
+        h = hashlib.sha256()
+        h.update(open(path, "rb").read().replace(b"\r\n", b"\n"))
+        return h.hexdigest()
+
     files = {}
-    for rel in ("sidecar/main.cpp", "sidecar/json.hpp", "sidecar/verify.py",
-                "sidecar/CMakeLists.txt", "scripts/evidence.py"):
+    # shm.hpp was missing from this list while the shared-memory transport was the
+    # DEFAULT path — the record hashed the sources of the fallback and not of the one
+    # actually carrying the numbers.
+    for rel in ("sidecar/main.cpp", "sidecar/json.hpp", "sidecar/shm.hpp",
+                "sidecar/verify.py", "sidecar/CMakeLists.txt", "scripts/evidence.py"):
         p = os.path.join(root, rel)
         if os.path.exists(p):
-            files[rel] = sha256(p)
+            files[rel] = sha256_source(p)
 
     return {
         "engine": {
@@ -581,6 +651,12 @@ def identity(exe, framecore_dir):
             "supernodal_lane": "compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT",
         },
         "binary": {"path": os.path.abspath(exe), "sha256": sha256(exe)},
+        # The Windows engine ships in the same archive and had NO hash anywhere in this
+        # record, so nothing tied it to the sources or to the release it went out with —
+        # not even a check that it existed (PR26_REVIEW A-7). ci.yml and release.yml both
+        # compare this field against dist/br-sidecar.exe.
+        "binary_windows": ({"path": os.path.abspath(win_binary), "sha256": sha256(win_binary)}
+                           if win_binary and os.path.exists(win_binary) else None),
         "sources": files,
         "host": {
             "platform": platform.platform(),
@@ -598,12 +674,38 @@ def main():
     win = None
     if "--windows" in sys.argv:
         win = sys.argv[sys.argv.index("--windows") + 1]
+    # --windows may name a wine WRAPPER, which is the right thing to EXECUTE and the
+    # wrong thing to hash. --windows-binary names the .exe itself.
+    win_binary = None
+    if "--windows-binary" in sys.argv:
+        win_binary = sys.argv[sys.argv.index("--windows-binary") + 1]
+    replies_in = None
+    if "--replies" in sys.argv:
+        replies_in = sys.argv[sys.argv.index("--replies") + 1]
+
+    # --emit-replies does nothing else: run the determinism case list through THIS
+    # binary on THIS platform and write the raw reply lines, for the other platform to
+    # compare against. The header ties the file to the binary that produced it.
+    if "--emit-replies" in sys.argv:
+        out = sys.argv[sys.argv.index("--emit-replies") + 1]
+        s = Sidecar(exe)
+        s.call({"op": "hello"})
+        with open(out, "w", encoding="utf-8", newline="\n") as f:
+            f.write(json.dumps({"sha256": sha256(exe), "platform": platform.system(),
+                                "binary": os.path.basename(exe)}) + "\n")
+            for _, req, _ in cases():
+                f.write(s.raw(req) + "\n")
+        s.close()
+        print(f"wrote {out}")
+        return 0
     framecore = os.environ.get("FRAMECORE_DIR",
                                "/home/user/architect_simulator/Plugins/FrameSolver/Source/FrameCore")
 
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     outdir = os.path.join(root, "evidence")
     os.makedirs(outdir, exist_ok=True)
+
+    doc_identity = identity(exe, framecore, win_binary)
 
     sc = Sidecar(exe)
     hello = sc.call({"op": "hello"})
@@ -615,15 +717,22 @@ def main():
     # comparisons are eight orders of magnitude better.
     results = []
     rels, absresid = [], []
+    # A case that failed to solve, or a quantity the extractor could not find, used
+    # to fall OUT of the aggregate: the headline numbers were then computed over the
+    # cases that happened to work, and the gate passed without the accuracy having
+    # been measured (SCRIPT-5). Both now count, and either makes the gate fail.
+    failed_cases, missing_quantities = 0, 0
     for name, req, checks in cases():
         r = sc.call(req)
         if not r.get("ok"):
+            failed_cases += 1
             results.append({"case": name, "error": r.get("error", "solve failed")})
             continue
         rows = []
         for label, expected, extract in checks:
             got = extract(r)
             if got is None:
+                missing_quantities += 1
                 rows.append({"quantity": label, "expected": expected, "got": None,
                              "rel": None, "abs": None})
                 continue
@@ -646,8 +755,33 @@ def main():
     wall = shear_wall(sc)
 
     # Cross-platform determinism over the whole fixture set, not one case.
+    #
+    # Two ways to get the other platform's answers. Running the Windows binary under wine
+    # is convenient; running it on WINDOWS is better evidence, and is what --replies is
+    # for: the same case list, executed natively over there, recorded verbatim. The reply
+    # file names the sha256 of the binary that produced it and is REFUSED if that is not
+    # the binary this record is about, because a stale reply file would otherwise turn
+    # into a fabricated agreement.
     determinism = {"checked": False}
-    if win:
+    if replies_in:
+        with open(replies_in, encoding="utf-8") as f:
+            head = json.loads(f.readline())
+            lines = [ln.rstrip("\n") for ln in f]
+        want = (doc_identity or {}).get("binary_windows") or {}
+        if want.get("sha256") and head.get("sha256") != want["sha256"]:
+            sys.exit(f"{replies_in} was produced by {head.get('sha256', '?')[:12]}..., "
+                     f"but this record is about {want['sha256'][:12]}...")
+        same, total = 0, 0
+        for i, (_, req, _) in enumerate(cases()):
+            total += 1
+            if i < len(lines) and sc.raw(req) == lines[i]:
+                same += 1
+        determinism = {"checked": True, "identical": same, "cases": total,
+                       "method": f"native {head.get('platform', 'other platform')} replies "
+                                 f"from binary {head.get('sha256', '?')[:12]}, compared "
+                                 f"byte for byte against this host's",
+                       "note": "byte-for-byte comparison of the full reply line"}
+    elif win:
         wsc = Sidecar(win)
         wsc.call({"op": "hello"})
         same, total = 0, 0
@@ -657,17 +791,27 @@ def main():
                 same += 1
         wsc.close()
         determinism = {"checked": True, "identical": same, "cases": total,
+                       "method": "the Windows binary under wine on this host",
                        "note": "byte-for-byte comparison of the full reply line"}
 
     sc.close()
 
     perf = performance(exe)
 
+    # Transport comparison, from the same importable measurement the standalone
+    # bench uses. The README quotes these numbers; they must come from a record
+    # a reader can regenerate, not from a one-off terminal session (PERF-1).
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import bench_transport
+    transport = bench_transport.measure(exe)
+
     doc = {
-        "identity": identity(exe, framecore),
+        "identity": doc_identity,
         "handshake": hello,
         "accuracy": {
             "cases": results,
+            "failed_cases": failed_cases,
+            "missing_quantities": missing_quantities,
             "nonzero_references": {
                 "comparisons": len(rels),
                 "worst_relative_error": worst_rel,
@@ -684,6 +828,7 @@ def main():
         "shear_wall": wall,
         "determinism": determinism,
         "performance": perf,
+        "transport": transport,
     }
 
     with open(os.path.join(outdir, "verification.json"), "w") as f:
@@ -691,9 +836,21 @@ def main():
 
     write_markdown(os.path.join(outdir, "VERIFICATION.md"), doc)
 
-    ok = worst_rel < 1e-9 and worst_abs < 1e-3 and all(ok for _, ok in props) \
+    # Provenance is a NECESSARY condition (#47): a verification record that cannot
+    # name the engine commit it verified, or that was produced from a dirty tree,
+    # is not evidence — it is a screenshot. GATES.md carries the same requirement.
+    eng = doc["identity"]["engine"]
+    provenance_ok = (eng["commit"] != "unavailable" and eng["worktree_clean"] is True)
+
+    ok = provenance_ok and failed_cases == 0 and missing_quantities == 0 \
+        and worst_rel < 1e-9 and worst_abs < 1e-3 and all(ok for _, ok in props) \
         and convergence["gate"] and wall["gate"] \
         and (not determinism["checked"] or determinism["identical"] == determinism["cases"])
+    print(f"provenance: engine commit {eng['commit'][:12]} "
+          f"worktree_clean={eng['worktree_clean']} — {'OK' if provenance_ok else 'FAIL'}")
+    if failed_cases or missing_quantities:
+        print(f"INCOMPLETE: {failed_cases} case(s) failed to solve, "
+              f"{missing_quantities} quantity(ies) not extracted — gate FAILS")
     print(f"worst relative error {worst_rel:.3e} over {len(rels)} non-zero references")
     print(f"worst absolute residual {worst_abs:.3e} over {len(absresid)} zero references")
     print(f"properties {sum(1 for _, o in props if o)}/{len(props)}")
@@ -727,9 +884,12 @@ def write_markdown(path, doc):
     L.append(f"| worktree clean | {ident['engine']['worktree_clean']} |")
     L.append(f"| solver lane | {ident['engine']['supernodal_lane']} |")
     L.append(f"| binary sha256 | `{ident['binary']['sha256']}` |")
+    if ident.get("binary_windows"):
+        L.append(f"| windows binary sha256 | `{ident['binary_windows']['sha256']}` |")
     L.append(f"| host | {ident['host']['platform']} |")
     L.append("")
-    L.append("Source hashes:\n")
+    L.append("Source hashes, over content with line endings normalised to LF so the")
+    L.append("record is checkable from a clean checkout on either platform:\n")
     L.append("| file | sha256 |")
     L.append("|---|---|")
     for k, v in ident["sources"].items():
@@ -781,18 +941,28 @@ def write_markdown(path, doc):
         L.append("plate under a uniform load, the load being the slab's own weight")
         L.append(f"(q = {cv['q_n_per_mm2']:.6g} N/mm²). One block is one element, so the mesh")
         L.append("density is set by how large the slab is.\n")
-        L.append("Two coefficients are used and only one of them needed correcting. The")
-        L.append(f"tabulated centre coefficient 0.0231 is quoted for ν = 0.3; at the centre of a")
-        L.append("square clamped plate the two curvatures are equal by symmetry, so M = D·κ·(1+ν)")
-        L.append(f"and it rescales to **{cv['centre_coefficient']:.6f}** for this plate's ν = 0.2.")
-        L.append("The edge coefficient **0.0513** needs no correction, because the tangential")
-        L.append("curvature vanishes along a clamped edge and M_edge = −D·w,nn carries no ν.")
-        L.append("Using 0.0231 directly makes the error appear to *grow* as the mesh is refined,")
-        L.append("which reads as a divergent element and is really a wrong reference.\n")
-        L.append("Both coefficients are tabulated to three significant figures. Where the")
-        L.append("agreement below reaches a fraction of a per cent, the reference is the less")
-        L.append("precise of the two numbers being compared — see the thickness control below,")
-        L.append("which is what establishes that rather than assuming it.\n")
+        L.append("**The centre coefficient is not the tabulated one.** Timoshenko Table 35 and")
+        L.append("Roark Table 11.4 case 8a both print 0.0231 for ν = 0.3. A 13-point finite")
+        L.append("difference solution of the biharmonic at n = 20/40/80 with Richardson")
+        L.append("extrapolation gives **0.02290512**, and the same run reproduces the other two")
+        L.append("entries of that table to every digit they print — w_max 0.00126532 against")
+        L.append("0.00126, M_edge −0.0513338 against −0.0513. Two of three agree and the third is")
+        L.append("0.85% out, where three-significant-figure rounding can only carry ±0.217%.")
+        L.append("Independent spectral and Ritz solutions agree with the FD value, and so does")
+        L.append("this project's own MITC4 under Richardson extrapolation. Changing textbooks")
+        L.append("does not help: both trace to the same source.\n")
+        L.append("At the centre of a square clamped plate the two curvatures are equal by")
+        L.append(f"symmetry, so M = D·κ·(1+ν) and the coefficient rescales to")
+        L.append(f"**{cv['centre_coefficient']:.6f}** for this plate's ν = 0.2. The edge coefficient")
+        L.append("**0.0513** needs no such correction, because the tangential curvature vanishes")
+        L.append("along a clamped edge and M_edge = −D·w,nn carries no ν; it is tabulated to")
+        L.append("three significant figures, so agreement better than about 0.2% there is")
+        L.append("comparing against the table's rounding rather than against the theory.\n")
+        L.append("> **Two earlier releases quoted this table computed against 0.0231**, and built")
+        L.append("> an argument about a \"convergence floor\" on top of it. Both the numbers and")
+        L.append("> the argument are withdrawn. The 20-element span error published as 0.57% was")
+        L.append("> really 0.28% — better, but the published figure was not trustworthy, and that")
+        L.append("> is the part worth recording. Registered in `docs/GATES.md`.\n")
         L.append("| elements per side | span | span error | support (raw corner) | support (recovered) | reference |")
         L.append("|---:|---:|---:|---:|---:|---:|")
         for r in cv["rows"]:
@@ -803,15 +973,23 @@ def write_markdown(path, doc):
                 r["support_reference"]))
         L.append("")
         L.append("Moments are per unit width, N·mm/mm.\n")
-        L.append("### The span moment, and what the residual actually is\n")
-        L.append("The span error falls steeply, passes through zero at about twelve elements and")
-        L.append("then settles at a few tenths of a per cent on the other side. It does not keep")
-        L.append("shrinking, so something other than mesh density is setting the floor, and")
-        L.append("saying \"converges cleanly\" and stopping there would be describing the first")
-        L.append("half of the table only.\n")
-        L.append("The obvious suspect is transverse shear: MITC4 is a Reissner–Mindlin element")
-        L.append("and Timoshenko's coefficient is thin-plate. That suspect is testable, because")
-        L.append("shear deformation scales with t/a and discretisation does not — so the same")
+        L.append("### The span moment, and the order it converges at\n")
+        rows = [r for r in cv["rows"] if r["span_rel_error"] > 0]
+        if len(rows) >= 2:
+            import math as _m
+            a, b = rows[0], rows[-1]
+            p_obs = _m.log(a["span_rel_error"] / b["span_rel_error"]) / \
+                _m.log(b["elements_per_side"] / a["elements_per_side"])
+            L.append("Every row above has the same sign and each is smaller than the last. From")
+            L.append(f"{a['elements_per_side']} to {b['elements_per_side']} elements the error falls "
+                     f"by a factor of {a['span_rel_error'] / b['span_rel_error']:.2f}, where h² predicts "
+                     f"{(b['elements_per_side'] / a['elements_per_side']) ** 2:.2f} — an observed order of")
+            L.append(f"**{p_obs:.2f}**. That is second-order convergence with no floor, which is what a")
+            L.append("correctly implemented MITC4 should do, and what the acceptance suite now gates")
+            L.append("directly ([S4], order 2.0 ± 0.075 measured over two mesh pairs).\n")
+        L.append("It is still worth ruling out transverse shear as a contributor, because MITC4")
+        L.append("is a Reissner–Mindlin element and the reference is thin-plate. That is testable:")
+        L.append("shear deformation scales with t/a and discretisation does not, so the same")
         L.append("meshes were run at two thicknesses.\n")
         ctrl = cv.get("thickness_control") or []
         if ctrl:
@@ -824,12 +1002,10 @@ def write_markdown(path, doc):
                     r["t150_signed_error"] * 100, r["t150_thickness_over_span"]))
             L.append("")
             L.append("The two columns track each other to within a hundredth of a per cent while")
-            L.append("t/a changes by a factor of three. **The residual is not shear deformation.**")
-            L.append("What is left is the element's own converged answer differing from the")
-            L.append("tabulated coefficient by well under one per cent — and that coefficient is a")
-            L.append("truncated series quoted to three significant figures. At this level the")
-            L.append("reference is the less precise of the two numbers being compared, which is")
-            L.append("the honest place to stop rather than tune anything to close the gap.\n")
+            L.append("t/a changes by a factor of three. **The residual is not shear deformation** —")
+            L.append("it is discretisation error, and the order above says so independently. The")
+            L.append("control is kept because it is the measurement that distinguishes the two,")
+            L.append("and because it is what showed the earlier \"floor\" was not physical either.\n")
         L.append("### Why the support column has two numbers\n")
         L.append("The span moment is the quantity that governs a slab's field reinforcement, and")
         L.append("the table above is it. The support moment is a different story: MITC4's per-corner")
@@ -868,7 +1044,9 @@ def write_markdown(path, doc):
                 r["elements_wide"], r["elements_tall"], r["aspect"],
                 r["shear_rel_error"], r["overturning_rel_error"], r["self_weight_rel_error"]))
         L.append("")
-        L.append("The slender walls agree with beam theory to 1e-7 and better, including one only")
+        L.append("Agreement improves with slenderness, as beam theory itself does: at h/w = 3 the")
+        L.append("shear flow is a few parts in 1e5 and the overturning a few in 1e7; from h/w = 5")
+        L.append("up, 1e-7 and 1e-9. The h/w >= 5 rows include a wall only")
         L.append("**two elements wide** — which is the point of the QM6 incompatible membrane")
         L.append("modes. Without them a four-node quad has no way to curve in its own plane, and")
         L.append("the same walls reported their overturning fibre force 3.4% and 12.3% LOW, the")
@@ -883,11 +1061,16 @@ def write_markdown(path, doc):
         L.append("nothing else, and it matches to 1e-10.\n")
 
     det = doc["determinism"]
+    det_method = det.get("method")
     L.append("## Cross-platform determinism\n")
     if det["checked"]:
         L.append(f"**{det['identical']}/{det['cases']} cases byte-for-byte identical** between the")
         L.append("native Linux binary and the Windows cross-build. Comparison is of the whole")
         L.append("reply line, not of selected fields.\n")
+        if det_method:
+            L.append(f"Method: {det_method}. The reply file names the sha256 of the binary that")
+            L.append("produced it and is refused if that is not the binary this record is about,")
+            L.append("so a stale file cannot become a fabricated agreement.\n")
     else:
         L.append("Not checked in this run (no second binary supplied).\n")
 
@@ -908,6 +1091,22 @@ def write_markdown(path, doc):
     L.append(f"At {big['members']} members the whole round trip is {big['median_ms']:.1f} ms,")
     L.append("against a Minecraft tick of 50 ms — and the solve does not run on the tick")
     L.append("thread, so this is latency to a result rather than time taken from the game.\n")
+    tr = doc.get("transport")
+    if tr:
+        L.append("### Transport: shared memory vs JSON, same solves\n")
+        L.append(f"A {tr['members']}-member, {tr['dof']}-DOF frame solved {tr['rounds']} times")
+        L.append("over each wire (median). The solve in the middle is identical; the")
+        L.append("difference is the transport.\n")
+        L.append("| wire | median (ms) | min (ms) | reply size |")
+        L.append("|---|---:|---:|---:|")
+        L.append(f"| JSON lines | {tr['json_median_ms']} | {tr['json_min_ms']} "
+                 f"| {tr['json_reply_bytes']} bytes over the pipe |")
+        L.append(f"| shared memory | {tr['shm_median_ms']} | {tr['shm_min_ms']} "
+                 f"| {tr['shm_reply_bytes']} bytes in the region, ~60-byte doorbell |")
+        L.append("")
+        L.append(f"Transport saving: {tr['saving_ms']} ms per solve ({tr['saving_pct']}%).")
+        L.append("Measured by `scripts/bench_transport.py`, imported and run by this script")
+        L.append("so the record regenerates with everything else.\n")
     if big.get("without_buckling_ms"):
         L.append("The last two columns are the price of the default. Linear buckling is a second")
         L.append("solve — an eigenvalue problem reusing the same factorisation — and it is on by")

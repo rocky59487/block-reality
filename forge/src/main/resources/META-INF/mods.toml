@@ -5,7 +5,7 @@ issueTrackerURL = "https://github.com/rocky59487/block-reality/issues"
 
 [[mods]]
 modId = "blockreality"
-version = "0.1a"
+version = "0.2a"
 displayName = "Block Reality"
 authors = "rocky59487"
 description = '''
@@ -21,13 +21,13 @@ The engine is optional. Without it the mod loads and plays normally, and says so
 [[dependencies.blockreality]]
     modId = "forge"
     mandatory = true
-    versionRange = "[47,)"
+    versionRange = "[47,48)"
     ordering = "NONE"
     side = "BOTH"
 
 [[dependencies.blockreality]]
     modId = "minecraft"
     mandatory = true
-    versionRange = "[1.20.1,1.21)"
+    versionRange = "[1.20.1]"
     ordering = "NONE"
     side = "BOTH"

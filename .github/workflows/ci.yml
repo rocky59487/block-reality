@@ -1,0 +1,91 @@
+# Runs the gates on every PR and on Main. Green here is a merge condition (#46):
+# a change that reaches Main without this passing is a capability claim without
+# a gate, which CLAUDE.md's iron rules forbid.
+#
+# The engine itself cannot be BUILT here — br-sidecar links FrameCore, an external
+# source dependency this repository does not carry. What CI verifies instead is the
+# coherence of what the repository actually ships: the committed dist/ binaries
+# against the committed acceptance suite, and the Java sources against those same
+# binaries through the cross-language tests. Rebuilding and re-verifying the engine
+# from source is scripts/package.sh's job, on a machine that has FrameCore.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [Main]
+  workflow_dispatch:
+
+# GitHub's IMPLICIT default shell on Linux is `bash -e {0}` — no pipefail. Every
+# `cmd | tail -3` in this file would therefore report tail's exit code and stay
+# green while the gate suite failed, the interpreter was missing, or Python threw
+# (PR26_REVIEW A-2: all three reproduced, all three exit 0). Naming bash
+# EXPLICITLY changes the invocation to `bash --noprofile --norc -eo pipefail {0}`.
+# That is the whole fix, and it must stay at workflow level so a step added later
+# cannot silently opt out of it.
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  engine-gates:
+    name: engine acceptance suite vs shipped binary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: verify.py against dist/br-sidecar
+        run: |
+          chmod +x dist/br-sidecar
+          python3 sidecar/verify.py dist/br-sidecar | tail -3
+
+      # The Windows engine ships in the same archive and has no acceptance suite
+      # run against it here — CI has no Windows runner and cross-checking a PE
+      # binary from Linux is not a substitute. What CAN be gated from here is that
+      # it EXISTS and that its bytes are the ones the evidence record verified.
+      # Without this, `scripts/package.sh` on a machine without mingw deletes the
+      # committed .exe and every gate in the repository stays green (A-7).
+      - name: Windows engine present and matching the evidence record
+        run: |
+          test -f dist/br-sidecar.exe
+          python3 - <<'PY'
+          import hashlib, json, sys
+          doc = json.load(open("evidence/verification.json"))
+          claimed = doc["identity"].get("binary_windows", {}).get("sha256")
+          if not claimed:
+              sys.exit("evidence/verification.json has no identity.binary_windows.sha256")
+          h = hashlib.sha256()
+          with open("dist/br-sidecar.exe", "rb") as f:
+              for chunk in iter(lambda: f.read(65536), b""):
+                  h.update(chunk)
+          actual = h.hexdigest()
+          if claimed != actual:
+              sys.exit(f"dist/br-sidecar.exe is {actual[:12]}... but the evidence "
+                       f"record verified {claimed[:12]}...")
+          print("windows engine matches the record:", actual[:12])
+          PY
+
+  java:
+    name: Java suites, cross-language against the shipped engine
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: mod tests (engine-backed, -Dbr.sidecar fails loud if unresolvable)
+        run: |
+          chmod +x dist/br-sidecar mod/gradlew
+          cd mod && ./gradlew --no-daemon test "-Dbr.sidecar=$GITHUB_WORKSPACE/dist/br-sidecar"
+      - name: forge build and tests
+        run: |
+          chmod +x forge/gradlew
+          cd forge && ./gradlew --no-daemon build
+
+      # Runs LAST because it reads gradle's JUnit XML, which only exists once both
+      # suites have run. Every check count quoted in a document is compared against
+      # what the suites actually printed — the defect this closes reached the public
+      # release body as "219 acceptance checks" when the real number was 218.
+      - name: quoted check counts match the suites
+        run: python3 scripts/check_docs.py dist/br-sidecar

@@ -1,5 +1,6 @@
 package com.blockreality.impl.item;
 
+import com.blockreality.impl.BRConfig;
 import com.blockreality.impl.block.StructuralBlock;
 import com.blockreality.impl.server.StructureManager;
 import net.minecraft.network.chat.Component;
@@ -58,8 +59,10 @@ public class StressGlassesItem extends Item {
         if (!(level instanceof ServerLevel server)) return InteractionResult.PASS;
 
         boolean added = StructureManager.of(server).toggleLoad(ctx.getClickedPos());
-        player.displayClientMessage(
-                Component.translatable(added ? "br.load.added" : "br.load.removed"), true);
+        player.displayClientMessage(added
+                ? Component.translatable("br.load.added", String.format(java.util.Locale.ROOT,
+                        "%.0f", BRConfig.INSTANCE.demoLoadNewtons.get() / 1000.0))
+                : Component.translatable("br.load.removed"), true);
         return InteractionResult.SUCCESS;
     }
 }

@@ -7,9 +7,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
+
+import java.util.Optional;
 
 /**
  * Server to client only.
@@ -24,10 +27,17 @@ import net.minecraftforge.network.simple.SimpleChannel;
  * <p>So the smallest safe surface is no surface. When a C2S packet does become necessary,
  * it needs a rate limit and a size cap on day one, because retrofitting those means
  * auditing every call site instead of one.
+ *
+ * <p>"S2C only" is <em>declared</em>, not assumed: every registration pins
+ * {@link NetworkDirection#PLAY_TO_CLIENT}. Without the pin, a modified client could send
+ * these packets to the server, where the handler would run on the server thread
+ * (FORGE-4) — harmless for today's handlers, which are client-only behind DistExecutor,
+ * but the registration should enforce the sentence above rather than trust it.
  */
 public final class BRNetwork {
 
-    private static final String PROTOCOL = "1";
+    /** Bumped when the packet layout changes; 2 = classification flags + dimension. */
+    private static final String PROTOCOL = "2";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(BlockRealityMod.MOD_ID, "main"),
@@ -42,10 +52,16 @@ public final class BRNetwork {
             int id = 0;
             CHANNEL.registerMessage(id++, StressResultPacket.class,
                     StressResultPacket::encode, StressResultPacket::decode,
-                    StressResultPacket::handle);
+                    StressResultPacket::handle,
+                    Optional.of(NetworkDirection.PLAY_TO_CLIENT));
             CHANNEL.registerMessage(id++, EngineStatusPacket.class,
                     EngineStatusPacket::encode, EngineStatusPacket::decode,
-                    EngineStatusPacket::handle);
+                    EngineStatusPacket::handle,
+                    Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+            CHANNEL.registerMessage(id++, AnalysisPendingPacket.class,
+                    AnalysisPendingPacket::encode, AnalysisPendingPacket::decode,
+                    AnalysisPendingPacket::handle,
+                    Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         });
     }
 
@@ -57,7 +73,8 @@ public final class BRNetwork {
      * one that is absent.
      */
     public static void sendResult(ServerLevel level, AnalysisResult result) {
-        StressResultPacket packet = StressResultPacket.of(result);
+        StressResultPacket packet = StressResultPacket.of(result,
+                level.dimension().location().toString());
         for (ServerPlayer player : level.players()) {
             CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
         }
@@ -65,6 +82,15 @@ public final class BRNetwork {
 
     public static void sendEngineStatus(ServerLevel level, SidecarClient.Status status, String detail) {
         EngineStatusPacket packet = new EngineStatusPacket(status.name(), detail);
+        for (ServerPlayer player : level.players()) {
+            CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
+        }
+    }
+
+    /** The world moved on; clients should mark what they are drawing as stale (INV-4). */
+    public static void sendAnalysisPending(ServerLevel level, long revision) {
+        AnalysisPendingPacket packet = new AnalysisPendingPacket(
+                level.dimension().location().toString(), revision);
         for (ServerPlayer player : level.players()) {
             CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
         }

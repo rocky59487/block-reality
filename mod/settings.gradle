@@ -4,9 +4,10 @@
 // engine boundary reproducible for the paper: `gradle test` here drives the real
 // br-sidecar binary end to end without a game client.
 //
-// The Forge mod lives in ../forge and pulls these two projects in as a composite
-// build. The dependency direction is one-way by construction: nothing here can
-// see Minecraft.
+// The Forge mod lives in ../forge and compiles these two projects' sources
+// DIRECTLY into its own source set (srcDirs in forge/build.gradle — a composite
+// build was tried and dropped, see the note there). The dependency direction is
+// one-way by construction: nothing here can see Minecraft.
 rootProject.name = 'blockreality-mod'
 
 include 'api'

@@ -7,6 +7,8 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <cctype>
+#include <cerrno>
 #include <cstdlib>
 #include <cmath>
 #include <sstream>
@@ -21,6 +23,12 @@ struct Value {
     enum class T { Null, Bool, Num, Str, Arr, Obj } t = T::Null;
     bool        b = false;
     double      n = 0;
+    // Exact-integer sidecar of `n` (#29). A double folds every integer above 2^53
+    // onto its neighbours, and revision is a 64-bit stale-result fence — it must
+    // round-trip exactly or two adjacent revisions become the same value. The
+    // parser fills these whenever the literal was a plain integer that fits int64.
+    long long   i = 0;
+    bool        isInt = false;
     std::string s;
     Array       a;
     Object      o;
@@ -34,8 +42,16 @@ struct Value {
     }
     long long i64(const char* k, long long dflt = 0) const {
         auto it = o.find(k);
-        return (it != o.end() && it->second.t == T::Num)
-                   ? static_cast<long long>(it->second.n) : dflt;
+        if (it == o.end() || it->second.t != T::Num) return dflt;
+        const double d = it->second.n;
+        // double -> long long is UB outside the representable range, and "1e999"
+        // parses to +inf as a perfectly typed Num. The remaining callers of this
+        // accessor echo a revision back on error lines; echoing INT64_MIN garbage
+        // would break the Java side's revision pairing for that reply (SIDE-5).
+        if (!std::isfinite(d) || d < -9223372036854775808.0 || d >= 9223372036854775808.0) {
+            return dflt;
+        }
+        return static_cast<long long>(d);
     }
     std::string str(const char* k, const char* dflt = "") const {
         auto it = o.find(k);
@@ -61,6 +77,20 @@ struct Value {
         auto it = o.find(k);
         return it != o.end() && it->second.t == T::Bool;
     }
+    bool isArr(const char* k) const {
+        auto it = o.find(k);
+        return it != o.end() && it->second.t == T::Arr;
+    }
+    // Present, numeric, and written as a plain integer that fits int64 — the only
+    // form a revision or byte count may take on the wire (#29).
+    bool isExactInt(const char* k) const {
+        auto it = o.find(k);
+        return it != o.end() && it->second.t == T::Num && it->second.isInt;
+    }
+    long long exactI64(const char* k) const {
+        auto it = o.find(k);
+        return (it != o.end() && it->second.t == T::Num && it->second.isInt) ? it->second.i : 0;
+    }
 
     const Array& arr(const char* k) const {
         static const Array kEmpty;
@@ -73,12 +103,31 @@ struct Value {
 class Parser {
 public:
     explicit Parser(const std::string& src) : s_(src) {}
-    Value parse() { skip(); Value v = value(); return ok_ ? v : Value{}; }
+    // Trailing tokens are a parse error (#30): accepting a valid prefix of a line
+    // means "{...}garbage" silently succeeds, and a framing bug upstream is then
+    // indistinguishable from a well-formed request.
+    Value parse() {
+        skip();
+        Value v = value();
+        skip();
+        if (p_ != s_.size()) ok_ = false;
+        return ok_ ? v : Value{};
+    }
 
 private:
     const std::string& s_;
     size_t p_ = 0;
     bool   ok_ = true;
+    // This protocol never nests more than four deep; a hostile "[[[[[..." line
+    // would otherwise recurse until the stack gives out (SIDE-2). Mirrors the
+    // Java parser's MAX_DEPTH so both ends reject the same documents.
+    static constexpr int kMaxDepth = 64;
+    int    depth_ = 0;
+    struct DepthGuard {
+        Parser& p;
+        explicit DepthGuard(Parser& pp) : p(pp) { ++p.depth_; }
+        ~DepthGuard() { --p.depth_; }
+    };
 
     void skip() { while (p_ < s_.size() && (unsigned char)s_[p_] <= ' ') ++p_; }
     bool eat(char c) { skip(); if (p_ < s_.size() && s_[p_] == c) { ++p_; return true; } return false; }
@@ -90,6 +139,8 @@ private:
     }
 
     Value value() {
+        DepthGuard g(*this);
+        if (depth_ > kMaxDepth) { ok_ = false; return {}; }
         skip();
         if (p_ >= s_.size()) { ok_ = false; return {}; }
         switch (s_[p_]) {
@@ -145,13 +196,30 @@ private:
             if (c == '\\' && p_ < s_.size()) {
                 char e = s_[p_++];
                 switch (e) {
-                    case 'n': out += '\n'; break;
-                    case 't': out += '\t'; break;
-                    case 'r': out += '\r'; break;
-                    case 'b': out += '\b'; break;
-                    case 'f': out += '\f'; break;
-                    case 'u': p_ += 4; out += '?'; break;   // BMP escapes not used by this protocol
-                    default:  out += e;   break;
+                    case 'n':  out += '\n'; break;
+                    case 't':  out += '\t'; break;
+                    case 'r':  out += '\r'; break;
+                    case 'b':  out += '\b'; break;
+                    case 'f':  out += '\f'; break;
+                    case '"':  out += '"';  break;
+                    case '\\': out += '\\'; break;
+                    case '/':  out += '/';  break;
+                    case 'u':
+                        // Not used by this protocol; the four hex digits are still
+                        // REQUIRED to be there and to be hex, or the escape is a
+                        // parse error rather than a silently swallowed prefix.
+                        if (p_ + 4 > s_.size()) { ok_ = false; return out; }
+                        for (int h = 0; h < 4; ++h) {
+                            if (!std::isxdigit((unsigned char)s_[p_ + h])) { ok_ = false; return out; }
+                        }
+                        p_ += 4;
+                        out += '?';
+                        break;
+                    default:
+                        // "\x" and friends are not JSON (#30). Interpreting them as
+                        // the literal character accepts input no other parser would.
+                        ok_ = false;
+                        return out;
                 }
             } else {
                 out += c;
@@ -165,14 +233,31 @@ private:
         skip();
         size_t start = p_;
         if (p_ < s_.size() && (s_[p_] == '-' || s_[p_] == '+')) ++p_;
-        bool any = false;
+        bool any = false, plain = true;   // plain: digits only after the sign
         while (p_ < s_.size() && (std::isdigit((unsigned char)s_[p_]) || s_[p_] == '.' ||
                                   s_[p_] == 'e' || s_[p_] == 'E' || s_[p_] == '-' || s_[p_] == '+')) {
+            if (!std::isdigit((unsigned char)s_[p_])) plain = false;
             any = true; ++p_;
         }
         if (!any) { ok_ = false; return {}; }
+        const std::string lit = s_.substr(start, p_ - start);
+        // strtod must consume the WHOLE literal (#30): "1.2.3" and "1e" parse as a
+        // prefix plus garbage, and a number that is half garbage is not a number.
+        char* end = nullptr;
         Value v; v.t = Value::T::Num;
-        v.n = std::strtod(s_.substr(start, p_ - start).c_str(), nullptr);
+        v.n = std::strtod(lit.c_str(), &end);
+        if (end == nullptr || *end != '\0') { ok_ = false; return {}; }
+        // Exact-integer sidecar (#29): a plain integer literal that fits int64 is
+        // kept as one, so revision survives above 2^53 where the double cannot.
+        if (plain) {
+            errno = 0;
+            char* iend = nullptr;
+            const long long iv = std::strtoll(lit.c_str(), &iend, 10);
+            if (errno == 0 && iend != nullptr && *iend == '\0') {
+                v.i = iv;
+                v.isInt = true;
+            }
+        }
         return v;
     }
 };
@@ -200,7 +285,13 @@ public:
         sep();
         if (!std::isfinite(d)) os_ << "null";
         else {
-            std::ostringstream t; t.precision(10); t << d; os_ << t.str();
+            // 17 significant digits: the smallest precision that round-trips every
+            // IEEE-754 double exactly. The previous value, 10, silently truncated
+            // every number on the wire to ~1e-10 relative — an adapter that alters
+            // values in transit, which is the one thing a transport must never do.
+            // (The shared-memory transport sidesteps text entirely; this floor is
+            // for the JSON path, which remains the fallback and the debug surface.)
+            std::ostringstream t; t.precision(17); t << d; os_ << t.str();
         }
         mark();
         return *this;
