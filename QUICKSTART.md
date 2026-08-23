@@ -1,6 +1,6 @@
 # 上手
 
-安裝就是把一個 jar 丟進 `mods/`——引擎在 jar 裡面。`blockreality-0.3a.zip` 是完整發行包
+安裝就是把一個 jar 丟進 `mods/`——引擎在 jar 裡面。`blockreality-0.3b.zip` 是完整發行包
 （`dist/` 是它的內容），裡面另外附上獨立的引擎與雜湊，供查驗或在遊戲外執行求解器。
 
 ---
@@ -9,7 +9,7 @@
 
 ### A · 已經有 Minecraft 1.20.1 + Forge 47.x
 
-**把 `blockreality-0.3a.jar` 丟進 `mods/`，開遊戲。** 分析引擎在 jar 裡面，第一次要用到時
+**把 `blockreality-0.3b.jar` 丟進 `mods/`，開遊戲。** 分析引擎在 jar 裡面，第一次要用到時
 自己解到 `<遊戲目錄>/blockreality/engine/<雜湊>/`。全程不下載任何東西；雜湊對不上就拒絕
 執行。（macOS 或 ARM：尚無預建引擎，mod 可玩、分析關閉並說明原因；要分析請自行建置
 `br-sidecar` 並用 `sidecarPath` 指向它。）
@@ -35,7 +35,7 @@ zip 內容（約 2.4 MB）：
 
 | | |
 |---|---|
-| `blockreality-0.3a.jar` | Forge mod，api + core + impl 與**兩顆引擎**全在裡面——光這個檔案就是完整安裝 |
+| `blockreality-0.3b.jar` | Forge mod，api + core + impl 與**兩顆引擎**全在裡面——光這個檔案就是完整安裝 |
 | `br-sidecar.exe` | 同一顆 Windows 引擎的獨立檔，只 import KERNEL32 與 msvcrt，無額外 DLL |
 | `br-sidecar` | 同一顆 Linux 引擎的獨立檔，只依賴 libc/libm |
 | `install.bat` / `install.sh` | 選配安裝器 |
@@ -84,7 +84,7 @@ cmake --build sidecar/build --parallel
 python3 sidecar/verify.py sidecar/build/br-sidecar
 ```
 
-最後一行要是 `ALL PASS`（251 項，含傳輸等價與 fail-closed 協定 gate）。**這一步失敗就不要往下走**——後面看到的任何東西都不可信。
+最後一行要是 `ALL PASS`（282 項，含傳輸等價與 fail-closed 協定 gate）。**這一步失敗就不要往下走**——後面看到的任何東西都不可信。
 
 一次把全部（Linux + Windows + jar）打包好：
 
@@ -352,7 +352,7 @@ log 裡 0 個 ERROR、沒有殘留程序。上面那些應力數字都是實測�
 **8/8 逐位元相同**（比對的是整行回覆，不是挑欄位）。
 
 **客戶端渲染已經在真的遊戲裡看過了。** README 上那兩張就是實機截圖：表面等值圖、圖例、
-HUD 的構件與板計數、看向構件時的斷面圖與中性軸都有畫出來。資料層另外被 201 個測試釘住
+HUD 的構件與板計數、看向構件時的斷面圖與中性軸都有畫出來。資料層另外被 209 個測試釘住
 （顏色、位置、符號、梯度、中性軸）。
 
 畫面不對時，按可能性排序：

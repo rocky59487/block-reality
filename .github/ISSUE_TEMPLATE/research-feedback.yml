@@ -32,8 +32,8 @@ body:
     id: version
     attributes:
       label: Version or commit
-      description: For example, v0.3a or a full commit SHA.
-      placeholder: v0.3a
+      description: For example, v0.3b or a full commit SHA.
+      placeholder: v0.3b
     validations:
       required: true
 

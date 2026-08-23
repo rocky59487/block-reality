@@ -178,16 +178,49 @@ const char* failModeName(frame::FailMode m) {
 // ---------------------------------------------------------------- extraction
 // A member is a maximal collinear run of same-material blocks (DECISIONS D-010).
 // Runs are split at junction blocks so two members that meet share one node.
+// Where a node sits, in HALF-BLOCK units. A block centre is odd in every component and
+// the face between two blocks is even in one — so both are exact integers and neither
+// needs a tolerance, which is what MEMBER_SEMANTICS 7.4 means by "zero tolerance,
+// integer coordinates".
+//
+// Half units exist because of the collinear butt joint. When a brick pier meets a timber
+// post end to end, the node belongs on the FACE where they meet. Putting it on one of the
+// two block centres instead credits one member with a metre of the other's length — and
+// which one depends on which end the extraction started from, so the same structure built
+// mirrored came out 40% heavier with a maxDC 3x different. That is D-025's own
+// falsification condition, measured and triggered.
+struct NodePos {
+    int x = 0, y = 0, z = 0;
+    bool operator<(const NodePos& o) const {
+        if (x != o.x) return x < o.x;
+        if (y != o.y) return y < o.y;
+        return z < o.z;
+    }
+    bool operator==(const NodePos& o) const { return x == o.x && y == o.y && z == o.z; }
+};
+
 struct RunSeg {
     std::vector<BlockPos> blocks;   // ordered along the run
     std::string           mat;
     std::string           section;
+    NodePos               ni, nj;         // where this segment's two ends actually sit
+    bool                  fixI = false;   // held by a grounded pad beyond that end
+    bool                  fixJ = false;
 };
 
 const std::array<BlockPos, 3> kAxes = { BlockPos{ 1, 0, 0 }, BlockPos{ 0, 1, 0 }, BlockPos{ 0, 0, 1 } };
 
 BlockPos add(const BlockPos& a, const BlockPos& d) { return BlockPos{ a.x + d.x, a.y + d.y, a.z + d.z }; }
 BlockPos sub(const BlockPos& a, const BlockPos& d) { return BlockPos{ a.x - d.x, a.y - d.y, a.z - d.z }; }
+
+/** The centre of a block. */
+NodePos centreNode(const BlockPos& p) { return NodePos{ 2 * p.x + 1, 2 * p.y + 1, 2 * p.z + 1 }; }
+
+/** The face on the +axis side of a block — equivalently, between p and p+axis. */
+NodePos faceNode(const BlockPos& p, const BlockPos& axis) {
+    const NodePos c = centreNode(p);
+    return NodePos{ c.x + axis.x, c.y + axis.y, c.z + axis.z };
+}
 
 // ------------------------------------------------------------ sheet extraction
 // A shell facet is a 2x2 square of plate blocks lying in one plane, with its four
@@ -380,23 +413,87 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
     // The rule: a run extends forward into its neighbour; it extends BACKWARD only when the
     // block behind it is not claimed by a run along its own axis, because such a run is
     // already coming forward to meet it.
+    // Each run's two ends, decided here and carried through the split below. The default
+    // is the end block's own centre; a collinear butt joint moves it to the face.
+    std::vector<NodePos> runNodeI(rawRuns.size()), runNodeJ(rawRuns.size());
+    std::vector<char>    runFixI(rawRuns.size(), 0), runFixJ(rawRuns.size(), 0);
+
     for (size_t r = 0; r < rawRuns.size(); ++r) {
         std::vector<BlockPos>& run = rawRuns[r];
-        const BlockPos& axis   = kAxes[runAxis[r]];
+        const int       ax     = runAxis[r];
+        const BlockPos& axis   = kAxes[ax];
         const BlockPos  before = sub(run.front(), axis);
         const BlockPos  beyond = add(run.back(), axis);
-        auto joinable = [&](const BlockPos& q, bool backward) {
+
+        // What lies immediately beyond an end: nothing, a plate to bear on, a run that
+        // crosses this one, a run that continues along it, or a block in no run at all.
+        enum class Beyond { None, Plate, Crossing, Collinear, Lone };
+        auto classify = [&](const BlockPos& q) {
+            if (shellNodes.count(q)) return Beyond::Plate;
             auto it = grid.find(q);
-            if (it == grid.end() || isPlate(it->second.section)) return false;
+            if (it == grid.end() || isPlate(it->second.section)) return Beyond::None;
             auto cb = claimedBy.find(q);
-            if (cb == claimedBy.end()) return false;   // a lone block is nobody's member
-            if (backward && cb->second.count(runAxis[r])) return false;   // it comes to us
-            return true;
+            if (cb == claimedBy.end()) return Beyond::Lone;
+            return cb->second.count(ax) ? Beyond::Collinear : Beyond::Crossing;
         };
-        if (shellNodes.count(before))     run.insert(run.begin(), before);
-        else if (joinable(before, true))  run.insert(run.begin(), before);
-        if (shellNodes.count(beyond))     run.push_back(beyond);
-        else if (joinable(beyond, false)) run.push_back(beyond);
+        // A lone block cannot be a member — one block is L/h = 1 — but a GROUNDED one is
+        // still ground. A single concrete pad under a steel column used to leave the whole
+        // column out of the answer: not a member, not a mechanism report, not even an
+        // entry in `unassigned`. The pad is not a member; it is what the column stands on.
+        auto groundedPad = [&](const BlockPos& q) {
+            auto it = grid.find(q);
+            return it != grid.end() && !isPlate(it->second.section)
+                && !claimedBy.count(q) && it->second.support;
+        };
+
+        const Beyond bBefore = classify(before), bBeyond = classify(beyond);
+
+        // Bearing on a plate, and crossing joints, still work by swallowing the block: the
+        // shell's nodes and the crossing run's nodes are at block CENTRES, so ending there
+        // is the only way to share one. Both are already direction-independent — the
+        // column grows into the beam whether the beam is above it or below it.
+        if (bBefore == Beyond::Plate || bBefore == Beyond::Crossing) run.insert(run.begin(), before);
+        if (bBeyond == Beyond::Plate || bBeyond == Beyond::Crossing) run.push_back(beyond);
+
+        runNodeI[r] = centreNode(run.front());
+        runNodeJ[r] = centreNode(run.back());
+        runFixI[r] = groundedPad(before) ? 1 : 0;
+        runFixJ[r] = groundedPad(beyond) ? 1 : 0;
+
+        // The collinear butt joint. Both runs put their end on the SAME face, so each
+        // material carries exactly its own length and neither is credited with the
+        // other's. Nothing is swallowed, so there is nothing to decide and nothing that
+        // can depend on direction.
+        //
+        // Unless the joint block is pinned to its centre by a support or a load: moving
+        // that node would move the support, or leave the player's load attached to
+        // nothing. Then the old swallow is used, with a tie-break that cannot depend on
+        // direction either — the run whose MATERIAL NAME sorts later grows. Materials
+        // always differ at a butt joint, so that is total and deterministic.
+        auto pinned = [&](const BlockPos& q) {
+            auto it = grid.find(q);
+            return (it != grid.end() && it->second.support) || loadBlocks.count(q) > 0;
+        };
+        if (bBefore == Beyond::Collinear) {
+            if (pinned(run.front()) || pinned(before)) {
+                if (grid.at(run.front()).mat > grid.at(before).mat) {
+                    run.insert(run.begin(), before);
+                    runNodeI[r] = centreNode(before);
+                }
+            } else {
+                runNodeI[r] = faceNode(before, axis);
+            }
+        }
+        if (bBeyond == Beyond::Collinear) {
+            if (pinned(run.back()) || pinned(beyond)) {
+                if (grid.at(run.back()).mat > grid.at(beyond).mat) {
+                    run.push_back(beyond);
+                    runNodeJ[r] = centreNode(beyond);
+                }
+            } else {
+                runNodeJ[r] = faceNode(run.back(), axis);
+            }
+        }
     }
 
     // Junction detection: a block shared by two runs, or a support, is a node.
@@ -490,6 +587,12 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
                         break;
                     }
                 }
+                // Only a run's outermost ends can sit on a face; every interior split is
+                // a shared block and therefore a centre.
+                seg.ni   = (start == 0) ? runNodeI[r] : centreNode(seg.blocks.front());
+                seg.nj   = isEnd        ? runNodeJ[r] : centreNode(seg.blocks.back());
+                seg.fixI = (start == 0) && runFixI[r] != 0;
+                seg.fixJ = isEnd        && runFixJ[r] != 0;
                 if (seg.blocks.size() >= 2 && !seg.section.empty()) out.push_back(std::move(seg));
                 start = k;
             }
@@ -685,35 +788,43 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         }
     }
 
-    // Nodes sit at block centres, so a block shared by two runs is one node.
-    std::map<BlockPos, int> nodeId;
+    // Node positions arrive in HALF-BLOCK units, so a block centre and the face between
+    // two blocks are both exact integers. A Minecraft block coordinate names the block's
+    // CORNER, so the centre of block p is at (2p+1) half-blocks: the same half-block
+    // offset the model has always had, now written where it can also express a face.
+    std::map<NodePos, int> nodeId;
     bool anyFreeNode = false;
-    auto nodeFor = [&](const BlockPos& p) -> int {
-        auto it = nodeId.find(p);
-        if (it != nodeId.end()) return it->second;
+    auto nodeFor = [&](const NodePos& np, bool forceFixed) -> int {
+        auto it = nodeId.find(np);
+        if (it != nodeId.end()) {
+            if (forceFixed) m.nodes[static_cast<size_t>(it->second - 1)].fixAll();
+            return it->second;
+        }
         const int id = static_cast<int>(m.nodes.size()) + 1;
         // MC (x, y, z) with y up  ->  FrameCore (x, z, y) with Z up.
-        //
-        // Plus half a block: a Minecraft block coordinate names the block's CORNER, and
-        // the node belongs at its centre. The offset is a uniform translation of the whole
-        // model, so no force, stress or D/C changes by a bit — but the `world` positions
-        // this sidecar reports are what the overlay draws at, and without it every ribbon
-        // would hang half a block off the beam in all three axes.
         const double h = kBlockMm / 2.0;
-        frame::Node n(id, p.x * kBlockMm + h, p.z * kBlockMm + h, p.y * kBlockMm + h);
-        auto blk = grid.find(p);
-        if (blk != grid.end() && blk->second.support) n.fixAll();
-        else                                         anyFreeNode = true;
+        frame::Node n(id, np.x * h, np.z * h, np.y * h);
+        bool fixed = forceFixed;
+        if (!fixed && (np.x % 2) && (np.y % 2) && (np.z % 2)) {
+            // Odd in every component: this is a block centre, so it can carry that
+            // block's own support flag. A face node belongs to no single block.
+            const BlockPos bp{ (np.x - 1) / 2, (np.y - 1) / 2, (np.z - 1) / 2 };
+            auto blk = grid.find(bp);
+            fixed = blk != grid.end() && blk->second.support;
+        }
+        if (fixed) n.fixAll();
+        else       anyFreeNode = true;
         m.nodes.push_back(n);
-        nodeId[p] = id;
+        nodeId[np] = id;
         return id;
     };
+    auto nodeForBlock = [&](const BlockPos& p) { return nodeFor(centreNode(p), false); };
 
     std::vector<SolveOut::MemberOut> mo;
     for (const auto& seg : segs) {
         const BlockPos& a = seg.blocks.front();
         const BlockPos& b = seg.blocks.back();
-        const int ni = nodeFor(a), nj = nodeFor(b);
+        const int ni = nodeFor(seg.ni, seg.fixI), nj = nodeFor(seg.nj, seg.fixJ);
         if (ni == nj) continue;
 
         frame::Member mem(nextMember, ni, nj, matIdx[seg.mat], secIdx[seg.section]);
@@ -728,7 +839,14 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         o.mat      = seg.mat;
         o.section  = seg.section;
         o.blocks   = seg.blocks;
-        o.lengthMm = static_cast<double>(seg.blocks.size() - 1) * kBlockMm;
+        // From the NODES, not from the block count. Those agreed while every node sat
+        // on a block centre; at a collinear butt joint the end node sits on the face
+        // between two blocks, so a member that spans 1.5 m covers two blocks. The engine
+        // has always used the node coordinates — this line was the only place still
+        // deriving a length from the blocks, and it reported 1000 for a 1500 mm member.
+        o.lengthMm = std::hypot(std::hypot(static_cast<double>(seg.nj.x - seg.ni.x),
+                                           static_cast<double>(seg.nj.y - seg.ni.y)),
+                                static_cast<double>(seg.nj.z - seg.ni.z)) * (kBlockMm / 2.0);
         mo.push_back(std::move(o));
         ++nextMember;
     }
@@ -743,7 +861,7 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
     std::vector<SolveOut::ShellOut> so;
     for (const auto& q : quads) {
         int c[4];
-        for (int k = 0; k < 4; ++k) c[k] = nodeFor(q.c[k]);
+        for (int k = 0; k < 4; ++k) c[k] = nodeForBlock(q.c[k]);
         if (c[0] == c[1] || c[0] == c[2] || c[0] == c[3] ||
             c[1] == c[2] || c[1] == c[3] || c[2] == c[3]) continue;
 
@@ -768,7 +886,10 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
             // Report the BLOCK behind each corner in the same order the corners ended up
             // in, so a client can key a block to its facet without redoing the flip.
             for (const BlockPos& bp : q.c) {
-                if (nodeId.at(bp) == c[k]) { o.blocks[static_cast<size_t>(k)] = bp; break; }
+                if (nodeId.at(centreNode(bp)) == c[k]) {
+                    o.blocks[static_cast<size_t>(k)] = bp;
+                    break;
+                }
             }
         }
         so.push_back(std::move(o));
@@ -793,7 +914,7 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
     // the global check in runSolve has already refused any load that belongs to no island
     // at all, so skipping here cannot lose one.
     for (size_t k = 0; k < pointLoads.size() && k < loadAt.size(); ++k) {
-        auto it = nodeId.find(loadAt[k]);
+        auto it = nodeId.find(centreNode(loadAt[k]));
         if (it == nodeId.end()) continue;
         frame::NodalLoad nl;
         nl.node = it->second;
@@ -856,6 +977,42 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         if (out.diagnostic.empty()) {
             out.diagnostic = "fully supported: every node of one structure is grounded, so "
                              "it has no degree of freedom and no internal response to solve";
+        }
+        // ...but it still has to say what was put on it. Leaving early skipped the
+        // equilibrium accounting too, so a 5000 kN load a player placed on such a
+        // structure came back applied=[0,0,0], residual=0, maxDC=0, ok=true. The one field
+        // that names what was applied did not name it, and the residual could not catch
+        // that because the term was missing from BOTH sides of the subtraction. This is
+        // the failure the orphan-load guard in runSolve exists to prevent, arriving
+        // through the door beside the one that guard watches.
+        //
+        // With every node fixed, statics gives the answer without a solve: each applied
+        // force is reacted where it stands. So both sides are credited, the residual
+        // stays exactly zero for the right reason, and `applied` is the truth again.
+        {
+            double appFc[3] = { 0, 0, 0 };
+            for (const frame::NodalLoad& nl : m.nodalLoads) {
+                appFc[0] += nl.comp[frame::Ux];
+                appFc[1] += nl.comp[frame::Uy];
+                appFc[2] += nl.comp[frame::Uz];
+            }
+            for (const frame::Member& mem : m.members) {
+                const int ia = m.nodeIndex(mem.i), ib = m.nodeIndex(mem.j);
+                if (ia < 0 || ib < 0) continue;
+                const frame::Vec3 d = m.nodes[static_cast<size_t>(ib)].pos
+                                    - m.nodes[static_cast<size_t>(ia)].pos;
+                const double L   = frame::norm(d);
+                const double rho = m.materials[static_cast<size_t>(mem.matIdx)].rho;
+                const double A   = m.sections[static_cast<size_t>(mem.secIdx)].A;
+                appFc[2] -= rho * A * L * 9810.0 * 1e-12;
+            }
+            const McVec app = fcToMc(frame::Vec3{ appFc[0], appFc[1], appFc[2] });
+            out.appliedN[0] += app.x;  out.appliedN[1] += app.y;  out.appliedN[2] += app.z;
+            // The ground pushes BACK. relativeResidual adds the two and expects zero, so
+            // crediting the reaction with the same sign as the load reports a residual of
+            // exactly 2 — the shape of the mistake, caught by the gate that asserts the
+            // residual is still zero for the right reason.
+            out.reactionN[0] -= app.x; out.reactionN[1] -= app.y; out.reactionN[2] -= app.z;
         }
         std::set<BlockPos> immobile;
         for (const auto& seg : segs)
@@ -1207,18 +1364,34 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
 // solve cheaper: direct factorisation is superlinear in the model, so N small models cost
 // less than one N-times-larger model — the opposite of what batching usually buys.
 struct DisjointSet {
-    std::map<BlockPos, BlockPos> parent;
-    BlockPos find(const BlockPos& a) {
+    std::map<NodePos, NodePos> parent;
+    std::map<NodePos, int>     size;
+
+    // ITERATIVE. This was recursive, and the recursion depth was the length of the chain
+    // being united — so a long enough line of members took the whole process out by stack
+    // overflow: no reply, empty stderr, and every later request on the same pipe
+    // unanswered. Measured death around 37,000 collinear blocks, which is a large build
+    // but not an absurd one, and reachable deliberately in one request. Path halving plus
+    // union by size keeps the trees flat as well, so the cost no longer depends on the
+    // order the segments happen to arrive in.
+    NodePos find(const NodePos& a) {
         auto it = parent.find(a);
-        if (it == parent.end()) { parent[a] = a; return a; }
-        if (it->second == a) return a;
-        const BlockPos root = find(it->second);
-        parent[a] = root;
-        return root;
+        if (it == parent.end()) { parent[a] = a; size[a] = 1; return a; }
+        NodePos cur = a;
+        for (;;) {
+            NodePos& par = parent[cur];
+            if (par == cur) return cur;
+            NodePos& grand = parent[par];
+            par = grand;          // path halving
+            cur = par;
+        }
     }
-    void unite(const BlockPos& a, const BlockPos& b) {
-        const BlockPos ra = find(a), rb = find(b);
-        if (!(ra == rb)) parent[ra] = rb;
+    void unite(const NodePos& a, const NodePos& b) {
+        NodePos ra = find(a), rb = find(b);
+        if (ra == rb) return;
+        if (size[ra] > size[rb]) std::swap(ra, rb);
+        parent[ra] = rb;
+        size[rb] += size[ra];
     }
 };
 
@@ -1243,12 +1416,12 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
     DisjointSet ds;
     std::set<BlockPos> nodeBlocks;
     for (const auto& s : segs) {
-        ds.unite(s.blocks.front(), s.blocks.back());
+        ds.unite(s.ni, s.nj);
         nodeBlocks.insert(s.blocks.front());
         nodeBlocks.insert(s.blocks.back());
     }
     for (const auto& q : quads) {
-        for (int k = 1; k < 4; ++k) ds.unite(q.c[0], q.c[k]);
+        for (int k = 1; k < 4; ++k) ds.unite(centreNode(q.c[0]), centreNode(q.c[k]));
         for (const BlockPos& c : q.c) nodeBlocks.insert(c);
     }
 
@@ -1280,11 +1453,11 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
         return out;
     }
 
-    std::map<BlockPos, size_t>        islandOf;
+    std::map<NodePos, size_t>         islandOf;
     std::vector<std::vector<RunSeg>>  islandSegs;
     std::vector<std::vector<QuadSeg>> islandQuads;
-    auto slotFor = [&](const BlockPos& any) -> size_t {
-        const BlockPos root = ds.find(any);
+    auto slotFor = [&](const NodePos& any) -> size_t {
+        const NodePos root = ds.find(any);
         auto it = islandOf.find(root);
         if (it != islandOf.end()) return it->second;
         const size_t slot = islandSegs.size();
@@ -1293,8 +1466,8 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
         islandQuads.emplace_back();
         return slot;
     };
-    for (const auto& s : segs)  islandSegs[slotFor(s.blocks.front())].push_back(s);
-    for (const auto& q : quads) islandQuads[slotFor(q.c[0])].push_back(q);
+    for (const auto& s : segs)  islandSegs[slotFor(s.ni)].push_back(s);
+    for (const auto& q : quads) islandQuads[slotFor(centreNode(q.c[0]))].push_back(q);
 
     int nextMember = 1, nextShell = 1;
     out.ok = true;
@@ -1516,7 +1689,12 @@ std::string handleSolve(const bjson::Value& req) {
     // Named `bucklingFactor` and not `safetyFactor`: it is the eigenvalue of the linear
     // onset problem, an upper bound on the real critical load, and calling it a safety
     // factor would invite a reader to treat an upper bound as a margin.
-    if (s.bucklingFactor > 0) w.kv("bucklingFactor", s.bucklingFactor);
+    // Always on the wire, even at zero. Dropping the key when the factor was not
+    // positive made "not computed", "computed and found no positive eigenvalue" and
+    // "the eigensolver failed" one indistinguishable state to every reader — and the
+    // binary transport carried it unconditionally, so the two transports did not even
+    // agree on what a reply contains. Zero means not computed, as documented.
+    w.kv("bucklingFactor", s.bucklingFactor);
     w.kv("nodes", s.nodes).kv("dof", s.nodes * 6);
     w.key("equilibrium").beginObj();
     w.key("applied").beginArr().val(s.appliedN[0]).val(s.appliedN[1]).val(s.appliedN[2]).endArr();

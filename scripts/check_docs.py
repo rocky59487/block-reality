@@ -19,6 +19,7 @@ sentence silently switches the check off, which is the same class of mistake as 
 `| tail -3` that ate the engine gate's exit code.
 """
 import glob
+import json
 import os
 import re
 import subprocess
@@ -30,8 +31,15 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # (path, regex with exactly one capture group, which count it must equal)
 #
 # ENGINE            sidecar/verify.py total
+# CLOSED_FORM       comparisons against a closed form, from the evidence record
 # JAVA_TOTAL        every JUnit test in mod/ and forge/
 # JAVA_ENGINE       the subset that starts br-sidecar and runs FrameCore
+#
+# ENGINE and CLOSED_FORM are different quantities and the difference is the point. The
+# suite total counts invariants, transport-equivalence oracles and refusal cases as well;
+# only some of it compares against a textbook. Writing the total where the closed-form
+# count belonged is how the store listing came to say "251 acceptance checks run against
+# textbook closed forms" when 41 do.
 TABLE = [
     ("README.md", r"`sidecar/verify\.py`, (\d+) checks, all passing", "ENGINE"),
     ("README.md", r"`sidecar/verify\.py` (\d+) 項全過", "ENGINE"),
@@ -51,15 +59,41 @@ TABLE = [
     ("docs/RESEARCH_BRIEF.md", r"\| Java tests \| \d+/(\d+) passing", "JAVA_TOTAL"),
     ("docs/RESEARCH_BRIEF.md", r"(\d+) start the real sidecar", "JAVA_ENGINE"),
     ("docs/outreach/OUTREACH.md", r"record\. (\d+) acceptance", "ENGINE"),
-    ("docs/outreach/OUTREACH.md", r"\((\d+) closed-form acceptance checks per build", "ENGINE"),
+    ("docs/outreach/OUTREACH.md",
+     r"\((\d+) closed-form acceptance checks in a \d+-check suite per build", "CLOSED_FORM"),
+    ("docs/outreach/OUTREACH.md",
+     r"\(\d+ closed-form acceptance checks in a (\d+)-check suite per build", "ENGINE"),
     ("docs/outreach/COMMUNITY.md", r"gimmick: (\d+) acceptance checks", "ENGINE"),
-    ("docs/outreach/COMMUNITY.md", r"、(\d+) 項閉合解", "ENGINE"),
-    ("docs/outreach/FUNDING.md", r"\*\*:(\d+) 項閉合解 gate", "ENGINE"),
+    ("docs/outreach/COMMUNITY.md", r"、(\d+) 項閉合解", "CLOSED_FORM"),
+    ("docs/outreach/FUNDING.md", r"\*\*:(\d+) 項閉合解 gate", "CLOSED_FORM"),
+    ("docs/outreach/FUNDING.md", r"項閉合解 gate（全套 (\d+) 項）", "ENGINE"),
+    ("docs/outreach/LISTING.md", r"\*\*(\d+) of them are comparisons against", "CLOSED_FORM"),
     ("sidecar/README.md", r"\*\*，(\d+) 項 gate 兩邊全過", "ENGINE"),
     ("sidecar/README.md", r"Wine 實測 (\d+) 項全過", "ENGINE"),
     ("sidecar/README.md", r"^(\d+) 項，全部對閉合解", "ENGINE"),
     ("sidecar/patches/README.md", r"# 本專案的 (\d+) 項 gate", "ENGINE"),
-    (".github/workflows/release.yml", r"every number is gated: (\d+) acceptance checks", "ENGINE"),
+    (".github/workflows/release.yml", r"- (\d+) acceptance checks against closed forms", "ENGINE"),
+    # The listing copy was not in this table at all, which is how "251 acceptance checks
+    # run against textbook closed forms" got written: 251 is the suite total, and the
+    # closed-form comparisons are 41 of them. The store page is the last place that should
+    # be ungated, because it is the one a reviewer reads.
+    ("docs/outreach/LISTING.md", r"> (\d+) acceptance checks run on every build", "ENGINE"),
+    ("docs/outreach/LISTING.md", r"> Verification: (\d+) engine checks", "ENGINE"),
+    ("docs/outreach/LISTING.md", r"> Verification: \d+ engine checks, (\d+) Java tests", "JAVA_TOTAL"),
+    ("docs/outreach/COMMUNITY.md", r"gimmick: (\d+) acceptance checks", "ENGINE"),
+]
+
+# Sentences that must NOT appear, whatever number follows them. A count can be right while
+# the claim around it is wrong: "every number is gated" was true of no build this project
+# has ever cut — GATES.md names shear and torsion as having no oracle — and it sat on the
+# public release page through two releases with the number beside it correct.
+FORBIDDEN = [
+    (".github/workflows/release.yml", r"every number is gated",
+     "GATES.md says shear and torsion have no oracle; 'every' is not true of any build"),
+    ("docs/outreach/LISTING.md", r"acceptance checks run against textbook closed forms",
+     "the suite total is not the closed-form comparison count; say which is which"),
+    ("README.md", r"byte-reproducible[^.]*another machine",
+     "nobody outside can rebuild the engine: this repository does not carry FrameCore"),
 ]
 
 
@@ -70,6 +104,16 @@ def engine_count(exe):
     if not m:
         sys.exit("verify.py did not report ALL PASS; run it and read the failure first")
     return int(m.group(1))
+
+
+def closed_form_count():
+    """How many comparisons in the record are against a closed form, not an invariant."""
+    rec = os.path.join(ROOT, "evidence", "verification.json")
+    if not os.path.exists(rec):
+        return None
+    with open(rec, encoding="utf-8") as f:
+        acc = json.load(f)["accuracy"]
+    return acc["nonzero_references"]["comparisons"] + acc["zero_references"]["comparisons"]
 
 
 def java_counts():
@@ -93,10 +137,11 @@ def java_counts():
 
 def main():
     exe = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "dist", "br-sidecar")
-    counts = {"ENGINE": engine_count(exe)}
+    counts = {"ENGINE": engine_count(exe), "CLOSED_FORM": closed_form_count()}
     jt, je = java_counts()
     counts["JAVA_TOTAL"], counts["JAVA_ENGINE"] = jt, je
-    print(f"measured: engine={counts['ENGINE']} java_total={jt} java_engine_backed={je}")
+    print(f"measured: engine={counts['ENGINE']} closed_form={counts['CLOSED_FORM']} "
+          f"java_total={jt} java_engine_backed={je}")
 
     bad = []
     for path, pattern, kind in TABLE:
@@ -118,6 +163,14 @@ def main():
         got = int(m.group(1))
         if got != want:
             bad.append(f"{path}: says {got} {kind.lower()} checks, the suite reports {want}")
+
+    for path, pattern, why in FORBIDDEN:
+        full = os.path.join(ROOT, path)
+        if not os.path.exists(full):
+            continue
+        flat = re.sub(r"\s+", " ", open(full, encoding="utf-8").read())
+        if re.search(pattern, flat):
+            bad.append(f"{path}: says '{pattern}' — {why}")
 
     if bad:
         print()

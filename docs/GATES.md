@@ -88,12 +88,41 @@
 | 2026-08-20 | verify.py `check()` 零參考語意（TEST-8） | expect=0 時 rel=\|got\|/1e-30,任何容差都退化成 exact-zero 斷言——呼叫者以為給了 slack,實際沒有 | 五個零參考站點:四個 tol=1e-30（新舊語意等效）,一個 tol=1e-10（C11 平衡殘差,舊語意實際要求恰為 0 且恰好一直是 0） | expect=0 改走**絕對比較** \|got\|≤tol,與 evidence.py 一貫的雙指標同構 | C11 那條從「恰為 0」放寬到「≤1e-10 絕對」——這是**放寬**,照登;放寬後的線即為作者當初寫下 1e-10 時的本意 |
 | 2026-08-20 | `SidecarEngineTest.shmAndJsonTransportsAgree` 比對集合（TEST-2） | 只比部分欄位 | 比對洞:六分量端力兩端、islands/singularIslands/unassigned、field 14 分量、shell 8 內力+ex/ey/n/material/thickness 全未比 | **加嚴**:全欄位、容差 0.0,對真引擎執行 | 加嚴無需降級;先前「T-gate 保護 Java 解碼器」的 javadoc 宣稱為假,已同步改寫 |
 
+| 2026-08-23b | verify.py `[M1]` 鏡像不變性（新 gate 的第一版，照登） | 第一版斷言「上下鏡像後 maxDC 不變」 | 那不是對稱:重力不跟著翻,磚墩配木柱與木柱配磚墩本來就是兩座不同的結構,實測差 3.79 倍是荷載路徑不是離散化 | 上下鏡像只斷言**幾何與質量**（長度多重集合、自重）;完整不變性（含 maxDC）移到**水平鏡像**,那裡重力不受影響、沒有物理藉口可用 | 無下游降級:被移走的那半以更嚴的形式留下。原始缺陷（自重差 40.2%）由留下的那半抓住 |
+| 2026-08-23b | D-025 的實作 | 「其中一方吞掉接合處那一格」 | 否證條件 (2) 觸發:自重 40.2%／12.9%／5.1%,maxDC 最多 3.5 倍 | 依該條指名的補救改為**面上的節點**（D-028）。修後 0.000%,長度變成幾何正確的 1500/1500 | 下游:v0.1a–v0.3a 所有跨材料對接結構的自重與 D/C **作廢**。單材料結構不受影響 |
+| 2026-08-23b | `check_bundle.py` 的第三次加嚴（照登） | 只看預期路徑、512 KB 門檻、`set(namelist())` | 同名 entry 在真引擎前面塞 3 MB 填充 → **四道 gate 全綠、jar 只大 324 B**;511 KB 的多餘檔案免費通行;`dist/` 的多餘檔案（實測 `.env` 與 debug build）會被公開打包而 `sha256sum -c` 仍 exit 0 | 改走 `infolist()`、重名即 FAIL、門檻降到 64 KB、引擎目錄內未列於 manifest 者一律 FAIL、`dist/` 內容必須與 `SHA256SUMS.txt` 完全相符 | 兩種注入都實測會被抓（重名、`.env` + debug build）。**這是同一支 gate 第三次因為「只看自己預期之處」而被加嚴** |
 | 2026-08-23 | Windows 引擎的位元可重現性 | 上一輪 commit 訊息宣稱「mingw 交叉建置是位元可重現的」 | **錯的**。當時之所以雜湊相同,是因為 cmake 判定 up-to-date 根本沒有重新連結。真正重建後兩顆 4108756 位元組的檔案**差 4 個位元組**:PE 標頭 0x88 的 TimeDateStamp 與 0xd8 的回音,其餘完全相同 | 加 `-Wl,--no-insert-timestamp`。兩次乾淨建置實測雜湊相同 | 上一輪的宣稱**撤回**並在此更正。Linux 建置本來就沒有這個欄位,一直是位元相同的 |
 | 2026-08-21 | verify.py [S4]／[S9] 夾支方板中心彎矩參考係數 | `0.0231`（Timoshenko Table 35 / Roark 11.4 case 8a）,8 元素容差 1% | 參考係數本身是錯的。13 點差分解雙調和方程 n=20/40/80 + Richardson 外推得 **0.02290512**;同一次運算把該表另外兩欄逐位重現（w_max 0.00126532 對 0.00126、M_edge −0.0513338 對 −0.0513）。三取二相符、不符的那個差 0.85%,而三位有效數字捨入只能解釋 ±0.217%。改用真值後,8/12/20 元素的誤差是 1.75%／0.79%／0.28% | 判準**改成收斂階**：per-mesh 線 2.0%／1.0%／0.4%,加上 h→h/2 誤差比對應的 p = 2.0 ± 0.075（實測 1.983、2.014）。8 元素那條線 1% → 2%,照鐵則 1 登記 | 下游降級:evidence 舊表的「收斂地板」敘事**撤回**——那是錯參考解造出來的假象,不是 MITC4 的性質。舊表引用的 20 元素 0.57% 亦作廢（真值 0.28%,雖然更好,但那個數字當時不可信）|
 | 2026-08-21 | `.github/workflows/ci.yml` engine-gates job | 「CI 綠是 merge 條件」——實際上該 job **恆綠** | `cmd \| tail -3` 在 GitHub 隱含的 `bash -e`（無 pipefail）下回報 tail 的退出碼。本機兩路實測:`bash -e` → 0,`bash -eo pipefail` → 1 | workflow 層 `defaults: run: shell: bash`,使 GitHub 改用 `bash --noprofile --norc -eo pipefail` | 下游降級:**2026-08-20 之前所有「CI 綠」的引用一律無效**,包含本表上一節末句與 RELEASING.md。第一次真正紅的執行:commit `7d9982e`,run 32621276032,engine-gates job failure,失敗原因是本次新增的 19 條 gate |
 | 2026-08-21 | 紀律自登:本輪 [C16]/[J1]/[J2]/[J3]/[P1]/[P2] 六節新 gate | — | 判準先 commit（`7d9982e`,對出貨引擎 **FAILED 19 of 251**,輸出全文在該 commit 的 CI run 32621276032）,實作在下一個 commit（`e8c39cb`）轉綠 | 鐵則 1 **完整滿足**,含 D-4 建議的「先 commit 紅版 gate」 | 無;這是本表第一次不必登記順序滑失 |
 | 2026-08-21 | 出貨文件的檢查項計數 | 人工抄寫 | 「219」出現在九份文件與 GitHub Release body,真值 218（`grep -c PASS` 把結尾 ALL PASS 也算了）;151／164／216 三個更舊的數字同時仍活在 outreach 文件裡 | verify.py 自印總數,`scripts/check_docs.py` 逐份文件比對,pattern 對不上檔案即 **FAIL 而非 skip** | 舊 Release body 的「219 acceptance checks」為**對外不實陳述**,以本次發行的真值取代 |
 | 2026-08-21 | dist/br-sidecar.exe | 無任何 gate:不比雜湊、不在 evidence、連存在與否都沒人檢查 | 端到端模擬:拿掉 .exe 後照 package.sh 重生 SHA256SUMS,四道 gate 全綠 | package.sh 缺 mingw 直接 `exit 1`（除非 `ALLOW_NO_WINDOWS=1`）;evidence 記 `identity.binary_windows`;ci.yml 與 release.yml 各比一次雜湊 | 下游:v0.1a／v0.2a 之前所有「跨平台出貨」宣稱只有 Linux 那顆有紀錄支撐 |
+
+### 2026-08-23b 新增的 gate（v0.3a 審核，v0.3b）
+
+引擎側（`sidecar/verify.py`，282 項）：
+
+- `[M1]` 鏡像不變性 —— 上下鏡像保長度與自重（實測 0.000%）；**水平**鏡像保一切，含 maxDC
+- `[M2]` 對接節點在面上：磚墩配木柱各 1500 mm，自重是各材料自己的一半
+- `[M3]` 全支承結構仍回報放在它上面的東西 —— 5000 kN 進 `applied`，殘差仍為 0 且**是因為對的理由**
+- `[M4]` 單一異材質墊塊是墊塊不是洞：柱被解出來，墊塊自己進 `unassigned`
+- `[M5]` 8000 格共線鏈答得出來；`bucklingFactor` 永遠在 wire 上
+
+Java 側：
+
+- `BundledEngineTest` +4 —— manifest 的檔名欄位若是路徑一律拒絕（等價 zip slip，但入口是
+  manifest，一般掃描器看不到）、`Darwin` 不是 Windows、**八執行緒併發後拿回來的必須是磁碟上
+  那一顆**（原本 87% 拿到錯的）、解出來的檔在 POSIX 上必須可執行（唯一合法需要 `assumeTrue`
+  的場合）
+- `SidecarPathsTest` —— Windows 檔案總管「複製路徑」給的帶引號字串必須是一條路徑而不是
+  一顆 `InvalidPathException`。它會穿過 `computeIfAbsent`（不留 mapping）炸掉 server thread，
+  **而且每次 chunk load 再炸一次**
+- `check_docs.py` 新增 `CLOSED_FORM` 量與**禁句表**：`every number is gated`、
+  「N acceptance checks run against textbook closed forms」、「另一台機器可重現」出現即紅
+
+**honest limit（照登）**：`[M5]` 跑 8000 格，而實測的死亡門檻約 37,000 格。在真門檻上跑
+一次要花掉 ~50 秒套件裡的 ~25 秒。8000 格能證明的是 union-find 撐得住那個深度的鏈——
+一個深到會死的遞迴根本答不出來——而修法（改迭代）讓深度不再是變數。
 
 ### 2026-08-23 新增的 gate（引擎隨 jar，D-027）
 
@@ -145,6 +174,18 @@ Java 側：
 > **這句話在 2026-08-21 之前是假的**,兩層都假:engine-gates job 因 pipefail 缺失而恆綠（上表),
 > 而 `Main` 上根本沒有分支保護,所以「綠」從來不是合併的必要條件。兩者同日修好;分支保護的
 > 設定是倉庫層設定,不在版控裡,因此在此登記為判準的一部分。
+
+## 發布鏈與驗證之間的接線（2026-08-23b 補上）
+
+在此之前 `release.yml` 與 `ci.yml` **沒有任何接線**：release 不跑任何測試，tag push 不觸發
+CI，標籤零保護。兩次發行沒出事，靠的是 `required_status_checks.strict = true` 讓合併後的
+tree 與被測過的 PR head 逐位元相同——**一個沒人寫下來是承載性的設定**。實測繞法存在：在側
+分支把版號、jar 檔名、SHA256SUMS 與 verification.json 一起改（`package.sh` 跑一次就全齊）
+後直推標籤，三道 gate 全綠而 CI 從頭到尾沒跑。
+
+現在：`ci.yml` 觸發加上 `push: tags: ['v*']`；`release.yml` 第一步等兩條 required check 在
+**這一個 commit** 上結束並要求 success，逾時視為拒絕而不是通過。`enforce_admins` 已開啟
+（先前為 false，admin 可繞過 status check）。
 
 ## 已知的 gate 缺口（鐵則 2 的照登）
 

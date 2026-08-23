@@ -1198,6 +1198,174 @@ def main():
     check_true("and the diagnostic says why", "fully supported" in rf.get("diagnostic", ""),
                rf.get("diagnostic", ""))
 
+    # ============================================================== MIRROR =====
+    # The same structure built the other way round must be the same structure.
+    #
+    # It was not. The butt-joint rule (D-025) let the run that came FIRST along the axis
+    # swallow the shared block, so a brick pier under a timber post modelled 2 m of brick
+    # and 1 m of timber, and mirroring it modelled 2 m of timber and 1 m of brick. Measured
+    # on the shipped v0.3a: self weight differed by 40.2% at four blocks and still 5.1% at
+    # thirty, and maxDC by a factor of 3.5. D-025's own falsification condition names 5% as
+    # the line, so this is not a bug report against the decision — it is the decision's own
+    # trigger firing, and the remedy it names is the one taken: the shared node goes on the
+    # FACE between the two blocks, which gives each material its true half and cannot
+    # depend on which end you started from.
+    print("\n[M1] a mirrored structure is the same structure")
+    BR = ("brick", "brick_rect_230x350")
+    TI = ("timber", "timber_rect_140x240")
+
+    def two_material_column(n, flip):
+        lo, hi = (TI, BR) if flip else (BR, TI)
+        out = []
+        for h in range(n):
+            mat, sec = lo if h < n // 2 else hi
+            out.append({"x": 0, "y": 64 + h, "z": 0, "mat": mat, "section": sec,
+                        "support": h == 0})
+        return out
+
+    # Turning a column upside down is NOT a symmetry — gravity does not turn with it, and
+    # a brick pier under a timber post really is a different structure from a timber post
+    # under a brick pier. What must not change is the MODEL: the same lengths and the same
+    # mass. Asserting maxDC here as well was this gate's first cut and it was wrong; the
+    # measured 3.79x is load path, not discretisation. Registered in docs/GATES.md, with
+    # the horizontal case below added in the same edit so the tolerance-free half of the
+    # claim did not simply disappear.
+    for n in (4, 6, 12):
+        ra = sc.call({"op": "solve", "revision": 300 + n,
+                      "blocks": two_material_column(n, False), "loads": []})
+        rb = sc.call({"op": "solve", "revision": 340 + n,
+                      "blocks": two_material_column(n, True), "loads": []})
+        check(f"n={n}: self weight is mirror-invariant", -rb["equilibrium"]["applied"][1],
+              -ra["equilibrium"]["applied"][1], 1e-12)
+        la = sorted(round(m["lengthMm"]) for m in ra.get("members", []))
+        lb = sorted(round(m["lengthMm"]) for m in rb.get("members", []))
+        check_true(f"n={n}: the same member lengths appear", la == lb, f"{la} vs {lb}")
+
+    # Mirroring HORIZONTALLY is a real symmetry: gravity is unaffected, so every number
+    # has to come back identical, D/C included. This is the version of the claim with no
+    # physics excuse available, and it is the one that would catch a direction-dependent
+    # extraction rule reappearing in any form.
+    def two_material_beam(n, flip):
+        lo, hi = (TI, BR) if flip else (BR, TI)
+        out = []
+        for i in range(n):
+            k = (n - 1 - i) if flip else i
+            mat, sec = (BR if k < n // 2 else TI)
+            out.append({"x": i, "y": 64, "z": 0, "mat": mat, "section": sec,
+                        "support": i in (0, n - 1)})
+        return out
+
+    for n in (6, 12):
+        ra = sc.call({"op": "solve", "revision": 320 + n,
+                      "blocks": two_material_beam(n, False), "loads": []})
+        rb = sc.call({"op": "solve", "revision": 330 + n,
+                      "blocks": two_material_beam(n, True), "loads": []})
+        check(f"n={n}: horizontal mirror keeps the weight", -rb["equilibrium"]["applied"][1],
+              -ra["equilibrium"]["applied"][1], 1e-12)
+        check(f"n={n}: horizontal mirror keeps maxDC", rb.get("maxDC", 0),
+              ra.get("maxDC", 0), 1e-9)
+        la = sorted(round(m["lengthMm"]) for m in ra.get("members", []))
+        lb = sorted(round(m["lengthMm"]) for m in rb.get("members", []))
+        check_true(f"n={n}: horizontal mirror keeps the lengths", la == lb, f"{la} vs {lb}")
+
+    # ...and the joint lands where the two blocks actually meet, so each material carries
+    # its own length and neither is credited with a metre of the other's.
+    print("\n[M2] a butt joint sits on the face, not on one side of it")
+    stack = [{"x": 0, "y": 64 + h, "z": 0, "mat": BR[0], "section": BR[1], "support": h == 0}
+             for h in range(2)]
+    stack += [{"x": 0, "y": 66 + h, "z": 0, "mat": TI[0], "section": TI[1], "support": False}
+              for h in range(2)]
+    rj = sc.call({"op": "solve", "revision": 360, "blocks": stack, "loads": []})
+    check_true("ok", rj.get("ok") is True, rj.get("error", ""))
+    check_true("two members", len(rj.get("members", [])) == 2,
+               f"members={len(rj.get('members', []))}")
+    for mem in rj.get("members", []):
+        check(f"{mem['section'][:5]} spans to the interface", mem["lengthMm"], 1500.0, 1e-12)
+    a_br, a_ti = 230.0 * 350.0, 140.0 * 240.0
+    check("self weight is each material's own half",
+          -rj["equilibrium"]["applied"][1],
+          (1800.0 * a_br + 600.0 * a_ti) * 1500.0 * 1e-9 * G, 1e-9)
+
+    # ============================================================= GROUNDED ====
+    # A structure every node of which is grounded has no internal response — true, and the
+    # reason D-026 stops early. What it must not do is stop reporting. A 5000 kN load put
+    # on such a structure came back applied=[0,0,0], residual=0, maxDC=0, ok=true: the load
+    # the player applied was absent from the one field that names what was applied, and the
+    # equilibrium residual could not catch it because the term was missing from both sides.
+    # main.cpp's own orphan-load guard says in as many words that reporting a structure
+    # safer than it is is the worst answer this program can give; this was that answer
+    # arriving through the door beside the one that guard is watching.
+    print("\n[M3] a fully supported structure still reports what was put on it")
+    flat = [{"x": i, "y": 64, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+             "support": True} for i in range(3)]
+    w_flat = 7850.0 * (200.0 * 400.0) * 2000.0 * 1e-9 * G      # two 1 m members
+    r_bare = sc.call({"op": "solve", "revision": 370, "blocks": flat, "loads": []})
+    check("its own weight is reported", -r_bare["equilibrium"]["applied"][1], w_flat, 1e-9)
+    P_big = 5.0e6
+    r_load = sc.call({"op": "solve", "revision": 371, "blocks": flat,
+                      "loads": [{"x": 1, "y": 64, "z": 0, "fy": -P_big}]})
+    check_true("ok", r_load.get("ok") is True, r_load.get("error", ""))
+    check("a 5000 kN load reaches `applied`", -r_load["equilibrium"]["applied"][1],
+          w_flat + P_big, 1e-9)
+    # Every node is fixed, so statics puts all of it straight into the ground: applied and
+    # reaction must still agree exactly. This is the check that makes the line above safe
+    # to add — a number counted on one side only would be a different kind of lie.
+    check("and the ground takes all of it", r_load["equilibrium"].get("residual", 1.0), 0.0, 1e-12)
+
+    # ============================================================== BEARING ====
+    # One block of another material under a column is a pad, and a grounded pad holds the
+    # column up. It did not: a single concrete/brick/timber block under four steel blocks
+    # gave singular=true, members=[], and the four steel blocks appeared in NEITHER members
+    # nor unassigned — they left the answer entirely. A pad cannot be a member (one block is
+    # L/h = 1) but it can be ground, and that is what it is here.
+    print("\n[M4] a single foreign block under a column is a pad, not a hole")
+    for mat, sec in (("concrete", "concrete_rect_400x600"), ("brick", "brick_rect_230x350"),
+                     ("timber", "timber_rect_140x240")):
+        bl = [{"x": 0, "y": 64, "z": 0, "mat": mat, "section": sec, "support": True}]
+        bl += [{"x": 0, "y": 65 + h, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+                "support": False} for h in range(4)]
+        rp = sc.call({"op": "solve", "revision": 380 + len(mat), "blocks": bl, "loads": []})
+        check_true(f"{mat} pad: the column is solved", rp.get("singular") is False
+                   and len(rp.get("members", [])) == 1,
+                   f"singular={rp.get('singular')} members={len(rp.get('members', []))}")
+        check_true(f"{mat} pad: and the pad itself is reported",
+                   [0, 64, 0] in rp.get("unassigned", []), str(rp.get("unassigned")))
+
+    # ================================================================ SCALE ====
+    # The island partition's union-find was recursive, so a long enough chain of segments
+    # took the whole process out by stack overflow: no reply, empty stderr, and every later
+    # request on the same pipe unanswered. Measured threshold on the shipped v0.3a was
+    # around 37,000 collinear blocks; a chain a fraction of that size costs almost nothing
+    # to run here and could not have been answered at all by a recursion deep enough to die.
+    print("\n[M5] a long chain is answered, not a stack overflow")
+    # Buckling off, because it is cubic and this case is about the island partition, not
+    # the eigensolver: 6000 blocks cost 3.4 s without it and minutes with it.
+    #
+    # HONEST LIMIT, registered in docs/GATES.md: the measured death threshold is around
+    # 37,000 collinear blocks and this gate runs at 8,000. A gate at the real threshold
+    # would cost ~25 s of a ~50 s suite for one case. What 8,000 does prove is that the
+    # union-find handles a chain that deep at all, which a recursion deep enough to die
+    # could not — and the fix removes the depth dependence rather than raising it.
+    n_chain = 8000
+    chain = [{"x": i, "y": 64, "z": 0, "mat": "steel",
+              "section": "steel_rect_200x400" if i % 2 else "steel_rect_150x300",
+              "support": i == 0} for i in range(n_chain)]
+    rc = sc.call({"op": "solve", "revision": 390, "blocks": chain, "loads": [],
+                  "buckling": False})
+    check_true(f"{n_chain} collinear blocks still answer", rc.get("ok") is True,
+               rc.get("error", ""))
+    check_true("and the process is still alive afterwards",
+               sc.call({"op": "solve", "revision": 391, "blocks": beam_blocks(5),
+                        "loads": []}).get("ok") is True)
+
+    # "Not computed", "computed and found no positive eigenvalue" and "the eigensolver
+    # failed" were one state to every reader of the JSON, because the key was simply
+    # dropped when the factor was not positive. The binary transport always carried it,
+    # so the two transports did not even agree on what a reply contains.
+    check_true("bucklingFactor is on the wire even when buckling was off",
+               "bucklingFactor" in rc, str(sorted(rc.keys())[:8]))
+    check("and it reads as not computed", rc.get("bucklingFactor", -1), 0.0, 1e-12)
+
     # ------------------------------------------------- T: transport equivalence
     # The shared-memory transport must be the SAME sidecar answering the SAME
     # question — so every number must match the JSON reply bit for bit. This
@@ -1302,9 +1470,11 @@ def main():
         gk = c.u32()
         if gk:
             r["governingKind"] = "member" if gk == 1 else "shell"
-        bf = c.f64()
-        if bf > 0:
-            r["bucklingFactor"] = bf
+        # Always present now, on both transports. It used to be dropped when not
+        # positive, which made "not computed", "no positive eigenvalue" and "the solver
+        # failed" one state — and the binary path carried it regardless, so the two
+        # transports disagreed about what a reply even contains.
+        r["bucklingFactor"] = c.f64()
         r["nodes"] = c.u32()
         r["dof"] = c.u32()
         r["members"] = []

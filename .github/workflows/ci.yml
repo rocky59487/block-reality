@@ -14,6 +14,12 @@ on:
   pull_request:
   push:
     branches: [Main]
+    # Tags too. Nothing ran on a tag push, so the release workflow published whatever
+    # dist/ happened to contain at that commit with no suite behind it. It never went
+    # wrong, but only because required_status_checks.strict = true made the merged tree
+    # identical to the PR head that had been tested — a setting nobody wrote down as
+    # load-bearing (V03A_REVIEW 1-6).
+    tags: ['v*']
   workflow_dispatch:
 
 # GitHub's IMPLICIT default shell on Linux is `bash -e {0}` — no pipefail. Every

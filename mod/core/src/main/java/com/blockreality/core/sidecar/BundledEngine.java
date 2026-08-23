@@ -105,6 +105,10 @@ public final class BundledEngine {
                 throw new IllegalArgumentException(
                         "engine manifest line " + lineNo + ": '" + f[3] + "' is not a sha256");
             }
+            if (!isPlainFileName(f[2])) {
+                throw new IllegalArgumentException(
+                        "engine manifest line " + lineNo + ": '" + f[2] + "' is not a plain file name");
+            }
             long size;
             try {
                 size = Long.parseLong(f[4]);
@@ -118,6 +122,26 @@ public final class BundledEngine {
             out.add(new Entry(f[0], f[1], f[2], f[3].toLowerCase(Locale.ROOT), size));
         }
         return List.copyOf(out);
+    }
+
+    /**
+     * One path element, and not a special one.
+     *
+     * <p>This field went straight into {@code resolve()}, which DROPS THE ROOT when handed
+     * an absolute path — so a manifest naming {@code ../escape} or {@code C:/anywhere}
+     * wrote outside the unpack directory. It takes a modified jar to reach, and anybody
+     * who can modify the jar can already run Java, so it is not an escalation. It is the
+     * difference between recompiling the mod and editing one line of a text file with
+     * {@code zip -u}; it falsifies the promise that a binary the player placed themselves
+     * is never touched; and a zip-slip scanner would not find it, because the entry names
+     * are innocent and the manifest is the way in.
+     */
+    private static boolean isPlainFileName(String s) {
+        if (s.isEmpty() || s.equals(".") || s.equals("..")) return false;
+        if (s.indexOf('/') >= 0 || s.indexOf('\\') >= 0) return false;
+        if (s.indexOf(java.io.File.separatorChar) >= 0) return false;
+        if (s.indexOf(':') >= 0) return false;          // C: and NTFS alternate streams
+        return s.indexOf('\0') < 0;
     }
 
     private static boolean isHex(int c) {
@@ -142,9 +166,14 @@ public final class BundledEngine {
     /** {@code windows} / {@code linux} / {@code macos}, or null for anything else. */
     public static String normaliseOs(String osName) {
         String s = osName == null ? "" : osName.toLowerCase(Locale.ROOT);
-        if (s.contains("win")) return "windows";
+        // macOS FIRST, because "darwin" contains "win". With the order the other way the
+        // branch below could never run, and the day a macOS binary enters the manifest
+        // every environment reporting Darwin would be handed an .exe — the one thing this
+        // method exists to prevent. AIX is deliberately not Linux: there is no AIX binary,
+        // and calling it one would hand it the wrong ELF instead of a clear refusal.
         if (s.contains("mac") || s.contains("darwin")) return "macos";
-        if (s.contains("nux") || s.contains("nix") || s.contains("aix")) return "linux";
+        if (s.contains("win")) return "windows";
+        if (s.contains("nux") || s.contains("nix")) return "linux";
         return null;
     }
 
@@ -211,9 +240,24 @@ public final class BundledEngine {
                 return Optional.of(makeExecutable(target));
             }
             Files.createDirectories(target.getParent());
-            Path tmp = target.resolveSibling(target.getFileName() + ".part");
-            copyVerified(loader, e, tmp);
-            move(tmp, target);
+            // A UNIQUE temporary name. It was a fixed one, so two processes sharing a game
+            // directory — a client and a server in the same folder, a panel restart whose
+            // old process had not died — wrote to the same file and renamed each other's
+            // half-written copy into place. Eight threads reproduced it at 87%.
+            Path tmp = Files.createTempFile(target.getParent(), target.getFileName().toString(), ".part");
+            try {
+                copyVerified(loader, e, tmp);
+                move(tmp, target);
+            } finally {
+                Files.deleteIfExists(tmp);
+            }
+            // ...and check what is AT THE TARGET, not what went past on the way there. The
+            // digest used to be taken on the source stream, which says nothing about the
+            // file that ended up in place.
+            if (!isGood(target, e)) {
+                throw new IOException("the unpacked " + e.fileName() + " is not the file the "
+                        + "manifest describes — another process may be writing here");
+            }
             makeExecutable(target);
             log.accept("unpacked the bundled engine to " + target + " (" + e.size() + " bytes, sha256 "
                     + e.shortHash() + ")");
@@ -247,8 +291,11 @@ public final class BundledEngine {
 
     /**
      * Streams the resource to {@code dest}, hashing as it goes, and deletes it unless the
-     * hash matches. The check is on the bytes actually written, so a truncated read or a
-     * corrupted jar cannot leave a plausible-looking executable behind.
+     * hash matches.
+     *
+     * <p>The digest is on the SOURCE stream, which catches a truncated read or a corrupted
+     * jar but says nothing about the file that ends up in place — {@link #ensure} re-reads
+     * the target after the move for that. The javadoc here used to claim otherwise.
      */
     static void copyVerified(Loader loader, Entry e, Path dest) throws IOException {
         MessageDigest md = digest();
@@ -258,8 +305,7 @@ public final class BundledEngine {
                 throw new IOException("manifest lists " + e.fileName() + " but the jar does not carry it");
             }
             try (DigestInputStream in = new DigestInputStream(raw, md)) {
-                Files.deleteIfExists(dest);
-                written = Files.copy(in, dest);
+                written = Files.copy(in, dest, StandardCopyOption.REPLACE_EXISTING);
             }
         }
         String got = HexFormat.of().formatHex(md.digest());

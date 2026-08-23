@@ -8,18 +8,18 @@
       "supernodal_lane": "compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT"
     },
     "binary": {
-      "path": "/mnt/c/Users/wmc02/Desktop/block-reality/dist.stage/br-sidecar",
-      "sha256": "96ce970e99f3571b4d8221c8338b080433dbf05b4bef2e2eebad23d2ffb94932"
+      "path": "/mnt/c/Users/wmc02/Desktop/block-reality/dist/br-sidecar",
+      "sha256": "d9721cc6070695e752b2211e065fdedce07a14fc3bc9b3273682eeec7606974f"
     },
     "binary_windows": {
-      "path": "/mnt/c/Users/wmc02/Desktop/block-reality/dist.stage/br-sidecar.exe",
-      "sha256": "14880e82b9aa14e9501389c65d7e4811f87456e3c1cb103888fd58ca37a8dee3"
+      "path": "/mnt/c/Users/wmc02/Desktop/block-reality/dist/br-sidecar.exe",
+      "sha256": "c4d571a5911b21d405394609d7430f428c0492520510af3bc92250ca140f56d2"
     },
     "sources": {
-      "sidecar/main.cpp": "18d14456fc4f082c68aa7b4a32f87d1fc342a0eec7d251808e6c4dbfad94d7fc",
+      "sidecar/main.cpp": "fb5fd9f6f0b81625b9aecde3d9c9a4be14773faf42e2222a56bdfe7453171e1f",
       "sidecar/json.hpp": "f3418ff18ee405ecc77a3fcb9bb7c349e55c2f85ee37f217f4fe69a621c430dc",
       "sidecar/shm.hpp": "dde97360c39dbf69ad17245667ae8f6f30a88cfebc2b7d9193228b2e3cd4b5ef",
-      "sidecar/verify.py": "05d31b305a963860b9754bf72aaa5241b788479b3e90b67482c2c8df84b94d44",
+      "sidecar/verify.py": "1b6aae60353ae65b4f2a57bca66fa5266360c64ba0efd87bfe817469c69755d0",
       "sidecar/CMakeLists.txt": "4e86e0f6a300abe01f500dbf742e1a726d87f12a12b90fe00bd6399fe9c2c08a",
       "scripts/evidence.py": "c619105aed0be47bb6b7674b2cd364ce00706a6f13145cc14d726f17e465cc35"
     },
@@ -650,7 +650,7 @@
     "checked": true,
     "identical": 8,
     "cases": 8,
-    "method": "native Windows replies from binary 14880e82b9aa, compared byte for byte against this host's",
+    "method": "native Windows replies from binary c4d571a5911b, compared byte for byte against this host's",
     "note": "byte-for-byte comparison of the full reply line"
   },
   "performance": [
@@ -658,81 +658,81 @@
       "blocks": 3,
       "members": 1,
       "dof": 12,
-      "with_buckling_ms": 0.293,
-      "min_ms": 0.269,
-      "max_ms": 0.477,
-      "without_buckling_ms": 0.285,
-      "median_ms": 0.293
+      "with_buckling_ms": 0.592,
+      "min_ms": 0.474,
+      "max_ms": 0.744,
+      "without_buckling_ms": 0.506,
+      "median_ms": 0.592
     },
     {
       "blocks": 6,
       "members": 3,
       "dof": 24,
-      "with_buckling_ms": 0.686,
-      "min_ms": 0.633,
-      "max_ms": 0.975,
-      "without_buckling_ms": 0.661,
-      "median_ms": 0.686
+      "with_buckling_ms": 1.31,
+      "min_ms": 1.097,
+      "max_ms": 1.495,
+      "without_buckling_ms": 1.27,
+      "median_ms": 1.31
     },
     {
       "blocks": 15,
       "members": 9,
       "dof": 60,
-      "with_buckling_ms": 2.182,
-      "min_ms": 1.941,
-      "max_ms": 2.539,
-      "without_buckling_ms": 1.858,
-      "median_ms": 2.182
+      "with_buckling_ms": 3.457,
+      "min_ms": 3.116,
+      "max_ms": 5.154,
+      "without_buckling_ms": 3.259,
+      "median_ms": 3.457
     },
     {
       "blocks": 30,
       "members": 19,
       "dof": 120,
-      "with_buckling_ms": 4.293,
-      "min_ms": 3.971,
-      "max_ms": 4.792,
-      "without_buckling_ms": 3.807,
-      "median_ms": 4.293
+      "with_buckling_ms": 7.395,
+      "min_ms": 6.971,
+      "max_ms": 10.147,
+      "without_buckling_ms": 7.069,
+      "median_ms": 7.395
     },
     {
       "blocks": 60,
       "members": 39,
       "dof": 240,
-      "with_buckling_ms": 8.914,
-      "min_ms": 7.89,
-      "max_ms": 10.059,
-      "without_buckling_ms": 8.89,
-      "median_ms": 8.914
+      "with_buckling_ms": 14.952,
+      "min_ms": 13.474,
+      "max_ms": 15.581,
+      "without_buckling_ms": 14.794,
+      "median_ms": 14.952
     },
     {
       "blocks": 90,
       "members": 59,
       "dof": 360,
-      "with_buckling_ms": 14.456,
-      "min_ms": 12.774,
-      "max_ms": 16.739,
-      "without_buckling_ms": 13.876,
-      "median_ms": 14.456
+      "with_buckling_ms": 22.711,
+      "min_ms": 20.896,
+      "max_ms": 30.141,
+      "without_buckling_ms": 22.069,
+      "median_ms": 22.711
     },
     {
       "blocks": 150,
       "members": 99,
       "dof": 600,
-      "with_buckling_ms": 24.696,
-      "min_ms": 22.024,
-      "max_ms": 28.135,
-      "without_buckling_ms": 23.99,
-      "median_ms": 24.696
+      "with_buckling_ms": 39.729,
+      "min_ms": 36.432,
+      "max_ms": 57.61,
+      "without_buckling_ms": 38.264,
+      "median_ms": 39.729
     },
     {
       "blocks": 300,
       "members": 199,
       "dof": 1200,
-      "with_buckling_ms": 47.181,
-      "min_ms": 44.102,
-      "max_ms": 51.88,
-      "without_buckling_ms": 45.328,
-      "median_ms": 47.181
+      "with_buckling_ms": 84.765,
+      "min_ms": 77.239,
+      "max_ms": 112.195,
+      "without_buckling_ms": 87.133,
+      "median_ms": 84.765
     }
   ],
   "transport": {
@@ -740,13 +740,13 @@
     "members": 86,
     "dof": 360,
     "rounds": 20,
-    "json_median_ms": 16.21,
-    "json_min_ms": 14.05,
+    "json_median_ms": 24.28,
+    "json_min_ms": 22.2,
     "json_reply_bytes": 491037,
-    "shm_median_ms": 2.4,
-    "shm_min_ms": 2.09,
+    "shm_median_ms": 3.9,
+    "shm_min_ms": 3.52,
     "shm_reply_bytes": 132536,
-    "saving_ms": 13.81,
-    "saving_pct": 85.2
+    "saving_ms": 20.37,
+    "saving_pct": 83.9
   }
 }
