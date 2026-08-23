@@ -51,7 +51,9 @@ jobs:
       # all agree with the tag being published.
       - name: Version consistency (tag vs jar vs mods.toml vs evidence)
         run: |
+          set -o pipefail
           v="${{ steps.v.outputs.version }}"
+          test -f dist/br-sidecar.exe || { echo "::error::dist/br-sidecar.exe is missing"; exit 1; }
           jar=$(ls dist/blockreality-*.jar)
           [ "$(basename "$jar")" = "blockreality-${v}.jar" ] || {
             echo "::error::tag says ${v} but dist ships $(basename "$jar")"; exit 1; }
@@ -78,7 +80,25 @@ jobs:
               print(f"::error::evidence has no engine provenance "
                     f"(commit={eng['commit']}, clean={eng['worktree_clean']}) (#47)")
               sys.exit(1)
-          print("evidence matches the shipped engine:", claimed[:12], eng["commit"][:12])
+          # Half the shipped engine is the Windows one, and until now nothing in this
+          # chain looked at it: not its hash, not even whether it was there. A build cut
+          # on a machine without mingw deleted it and published a Windows-less archive
+          # with every gate green (PR26_REVIEW A-7).
+          win = doc["identity"].get("binary_windows")
+          if not win or not win.get("sha256"):
+              print("::error::evidence has no identity.binary_windows — the record was "
+                    "generated without the Windows engine")
+              sys.exit(1)
+          hw = hashlib.sha256()
+          with open("dist/br-sidecar.exe", "rb") as f:
+              for chunk in iter(lambda: f.read(65536), b""):
+                  hw.update(chunk)
+          if win["sha256"] != hw.hexdigest():
+              print(f"::error::evidence verified windows binary {win['sha256'][:12]}... "
+                    f"but dist ships {hw.hexdigest()[:12]}...")
+              sys.exit(1)
+          print("evidence matches the shipped engines:", claimed[:12],
+                win["sha256"][:12], eng["commit"][:12])
           PY
 
       - name: Build archive

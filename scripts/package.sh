@@ -62,9 +62,22 @@ if command -v x86_64-w64-mingw32-g++ >/dev/null 2>&1; then
           -DFRAMECORE_DIR="$FRAMECORE_DIR" >/dev/null
     cmake --build "$ROOT/sidecar/build-win" --parallel >/dev/null
     cp "$ROOT/sidecar/build-win/br-sidecar.exe" "$STAGE/"
+elif [[ "${ALLOW_NO_WINDOWS:-0}" == "1" ]]; then
+    echo "==> skipping Windows build (ALLOW_NO_WINDOWS=1, no x86_64-w64-mingw32-g++)"
+    echo "    dist/br-sidecar.exe will NOT be in this build"
 else
-    echo "==> skipping Windows build (no x86_64-w64-mingw32-g++)"
-    echo "    apt-get install -y g++-mingw-w64-x86-64"
+    # Refusing is the whole point. dist/ is TRACKED, and the last two lines of this
+    # script are `rm -rf dist` and `mv stage dist` — so on a machine without mingw this
+    # used to DELETE the committed, already-verified br-sidecar.exe, and every gate in
+    # the repository stayed green afterwards: sha256sum -c regenerates over whatever is
+    # there, the release version check never looks at the .exe, and no acceptance suite
+    # names it. One `git add` and half the shipped product was gone (PR26_REVIEW A-7).
+    echo "no x86_64-w64-mingw32-g++ on PATH, and dist/ already ships a Windows engine." >&2
+    echo "Packaging here would delete it. Install the cross compiler:" >&2
+    echo "    apt-get install -y g++-mingw-w64-x86-64" >&2
+    echo "or, if you really mean to cut a Linux-only build:" >&2
+    echo "    ALLOW_NO_WINDOWS=1 scripts/package.sh ..." >&2
+    exit 1
 fi
 
 # -------------------------------------------------------------- evidence
@@ -85,6 +98,11 @@ exec "$WINE" "$STAGE/br-sidecar.exe" "\$@"
 WRAP
     chmod +x "$ROOT/.br-winewrap"
     EVIDENCE_ARGS+=(--windows "$ROOT/.br-winewrap")
+fi
+# Hashed even when wine is absent: the determinism section needs to RUN the Windows
+# engine, the identity section only needs to read its bytes.
+if [[ -f "$STAGE/br-sidecar.exe" ]]; then
+    EVIDENCE_ARGS+=(--windows-binary "$STAGE/br-sidecar.exe")
 fi
 FRAMECORE_DIR="$FRAMECORE_DIR" python3 "$ROOT/scripts/evidence.py" "${EVIDENCE_ARGS[@]}"
 rm -f "$ROOT/.br-winewrap"

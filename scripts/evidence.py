@@ -557,7 +557,7 @@ def sha256(path):
     return h.hexdigest()
 
 
-def identity(exe, framecore_dir):
+def identity(exe, framecore_dir, win_binary=None):
     # The engine checkout on this project's reference machine is a LINKED WORKTREE
     # created by Windows git, whose .git file stores an absolute Windows path
     # ("gitdir: C:/Users/..."). WSL git reads that as a relative path, fails, and
@@ -607,8 +607,11 @@ def identity(exe, framecore_dir):
 
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     files = {}
-    for rel in ("sidecar/main.cpp", "sidecar/json.hpp", "sidecar/verify.py",
-                "sidecar/CMakeLists.txt", "scripts/evidence.py"):
+    # shm.hpp was missing from this list while the shared-memory transport was the
+    # DEFAULT path — the record hashed the sources of the fallback and not of the one
+    # actually carrying the numbers.
+    for rel in ("sidecar/main.cpp", "sidecar/json.hpp", "sidecar/shm.hpp",
+                "sidecar/verify.py", "sidecar/CMakeLists.txt", "scripts/evidence.py"):
         p = os.path.join(root, rel)
         if os.path.exists(p):
             files[rel] = sha256(p)
@@ -622,6 +625,12 @@ def identity(exe, framecore_dir):
             "supernodal_lane": "compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT",
         },
         "binary": {"path": os.path.abspath(exe), "sha256": sha256(exe)},
+        # The Windows engine ships in the same archive and had NO hash anywhere in this
+        # record, so nothing tied it to the sources or to the release it went out with —
+        # not even a check that it existed (PR26_REVIEW A-7). ci.yml and release.yml both
+        # compare this field against dist/br-sidecar.exe.
+        "binary_windows": ({"path": os.path.abspath(win_binary), "sha256": sha256(win_binary)}
+                           if win_binary and os.path.exists(win_binary) else None),
         "sources": files,
         "host": {
             "platform": platform.platform(),
@@ -639,6 +648,11 @@ def main():
     win = None
     if "--windows" in sys.argv:
         win = sys.argv[sys.argv.index("--windows") + 1]
+    # --windows may name a wine WRAPPER, which is the right thing to EXECUTE and the
+    # wrong thing to hash. --windows-binary names the .exe itself.
+    win_binary = None
+    if "--windows-binary" in sys.argv:
+        win_binary = sys.argv[sys.argv.index("--windows-binary") + 1]
     framecore = os.environ.get("FRAMECORE_DIR",
                                "/home/user/architect_simulator/Plugins/FrameSolver/Source/FrameCore")
 
@@ -719,7 +733,7 @@ def main():
     transport = bench_transport.measure(exe)
 
     doc = {
-        "identity": identity(exe, framecore),
+        "identity": identity(exe, framecore, win_binary),
         "handshake": hello,
         "accuracy": {
             "cases": results,
@@ -797,6 +811,8 @@ def write_markdown(path, doc):
     L.append(f"| worktree clean | {ident['engine']['worktree_clean']} |")
     L.append(f"| solver lane | {ident['engine']['supernodal_lane']} |")
     L.append(f"| binary sha256 | `{ident['binary']['sha256']}` |")
+    if ident.get("binary_windows"):
+        L.append(f"| windows binary sha256 | `{ident['binary_windows']['sha256']}` |")
     L.append(f"| host | {ident['host']['platform']} |")
     L.append("")
     L.append("Source hashes:\n")
