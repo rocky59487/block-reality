@@ -49,7 +49,12 @@ import java.util.Optional;
  *                        not computed. Deliberately not called a safety factor — it is
  *                        the eigenvalue of the linear onset problem and therefore an
  *                        upper bound on the real critical load, not a margin.
- * @param unassigned  blocks no element could be extracted from
+ * @param unassigned  blocks this solve produced no element result for. Two causes, and
+ *                    the game side does not need to tell them apart: no element could be
+ *                    extracted (a lone block, a plate block closing no facet), or the
+ *                    structure they belong to is fully supported and therefore has no
+ *                    internal response to report (D-026). Either way there is nothing to
+ *                    draw on them, and a test load placed on one will be refused.
  */
 public record AnalysisResult(
         WorldRevision revision,

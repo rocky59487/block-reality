@@ -82,3 +82,10 @@ jobs:
         run: |
           chmod +x forge/gradlew
           cd forge && ./gradlew --no-daemon build
+
+      # Runs LAST because it reads gradle's JUnit XML, which only exists once both
+      # suites have run. Every check count quoted in a document is compared against
+      # what the suites actually printed — the defect this closes reached the public
+      # release body as "219 acceptance checks" when the real number was 218.
+      - name: quoted check counts match the suites
+        run: python3 scripts/check_docs.py dist/br-sidecar

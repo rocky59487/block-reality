@@ -13,7 +13,7 @@
 
 ![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A)
 ![Release v0.2a](https://img.shields.io/badge/release-v0.2a-3B82F6)
-![Verification](https://img.shields.io/badge/verification-151_engine_%2B_107_Java_checks-passing)
+![Verification](https://img.shields.io/badge/verification-251_engine_%2B_186_Java_checks-passing)
 [![License](https://img.shields.io/github/license/rocky59487/block-reality)](LICENSE)
 
 Block Reality is a structural analysis mod for Minecraft 1.20.1. Blocks placed in the
@@ -161,7 +161,15 @@ Right-click the air to change lens: Utilisation, Stress, Material.
 | `/br loads` | list every test load |
 | `/br scan [radius]` | re-read the chunks around you, default radius 4 — for blocks placed by command or WorldEdit |
 | `/br resolve` | force re-analysis |
-| `/br reset` | restart the engine after it has been disabled (OP only) |
+| `/br reset` | restart the engine after it has been disabled |
+
+The four commands that CHANGE something — `load`, `unload`, `scan`, `resolve` —
+and `reset` need operator level 2. In a single-player creative world you have it
+already; in survival or on a server without it those commands do not appear in the
+command tree at all. The Stress Glasses need no permission: they apply one
+configured, downward test load, which is a thing to do with the mod rather than a
+thing to do to the server. `/br load` takes an arbitrary vector of any magnitude,
+which is not.
 
 More cases — slabs, shear walls, slender column buckling, loads inside a member — are in
 [`QUICKSTART.md`](QUICKSTART.md).
@@ -187,11 +195,11 @@ critical load.
 
 | | |
 |---|---|
-| Engine | `sidecar/verify.py`, 219 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
-| Java | 184 tests, all passing (155 pure-Java, 29 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real |
+| Engine | `sidecar/verify.py`, 251 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
+| Java | 186 tests, all passing (155 pure-Java, 31 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real |
 | Closed form | 31 non-zero references, worst relative error 1.2e-14; 10 zero references, worst absolute residual 1.5e-08. (Two earlier releases quoted 1.6e-10 here — that floor turned out to be the old wire's 10-digit truncation, not the engine) |
 | Transport | numbers cross as raw little-endian doubles in shared memory, never textualised; the JSON fallback prints 17 significant digits. Gate: three representative solves bit-identical across both transports |
-| Shell convergence | clamped square plate at 20 elements per side: span moment 0.57%, recovered support moment 2.7% |
+| Shell convergence | clamped square plate: span moment 1.75% at 8 elements down to 0.28% at 20, observed convergence order 2.06; recovered support moment 2.7% at 20 |
 | Shear wall | h/w ≥ 5 agrees with beam theory to 1.4e-7 (shear flow) and ~1e-9 (overturning); h/w = 3 is 2.7e-5 / 6.8e-7; a square wall is a deep beam, where beam theory itself is the wrong model (1e-3 to 2e-2 is the reference's error) |
 | Buckling | single-element column against the textbook value, 1.6e-05; the 1/L² law, 2.3e-10 |
 | Determinism | 8/8 cases byte-for-byte identical, Linux native against the Windows cross-build |
@@ -364,7 +372,12 @@ HUD 因此以文字標明拉壓，不要求從顏色反推。
 | `/br loads` | 列出所有測試荷載 |
 | `/br scan [半徑]` | 重讀你周圍的區塊，預設半徑 4——供指令或 WorldEdit 放置的方塊使用 |
 | `/br resolve` | 強制重新分析 |
-| `/br reset` | 引擎被停用後重新啟動（需 OP） |
+| `/br reset` | 引擎被停用後重新啟動 |
+
+會改動狀態的四條指令——`load`、`unload`、`scan`、`resolve`——以及 `reset` 需要
+OP 權限 2。單人創造世界本來就有；生存模式或未開作弊、以及伺服器上非 OP 的玩家，
+這幾條連指令樹都不會出現。**應力眼鏡不需要任何權限**：它施加的是一個設定好的
+向下測試荷載，屬於玩法動作；`/br load` 可以給任意方向、任意大小的向量，不是。
 
 更多案例——樓板、剪力牆、細長柱的挫屈、構件中段加載——見 [`QUICKSTART.md`](QUICKSTART.md)。
 
@@ -383,11 +396,11 @@ fallback 與除錯面）。wire 上的每一個力學數值都是引擎函式的
 
 | | |
 |---|---|
-| 引擎 | `sidecar/verify.py` 219 項全過，每一項都對閉合解、不依賴求解器的不變量,或傳輸等價 oracle |
-| Java | 184 項測試全過（純 Java 155、Forge 側 29），其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore |
+| 引擎 | `sidecar/verify.py` 251 項全過，每一項都對閉合解、不依賴求解器的不變量,或傳輸等價 oracle |
+| Java | 186 項測試全過（純 Java 155、Forge 側 31），其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore |
 | 對閉合解 | 31 項非零參考，最差相對誤差 1.2e-14；10 項零參考，最差絕對殘差 1.5e-08。（前兩版在這裡引用的 1.6e-10,後來查明是舊 wire 的 10 位截斷,不是引擎） |
 | 傳輸 | 數值以 raw little-endian double 走共用記憶體,從不文字化;JSON fallback 印 17 位有效數字。gate:三個代表案兩種傳輸逐位元相同 |
-| 板元素收斂 | 固端方形板每邊 20 元素：跨中彎矩 0.57%，還原後的支承彎矩 2.7% |
+| 板元素收斂 | 固端方形板：跨中彎矩 8 元素 1.75%、20 元素 0.28%，實測收斂階 2.06；還原後的支承彎矩 20 元素 2.7% |
 | 剪力牆 | h/w ≥ 5 對梁理論：剪力流 1.4e-7、傾覆 ~1e-9；h/w = 3 是 2.7e-5 / 6.8e-7；方形牆是深樑，樑理論本身不適用（1e-3 至 2e-2 是參考模型的誤差） |
 | 線性挫屈 | 單元素柱對課本值 1.6e-05；1/L² 關係 2.3e-10 |
 | 跨平台決定性 | 8/8 逐位元相同，Linux 原生對 Windows 交叉編譯 |

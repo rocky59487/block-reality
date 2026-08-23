@@ -214,8 +214,10 @@ struct QuadSeg {
 //   * zero free axes   — plate blocks stacked into a SOLID. A solid is not a shell, and
 //                        meshing it as three intersecting sheets would triple its mass
 //                        and its stiffness. That is the grillage bug in another costume.
-// Each refused block comes back as `unassigned`, so the game side can say why nothing
-// appeared instead of leaving a floor that silently carries no load.
+// Each block this solve produces no element result for comes back as `unassigned`, so the
+// game side can say why nothing appeared instead of leaving a floor that silently carries
+// no load. Two causes share the field, deliberately (D-026): no element could be extracted,
+// or the structure it belongs to is fully supported and has no internal response to report.
 int sheetNormalAxis(const std::map<BlockPos, InBlock>& grid, const BlockPos& p, const InBlock& b) {
     int free = 0, axis = -1;
     for (int a = 0; a < 3; ++a) {

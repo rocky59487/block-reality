@@ -53,7 +53,7 @@ TABLE = [
     ("docs/outreach/OUTREACH.md", r"record\. (\d+) acceptance", "ENGINE"),
     ("docs/outreach/OUTREACH.md", r"\((\d+) closed-form acceptance checks per build", "ENGINE"),
     ("docs/outreach/COMMUNITY.md", r"gimmick: (\d+) acceptance checks", "ENGINE"),
-    ("docs/outreach/COMMUNITY.md", r"\((\d+) 項閉合解", "ENGINE"),
+    ("docs/outreach/COMMUNITY.md", r"、(\d+) 項閉合解", "ENGINE"),
     ("docs/outreach/FUNDING.md", r"\*\*:(\d+) 項閉合解 gate", "ENGINE"),
     ("sidecar/README.md", r"\*\*，(\d+) 項 gate 兩邊全過", "ENGINE"),
     ("sidecar/README.md", r"Wine 實測 (\d+) 項全過", "ENGINE"),

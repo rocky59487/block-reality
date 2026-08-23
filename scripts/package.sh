@@ -104,6 +104,21 @@ fi
 if [[ -f "$STAGE/br-sidecar.exe" ]]; then
     EVIDENCE_ARGS+=(--windows-binary "$STAGE/br-sidecar.exe")
 fi
+# Cross-platform determinism WITHOUT wine, and with better evidence than wine gives:
+# the .exe run natively on Windows, its replies recorded, compared here byte for byte.
+# The file is used only when its header names the binary that was just built, so it can
+# never turn into a stale agreement. See docs/RELEASING.md for the three-step order.
+REPLIES="$ROOT/evidence/replies-windows.jsonl"
+if [[ -f "$STAGE/br-sidecar.exe" && -f "$REPLIES" ]]; then
+    want=$(sha256sum "$STAGE/br-sidecar.exe" | cut -d' ' -f1)
+    have=$(head -1 "$REPLIES" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("sha256",""))')
+    if [[ "$want" == "$have" ]]; then
+        EVIDENCE_ARGS+=(--replies "$REPLIES")
+    else
+        echo "    (evidence/replies-windows.jsonl is for another binary; determinism will be"
+        echo "     unchecked in this record — see docs/RELEASING.md)"
+    fi
+fi
 FRAMECORE_DIR="$FRAMECORE_DIR" python3 "$ROOT/scripts/evidence.py" "${EVIDENCE_ARGS[@]}"
 rm -f "$ROOT/.br-winewrap"
 # The record stays in evidence/ and is NOT copied into dist/. The archive is what a

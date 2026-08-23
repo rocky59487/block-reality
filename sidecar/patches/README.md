@@ -36,6 +36,6 @@ cmake -S Plugins/FrameSolver/Standalone -B build-frametest -DCMAKE_BUILD_TYPE=Re
       -DEIGEN_DIR=/usr/include/eigen3 "-DCMAKE_CXX_FLAGS=-DFRAMECORE_SUPERNODAL=0"
 cmake --build build-frametest --parallel && build-frametest/frametest
 
-# 本專案的 151 項 gate(建出 sidecar 後)
+# 本專案的 251 項 gate(建出 sidecar 後)
 python3 sidecar/verify.py <path-to-br-sidecar>
 ```

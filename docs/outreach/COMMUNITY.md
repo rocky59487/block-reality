@@ -30,7 +30,7 @@
 > named, and a linear buckling factor — so a slender column that "looks fine" on
 > stress tells you it is about to fold anyway.
 >
-> Not a physics gimmick: 164 acceptance checks against textbook closed forms run on
+> Not a physics gimmick: 251 acceptance checks against textbook closed forms run on
 > every build (worst relative error 1.2e-14), and the full verification record is
 > public in the repository. Honest about its limits too — everything is linear
 > elastic, and the section catalogue says "solid rectangle" because that is what is
@@ -57,7 +57,7 @@
 > **Title:** I put a real finite-element solver inside Minecraft — stress contours,
 > demand/capacity, and buckling on the blocks you place [Forge 1.20.1]
 >
-> 內文骨架:GIF 開場 → 兩段講「是真 FEA 不是換皮」(引擎外掛程序、164 項閉合解
+> 內文骨架:GIF 開場 → 兩段講「是真 FEA 不是換皮」(引擎外掛程序、251 項閉合解
 > gate、挫屈的教學點)→ 誠實限制(彈性、無 RC)→ 下載連結 + 「想聽你們想拿它
 > 蓋什麼/壓垮什麼」。
 

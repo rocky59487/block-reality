@@ -3,6 +3,21 @@
 一次發版產出一個檔案：`blockreality-<version>.zip`。裡面是 `dist/` 的完整內容，
 使用者解開後執行 `install.bat` 或 `install.sh` 就完成安裝。
 
+## 跨平台決定性：三步，因為沒有 wine 也要做得到
+
+`evidence.py --windows <wine 包裝>` 是舊路。**在 Windows 上原生跑那顆 .exe 是更強的證據**,
+而且不需要 wine。順序：
+
+1. WSL：`scripts/package.sh <FrameCore 路徑>` —— 建出兩顆引擎、跑完 gate、組出 `dist/`。
+   若 `evidence/replies-windows.jsonl` 對不上這次建的 .exe,determinism 會誠實地留白。
+2. Windows：`python scripts\evidence.py dist\br-sidecar.exe --emit-replies evidence\replies-windows.jsonl`
+3. WSL：`python3 scripts/evidence.py dist/br-sidecar --windows-binary dist/br-sidecar.exe --replies evidence/replies-windows.jsonl`
+
+第 3 步只重生 `evidence/`,不動 `dist/`,所以 `SHA256SUMS.txt` 仍然有效。
+
+reply 檔的第一行記著產生它那顆二進位的 sha256,對不上就**拒絕**——否則一個過期的
+reply 檔會變成一組偽造的「8/8 相同」。
+
 ## 重新打包（需要 FrameCore）
 
 `br-sidecar` 靜態連結 FrameCore，而 FrameCore 是本倉庫不收錄的外部 source
