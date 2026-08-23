@@ -21,6 +21,7 @@
   "br.load.added": "Test load applied (%s kN down)",
   "br.load.removed": "Test load removed",
   "br.engine.unavailable": "Structural analysis unavailable: %s",
+  "br.engine.refused": "The engine could not solve this: %s",
   "br.hud.engine_off": "Analysis disabled in config",
   "br.hud.stale": "stale — world changed since this was computed",
   "br.hud.truncated": "overlay incomplete — showing %s of %s members, %s of %s facets",

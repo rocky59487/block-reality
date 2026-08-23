@@ -14,6 +14,7 @@ import com.blockreality.core.render.StressRibbon;
 import com.blockreality.core.render.StressRibbonBuilder;
 import com.blockreality.impl.BlockRealityMod;
 import com.blockreality.impl.net.AnalysisPendingPacket;
+import com.blockreality.core.sidecar.SidecarClient;
 import com.blockreality.impl.net.EngineStatusPacket;
 import com.blockreality.impl.net.StressResultPacket;
 import net.minecraft.client.Minecraft;
@@ -261,13 +262,21 @@ public final class ClientStressState {
     public static void acceptStatus(EngineStatusPacket p) {
         engineStatus = p.status();
         engineDetail = p.detail();
-        // The old ribbons are kept and the HUD says the engine is unavailable. Clearing
-        // them would look identical to "this structure is unstressed", which is a
-        // different and much more reassuring claim than the truth.
+        // The old ribbons are kept either way. Clearing them would look identical to
+        // "this structure is unstressed", which is a different and much more reassuring
+        // claim than the truth.
+        //
+        // Two different things arrive on this packet and they were saying the same
+        // sentence. A HEALTHY engine that refused THIS MODEL — a load on a block that
+        // forms no element, an unknown token — is not an unavailable engine, and telling
+        // the player it is sends them to look at their install while /br status prints a
+        // green READY next to it (PR26_REVIEW DF-04). The status field already
+        // distinguishes them; only the message did not.
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null) {
-            mc.player.displayClientMessage(
-                    Component.translatable("br.engine.unavailable", p.detail()), true);
+            String key = SidecarClient.Status.READY.name().equals(p.status())
+                    ? "br.engine.refused" : "br.engine.unavailable";
+            mc.player.displayClientMessage(Component.translatable(key, p.detail()), true);
         }
     }
 

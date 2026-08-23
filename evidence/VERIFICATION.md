@@ -290,16 +290,16 @@ one warm-up; the cold process start is excluded because it happens once.
 
 | blocks | members | DOF | default (ms) | min | max | ms/member | no buckling (ms) | buckling |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 3 | 1 | 12 | 0.296 | 0.271 | 0.463 | 0.296 | 0.27 | x1.10 |
-| 6 | 3 | 24 | 0.74 | 0.665 | 0.896 | 0.247 | 0.661 | x1.12 |
-| 15 | 9 | 60 | 2.01 | 1.906 | 2.422 | 0.223 | 1.888 | x1.06 |
-| 30 | 19 | 120 | 4.142 | 3.974 | 4.994 | 0.218 | 4.049 | x1.02 |
-| 60 | 39 | 240 | 8.964 | 8.136 | 9.696 | 0.230 | 8.434 | x1.06 |
-| 90 | 59 | 360 | 13.319 | 12.181 | 16.255 | 0.226 | 13.028 | x1.02 |
-| 150 | 99 | 600 | 22.382 | 21.447 | 24.844 | 0.226 | 25.043 | x0.89 |
-| 300 | 199 | 1200 | 49.524 | 45.578 | 56.727 | 0.249 | 47.153 | x1.05 |
+| 3 | 1 | 12 | 0.302 | 0.262 | 0.62 | 0.302 | 0.271 | x1.11 |
+| 6 | 3 | 24 | 0.68 | 0.638 | 0.829 | 0.227 | 0.749 | x0.91 |
+| 15 | 9 | 60 | 1.913 | 1.848 | 2.255 | 0.213 | 1.787 | x1.07 |
+| 30 | 19 | 120 | 4.069 | 3.799 | 4.795 | 0.214 | 3.835 | x1.06 |
+| 60 | 39 | 240 | 8.739 | 8.135 | 9.619 | 0.224 | 8.53 | x1.02 |
+| 90 | 59 | 360 | 13.173 | 12.234 | 14.383 | 0.223 | 12.071 | x1.09 |
+| 150 | 99 | 600 | 23.114 | 20.571 | 26.268 | 0.233 | 23.396 | x0.99 |
+| 300 | 199 | 1200 | 44.413 | 41.425 | 49.059 | 0.223 | 46.077 | x0.96 |
 
-At 199 members the whole round trip is 49.5 ms,
+At 199 members the whole round trip is 44.4 ms,
 against a Minecraft tick of 50 ms — and the solve does not run on the tick
 thread, so this is latency to a result rather than time taken from the game.
 
@@ -311,10 +311,10 @@ difference is the transport.
 
 | wire | median (ms) | min (ms) | reply size |
 |---|---:|---:|---:|
-| JSON lines | 14.32 | 13.89 | 491037 bytes over the pipe |
-| shared memory | 2.24 | 2.1 | 132536 bytes in the region, ~60-byte doorbell |
+| JSON lines | 15.85 | 14.12 | 491037 bytes over the pipe |
+| shared memory | 2.4 | 2.04 | 132536 bytes in the region, ~60-byte doorbell |
 
-Transport saving: 12.09 ms per solve (84.4%).
+Transport saving: 13.45 ms per solve (84.9%).
 Measured by `scripts/bench_transport.py`, imported and run by this script
 so the record regenerates with everything else.
 

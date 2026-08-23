@@ -395,9 +395,17 @@ public final class StressResultPacket {
             // strictly worse and strictly bigger.
             List<StressStation> stations = field.map(f -> f.stations(STATIONS)).orElse(List.of());
 
+            // The member's end forces are the SAME two objects the field carries — the
+            // server builds both from one pair (ProtocolCodec) — so they are taken from
+            // the decoded field rather than left at zero. They used to be ZERO here, and
+            // nothing read them, which is exactly why it survived: a public record
+            // component that silently becomes 0.0 after a network trip is a trap for the
+            // next caller, not a saving. Found by the display-track pipeline gate.
             members.add(new MemberSnapshot(id, "", section, field.map(StressFieldSpec::lengthMm).orElse(0.0),
                     dc, fibre, nearestStation(stations, governingXmm),
-                    EndForces.ZERO, EndForces.ZERO, blocks, stations, field));
+                    field.map(StressFieldSpec::endI).orElse(EndForces.ZERO),
+                    field.map(StressFieldSpec::endJ).orElse(EndForces.ZERO),
+                    blocks, stations, field));
         }
 
         int nShells = count(buf.readVarInt(), MAX_SHELLS, "shells");

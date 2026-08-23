@@ -89,6 +89,109 @@ class StressResultPacketTest {
         return out;
     }
 
+    // ------------------------------------------------------------------ INV-5
+    // The display track's budget, measured on the PIPELINE rather than on the
+    // language. `DisplayTrackPrecisionTest` pins the budget itself — that one double
+    // → float → double step cannot exceed 1e-5 — but it imports nothing from this
+    // project, so on its own it says nothing about whether the packet carries the
+    // numbers the server computed. Five separate review passes made the same point
+    // (PR26_REVIEW MECH-10), and they were right: "invariant 5 has an executable
+    // gate" was a claim about a test of IEEE-754.
+    //
+    // This is the gate that claim needs. Every double the server put in is compared
+    // against the double the client gets out, over the WHOLE packet, found by walking
+    // the record components rather than by listing them — so a field added later is
+    // covered without anyone remembering to add it here.
+
+    private static final double DISPLAY_REL_BUDGET = 1e-5;
+
+    /** Awkward values across every magnitude the pipeline carries, never round. */
+    private static double awkward(int k) {
+        double[] mant = { 1.2345678901234, Math.PI / 3, 9.8765432109, 6.02214076 };
+        return mant[Math.floorMod(k, 4)] * Math.pow(10, (k % 17) - 6) * (k % 3 == 0 ? -1 : 1);
+    }
+
+    private static StressFieldSpec awkwardField(int k) {
+        return new StressFieldSpec(
+                new Vec3d(awkward(k), awkward(k + 1), awkward(k + 2)),
+                new Vec3d(1, 0, 0), new Vec3d(0, 1, 0), new Vec3d(0, 0, 1),
+                4000,
+                awkward(k + 3), awkward(k + 4), awkward(k + 5), awkward(k + 6), awkward(k + 7),
+                awkward(k + 8), awkward(k + 9),
+                new EndForces(awkward(k + 10), awkward(k + 11), awkward(k + 12),
+                        awkward(k + 13), awkward(k + 14), awkward(k + 15)),
+                new EndForces(awkward(k + 16), awkward(k + 17), awkward(k + 18),
+                        awkward(k + 19), awkward(k + 20), awkward(k + 21)));
+    }
+
+    @Test
+    void everyNumberTheClientDrawsIsWithinTheDisplayBudgetOfTheServersOwn() throws Exception {
+        List<MemberSnapshot> members = new ArrayList<>();
+        for (int i = 1; i <= 4; i++) {
+            StressFieldSpec f = awkwardField(i * 7);
+            members.add(new MemberSnapshot(i, "steel", "steel_rect_200x400", 4000,
+                    0.37 * i, GoverningFibre.CRUSH, 5, f.endI(), f.endJ(),
+                    List.of(new BlockKey(i, 64, 0)), f.stations(11), Optional.of(f)));
+        }
+        AnalysisResult r = result(members, List.of(shell(1, 0.1)), 1.48, 4, "member", 3.75);
+
+        StressResultPacket in = StressResultPacket.of(r, DIM);
+        StressResultPacket out = roundTrip(in);
+        assertTrue(out.valid(), out.invalidReason());
+        assertEquals(in.members().size(), out.members().size());
+
+        List<String> over = new ArrayList<>();
+        for (int i = 0; i < in.members().size(); i++) {
+            compareDoubles("member[" + i + "]", in.members().get(i), out.members().get(i), over);
+        }
+        for (int i = 0; i < in.shells().size(); i++) {
+            compareDoubles("shell[" + i + "]", in.shells().get(i), out.shells().get(i), over);
+        }
+        assertTrue(over.isEmpty(), "display track budget violated (invariant 5):\n"
+                + String.join("\n", over));
+        // ...and the walk must actually have looked at something, or an empty
+        // comparison would pass for the wrong reason.
+        assertTrue(compared.get() > 200, "only " + compared.get() + " numbers compared");
+    }
+
+    private static final java.util.concurrent.atomic.AtomicInteger compared =
+            new java.util.concurrent.atomic.AtomicInteger();
+
+    /** Walks two values of the same shape, comparing every double it reaches. */
+    private static void compareDoubles(String path, Object a, Object b, List<String> over)
+            throws Exception {
+        if (a == null || b == null) return;
+        if (a instanceof Double || a instanceof Float) {
+            double x = ((Number) a).doubleValue(), y = ((Number) b).doubleValue();
+            compared.incrementAndGet();
+            if (x == y) return;
+            double rel = Math.abs(y - x) / Math.max(Math.abs(x), Double.MIN_NORMAL);
+            if (!(rel <= DISPLAY_REL_BUDGET)) {
+                over.add(String.format("%s: server %.17g, client %.17g, rel %.3g", path, x, y, rel));
+            }
+            return;
+        }
+        if (a instanceof Optional<?> oa && b instanceof Optional<?> ob) {
+            if (oa.isPresent() && ob.isPresent()) {
+                compareDoubles(path, oa.get(), ob.get(), over);
+            }
+            return;
+        }
+        if (a instanceof List<?> la && b instanceof List<?> lb) {
+            for (int i = 0; i < Math.min(la.size(), lb.size()); i++) {
+                compareDoubles(path + "[" + i + "]", la.get(i), lb.get(i), over);
+            }
+            return;
+        }
+        if (a.getClass().isRecord() && a.getClass() == b.getClass()) {
+            for (java.lang.reflect.RecordComponent rc : a.getClass().getRecordComponents()) {
+                rc.getAccessor().setAccessible(true);
+                compareDoubles(path + "." + rc.getName(),
+                        rc.getAccessor().invoke(a), rc.getAccessor().invoke(b), over);
+            }
+        }
+    }
+
     @Test
     void roundTripPreservesTheDrawableResult() {
         AnalysisResult r = result(List.of(member(1, 0.25, 5)), List.of(shell(1, 0.1)),

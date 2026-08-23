@@ -107,6 +107,11 @@
 
 Java 側：
 
+- `StressResultPacketTest.everyNumberTheClientDrawsIsWithinTheDisplayBudgetOfTheServersOwn`
+  —— 不變式 5 的**管線** gate。原本被當成這個角色的 `DisplayTrackPrecisionTest` 零專案 import,
+  它驗的是 IEEE-754 的性質而不是這個封包（MECH-10,五個維度各自抓到）。新 gate 走 record
+  component 反射比對整包每一個 double,所以之後新增欄位自動被涵蓋。**它第一次執行就抓到
+  一個真缺陷**:`MemberSnapshot.endI/endJ` 過網路後被靜默歸零（沒有人讀,所以活了下來）
 - `SnapshotLoadsTest` 兩條新 case — 荷載落在「有收進但形不成元素」的方塊上時,由無荷載 probe 的 `unassigned` 指認;未被加載的 unassigned 方塊不得被牽連
 
 ### 2026-08-20 新增的 Java 側 gate（6.2/6.3/6.4 落地）
