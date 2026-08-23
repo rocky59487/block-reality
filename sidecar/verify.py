@@ -15,9 +15,18 @@ BLOCK_MM = 1000.0
 G = 9.81
 
 fails = []
+# Checks are COUNTED here, and the count is printed with the verdict. Every number
+# quoted in a document or a release body has to come from that line, because a
+# human counting `grep -c PASS` counts the trailing "ALL PASS" too: that off-by-one
+# shipped as "219" across two generations of documents and reached the public
+# release body (PR26_REVIEW A-8 / DOC-1). One counter, one printed number, no
+# second source.
+total = 0
 
 
 def check(tag, got, expect, tol):
+    global total
+    total += 1
     # A zero reference has no relative error: |got| is compared ABSOLUTELY against
     # tol. The old formula divided by 1e-30, which silently turned every zero-
     # reference line into an exact-zero assertion and made the caller's tolerance
@@ -37,6 +46,8 @@ def check(tag, got, expect, tol):
 
 
 def check_true(tag, cond, detail=""):
+    global total
+    total += 1
     if not cond:
         fails.append(tag)
     print(f"  {'[PASS]' if cond else '[FAIL]'} {tag:<38} {detail}")
@@ -71,6 +82,12 @@ class Sidecar:
         except Exception:
             pass
         self.p.wait(timeout=5)
+
+
+def grounded_end(mem, nd, n):
+    """True when member end `nd` sits on one of the run's two grounded ends."""
+    xs = [b[0] for b in mem["blocks"]]
+    return (min(xs) if nd == "i" else max(xs)) in (0, n - 1)
 
 
 def beam_blocks(n, mat="steel", section="steel_rect_200x400", y=64):
@@ -693,11 +710,27 @@ def main():
     G_MM = 9810.0
     q_plate = T_RHO * T_T * G_MM * 1e-12          # N/mm^2, the slab's own weight
 
-    # The tabulated centre coefficient 0.0231 is for nu = 0.3. At the centre of a square
-    # clamped plate the two curvatures are equal by symmetry, so M = D*k*(1+nu) and the
-    # coefficient rescales as (1+nu)/1.3. The EDGE coefficient does not: the tangential
-    # curvature vanishes along a clamped edge, so M_edge = -D*w,nn is nu-free.
-    C_CENTRE = 0.0231 / 1.3 * (1 + T_NU)
+    # Clamped-plate coefficients. At the centre of a square clamped plate the two
+    # curvatures are equal by symmetry, so M = D*k*(1+nu) and the coefficient rescales
+    # as (1+nu)/1.3 from its nu = 0.3 value. The EDGE coefficient does not: the
+    # tangential curvature vanishes along a clamped edge, so M_edge = -D*w,nn is nu-free.
+    #
+    # THE CENTRE COEFFICIENT IS NOT THE TABULATED ONE. Timoshenko Table 35 and Roark
+    # Table 11.4 case 8a both give 0.0231. A 13-point finite-difference solution of the
+    # biharmonic at n = 20/40/80 with Richardson extrapolation gives 0.02290512 — and the
+    # same run reproduces the other two entries of that table to every printed digit
+    # (w_max 0.00126532 vs 0.00126, M_edge -0.0513338 vs -0.0513). Two of three agree,
+    # one does not, and the one that does not is 0.85% out: three-digit rounding can only
+    # carry +-0.217%. Independent spectral and Ritz solutions agree with the FD value, and
+    # so does this project's own MITC4 under Richardson extrapolation. The table entry is
+    # wrong, and changing textbooks does not help because both trace to the same source.
+    #
+    # Consequence, logged rather than smoothed over (iron rule 3): three checks that were
+    # green against 0.0231 go red against the true value. Nothing got worse — they were
+    # being compared against a reference 0.85% off in the direction that flatters a coarse
+    # mesh. The line move is registered in docs/GATES.md.
+    C_CENTRE_NU30 = 0.0229051
+    C_CENTRE = C_CENTRE_NU30 / 1.3 * (1 + T_NU)
     C_EDGE = 0.0513
 
     def slab(n, y=64, mat="concrete", plate="concrete_slab_200", clamped=True):
@@ -755,21 +788,31 @@ def main():
     # membrane and bending blocks are coupled where they must not be.
     check("no membrane force under transverse load", sh0["N"]["xx"], 0.0, 1e-30)
 
-    print("\n[S4] clamped plate: span moment vs Timoshenko, and it converges")
-    prev_err = None
-    for nn in (9, 13):
+    print("\n[S4] clamped plate: span moment vs the biharmonic solution, and its ORDER")
+    # A single "within 1%" line on one mesh says almost nothing: it can be met by a
+    # discretisation that is right by luck and broken in its convergence. What is
+    # actually claimed here is second-order convergence, so that is what is gated —
+    # the per-mesh lines below are the measured errors with headroom, and the ratio
+    # check is the real content. Against the corrected reference the errors form a
+    # clean O(h^2) sequence with no floor; the "convergence floor" the previous
+    # evidence record described was an artefact of the wrong reference constant,
+    # not a property of MITC4.
+    errs = {}
+    for nn, line in ((9, 0.020), (13, 0.010), (21, 0.004)):
         rr = sc.call({"op": "solve", "revision": 60 + nn, "blocks": slab(nn), "loads": []})
         aa = (nn - 1) * BLOCK_MM
         c = (nn - 1) / 2.0 * BLOCK_MM + BLOCK_MM / 2.0
         got = corner_moment(rr, c, c, 0)
         ref = C_CENTRE * q_plate * aa * aa
         err = abs(abs(got) - ref) / ref
-        check_true(f"span moment within 1% at {nn - 1} elements", err < 0.01,
+        errs[nn - 1] = err
+        check_true(f"span moment within {line * 100:.1f}% at {nn - 1} elements", err < line,
                    f"got={got:.1f} ref={-ref:.1f} err={err * 100:.2f}%")
-        if prev_err is not None:
-            check_true("and it got better with more elements", err < prev_err,
-                       f"{prev_err * 100:.2f}% -> {err * 100:.2f}%")
-        prev_err = err
+    # p from two mesh pairs. h halves as the element count doubles, so the error ratio
+    # between two meshes is (n2/n1)^p, and p is the property actually being claimed.
+    for na, nb in ((8, 12), (12, 20)):
+        p_obs = math.log(errs[na] / errs[nb]) / math.log(nb / na)
+        check(f"convergence order {na}->{nb} elements", p_obs, 2.0, 0.075)
 
     print("\n[S5] support moment is recovered, not read")
     # Corner-sampled MITC4 moments are not superconvergent and are badly LOW at a clamped
@@ -920,12 +963,15 @@ def main():
         # This pins the first; the vm ratio checks below pin the second.
         check(f"{tag}: self weight = rho*t*g*area", rr["equilibrium"]["applied"][1],
               -q * a9 * a9, 1e-12)
-        # Timoshenko centre coefficient at this material's nu (edge coefficient is
-        # nu-free, centre rescales by (1+nu)/1.3 — same derivation as C_CENTRE).
+        # Centre coefficient at this material's nu: the edge coefficient is nu-free, the
+        # centre rescales by (1+nu)/1.3 from the same corrected 0.0229051 base as C_CENTRE.
         got = corner_moment(rr, c9, c9, 0)
-        ref = 0.0231 / 1.3 * (1 + nu) * q * a9 * a9
+        ref = C_CENTRE_NU30 / 1.3 * (1 + nu) * q * a9 * a9
         err = abs(abs(got) - ref) / ref
-        check_true(f"{tag}: centre span moment within 1%", err < 0.01,
+        # 8 elements, so the same 2.0% line S4 measures there. This gate pins the TOKEN —
+        # thickness, density, nu — which move the answer by tens of percent. It is not a
+        # second, weaker convergence claim.
+        check_true(f"{tag}: centre span moment within 2%", err < 0.020,
                    f"got={got:.4g} ref={ref:.4g} err={err * 100:.2f}%")
         return rr
 
@@ -1000,6 +1046,157 @@ def main():
     check("brick pier D/C = rho*g*L / Rcomp", rb15["members"][0]["dc"], sigma_base / 10.0, 1e-6)
     check_true("brick pier governs in CRUSH",
                rb15["members"][0]["governingFibre"] == "CRUSH", rb15["members"][0]["governingFibre"])
+
+    # ------------------------------------------------ C16: the other steel section
+    # steel_rect_150x300 had a block and a README line claiming "every token is gated
+    # against a closed form", and was the one token appearing in no check in this file
+    # and no Java test (PR26_REVIEW R-02). Same cantilever as C1, its own section.
+    print("\n[C16] steel_rect_150x300 against the cantilever closed form")
+    b16, d16 = 150.0, 300.0
+    n16 = 5
+    L16 = (n16 - 1) * BLOCK_MM
+    w16 = 7850.0 * (b16 * d16) * 1e-9 * G
+    P16 = 15000.0
+    r16 = sc.call({"op": "solve", "revision": 16,
+                   "blocks": beam_blocks(n16, section="steel_rect_150x300"),
+                   "loads": [{"x": n16 - 1, "y": 64, "z": 0, "fy": -P16}]})
+    check_true("ok", r16.get("ok") is True, r16.get("error", ""))
+    m16 = r16["members"][0]
+    root16 = math.hypot(m16["i"]["My"], m16["i"]["Mz"])
+    check("150x300 root moment", root16, P16 * L16 + w16 * L16 * L16 / 2.0, 1e-6)
+    check("150x300 D/C vs hand screen", m16["dc"],
+          (root16 / (b16 * d16 * d16 / 6.0)) / 350.0, 1e-6)
+
+    # ============================================================== JOINTS =====
+    # Two runs of DIFFERENT materials that touch face to face are one structure
+    # (MEMBER_SEMANTICS 7.4 rule 2, 7.6). They were not: runs break at a change of
+    # material, nothing else joined them, and a timber beam on brick piers came back as
+    # three islands with the beam's one unsupported. The beam then left the answer
+    # entirely - no member row, no self weight in `applied`, and a load a player put on
+    # it reported ok:true with nothing moved (PR26_REVIEW A-1).
+    print("\n[J1] a timber beam on brick piers is ONE structure")
+
+    def piers_and_beam(gap=0):
+        bl = []
+        for x in (0, 4):
+            for h in range(3):
+                bl.append({"x": x, "y": 64 + h, "z": 0, "mat": "brick",
+                           "section": "brick_rect_230x350", "support": h == 0})
+        for x in range(5):
+            bl.append({"x": x, "y": 67 + gap, "z": 0, "mat": "timber",
+                       "section": "timber_rect_140x240", "support": False})
+        return bl
+
+    rj = sc.call({"op": "solve", "revision": 200, "blocks": piers_and_beam(), "loads": []})
+    check_true("ok", rj.get("ok") is True, rj.get("error", ""))
+    check_true("one island, not three", rj.get("islands") == 1, f"islands={rj.get('islands')}")
+    check_true("not a mechanism", rj.get("singular") is False, rj.get("diagnostic", ""))
+    check_true("three members", len(rj.get("members", [])) == 3,
+               f"members={len(rj.get('members', []))}")
+    check_true("nothing unassigned", len(rj.get("unassigned", [])) == 0,
+               str(rj.get("unassigned")))
+    # Self weight of ALL THREE members, computed here from the catalogue. The beam's
+    # 791 N is the term that used to be missing: it was solved, found itself alone in a
+    # singular island, and was dropped before `applied` was summed.
+    a_br, a_ti = 230.0 * 350.0, 140.0 * 240.0
+    w_piers = 2 * 1800.0 * a_br * 3000.0 * 1e-9 * G     # each pier ends ON the beam node
+    w_beam = 600.0 * a_ti * 4000.0 * 1e-9 * G
+    check("self weight includes the beam", -rj["equilibrium"]["applied"][1],
+          w_piers + w_beam, 1e-9)
+
+    # ...and a load a player hangs on that beam is CARRIED, not swallowed.
+    rjl = sc.call({"op": "solve", "revision": 201, "blocks": piers_and_beam(),
+                   "loads": [{"x": 2, "y": 67, "z": 0, "fy": -500000.0}]})
+    check_true("ok", rjl.get("ok") is True, rjl.get("error", ""))
+    check("a 500 kN load on the beam reaches `applied`",
+          -rjl["equilibrium"]["applied"][1], w_piers + w_beam + 500000.0, 1e-9)
+    check_true("and it moves the answer", rjl.get("maxDC", 0) > 10 * rj.get("maxDC", 0),
+               f"{rj.get('maxDC')} -> {rjl.get('maxDC')}")
+
+    # The negative control: the SAME beam one block higher touches nothing. Sharing a
+    # node must need face adjacency, not proximity - a rule that connects everything
+    # near everything is not a fix, it is a different wrong answer.
+    rjf = sc.call({"op": "solve", "revision": 202, "blocks": piers_and_beam(gap=1), "loads": []})
+    check_true("a beam that touches nothing is still its own island",
+               rjf.get("islands") == 3 and rjf.get("singularIslands") == 1,
+               f"islands={rjf.get('islands')} singular={rjf.get('singularIslands')}")
+
+    # A COLLINEAR butt joint: brick pier with a timber post directly on top. Only one of
+    # the two runs may extend into the other, or the joint metre is modelled twice, in
+    # parallel, with two different sections - which would show up here as four members.
+    print("\n[J2] a collinear butt joint makes exactly two members")
+    stack = [{"x": 0, "y": 64 + h, "z": 0, "mat": "brick",
+              "section": "brick_rect_230x350", "support": h == 0} for h in range(3)]
+    stack += [{"x": 0, "y": 67 + h, "z": 0, "mat": "timber",
+               "section": "timber_rect_140x240", "support": False} for h in range(3)]
+    rj2 = sc.call({"op": "solve", "revision": 203, "blocks": stack, "loads": []})
+    check_true("ok", rj2.get("ok") is True, rj2.get("error", ""))
+    check_true("one island", rj2.get("islands") == 1, f"islands={rj2.get('islands')}")
+    check_true("exactly two members", len(rj2.get("members", [])) == 2,
+               f"members={len(rj2.get('members', []))}")
+    secs = sorted(m["section"] for m in rj2.get("members", []))
+    check_true("each member keeps its OWN section",
+               secs == ["brick_rect_230x350", "timber_rect_140x240"], str(secs))
+
+    # A lone frame block next to a plate is not a member. The bearing rule fires on all
+    # three axes, so before the run-length filter moved ahead of it, a single beam block
+    # resting on a slab was extended into the slab node and shipped as a one-metre member
+    # carrying the beam's whole section (PR26_REVIEW MECH-03).
+    print("\n[J3] a single block does not become a member by touching a plate")
+    slab3 = [{"x": i, "y": 64, "z": j, "mat": "concrete", "section": "concrete_slab_200",
+              "support": i in (0, 2) or j in (0, 2)} for i in range(3) for j in range(3)]
+    lone = slab3 + [{"x": 1, "y": 65, "z": 1, "mat": "steel",
+                     "section": "steel_rect_200x400", "support": False}]
+    rj3 = sc.call({"op": "solve", "revision": 204, "blocks": lone, "loads": []})
+    check_true("ok", rj3.get("ok") is True, rj3.get("error", ""))
+    check_true("no member was invented", len(rj3.get("members", [])) == 0,
+               f"members={len(rj3.get('members', []))}")
+    check_true("the lone block is reported instead",
+               [1, 65, 1] in rj3.get("unassigned", []), str(rj3.get("unassigned")))
+
+    # ============================================================== SPANS =====
+    # A beam resting on the ground at BOTH ends had a node at each end and none between,
+    # so every DOF in the model was constrained: FrameCore reported "fully constrained
+    # (no free DOF)", this file counted that as singular, and the HUD told the player
+    # nothing was holding up a beam lying on the ground (PR26_REVIEW A-6). The extraction
+    # now puts one node mid-span, which is enough: Euler-Bernoulli elements with
+    # consistent load vectors are exact AT THEIR NODES.
+    print("\n[P1] a beam supported at both ends is solved, not called a mechanism")
+    n_p = 5
+    ends = [{"x": i, "y": 64, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+             "support": i in (0, n_p - 1)} for i in range(n_p)]
+    rp = sc.call({"op": "solve", "revision": 210, "blocks": ends, "loads": []})
+    check_true("ok", rp.get("ok") is True, rp.get("error", ""))
+    check_true("not a mechanism", rp.get("singular") is False, rp.get("diagnostic", ""))
+    check_true("split into two elements at mid-span", len(rp.get("members", [])) == 2,
+               f"members={len(rp.get('members', []))}")
+    # Fixed-fixed under its own weight, exact: M_end = wL^2/12, M_mid = wL^2/24.
+    Lp = (n_p - 1) * BLOCK_MM
+    wp = 7850.0 * (200.0 * 400.0) * 1e-9 * G
+    ends_m, mids = [], []
+    for mem in rp.get("members", []):
+        for nd in ("i", "j"):
+            mm = math.hypot(mem[nd]["My"], mem[nd]["Mz"])
+            (ends_m if grounded_end(mem, nd, n_p) else mids).append(mm)
+    check("support moment = wL^2/12", max(ends_m or [0]), wp * Lp * Lp / 12.0, 1e-6)
+    check("mid-span moment = wL^2/24", max(mids or [0]), wp * Lp * Lp / 24.0, 1e-6)
+
+    # Everything grounded: nothing can move, and that is NOT a mechanism. It is counted
+    # as a structure, it is not counted as one that fell down, and its blocks are
+    # reported so the game can say why no member appeared for them.
+    print("\n[P2] a run lying flat on the ground is fully supported, not a mechanism")
+    flat = [{"x": i, "y": 64, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+             "support": True} for i in range(3)]
+    rf = sc.call({"op": "solve", "revision": 211, "blocks": flat, "loads": []})
+    check_true("ok", rf.get("ok") is True, rf.get("error", ""))
+    check_true("not a mechanism", rf.get("singular") is False, rf.get("diagnostic", ""))
+    check_true("no mechanism island", rf.get("singularIslands") == 0,
+               str(rf.get("singularIslands")))
+    check_true("counted as one structure", rf.get("islands") == 1, str(rf.get("islands")))
+    check_true("its blocks are reported", len(rf.get("unassigned", [])) == 3,
+               str(rf.get("unassigned")))
+    check_true("and the diagnostic says why", "fully supported" in rf.get("diagnostic", ""),
+               rf.get("diagnostic", ""))
 
     # ------------------------------------------------- T: transport equivalence
     # The shared-memory transport must be the SAME sidecar answering the SAME
@@ -1381,9 +1578,9 @@ def main():
 
     print()
     if fails:
-        print(f"FAILED {len(fails)}: {', '.join(fails)}")
+        print(f"FAILED {len(fails)} of {total}: {', '.join(fails)}")
         return 1
-    print("ALL PASS")
+    print(f"ALL PASS ({total} checks)")
     return 0
 
 

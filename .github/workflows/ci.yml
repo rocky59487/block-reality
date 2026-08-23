@@ -16,6 +16,17 @@ on:
     branches: [Main]
   workflow_dispatch:
 
+# GitHub's IMPLICIT default shell on Linux is `bash -e {0}` — no pipefail. Every
+# `cmd | tail -3` in this file would therefore report tail's exit code and stay
+# green while the gate suite failed, the interpreter was missing, or Python threw
+# (PR26_REVIEW A-2: all three reproduced, all three exit 0). Naming bash
+# EXPLICITLY changes the invocation to `bash --noprofile --norc -eo pipefail {0}`.
+# That is the whole fix, and it must stay at workflow level so a step added later
+# cannot silently opt out of it.
+defaults:
+  run:
+    shell: bash
+
 jobs:
   engine-gates:
     name: engine acceptance suite vs shipped binary
@@ -26,6 +37,32 @@ jobs:
         run: |
           chmod +x dist/br-sidecar
           python3 sidecar/verify.py dist/br-sidecar | tail -3
+
+      # The Windows engine ships in the same archive and has no acceptance suite
+      # run against it here — CI has no Windows runner and cross-checking a PE
+      # binary from Linux is not a substitute. What CAN be gated from here is that
+      # it EXISTS and that its bytes are the ones the evidence record verified.
+      # Without this, `scripts/package.sh` on a machine without mingw deletes the
+      # committed .exe and every gate in the repository stays green (A-7).
+      - name: Windows engine present and matching the evidence record
+        run: |
+          test -f dist/br-sidecar.exe
+          python3 - <<'PY'
+          import hashlib, json, sys
+          doc = json.load(open("evidence/verification.json"))
+          claimed = doc["identity"].get("binary_windows", {}).get("sha256")
+          if not claimed:
+              sys.exit("evidence/verification.json has no identity.binary_windows.sha256")
+          h = hashlib.sha256()
+          with open("dist/br-sidecar.exe", "rb") as f:
+              for chunk in iter(lambda: f.read(65536), b""):
+                  h.update(chunk)
+          actual = h.hexdigest()
+          if claimed != actual:
+              sys.exit(f"dist/br-sidecar.exe is {actual[:12]}... but the evidence "
+                       f"record verified {claimed[:12]}...")
+          print("windows engine matches the record:", actual[:12])
+          PY
 
   java:
     name: Java suites, cross-language against the shipped engine
