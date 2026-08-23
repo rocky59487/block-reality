@@ -191,6 +191,15 @@ catalogue is solid rectangles and circles and is named accordingly. There is no 
 post-buckling: the buckling factor is the linear onset, an upper bound on the real
 critical load.
 
+**Two of the five D/C modes have no closed-form gate.** `ElasticAllowable` takes the
+argmax of five ratios, and the acceptance suite pins three of them — CRUSH, TENSION and
+the bending fibres — against closed forms. **SHEAR and TORSION are reported but ungated**:
+nothing in `sidecar/verify.py` compares either against a reference, and an independent
+hand calculation of the torsion ratio differed from the engine by about 20%. Until that
+is settled, read a member whose governing fibre says SHEAR or TORSION as indicative, not
+as a number this project has verified. Rule 2 of `docs/GATES.md` — no capability without
+a gate that has run — is why this paragraph exists rather than a quieter omission.
+
 ## Verification
 
 | | |
@@ -391,6 +400,13 @@ fallback 與除錯面）。wire 上的每一個力學數值都是引擎函式的
 未實作：板的 D/C 只是彈性表面篩選——橫向剪力有算出來也有回報，但不納入篩選；沒有逐片板的挫屈
 檢核，也沒有板的極限強度。沒有 RC 複合斷面，斷面目錄裡是實心矩形與實心圓形，命名也照實寫。
 沒有非線性後挫屈：挫屈倍數是線性起始點，是真實臨界載重的上界。
+
+**五個 D/C 模式裡有兩個沒有閉合解 gate。** `ElasticAllowable` 取五個比值的 argmax，
+驗收套件釘住其中三個（CRUSH、TENSION、彎曲纖維）對閉合解。**SHEAR 與 TORSION 有回報、
+沒有 gate**：`sidecar/verify.py` 裡沒有任何一條拿它們對參考值，而獨立手算的扭轉比值與
+引擎差約 20%。在這件事釐清之前，控制纖維顯示 SHEAR 或 TORSION 的構件請當作**指示值**，
+不是本專案已驗證過的數字。`docs/GATES.md` 鐵則 2（沒有 gate 執行過的能力不得寫進能力
+清單）就是這段話存在的理由，而不是安靜地略過。
 
 ## 驗證
 
