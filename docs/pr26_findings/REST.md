@@ -1,0 +1,105 @@
+- [DISPUTE] GATHER-EPILOGUE (medium) #35 的分 tick gather 修好了主迴圈，但 finishCycle 每輪仍在 tick 預算之外做一次 O(全部追蹤方塊) 的 HashSet 重建 — forge/src/main/java/com/blockreality/impl/server/StructureManager.java:434
+- [DISPUTE] BRPERM-SCOPE (medium) BrPermissionsTest 只走自己的表、不走真正的 Brigadier tree，擋不住它 javadoc 宣稱要擋的 #45 (b) 失效類 — forge/src/test/java/com/blockreality/impl/command/BrPermissionsTest.java:17
+- [DISPUTE] CHUNKLOAD-STARVE (medium) 任何含結構方塊的 chunk 載入都會 bump revision 並讓進行中的跨 tick gather 從 cursor 0 重來——#35 的 livelock 從無條件變成有條件，且無 gate 覆蓋 — forge/src/main/java/com/blockreality/impl/server/StructureManager.java:313
+- [FLOW] DF-05 (medium) 半載入模型的分析結果被當成權威廣播：未載入 chunk 的方塊靜默略過，且不計數、不標示 — forge/src/main/java/com/blockreality/impl/server/StructureManager.java:409
+- [FLOW] DF-06 (medium) MECHANISM 狀態永遠不會被標 stale：D-023 的「過期必標」在這條路徑上破功 — forge/src/main/java/com/blockreality/impl/client/StressHud.java:81
+- [FLOW] DF-07 (medium) 三份狀態的消費者互相矛盾：/br members 與 HUD 在同一瞬間對「有沒有資料」給相反答案，且指令輸出完全沒有過期標示 — forge/src/main/java/com/blockreality/impl/command/BRCommand.java:174
+- [FLOW] DF-08 (medium) onChunkLoad 對已追蹤的方塊也計數，chunk 反覆載入就反覆 bump revision、重跑全維度分析、並讓 client 永久 stale — forge/src/main/java/com/blockreality/impl/server/StructureManager.java:313
+- [FLOW] DF-09 (medium) DisplayTrackPrecisionTest 是套套邏輯：零專案 import，測的是 JVM 的 (float) 轉型，但 D-023 與 GATES.md 把它登記為「不變式 5 首個可執行 gate」 — mod/core/src/test/java/com/blockreality/core/DisplayTrackPrecisionTest.java:53
+- [FLOW] DF-10 (medium) RevisionGateConcurrencyTest 的第二個測試斷言恆真，而且沒有涵蓋「solve 進行中世界被編輯」這個它宣稱要守的情境 — mod/core/src/test/java/com/blockreality/core/RevisionGateConcurrencyTest.java:82
+- [FLOW] DF-11 (medium) StressResultPacket 對引擎供給的 section/plate 字串未 clip 就 writeUtf(…,48)：同一個 PR 在 EngineStatusPacket 修掉的 FORGE-2 失效模式在這裡原封不動 — forge/src/main/java/com/blockreality/impl/net/StressResultPacket.java:226
+- [FLOW] DF-12 (medium) EngineStatusPacket 沒有 dimension 欄位、acceptStatus 沒有維度守衛：#41 的修法漏掉第三個封包 — forge/src/main/java/com/blockreality/impl/net/EngineStatusPacket.java:159
+- [FLOW] DF-13 (medium) 荷載可以加在「世界裡是結構方塊、但 manager 沒追蹤」的位置，指令回綠色成功，下一次 gather 靜默刪除 — forge/src/main/java/com/blockreality/impl/command/BRCommand.java:110
+- [ABUSE] ATK-02 (medium) 壓力眼鏡繞過本 PR 剛加的 /br load OP 閘門：權限 0 玩家仍可對任意結構方塊加測試荷載 — forge/src/main/java/com/blockreality/impl/item/StressGlassesItem.java:61
+- [ABUSE] ATK-03 (medium) 權限 0 的連續編輯讓 gather 永遠重來：#35 的 livelock 換了個形狀還在，且 minTicksBetweenSolves 完全擋不住 — forge/src/main/java/com/blockreality/impl/server/StructureManager.java:378
+- [ABUSE] ATK-04 (medium) 無需 OP 即可把整個維度的引擎打成永久 DISABLED，且 /br reset 救不回來 — mod/core/src/main/java/com/blockreality/core/sidecar/SidecarClient.java:464
+- [ABUSE] ATK-05 (medium) /br status 的路徑洩漏只修了一半：engine diagnostic 仍對權限 0 顯示，並且廣播給維度內每個玩家 — forge/src/main/java/com/blockreality/impl/command/BRCommand.java:185
+- [ABUSE] ATK-06 (medium) BrPermissionsTest 走的是表不是 Brigadier 樹，抓不到它宣稱要抓的那一類回歸 — forge/src/test/java/com/blockreality/impl/command/BrPermissionsTest.java:23
+- [ABUSE] ATK-10 (medium) StressResultPacket.encode 的 section 字串沒有截斷，過長會在廣播中途丟出例外——EngineStatusPacket 為同一個危害做了防護，這裡沒有 — forge/src/main/java/com/blockreality/impl/net/StressResultPacket.java:226
+- [RENDER] R-02 (medium) D/C 剛好 1.0 被畫成失效紅，但同一畫面的文字判定說沒超載——而且 alignToVerdict 主動把「未超載」的值停在 1.0 — mod/api/src/main/java/com/blockreality/api/render/StressPalette.java:108
+- [RENDER] R-03 (medium) Hatch 是完全的死程式碼；實際渲染只有顏色一個通道，而 DC_SAFE 與 DC_OVER 的灰階對比只有 1.14:1（TEACHING 色盤 tension/compression 更只有 1.03:1） — forge/src/main/java/com/blockreality/impl/client/StressHud.java:293
+- [RENDER] R-04 (medium) 剖面圖用截面自己的峰值正規化，正上方的 HUD 卻印著全場色階——同一個藍色在兩處代表不同的 MPa — forge/src/main/java/com/blockreality/impl/client/StressHud.java:240
+- [RENDER] R-05 (medium) 剖面圖的「中性軸」文字標籤永遠畫在圖框正中，跟真正畫出來的中性軸線對不上 — forge/src/main/java/com/blockreality/impl/client/StressHud.java:281
+- [RENDER] R-06 (medium) DisplayTrackPrecisionTest 是套套邏輯：它只驗 Java 的 (float) cast，沒碰任何專案程式碼，卻被登記為「不變式 5 首個可執行 gate」 — mod/core/src/test/java/com/blockreality/core/DisplayTrackPrecisionTest.java:52
+- [RENDER] R-07 (medium) StressRibbon / StressRibbonBuilder 每個封包都重建一次卻從來沒有被畫過；它算出來的中性軸折線在遊戲裡不存在 — forge/src/main/java/com/blockreality/impl/client/ClientStressState.java:332
+- [RENDER] R-08 (medium) MemberPick 只比角度不比射線距離，導致近距離站在樑旁邊反而選不到它 — mod/core/src/main/java/com/blockreality/core/render/MemberPick.java:49
+- [RENDER] R-09 (medium) 沒有任何 gate 釘住「樓板哪一面受拉」——verify.py 的三處板彎矩比對都用 abs() 把符號丟掉 — sidecar/verify.py:766
+- [RENDER] R-10 (medium) 剖面圖對柱把兩個水平側面標成「上緣／下緣」，而且完全忽略 PLUS_Z／MINUS_Z 兩個纖維 — mod/core/src/main/java/com/blockreality/core/render/SectionDiagram.java:33
+- [FIXCORE] CORE-1 (medium) stdout queue 只限行數不限位元組，#49 的 OOM 仍可達（上限 256 × 64Mi chars） — mod/core/src/main/java/com/blockreality/core/sidecar/SidecarProcess.java:48
+- [FIXCORE] CORE-2 (medium) 新併發測試 acceptForCommitRacingBumpNeverAcceptsASupersededResult 的斷言恆為真（套套邏輯） — mod/core/src/test/java/com/blockreality/core/RevisionGateConcurrencyTest.java:83
+- [FIXCORE] CORE-3 (medium) DisplayTrackPrecisionTest 測的是 JDK 的 (float) 轉型，不是專案的顯示軌；卻被登記為不變式 5 的首個可執行 gate — mod/core/src/test/java/com/blockreality/core/DisplayTrackPrecisionTest.java:53
+- [FIXREL] CI-2 (medium) 「CI 綠是 merge 條件」是假的：Main 沒有分支保護、沒有 ruleset，PR 現在就可以直接合併 — docs/GATES.md:98
+- [FIXREL] DOC-1 (medium) gate 案數實測是 218，不是文件全站寫的 219（Linux 原生與 Windows 原生各跑一次，兩邊都是 218） — README.md:150
+- [FIXREL] DOC-2 (medium) FIX_ROLLUP 5.8 標 ✅「全部改對」是假的：151（四處）、164（四處）、216（一處）、107（一處）舊數字原封不動存活 — docs/FIX_ROLLUP_2026-08-20.md:126
+- [FIXREL] TEST-1 (medium) DisplayTrackPrecisionTest 是套套邏輯：它斷言 Java `(float)` 轉型的 IEEE-754 性質，從不碰真正的顯示軌編碼器 — mod/core/src/test/java/com/blockreality/core/DisplayTrackPrecisionTest.java:53
+- [FIXREL] TEST-2 (medium) RevisionGateConcurrencyTest 的第二個測試每一條斷言都不可能為假 — mod/core/src/test/java/com/blockreality/core/RevisionGateConcurrencyTest.java:83
+- [FIXREL] EVID-1 (medium) evidence/verification.json 不是 package.sh 產的：記錄的 binary path 是 dist/ 而 pipeline 傳的是 dist.stage/ — evidence/verification.json:11
+- [FIXREL] EVID-2 (medium) evidence 的判準凍結 SHA 無法從任何乾淨 checkout 重現：json.hpp 記的是 CRLF 變體，main.cpp/CMakeLists 記的是 LF 變體 — evidence/verification.json:16
+- [FIXREL] GATE-3 (medium) 出貨的 Windows 引擎 br-sidecar.exe 完全沒有自動 gate 也沒有 provenance，而文件宣稱兩平台各跑一次 219 項 — scripts/package.sh:54
+- [FIXREL] CI-3 (medium) dist/ 裡的 mod jar 與 Java 原始碼之間沒有任何 gate，而 ci.yml 檔頭宣稱 CI 驗的就是「repository actually ships 的一致性」 — .github/workflows/ci.yml:7
+- [FIXREL] CI-4 (medium) CI 只有 ubuntu-latest 一個平台；ShmRegionTest 自己承認它守的 regression 只在 Windows 才會紅 — .github/workflows/ci.yml:22
+- [MECH] MECH-04 (medium) 支承一律 6-DOF 全固接，D-022 宣稱這是「偏保守」的選擇——量到的是相反方向：控制彎矩低 33% — docs/DECISIONS.md:66
+- [MECH] MECH-05 (medium) 斷面主軸方向被硬釘在世界 +x：同一座結構轉 90° 蓋，D/C 差 29%（柱的側向抗彎差 1.96 倍） — sidecar/main.cpp:635
+- [MECH] MECH-06 (medium) 木材 Rcomp(5) < Rtens(8) 與結構級木材相反，D-012 卻把它寫成「反映木材真實特性」，本 PR 又用 C15 gate 把它釘死 — sidecar/main.cpp:90
+- [MECH] MECH-07 (medium) 鋼的 Rtens 用了極限強度 500 MPa 當容許值：純受拉鋼構件要到 500 MPa 才算 D/C=1，比降伏高 43% — sidecar/main.cpp:88
+- [MECH] MECH-08 (medium) 板的 D/C 用 von Mises 對脆性材料：混凝土板在雙軸受拉時最大主拉應力被低估 15%（而 brick 板正是以這個理由被排除） — sidecar/main.cpp:132
+- [MECH] MECH-09 (medium) 並排相鄰的兩根 run 會被憑空的橫向構件焊在一起——與 MEMBER_SEMANTICS §7.4 規則 4 明文相反 — sidecar/main.cpp:317
+- [UNK] F2 (medium) 引擎健康地拒絕一個壞請求，被回報成「Engine unavailable」，並且把上一次好的 latest 覆蓋掉 — forge/src/main/java/com/blockreality/impl/server/StructureManager.java:524
+- [UNK] F5 (medium) 新的 AnalysisPendingPacket 與 EngineStatusPacket 的 decode 會擲例外踢玩家，正是 #39 修掉的那個缺陷；EngineStatusPacket 的註解還把 readUtf 的行為說反了 — forge/src/main/java/com/blockreality/impl/net/EngineStatusPacket.java:45
+- [UNK] F6 (medium) 把結構物拆光後，client 的應力疊加層與 /br status 的 latest 永遠停在舊結果 — forge/src/main/java/com/blockreality/impl/server/StructureManager.java:382
+- [GATE] GATE-3 (medium) C14 牆挫屈 gate 用錯理想化，並把「幾何長寬比效應」標成「網格收斂」 — sidecar/verify.py:645
+- [GATE] GATE-5 (medium) 傳輸等價 gate 的 fixture 讓 6 個端力分量中的 4 個恆為 0——Java 端 TEST-2 修復自述要擋的 T↔My 交換，現在仍然擋不住 — sidecar/verify.py:1208
+- [GATE] GATE-6 (medium) docs/GATES.md 凍結的四條驗收判準從未實作，也沒有走登記流程（違反鐵則 1、2） — docs/GATES.md:45
+- [GATE] GATE-7 (medium) 本 PR 新增的 timber / brick 斷面與 steel_plate_20 只釘住 ρ、幾何與 allowable，E 與 ν 零 gate — sidecar/verify.py:972
+- [RESOURCES] R-01 (medium) /br load 唯一一條可翻譯訊息在伺服器端 .getString(),專用伺服器上必印出原始 key — forge/src/main/java/com/blockreality/impl/command/BRCommand.java:111
+- [RESOURCES] R-02 (medium) steel_rect_150x300 沒有任何 gate,卻被 BRContent 與 README 寫進「每個 token 都先過閉合解 gate」的宣稱裡 — forge/src/main/java/com/blockreality/impl/BRContent.java:94
+- [RESOURCES] R-03 (medium) 出貨包中文說明書留著 v0.1a 的「兩種方塊」段落,和上面兩行的「九種結構方塊」自相矛盾;英文版同一次編輯已刪 — dist/讀我-中文.txt:55
+- [RESOURCES] R-04 (medium) /br 指令的 36 條輸出全是硬編英文 Component.literal,zh_tw 對指令訊息覆蓋率為 0 — forge/src/main/java/com/blockreality/impl/command/BRCommand.java:334
+- [JARPROV] BR-DIST-02 (medium) 本 PR 把 /br resolve /scan /load /unload 升到 OP level 2，但四份玩家文件仍只把 /br reset 標成 OP-only —— 預設單人世界照著 START-HERE 做必定失敗 — C:/Users/wmc02/Desktop/block-reality/.claude/worktrees/pr26-head/scripts/dist-docs/START-HERE.txt:111
+- [JARPROV] BR-DIST-03 (medium) evidence 的 sources 雜湊是「工作目錄位元組」而非 git blob，其中 sidecar/json.hpp 與倉庫內容對不上 —— 照 VERIFICATION.md 驗證的人會得出「binary 不是這份原始碼建的」 — C:/Users/wmc02/Desktop/block-reality/.claude/worktrees/pr26-head/evidence/verification.json:16
+- [JARPROV] BR-DIST-04 (medium) identity.sources 漏掉 sidecar/shm.hpp —— 零複製共享記憶體傳輸層改了，provenance 紀錄一個位元都不會變 — C:/Users/wmc02/Desktop/block-reality/.claude/worktrees/pr26-head/scripts/evidence.py:610
+- [JARPROV] BR-DIST-05 (medium) 出貨的 Linux 引擎有 glibc ≥ 2.35 的硬性下限（Ubuntu 22.04 建置），文件從未載明；install.sh 也沒查 CPU 架構，arm64 Linux 會被複製 x86-64 ELF 並回報成功 — C:/Users/wmc02/Desktop/block-reality/.claude/worktrees/pr26-head/dist/install.sh:172
+- [JARPROV] BR-DIST-06 (medium) 兩支安裝腳本都是「先刪除、後複製」，失敗時留下比安裝前更糟的狀態，而錯誤訊息說「nothing was installed」是假的 — C:/Users/wmc02/Desktop/block-reality/.claude/worktrees/pr26-head/dist/install.sh:151
+- [JARPROV] BR-DIST-08 (medium) 「0.2a」在本 PR 內已經有四個內容不同的 jar，版本字串沒動過，jar 內也沒有任何 commit 戳 —— 版本一致性 gate 對四個都會放行 — C:/Users/wmc02/Desktop/block-reality/.claude/worktrees/pr26-head/forge/build.gradle:77
+- [DISPUTE] DISPUTE-A (low) 作者主張部分成立：技術事實全對，但「refuted 稽核」的框架不成立——稽核自己就已寫明同一件事 — docs/FIX_ROLLUP_2026-08-20.md:211
+- [DISPUTE] DISPUTE-B (low) 作者主張不成立（稻草人）：Forge 沒有 MONITOR 是事實，但稽核從未建議 MONITOR，它建議的正是 LOWEST — docs/FIX_ROLLUP_2026-08-20.md:212
+- [DISPUTE] DISPUTE-C (low) 作者主張就 CONC-10 而言不成立：AnalysisExecutor 在分支上逐字未動，行號在 main 與分支兩處都正確；「3.x 行號漂移」部分成立但那是稽核已宣告的基線 — docs/FIX_ROLLUP_2026-08-20.md:213
+- [DISPUTE] DISPUTE-E (low) 作者主張成立：git 時序確認鐵則 1 違規屬實且自我登記誠實；惟 GATES.md 寫「下一個 commit」實為隔兩個 commit — docs/GATES.md:87
+- [FLOW] DF-14 (low) AnalysisPendingPacket.decode 把負 revision 洗成 0，與同一個 PR 建立的「絕不 launder」解碼教條相反 — forge/src/main/java/com/blockreality/impl/net/AnalysisPendingPacket.java:132
+- [FLOW] DF-15 (low) ClientStressState.dimension 欄位寫入但從未讀取，javadoc 卻宣稱它是 #41 的守衛 — forge/src/main/java/com/blockreality/impl/client/ClientStressState.java:46
+- [ABUSE] ATK-08 (low) 結構方塊座標與測試荷載座標對全維度玩家公開：分析結果無距離裁切，/br loads 又是權限 0 — forge/src/main/java/com/blockreality/impl/net/BRNetwork.java:78
+- [ABUSE] ATK-09 (low) structural 集合只增不減：沒有 ChunkEvent.Unload 對應，探索本身就會讓每次求解變大 — forge/src/main/java/com/blockreality/impl/server/StructureManager.java:310
+- [ABUSE] ATK-11 (low) 新增的 AnalysisPendingPacket 同時違反 decode「不丟例外」與「不洗值」兩條契約 — forge/src/main/java/com/blockreality/impl/net/AnalysisPendingPacket.java:33
+- [ABUSE] ATK-12 (low) release.yml 把 workflow_dispatch 輸入與 tag 名直接插進 shell — .github/workflows/release.yml:36
+- [RENDER] R-11 (low) StressPalette.utilization 把非有限的 D/C 對到最安全的冷色，與專案其他地方一致採用的 fail-closed 相反 — mod/api/src/main/java/com/blockreality/api/render/StressPalette.java:107
+- [RENDER] R-12 (low) client 端重建的 StressStation 剪應力恆為 0、σtens/σcomp 只取四個面中點，比 server 端的同名欄位少東西 — mod/api/src/main/java/com/blockreality/api/StressFieldSpec.java:166
+- [FIXCORE] CORE-4 (low) verify.py 實測 218 條 gate，README / QUICKSTART / FIX_ROLLUP 都寫 219 — sidecar/verify.py:1391
+- [FIXCORE] CORE-5 (low) grow 判定仍靠 contains("grow") 字串比對；PROTO-2 的字串耦合被列在 3.6 的處置範圍內但未修 — mod/core/src/main/java/com/blockreality/core/sidecar/SidecarClient.java:288
+- [FIXCORE] CORE-6 (low) reopenShm 在檢查上限與建立新區域之前就先毀掉可用的舊區域，任何失敗都讓 shm 傳輸在本 process 生命週期內永久消失 — mod/core/src/main/java/com/blockreality/core/sidecar/SidecarClient.java:329
+- [FIXCORE] CORE-7 (low) reopenShm 逾時後同一次 solve 直接改走 JSON 而未先 drain，遲到的 shm.open 回覆會被判成 desync 並害引擎重啟 — mod/core/src/main/java/com/blockreality/core/sidecar/SidecarClient.java:344
+- [FIXCORE] CORE-8 (low) fibreEnumOf 對未知 fibre 名稱靜默映射為 0(NONE)，與 JSON 路徑的 fail-closed 不對稱 — sidecar/main.cpp:1554
+- [FIXCORE] CORE-9 (low) JSON 回落路徑被新程式碼加重：同一行 reply 解析兩次，且 stdout 改為逐字元讀取 — mod/core/src/main/java/com/blockreality/core/sidecar/SidecarClient.java:227
+- [FIXREL] DEC-1 (low) D-001 尾端殘留舊的「否證條件：無」，與同一條新增補的否證條件並存互相矛盾 — docs/DECISIONS.md:484
+- [FIXREL] GATE-4 (low) 鐵則 1 的順序違規只登記了 C++ 那一次；六個新 Java gate 與各自的實作同 commit 落地，同樣不符順序卻未登記 — docs/GATES.md:87
+- [FIXREL] DOC-3 (low) docs/API_ARCHITECTURE.md §2 仍以現在式描述 frame_capi_v2 的協定形狀，ABI-1 的實況修正沒掃到這裡 — docs/API_ARCHITECTURE.md:61
+- [MECH] MECH-11 (low) patch 0001 留下的內力重建註解與 patch 0003 的符號敘述互相矛盾，實測顯示 0001 的那句是錯的 — sidecar/patches/0001-fix-stress-correct-memberFiberSigma-cy-cz-pairing-an.patch:34
+- [MECH] MECH-12 (low) 同一條 wire 上混用兩種符號慣例：纖維應力是拉正、N/My/Mz 是引擎原生（壓正）、殼的合力是拉正 — sidecar/main.cpp:156
+- [UNK] F4 (low) BrPermissionsTest 沒有做它的 javadoc 宣稱的事：它枚舉的是表，不是實際註冊的指令樹 — forge/src/test/java/com/blockreality/impl/command/BrPermissionsTest.java:23
+- [UNK] F7 (low) AnalysisExecutorTest 有一個測試斷言與它的名字和註解相反，submit 回傳 false 的路徑與 dispatch 的 !accepted 復原分支零覆蓋 — forge/src/test/java/com/blockreality/impl/server/AnalysisExecutorTest.java:39
+- [UNK] F8 (low) ClientStressState.dimension 是只寫欄位，它的 javadoc 宣稱的「只在玩家在該維度時繪製」並不存在 — forge/src/main/java/com/blockreality/impl/client/ClientStressState.java:45
+- [UNK] F9 (low) closeSidecarAsync / resetEngine 的 inline fallback 實質不可達，其 javadoc 的理由是錯的；崩潰關機路徑會在 server 停掉後重建執行緒池 — forge/src/main/java/com/blockreality/impl/server/StructureManager.java:326
+- [GATE] GATE-2 (low) 宣稱 219 項、實跑 218 項；前一輪 CNT-1「案數沒有任何文件寫對」宣告修好但沒修好 — README.md:150
+- [GATE] GATE-4 (low) 兩條 gate 是恆真斷言：一條拿 base 跟自己比，一條完全不碰引擎 — sidecar/verify.py:636
+- [GATE] GATE-9 (low) S4／S9 的 1% 容差在 8 元素網格上實測 0.87–0.90%，餘裕不到 11%；姊妹腳本 evidence.py 明確不 gate 這個網格 — sidecar/verify.py:767
+- [GATE] GATE-10 (low) VERIFICATION.md 把板中心彎矩 −0.57% 的殘差歸給 3 位有效數字的捨入，但 0.0231 的捨入只能解釋 ±0.22% — evidence/VERIFICATION.md:196
+- [GATE] GATE-11 (low) evidence.py 的零參考 gate 用單一絕對線 1e-3 跨越三種量綱，對小量級的量實質上是空的 — scripts/evidence.py:759
+- [GATE] GATE-12 (low) provenance 的原始碼雜湊清單漏掉本 PR 改動的 shm.hpp 與產出 README 效能數字的 bench_transport.py — scripts/evidence.py:610
+- [RESOURCES] R-05 (low) 4 個 lang key 兩份語言都有,但沒有任何程式路徑會用到——其中 br.hud.engine_off 對應的狀態根本沒有顯示路徑 — forge/src/main/resources/assets/blockreality/lang/en_us.json:24
+- [RESOURCES] R-06 (low) runData 的輸出目錄 src/generated/resources/ 不在 resources source set,datagen 產物永遠不會被打包 — forge/build.gradle:48
+- [RESOURCES] R-07 (low) 三個鋼斷面方塊有兩個借用深板岩貼圖,9 個方塊裡 7 個是灰的,玩家無法目視分辨斷面 — forge/src/main/resources/assets/blockreality/models/block/steel_beam_150x300.json:4
+- [RESOURCES] R-08 (low) mods.toml 缺 logoFile 與 displayURL,mod 清單裡沒有圖示也沒有連結 — forge/src/main/resources/META-INF/mods.toml:9
+- [JARPROV] BR-DIST-07 (low) README 與 README.zh-TW 的主要下載連結指向不存在的 v0.2a release，合併當下即為 404 — C:/Users/wmc02/Desktop/block-reality/.claude/worktrees/pr26-head/README.md:24
+- [JARPROV] BR-DIST-09 (low) 對外發布文與四份文件宣稱 219 項 gate，實測兩個出貨 binary 都是 218 — C:/Users/wmc02/Desktop/block-reality/.claude/worktrees/pr26-head/.github/workflows/release.yml:117
+- [JARPROV] BR-DIST-10 (low) evidence/verification.json 把維護者的 Windows 帳號路徑寫進公開倉庫 — C:/Users/wmc02/Desktop/block-reality/.claude/worktrees/pr26-head/evidence/verification.json:11
+- [JARPROV] BR-DIST-11 (low) sidecar/patches/README.md 的重建指示引用「151 項 gate」，與現行 218 差三代；且 git am 不會重現 evidence 記錄的 engine commit hash — C:/Users/wmc02/Desktop/block-reality/.claude/worktrees/pr26-head/sidecar/patches/README.md:39
+- [JARPROV] BR-DIST-12 (low) install.sh --help 會把兩行程式碼當成說明印出來；install.bat 完全不支援 --help — C:/Users/wmc02/Desktop/block-reality/.claude/worktrees/pr26-head/dist/install.sh:20

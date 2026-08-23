@@ -193,6 +193,25 @@ class StressResultPacketTest {
     }
 
     @Test
+    void anOverLongTokenIsTruncatedRatherThanThrownDuringTheBroadcast() {
+        // encode() runs inside the loop that sends to every player, so writeUtf's length
+        // check throwing would cost the whole broadcast, not one member's drawing.
+        // EngineStatusPacket has guarded its two strings all along; these two did not
+        // (PR26_REVIEW ATK-10 / DF-11). Tokens come from the engine's own catalogue, so
+        // this can only fire against an engine that is not the one shipped here — which
+        // is exactly the case a guard exists for.
+        String huge = "x".repeat(400);
+        StressFieldSpec f = field(4000);
+        MemberSnapshot m = new MemberSnapshot(1, "steel", huge, 4000, 0.4,
+                GoverningFibre.CRUSH, 5, f.endI(), f.endJ(),
+                List.of(new BlockKey(1, 64, 0)), f.stations(11), Optional.of(f));
+        StressResultPacket out = roundTrip(
+                StressResultPacket.of(result(List.of(m), List.of(), 0.4, 1, "member", 0), DIM));
+        assertTrue(out.valid(), out.invalidReason());
+        assertEquals(48, out.members().get(0).section().length());
+    }
+
+    @Test
     void roundTripPreservesTheDrawableResult() {
         AnalysisResult r = result(List.of(member(1, 0.25, 5)), List.of(shell(1, 0.1)),
                 0.25, 1, "member", 14.25);
