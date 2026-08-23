@@ -11,18 +11,21 @@ binary named below; none is transcribed by hand.
 | commit | `10395c3c4c5f7442702318a22160b4920301de0d` (2026-08-20T11:41:38+08:00) |
 | worktree clean | True |
 | solver lane | compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT |
-| binary sha256 | `aac6b57a83fd3155f3e370fc602583f06c01e61f7207dc64d36e99724c4ad907` |
+| binary sha256 | `96ce970e99f3571b4d8221c8338b080433dbf05b4bef2e2eebad23d2ffb94932` |
+| windows binary sha256 | `618368c45164f9731e9953ed4e04f9aa5815c6f650ba6ad5a5929b739b7f9634` |
 | host | Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35 |
 
-Source hashes:
+Source hashes, over content with line endings normalised to LF so the
+record is checkable from a clean checkout on either platform:
 
 | file | sha256 |
 |---|---|
-| `sidecar/main.cpp` | `c596ac99169c4f08dd90de5a9fc4f7cd2e2eb9a8c6234517d7d77c970fd3effb` |
-| `sidecar/json.hpp` | `1c9b71510fe56a6a2439d273a7a1c58b4bffe1177e6b10085bf02163514c4cb0` |
-| `sidecar/verify.py` | `7f4bb610c54b72aaaf49af8e81b6579cd794816f47b1b28c8162585aeb04e8ff` |
+| `sidecar/main.cpp` | `18d14456fc4f082c68aa7b4a32f87d1fc342a0eec7d251808e6c4dbfad94d7fc` |
+| `sidecar/json.hpp` | `f3418ff18ee405ecc77a3fcb9bb7c349e55c2f85ee37f217f4fe69a621c430dc` |
+| `sidecar/shm.hpp` | `dde97360c39dbf69ad17245667ae8f6f30a88cfebc2b7d9193228b2e3cd4b5ef` |
+| `sidecar/verify.py` | `05d31b305a963860b9754bf72aaa5241b788479b3e90b67482c2c8df84b94d44` |
 | `sidecar/CMakeLists.txt` | `7d272beffe52d0e69047f59771a333da0e9e17c0af9894ceff1f4453dfc30fa5` |
-| `scripts/evidence.py` | `d9ec33586226ff36ab239cdb33da046a05b953ff4428f81f60bd6e431e253925` |
+| `scripts/evidence.py` | `c619105aed0be47bb6b7674b2cd364ce00706a6f13145cc14d726f17e465cc35` |
 
 ## Accuracy against closed-form solutions
 
@@ -145,60 +148,69 @@ plate under a uniform load, the load being the slab's own weight
 (q = 0.0046107 N/mm²). One block is one element, so the mesh
 density is set by how large the slab is.
 
-Two coefficients are used and only one of them needed correcting. The
-tabulated centre coefficient 0.0231 is quoted for ν = 0.3; at the centre of a
-square clamped plate the two curvatures are equal by symmetry, so M = D·κ·(1+ν)
-and it rescales to **0.021323** for this plate's ν = 0.2.
-The edge coefficient **0.0513** needs no correction, because the tangential
-curvature vanishes along a clamped edge and M_edge = −D·w,nn carries no ν.
-Using 0.0231 directly makes the error appear to *grow* as the mesh is refined,
-which reads as a divergent element and is really a wrong reference.
+**The centre coefficient is not the tabulated one.** Timoshenko Table 35 and
+Roark Table 11.4 case 8a both print 0.0231 for ν = 0.3. A 13-point finite
+difference solution of the biharmonic at n = 20/40/80 with Richardson
+extrapolation gives **0.02290512**, and the same run reproduces the other two
+entries of that table to every digit they print — w_max 0.00126532 against
+0.00126, M_edge −0.0513338 against −0.0513. Two of three agree and the third is
+0.85% out, where three-significant-figure rounding can only carry ±0.217%.
+Independent spectral and Ritz solutions agree with the FD value, and so does
+this project's own MITC4 under Richardson extrapolation. Changing textbooks
+does not help: both trace to the same source.
 
-Both coefficients are tabulated to three significant figures. Where the
-agreement below reaches a fraction of a per cent, the reference is the less
-precise of the two numbers being compared — see the thickness control below,
-which is what establishes that rather than assuming it.
+At the centre of a square clamped plate the two curvatures are equal by
+symmetry, so M = D·κ·(1+ν) and the coefficient rescales to
+**0.021143** for this plate's ν = 0.2. The edge coefficient
+**0.0513** needs no such correction, because the tangential curvature vanishes
+along a clamped edge and M_edge = −D·w,nn carries no ν; it is tabulated to
+three significant figures, so agreement better than about 0.2% there is
+comparing against the table's rounding rather than against the theory.
+
+> **Two earlier releases quoted this table computed against 0.0231**, and built
+> an argument about a "convergence floor" on top of it. Both the numbers and
+> the argument are withdrawn. The 20-element span error published as 0.57% was
+> really 0.28% — better, but the published figure was not trustworthy, and that
+> is the part worth recording. Registered in `docs/GATES.md`.
 
 | elements per side | span | span error | support (raw corner) | support (recovered) | reference |
 |---:|---:|---:|---:|---:|---:|
-| 4 | -1680.5 | 6.83% | 1400.4  (63.0%) | 2137.8  (43.5%) | 3784.5 |
-| 6 | -3625.1 | 2.42% | 4368.1  (48.7%) | 6536.5  (23.2%) | 8515.0 |
-| 8 | -6348.5 | 0.90% | 9110.7  (39.8%) | 12967.2  (14.3%) | 15137.9 |
-| 10 | -9858.8 | 0.28% | 15700.5  (33.6%) | 21345.6  (9.8%) | 23652.9 |
-| 12 | -14148.0 | 0.07% | 24153.9  (29.1%) | 31658.1  (7.1%) | 34060.2 |
-| 14 | -19217.1 | 0.27% | 34482.4  (25.6%) | 43888.6  (5.3%) | 46359.7 |
-| 16 | -25065.9 | 0.41% | 46692.0  (22.9%) | 58029.4  (4.2%) | 60551.4 |
-| 20 | -39103.3 | 0.57% | 76768.1  (18.9%) | 92024.0  (2.7%) | 94611.6 |
+| 4 | -1680.5 | 7.74% | 1400.4  (63.0%) | 2137.8  (43.5%) | 3784.5 |
+| 6 | -3625.1 | 3.30% | 4368.1  (48.7%) | 6536.5  (23.2%) | 8515.0 |
+| 8 | -6348.5 | 1.75% | 9110.7  (39.8%) | 12967.2  (14.3%) | 15137.9 |
+| 10 | -9858.8 | 1.13% | 15700.5  (33.6%) | 21345.6  (9.8%) | 23652.9 |
+| 12 | -14148.0 | 0.79% | 24153.9  (29.1%) | 31658.1  (7.1%) | 34060.2 |
+| 14 | -19217.1 | 0.58% | 34482.4  (25.6%) | 43888.6  (5.3%) | 46359.7 |
+| 16 | -25065.9 | 0.44% | 46692.0  (22.9%) | 58029.4  (4.2%) | 60551.4 |
+| 20 | -39103.3 | 0.28% | 76768.1  (18.9%) | 92024.0  (2.7%) | 94611.6 |
 
 Moments are per unit width, N·mm/mm.
 
-### The span moment, and what the residual actually is
+### The span moment, and the order it converges at
 
-The span error falls steeply, passes through zero at about twelve elements and
-then settles at a few tenths of a per cent on the other side. It does not keep
-shrinking, so something other than mesh density is setting the floor, and
-saying "converges cleanly" and stopping there would be describing the first
-half of the table only.
+Every row above has the same sign and each is smaller than the last. From
+4 to 20 elements the error falls by a factor of 27.59, where h² predicts 25.00 — an observed order of
+**2.06**. That is second-order convergence with no floor, which is what a
+correctly implemented MITC4 should do, and what the acceptance suite now gates
+directly ([S4], order 2.0 ± 0.075 measured over two mesh pairs).
 
-The obvious suspect is transverse shear: MITC4 is a Reissner–Mindlin element
-and Timoshenko's coefficient is thin-plate. That suspect is testable, because
-shear deformation scales with t/a and discretisation does not — so the same
+It is still worth ruling out transverse shear as a contributor, because MITC4
+is a Reissner–Mindlin element and the reference is thin-plate. That is testable:
+shear deformation scales with t/a and discretisation does not, so the same
 meshes were run at two thicknesses.
 
 | elements per side | t = 200 mm | t/a | t = 150 mm | t/a |
 |---:|---:|---:|---:|---:|
-| 8 | +0.896% | 0.0250 | +0.873% | 0.0187 |
-| 12 | -0.065% | 0.0167 | -0.080% | 0.0125 |
-| 16 | -0.408% | 0.0125 | -0.417% | 0.0094 |
-| 20 | -0.566% | 0.0100 | -0.572% | 0.0075 |
+| 8 | +1.754% | 0.0250 | +1.731% | 0.0187 |
+| 12 | +0.785% | 0.0167 | +0.770% | 0.0125 |
+| 16 | +0.440% | 0.0125 | +0.431% | 0.0094 |
+| 20 | +0.281% | 0.0100 | +0.274% | 0.0075 |
 
 The two columns track each other to within a hundredth of a per cent while
-t/a changes by a factor of three. **The residual is not shear deformation.**
-What is left is the element's own converged answer differing from the
-tabulated coefficient by well under one per cent — and that coefficient is a
-truncated series quoted to three significant figures. At this level the
-reference is the less precise of the two numbers being compared, which is
-the honest place to stop rather than tune anything to close the gap.
+t/a changes by a factor of three. **The residual is not shear deformation** —
+it is discretisation error, and the order above says so independently. The
+control is kept because it is the measurement that distinguishes the two,
+and because it is what showed the earlier "floor" was not physical either.
 
 ### Why the support column has two numbers
 
@@ -266,6 +278,10 @@ nothing else, and it matches to 1e-10.
 native Linux binary and the Windows cross-build. Comparison is of the whole
 reply line, not of selected fields.
 
+Method: native Windows replies from binary 618368c45164, compared byte for byte against this host's. The reply file names the sha256 of the binary that
+produced it and is refused if that is not the binary this record is about,
+so a stale file cannot become a fabricated agreement.
+
 ## Performance
 
 Wall clock per solve, measured from the client side over the protocol, so it
@@ -274,16 +290,16 @@ one warm-up; the cold process start is excluded because it happens once.
 
 | blocks | members | DOF | default (ms) | min | max | ms/member | no buckling (ms) | buckling |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 3 | 1 | 12 | 0.51 | 0.464 | 0.647 | 0.510 | 0.505 | x1.01 |
-| 6 | 3 | 24 | 1.326 | 1.121 | 1.776 | 0.442 | 1.116 | x1.19 |
-| 15 | 9 | 60 | 3.408 | 3.183 | 5.748 | 0.379 | 3.335 | x1.02 |
-| 30 | 19 | 120 | 8.453 | 7.269 | 11.417 | 0.445 | 9.048 | x0.93 |
-| 60 | 39 | 240 | 18.476 | 16.379 | 27.42 | 0.474 | 17.578 | x1.05 |
-| 90 | 59 | 360 | 33.472 | 28.53 | 45.813 | 0.567 | 24.158 | x1.39 |
-| 150 | 99 | 600 | 40.687 | 37.249 | 49.356 | 0.411 | 62.511 | x0.65 |
-| 300 | 199 | 1200 | 117.358 | 100.137 | 245.327 | 0.590 | 91.001 | x1.29 |
+| 3 | 1 | 12 | 0.296 | 0.271 | 0.463 | 0.296 | 0.27 | x1.10 |
+| 6 | 3 | 24 | 0.74 | 0.665 | 0.896 | 0.247 | 0.661 | x1.12 |
+| 15 | 9 | 60 | 2.01 | 1.906 | 2.422 | 0.223 | 1.888 | x1.06 |
+| 30 | 19 | 120 | 4.142 | 3.974 | 4.994 | 0.218 | 4.049 | x1.02 |
+| 60 | 39 | 240 | 8.964 | 8.136 | 9.696 | 0.230 | 8.434 | x1.06 |
+| 90 | 59 | 360 | 13.319 | 12.181 | 16.255 | 0.226 | 13.028 | x1.02 |
+| 150 | 99 | 600 | 22.382 | 21.447 | 24.844 | 0.226 | 25.043 | x0.89 |
+| 300 | 199 | 1200 | 49.524 | 45.578 | 56.727 | 0.249 | 47.153 | x1.05 |
 
-At 199 members the whole round trip is 117.4 ms,
+At 199 members the whole round trip is 49.5 ms,
 against a Minecraft tick of 50 ms — and the solve does not run on the tick
 thread, so this is latency to a result rather than time taken from the game.
 
@@ -295,10 +311,10 @@ difference is the transport.
 
 | wire | median (ms) | min (ms) | reply size |
 |---|---:|---:|---:|
-| JSON lines | 28.28 | 25.78 | 491037 bytes over the pipe |
-| shared memory | 4.49 | 3.5 | 132536 bytes in the region, ~60-byte doorbell |
+| JSON lines | 14.32 | 13.89 | 491037 bytes over the pipe |
+| shared memory | 2.24 | 2.1 | 132536 bytes in the region, ~60-byte doorbell |
 
-Transport saving: 23.79 ms per solve (84.1%).
+Transport saving: 12.09 ms per solve (84.4%).
 Measured by `scripts/bench_transport.py`, imported and run by this script
 so the record regenerates with everything else.
 
