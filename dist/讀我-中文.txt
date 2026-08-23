@@ -7,13 +7,22 @@ Minecraft 的結構分析模組，由一個真的有限元素求解器計算。
 
 安裝
 ----
-Windows   雙擊  install.bat
-Linux     ./install.sh
-macOS     ./install.sh （僅安裝 mod：發行包尚無 macOS 引擎，分析為關閉狀態）
+把 blockreality-*.jar 丟進 mods/ 資料夾，開遊戲。就這樣——分析引擎就在 jar 裡面，
+第一次要用到的時候自己解出來。
 
-不帶參數執行時，安裝器會在原生啟動器、Prism、MultiMC、Modrinth、CurseForge 的
-慣用位置尋找 Minecraft 實例。找到一個就直接安裝，找到多個會列出來讓你選。
-也可以自己指定目錄：
+它會出現在
+
+    <遊戲目錄>/blockreality/engine/<雜湊>/br-sidecar[.exe]
+
+資料夾以二進位的 SHA-256 命名，所以更新 mod 時新引擎落在舊的旁邊而不是覆蓋它，
+寫到一半的檔案也不可能被當成好的。全程不下載任何東西：那些位元組本來就在你安裝
+的 jar 裡，雜湊記在旁邊，對不上就拒絕執行。你自己放的二進位永遠不會被動到。
+
+只有 Windows 與 Linux 的 x86-64。macOS 或 ARM 上模組照常載入、照常遊玩，分析
+關閉並說明原因。
+
+壓縮檔裡的安裝腳本是選配的，做的事一樣、外加複製那顆獨立引擎；不想自己找 mods/
+的話可以用：
 
     install.bat "D:\games\my-instance\.minecraft"
     ./install.sh ~/.minecraft
@@ -26,18 +35,22 @@ macOS     ./install.sh （僅安裝 mod：發行包尚無 macOS 引擎，分析�
 
 內容
 ----
-  blockreality-*.jar     Forge 模組                -> <實例>/mods/
-  br-sidecar.exe         分析引擎，Windows         -> <實例>/
-  br-sidecar             分析引擎，Linux           -> <實例>/
-  install.bat/.sh        安裝器
+  blockreality-*.jar     Forge 模組——光是這個檔案就是完整安裝
+  br-sidecar.exe         同一顆 Windows 引擎的獨立檔，供查驗，或在遊戲外
+                         單獨執行求解器
+  br-sidecar             同一顆 Linux 引擎的獨立檔
+  install.bat/.sh        選配安裝器
   SHA256SUMS.txt         壓縮檔內每個檔案的雜湊
+
+獨立檔與 jar 裡那兩顆逐位元相同，並且有建置 gate 釘住這件事。兩者都可重現：在另
+一台機器從原始碼建置會得到相同的雜湊。
 
 FrameCore 已靜態連結進 br-sidecar，因此沒有另外要安裝的函式庫。br-sidecar 以
 獨立程序執行，而不是由模組載入的函式庫：C++ 那側若發生錯誤，代價是一次分析失敗，
 而不是整個伺服器與存檔。
 
-模組尋找引擎的順序為：設定檔、-Dbr.sidecar、BR_SIDECAR 環境變數、遊戲目錄、PATH。
-引擎是選配的；沒有它模組仍然正常載入與遊玩，分析功能關閉並明確顯示狀態。
+模組尋找引擎的順序為：設定檔、-Dbr.sidecar、BR_SIDECAR 環境變數、jar 內附的那顆、
+遊戲目錄、PATH。明確設定排在最前面，所以你指定的路徑永遠不會被安靜地覆蓋。
 
 
 進入遊戲

@@ -139,7 +139,11 @@ echo "==> building the mod jar"
 # ship two mods in one zip, each installer picking whichever sorts last. Clear
 # first, then ASSERT the glob resolved to exactly one file.
 rm -f "$ROOT"/forge/build/libs/blockreality-*.jar
-(cd "$ROOT/forge" && ./gradlew --no-daemon build -q)
+# -PbrEngineDir points at THIS run's engines, not at whatever dist/ happens to hold.
+# The jar carries them (D-027) so that installing the mod is dropping one file into
+# mods/, which is what CurseForge and Modrinth hand a player. Building the jar from a
+# stale dist/ would ship an engine that this run's gates never touched.
+(cd "$ROOT/forge" && ./gradlew --no-daemon build -q "-PbrEngineDir=$STAGE")
 jars=("$ROOT"/forge/build/libs/blockreality-*.jar)
 if [[ ${#jars[@]} -ne 1 || ! -f "${jars[0]}" ]]; then
     echo "expected exactly one mod jar in forge/build/libs, found: ${jars[*]}" >&2
@@ -154,6 +158,12 @@ chmod +x "$STAGE/install.sh" "$STAGE/br-sidecar"
 # a heredoc here, so that editing them does not mean editing the packaging script.
 cp "$ROOT/scripts/dist-docs/START-HERE.txt" "$STAGE/"
 cp "$ROOT/scripts/dist-docs/讀我-中文.txt" "$STAGE/"
+
+# The jar must carry the engines this run built and gated, and they must be the same
+# bytes the evidence record verified and the same bytes shipping loose beside them.
+# Any two of those three agreeing is not enough (D-027).
+echo "==> checking the bundled engines"
+python3 "$ROOT/scripts/check_bundle.py" "$STAGE"
 
 # Hashes of everything that is about to be shipped, so a download can be checked
 # against the archive it claims to be. Generated last, over the finished stage.

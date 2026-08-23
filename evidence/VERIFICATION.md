@@ -12,7 +12,7 @@ binary named below; none is transcribed by hand.
 | worktree clean | True |
 | solver lane | compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT |
 | binary sha256 | `96ce970e99f3571b4d8221c8338b080433dbf05b4bef2e2eebad23d2ffb94932` |
-| windows binary sha256 | `618368c45164f9731e9953ed4e04f9aa5815c6f650ba6ad5a5929b739b7f9634` |
+| windows binary sha256 | `14880e82b9aa14e9501389c65d7e4811f87456e3c1cb103888fd58ca37a8dee3` |
 | host | Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35 |
 
 Source hashes, over content with line endings normalised to LF so the
@@ -24,7 +24,7 @@ record is checkable from a clean checkout on either platform:
 | `sidecar/json.hpp` | `f3418ff18ee405ecc77a3fcb9bb7c349e55c2f85ee37f217f4fe69a621c430dc` |
 | `sidecar/shm.hpp` | `dde97360c39dbf69ad17245667ae8f6f30a88cfebc2b7d9193228b2e3cd4b5ef` |
 | `sidecar/verify.py` | `05d31b305a963860b9754bf72aaa5241b788479b3e90b67482c2c8df84b94d44` |
-| `sidecar/CMakeLists.txt` | `7d272beffe52d0e69047f59771a333da0e9e17c0af9894ceff1f4453dfc30fa5` |
+| `sidecar/CMakeLists.txt` | `4e86e0f6a300abe01f500dbf742e1a726d87f12a12b90fe00bd6399fe9c2c08a` |
 | `scripts/evidence.py` | `c619105aed0be47bb6b7674b2cd364ce00706a6f13145cc14d726f17e465cc35` |
 
 ## Accuracy against closed-form solutions
@@ -278,7 +278,7 @@ nothing else, and it matches to 1e-10.
 native Linux binary and the Windows cross-build. Comparison is of the whole
 reply line, not of selected fields.
 
-Method: native Windows replies from binary 618368c45164, compared byte for byte against this host's. The reply file names the sha256 of the binary that
+Method: native Windows replies from binary 14880e82b9aa, compared byte for byte against this host's. The reply file names the sha256 of the binary that
 produced it and is refused if that is not the binary this record is about,
 so a stale file cannot become a fabricated agreement.
 
@@ -290,16 +290,16 @@ one warm-up; the cold process start is excluded because it happens once.
 
 | blocks | members | DOF | default (ms) | min | max | ms/member | no buckling (ms) | buckling |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 3 | 1 | 12 | 0.274 | 0.261 | 0.442 | 0.274 | 0.259 | x1.06 |
-| 6 | 3 | 24 | 0.664 | 0.644 | 1.044 | 0.221 | 0.661 | x1.00 |
-| 15 | 9 | 60 | 1.878 | 1.811 | 2.329 | 0.209 | 1.788 | x1.05 |
-| 30 | 19 | 120 | 3.997 | 3.862 | 4.145 | 0.210 | 3.92 | x1.02 |
-| 60 | 39 | 240 | 8.386 | 7.829 | 9.519 | 0.215 | 8.135 | x1.03 |
-| 90 | 59 | 360 | 13.441 | 12.43 | 15.305 | 0.228 | 12.577 | x1.07 |
-| 150 | 99 | 600 | 22.608 | 21.118 | 24.353 | 0.228 | 23.112 | x0.98 |
-| 300 | 199 | 1200 | 45.793 | 44.577 | 51.881 | 0.230 | 48.088 | x0.95 |
+| 3 | 1 | 12 | 0.297 | 0.276 | 0.555 | 0.297 | 0.292 | x1.02 |
+| 6 | 3 | 24 | 0.711 | 0.651 | 0.917 | 0.237 | 0.644 | x1.10 |
+| 15 | 9 | 60 | 1.977 | 1.892 | 2.3 | 0.220 | 1.866 | x1.06 |
+| 30 | 19 | 120 | 4.181 | 3.958 | 4.579 | 0.220 | 4.095 | x1.02 |
+| 60 | 39 | 240 | 9.136 | 8.634 | 9.675 | 0.234 | 8.92 | x1.02 |
+| 90 | 59 | 360 | 14.098 | 13.345 | 15.788 | 0.239 | 13.512 | x1.04 |
+| 150 | 99 | 600 | 24.28 | 22.854 | 26.668 | 0.245 | 23.971 | x1.01 |
+| 300 | 199 | 1200 | 48.294 | 43.444 | 50.77 | 0.243 | 47.714 | x1.01 |
 
-At 199 members the whole round trip is 45.8 ms,
+At 199 members the whole round trip is 48.3 ms,
 against a Minecraft tick of 50 ms — and the solve does not run on the tick
 thread, so this is latency to a result rather than time taken from the game.
 
@@ -311,10 +311,10 @@ difference is the transport.
 
 | wire | median (ms) | min (ms) | reply size |
 |---|---:|---:|---:|
-| JSON lines | 14.42 | 14.08 | 491037 bytes over the pipe |
-| shared memory | 2.2 | 2.12 | 132536 bytes in the region, ~60-byte doorbell |
+| JSON lines | 15.92 | 14.26 | 491037 bytes over the pipe |
+| shared memory | 2.29 | 2.13 | 132536 bytes in the region, ~60-byte doorbell |
 
-Transport saving: 12.22 ms per solve (84.7%).
+Transport saving: 13.63 ms per solve (85.6%).
 Measured by `scripts/bench_transport.py`, imported and run by this script
 so the record regenerates with everything else.
 

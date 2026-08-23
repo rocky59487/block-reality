@@ -7,14 +7,25 @@ Requires Minecraft 1.20.1 with Forge 47.x.
 
 INSTALL
 -------
-Windows   double-click  install.bat
-Linux     ./install.sh
-macOS     ./install.sh  (mod only: no macOS engine ships yet, analysis stays off)
+Put blockreality-*.jar in your mods/ folder and launch the game. That is all:
+the analysis engine is inside the jar and unpacks itself the first time it is
+needed.
 
-With no arguments the installer looks for a Minecraft instance in the usual
-locations for the vanilla launcher, Prism, MultiMC, Modrinth and CurseForge. If
-it finds one it uses it; if it finds several it lists them and asks which. You
-can also name the directory yourself:
+On first use it appears at
+
+    <game directory>/blockreality/engine/<hash>/br-sidecar[.exe]
+
+The folder is named after the binary's SHA-256, so a mod update lands beside the
+old engine instead of overwriting it, and a half-written file can never be taken
+for a good one. Nothing is downloaded: those bytes were already in the jar you
+installed, their hash is recorded beside them, and anything that does not match
+is refused rather than run. A binary you put there yourself is never touched.
+
+Windows and Linux on x86-64. On macOS or ARM the mod loads and plays normally
+with analysis disabled, and says so.
+
+The installer scripts in this archive are optional and do the same thing plus
+copying the loose engine; use them if you would rather not find mods/ by hand:
 
     install.bat "D:\games\my-instance\.minecraft"
     ./install.sh ~/.minecraft
@@ -28,21 +39,26 @@ saves/.
 
 CONTENTS
 --------
-  blockreality-*.jar     the Forge mod                 -> <instance>/mods/
-  br-sidecar.exe         the analysis engine, Windows  -> <instance>/
-  br-sidecar             the analysis engine, Linux    -> <instance>/
-  install.bat/.sh        installer
+  blockreality-*.jar     the Forge mod - this alone is a complete install
+  br-sidecar.exe         the same Windows engine, loose, for checking or for
+                         running the solver outside the game
+  br-sidecar             the same Linux engine, loose
+  install.bat/.sh        optional installer
   SHA256SUMS.txt         hashes of every file in this archive
+
+The loose engines are byte-identical to the copies inside the jar, and a build
+gate holds them to that. Both are reproducible: building from source on another
+machine gives the same hashes.
 
 FrameCore is statically linked into br-sidecar, so there is no separate library
 to install. br-sidecar runs as its own process rather than as a library loaded
 by the mod: a fault in the C++ costs one analysis rather than the server and the
 save.
 
-The mod locates the engine in this order: the config file, -Dbr.sidecar, the
-BR_SIDECAR environment variable, the game directory, then PATH. The engine is
-optional — without it the mod loads and plays normally, with analysis disabled
-and reported as such.
+The mod looks for the engine in this order: the config file, -Dbr.sidecar, the
+BR_SIDECAR environment variable, the copy bundled in the jar, the game
+directory, then PATH. Explicit settings come first, so a path you chose is never
+quietly overridden.
 
 
 IN GAME

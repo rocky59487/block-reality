@@ -1,6 +1,6 @@
 # Block Reality — research brief
 
-**Release:** v0.2a · 23 August 2026  
+**Release:** v0.3a · 23 August 2026  
 **Repository:** https://github.com/rocky59487/block-reality  
 **Platform:** Minecraft Java 1.20.1 · Forge 47.x  
 **License:** Apache-2.0
@@ -32,7 +32,7 @@ backend disables analysis explicitly while leaving the mod playable.
 
 ## Implemented numerical scope
 
-| Area | v0.2a |
+| Area | v0.3a |
 |---|---|
 | Members | 3D 6-DOF beam/column members |
 | Plates | MITC4 shell facets for floors and shear walls |
@@ -48,10 +48,10 @@ tokens are intentionally named by what the solver actually receives.
 
 ## Verification snapshot
 
-| Evidence | v0.2a result |
+| Evidence | v0.3a result |
 |---|---|
 | Engine checks | 251/251 passing; each uses a closed form or solver-independent invariant |
-| Java tests | 188/188 passing; 28 start the real sidecar and FrameCore |
+| Java tests | 201/201 passing; 28 start the real sidecar and FrameCore |
 | Closed-form, non-zero | 31 references; worst relative error 1.6e-10 |
 | Closed-form, zero | 10 references; worst absolute residual 1.5e-08 |
 | Clamped square plate | 0.57% span-moment error at 20 elements/side; 2.7% recovered support-moment error |
@@ -71,7 +71,7 @@ source of truth when this summary and the evidence ever disagree.
 - Reinforced-concrete composite sections are not implemented.
 - Buckling is the linear onset, not a nonlinear post-buckling path.
 - Construction sequence, persistent damage, fracture and progressive collapse are not in
-  v0.2a.
+  v0.3a.
 - The current support rule is intentionally narrow: a structural block is grounded only
   when the directly-below neighbour is solid and non-structural.
 - This is research and education software, not a building-code checker or a tool for

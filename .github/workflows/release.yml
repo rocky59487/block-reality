@@ -101,6 +101,11 @@ jobs:
                 win["sha256"][:12], eng["commit"][:12])
           PY
 
+      # The jar a player installs from CurseForge or Modrinth IS the release, so the
+      # engines inside it are gated here too, not only in CI (D-027).
+      - name: the jar carries the engines the evidence verified
+        run: python3 scripts/check_bundle.py dist
+
       - name: Build archive
         id: pack
         run: |
@@ -138,6 +143,9 @@ jobs:
               touch, not three that ignore each other
             - every number is gated: 251 acceptance checks against closed forms and
               invariants per build, record in `evidence/VERIFICATION.md`
+            - one jar to install: the engine travels inside it and unpacks itself,
+              verified against a hash recorded beside it, with no network access at any
+              point
 
             **Commands that change something** — `/br load`, `/br unload`, `/br scan`,
             `/br resolve` and `/br reset` — need operator level 2, which a single-player
@@ -153,12 +161,17 @@ jobs:
             - linear elastic only; the buckling factor is the linear onset, an upper
               bound on the real critical load
 
-            **Install**: download `${{ steps.pack.outputs.archive }}`, extract, then
-            run `install.bat` on Windows or `./install.sh` on Linux. The installer
-            finds your Minecraft instance and copies the mod and the engine in.
-            macOS: the mod installs and plays, but no macOS engine binary ships yet —
-            analysis stays off unless you build `br-sidecar` from source.
+            **Install**: put `blockreality-${{ steps.v.outputs.version }}.jar` in your
+            `mods/` folder and launch the game. That is the whole procedure — the analysis
+            engine is inside the jar and unpacks itself on first use, to
+            `<game directory>/blockreality/engine/<hash>/`. **Nothing is downloaded**: the
+            bytes were already in the jar, their SHA-256 is recorded beside them, and
+            anything that does not match is refused rather than run. A binary you put
+            there yourself is never touched. Windows and Linux x86-64; on macOS or ARM the
+            mod plays normally with analysis disabled and says so.
 
-            Contents: the mod jar, the analysis engine for Windows and Linux x86-64,
-            the installers, and instructions in `START-HERE.txt` and `讀我-中文.txt`.
-            `SHA256SUMS.txt` lists the hash of every file.
+            The archive also carries both engines loose, with `SHA256SUMS.txt`, optional
+            installer scripts, and instructions in `START-HERE.txt` and `讀我-中文.txt`.
+            The loose binaries are byte-identical to the ones inside the jar and a build
+            gate holds them to that; both are byte-reproducible, so building the engine
+            from source on another machine gives the same hashes.

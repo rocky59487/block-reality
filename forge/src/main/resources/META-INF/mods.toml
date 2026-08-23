@@ -1,11 +1,12 @@
 modLoader = "javafml"
 loaderVersion = "[47,)"
 license = "Apache-2.0"
+logoFile = "blockreality_icon.png"
 issueTrackerURL = "https://github.com/rocky59487/block-reality/issues"
 
 [[mods]]
 modId = "blockreality"
-version = "0.2a"
+version = "0.3a"
 displayName = "Block Reality"
 authors = "rocky59487"
 description = '''
@@ -15,7 +16,13 @@ Blocks placed in the world are extracted into beam members and solved by FrameCo
 separate process. The stress glasses show the result: tension and compression across the
 section depth, the neutral axis, and demand over capacity per member.
 
-The engine is optional. Without it the mod loads and plays normally, and says so.
+The analysis engine travels inside this jar and unpacks itself the first time it is
+needed — there is nothing else to download or install. It runs as a separate process, so a
+fault in the C++ costs one analysis rather than your server or your world. Nothing here
+reaches the network.
+
+No engine ships for macOS or for ARM yet. There the mod loads and plays normally with
+analysis disabled, and says so.
 '''
 
 [[dependencies.blockreality]]

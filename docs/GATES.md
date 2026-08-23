@@ -88,11 +88,26 @@
 | 2026-08-20 | verify.py `check()` 零參考語意（TEST-8） | expect=0 時 rel=\|got\|/1e-30,任何容差都退化成 exact-zero 斷言——呼叫者以為給了 slack,實際沒有 | 五個零參考站點:四個 tol=1e-30（新舊語意等效）,一個 tol=1e-10（C11 平衡殘差,舊語意實際要求恰為 0 且恰好一直是 0） | expect=0 改走**絕對比較** \|got\|≤tol,與 evidence.py 一貫的雙指標同構 | C11 那條從「恰為 0」放寬到「≤1e-10 絕對」——這是**放寬**,照登;放寬後的線即為作者當初寫下 1e-10 時的本意 |
 | 2026-08-20 | `SidecarEngineTest.shmAndJsonTransportsAgree` 比對集合（TEST-2） | 只比部分欄位 | 比對洞:六分量端力兩端、islands/singularIslands/unassigned、field 14 分量、shell 8 內力+ex/ey/n/material/thickness 全未比 | **加嚴**:全欄位、容差 0.0,對真引擎執行 | 加嚴無需降級;先前「T-gate 保護 Java 解碼器」的 javadoc 宣稱為假,已同步改寫 |
 
+| 2026-08-23 | Windows 引擎的位元可重現性 | 上一輪 commit 訊息宣稱「mingw 交叉建置是位元可重現的」 | **錯的**。當時之所以雜湊相同,是因為 cmake 判定 up-to-date 根本沒有重新連結。真正重建後兩顆 4108756 位元組的檔案**差 4 個位元組**:PE 標頭 0x88 的 TimeDateStamp 與 0xd8 的回音,其餘完全相同 | 加 `-Wl,--no-insert-timestamp`。兩次乾淨建置實測雜湊相同 | 上一輪的宣稱**撤回**並在此更正。Linux 建置本來就沒有這個欄位,一直是位元相同的 |
 | 2026-08-21 | verify.py [S4]／[S9] 夾支方板中心彎矩參考係數 | `0.0231`（Timoshenko Table 35 / Roark 11.4 case 8a）,8 元素容差 1% | 參考係數本身是錯的。13 點差分解雙調和方程 n=20/40/80 + Richardson 外推得 **0.02290512**;同一次運算把該表另外兩欄逐位重現（w_max 0.00126532 對 0.00126、M_edge −0.0513338 對 −0.0513）。三取二相符、不符的那個差 0.85%,而三位有效數字捨入只能解釋 ±0.217%。改用真值後,8/12/20 元素的誤差是 1.75%／0.79%／0.28% | 判準**改成收斂階**：per-mesh 線 2.0%／1.0%／0.4%,加上 h→h/2 誤差比對應的 p = 2.0 ± 0.075（實測 1.983、2.014）。8 元素那條線 1% → 2%,照鐵則 1 登記 | 下游降級:evidence 舊表的「收斂地板」敘事**撤回**——那是錯參考解造出來的假象,不是 MITC4 的性質。舊表引用的 20 元素 0.57% 亦作廢（真值 0.28%,雖然更好,但那個數字當時不可信）|
 | 2026-08-21 | `.github/workflows/ci.yml` engine-gates job | 「CI 綠是 merge 條件」——實際上該 job **恆綠** | `cmd \| tail -3` 在 GitHub 隱含的 `bash -e`（無 pipefail）下回報 tail 的退出碼。本機兩路實測:`bash -e` → 0,`bash -eo pipefail` → 1 | workflow 層 `defaults: run: shell: bash`,使 GitHub 改用 `bash --noprofile --norc -eo pipefail` | 下游降級:**2026-08-20 之前所有「CI 綠」的引用一律無效**,包含本表上一節末句與 RELEASING.md。第一次真正紅的執行:commit `7d9982e`,run 32621276032,engine-gates job failure,失敗原因是本次新增的 19 條 gate |
 | 2026-08-21 | 紀律自登:本輪 [C16]/[J1]/[J2]/[J3]/[P1]/[P2] 六節新 gate | — | 判準先 commit（`7d9982e`,對出貨引擎 **FAILED 19 of 251**,輸出全文在該 commit 的 CI run 32621276032）,實作在下一個 commit（`e8c39cb`）轉綠 | 鐵則 1 **完整滿足**,含 D-4 建議的「先 commit 紅版 gate」 | 無;這是本表第一次不必登記順序滑失 |
 | 2026-08-21 | 出貨文件的檢查項計數 | 人工抄寫 | 「219」出現在九份文件與 GitHub Release body,真值 218（`grep -c PASS` 把結尾 ALL PASS 也算了）;151／164／216 三個更舊的數字同時仍活在 outreach 文件裡 | verify.py 自印總數,`scripts/check_docs.py` 逐份文件比對,pattern 對不上檔案即 **FAIL 而非 skip** | 舊 Release body 的「219 acceptance checks」為**對外不實陳述**,以本次發行的真值取代 |
 | 2026-08-21 | dist/br-sidecar.exe | 無任何 gate:不比雜湊、不在 evidence、連存在與否都沒人檢查 | 端到端模擬:拿掉 .exe 後照 package.sh 重生 SHA256SUMS,四道 gate 全綠 | package.sh 缺 mingw 直接 `exit 1`（除非 `ALLOW_NO_WINDOWS=1`）;evidence 記 `identity.binary_windows`;ci.yml 與 release.yml 各比一次雜湊 | 下游:v0.1a／v0.2a 之前所有「跨平台出貨」宣稱只有 Linux 那顆有紀錄支撐 |
+
+### 2026-08-23 新增的 gate（引擎隨 jar，D-027）
+
+- `BundledEngineTest`（11 條，`mod/core`）—— 解壓縮**就是安裝程序**,所以它會寫錯位元組、
+  寫半個檔、或覆蓋玩家自己放的二進位,都比它取代掉的手動步驟更糟。逐條:manifest 半懂就
+  報錯而非略過、平台選錯寧可不給、首次解出正確位元組且路徑以雜湊命名、第二次啟動不重寫、
+  磁碟上被改壞會被換掉、**jar 位元組與 manifest 不符則什麼都不解**、開發用 jar 沒有引擎也
+  照常、不支援的平台被告知該怎麼辦、舊引擎會清掉而無關資料夾不動、任何失敗都不得往
+  mod 載入丟例外
+- `scripts/check_bundle.py`（CI 與 release 各跑一次）—— **三個雜湊必須一致**:jar 裡的位元組
+  == 旁邊的 manifest == evidence 紀錄驗過的那顆 == `dist/` 裡獨立出貨的那顆。任兩個相符
+  都不夠;jar 對 evidence 那條抓的才是真正會痛的情況——用一顆從未過 gate 的引擎打包
+- **端到端（本輪實跑，非單元測試）**:用真正的 jar 在 Linux 與 Windows 各解一次,解出來的
+  二進位**跑完整驗收套件 251/251**;把它改壞後再啟動會被換掉,換掉後仍 251/251
 
 ### 2026-08-21 新增的 gate
 

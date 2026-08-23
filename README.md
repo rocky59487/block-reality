@@ -5,15 +5,15 @@
 > **A playable structural-analysis laboratory inside Minecraft.** Build a structure,
 > apply loads, and inspect its load path instead of guessing why it works.
 
-[Download v0.2a](https://github.com/rocky59487/block-reality/releases/download/v0.2a/blockreality-0.2a.zip)
+[Download v0.3a](https://github.com/rocky59487/block-reality/releases/download/v0.3a/blockreality-0.3a.zip)
 · [Quick start](QUICKSTART.md)
 · [Research brief](docs/RESEARCH_BRIEF.md)
 · [Verification record](evidence/VERIFICATION.md)
 · [Share technical feedback](https://github.com/rocky59487/block-reality/issues/new?template=research-feedback.yml)
 
 ![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A)
-![Release v0.2a](https://img.shields.io/badge/release-v0.2a-3B82F6)
-![Verification](https://img.shields.io/badge/verification-251_engine_%2B_188_Java_checks-passing)
+![Release v0.3a](https://img.shields.io/badge/release-v0.3a-3B82F6)
+![Verification](https://img.shields.io/badge/verification-251_engine_%2B_201_Java_checks-passing)
 [![License](https://img.shields.io/github/license/rocky59487/block-reality)](LICENSE)
 
 Block Reality is a structural analysis mod for Minecraft 1.20.1. Blocks placed in the
@@ -60,18 +60,28 @@ continue.
 
 ## Install
 
-1. Download
-   [**`blockreality-0.2a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.2a/blockreality-0.2a.zip)
-   (2.4 MB). Later versions are on the
-   [Releases page](https://github.com/rocky59487/block-reality/releases/latest).
-2. Extract it, then run `install.bat` on Windows or `./install.sh` on Linux.
-   (macOS: the mod installs and plays, but no macOS engine binary ships yet —
-   analysis stays off unless you build `br-sidecar` from source.)
-3. Launch the game the way you normally do.
+**Put `blockreality-0.3a.jar` in your `mods/` folder and launch the game.** That is the
+whole procedure; the analysis engine is inside the jar and unpacks itself the first time
+it is needed. Get the jar from CurseForge, from Modrinth, or from the
+[Releases page](https://github.com/rocky59487/block-reality/releases/latest).
 
-With no arguments the installer looks for a Minecraft instance in the usual locations for
-the vanilla launcher, Prism, MultiMC, Modrinth and CurseForge. If it finds several it
-lists them and asks which. You can also name the game directory yourself:
+On first use the engine appears at
+`<game directory>/blockreality/engine/<hash>/br-sidecar[.exe]`. The folder is named after
+the binary's SHA-256, so a mod update lands beside the old one instead of overwriting it,
+and a half-written file can never be mistaken for a good one. **Nothing is downloaded** —
+the bytes were already in the jar you installed, their hash is recorded beside them, and
+anything that does not match is refused rather than run. A binary you put there yourself
+is never touched.
+
+Windows and Linux on x86-64 only. On macOS or ARM the mod loads and plays normally with
+analysis disabled and says so; build `br-sidecar` from source and point `sidecarPath` at
+it if you want analysis there.
+
+<details>
+<summary>The full archive, for verifying or running the engine outside the game</summary>
+
+[**`blockreality-0.3a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.3a/blockreality-0.3a.zip)
+also ships both engines loose, with `SHA256SUMS.txt` and installer scripts:
 
 ```
 install.bat "D:\games\my-instance\.minecraft"
@@ -79,21 +89,24 @@ install.bat "D:\games\my-instance\.minecraft"
 ./install.sh --list      # list what was found, install nothing
 ```
 
-What is in the archive:
-
 | | |
 |---|---|
-| `blockreality-*.jar` | the Forge mod, installed into `<instance>/mods/` |
-| `br-sidecar` / `br-sidecar.exe` | the analysis engine, installed into `<instance>/` |
+| `blockreality-*.jar` | the Forge mod — this alone is a complete install |
+| `br-sidecar` / `br-sidecar.exe` | the same engines, loose, for checking or for running standalone |
 | `START-HERE.txt` / `讀我-中文.txt` | instructions, English and Chinese |
 | `SHA256SUMS.txt` | SHA-256 of every file |
 
+The loose binaries are byte-identical to the ones inside the jar, and a build gate holds
+them to that. Both are reproducible: building the engine from source on another machine
+gives the same hashes.
+</details>
+
 FrameCore is statically linked into `br-sidecar`, so there is no separate library to
-install. `br-sidecar` runs as its own process rather than as a library loaded by the mod
-(D-013), so a fault in the C++ costs one analysis rather than the server and the save. The
-mod locates the engine through the config file, `-Dbr.sidecar`, `BR_SIDECAR`, the game
-directory, then `PATH`. The engine is optional: without it the mod loads and plays
-normally, with analysis disabled and reported as such.
+install. It runs as its own process rather than as a library loaded by the mod (D-013), so
+a fault in the C++ costs one analysis rather than the server and the save. The mod looks
+for the engine in this order: the config file, `-Dbr.sidecar`, `BR_SIDECAR`, the copy
+bundled in the jar, the game directory, then `PATH` — explicit settings first, so a path
+you chose is never quietly overridden.
 
 ### Running from source
 
@@ -205,7 +218,7 @@ a gate that has run — is why this paragraph exists rather than a quieter omiss
 | | |
 |---|---|
 | Engine | `sidecar/verify.py`, 251 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
-| Java | 188 tests, all passing (155 pure-Java, 33 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real |
+| Java | 201 tests, all passing (168 pure-Java, 33 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real |
 | Closed form | 31 non-zero references, worst relative error 1.2e-14; 10 zero references, worst absolute residual 1.5e-08. (Two earlier releases quoted 1.6e-10 here — that floor turned out to be the old wire's 10-digit truncation, not the engine) |
 | Transport | numbers cross as raw little-endian doubles in shared memory, never textualised; the JSON fallback prints 17 significant digits. Gate: three representative solves bit-identical across both transports |
 | Shell convergence | clamped square plate: span moment 1.75% at 8 elements down to 0.28% at 20, observed convergence order 2.06; recovered support moment 2.7% at 20 |
@@ -232,6 +245,7 @@ rather than read back out of the assembled load vector. The full record is in
 | [`docs/GATES.md`](docs/GATES.md) | acceptance criteria |
 | [`evidence/VERIFICATION.md`](evidence/VERIFICATION.md) | verification record, generated |
 | [`docs/outreach/`](docs/outreach/OUTREACH.md) | academic outreach, community posting and funding playbooks |
+| [`docs/outreach/LISTING.md`](docs/outreach/LISTING.md) | CurseForge and Modrinth listing copy, and the bundled-binary disclosure |
 | [`CLAUDE.md`](CLAUDE.md) | development guide and invariants |
 
 ## License
@@ -252,7 +266,7 @@ components keep their own licences and copyright notices.
 > **Minecraft 裡可直接玩的結構分析實驗室。** 蓋出結構、施加荷載，再沿著荷載路徑理解它為什麼成立，
 > 而不是只看一場預先編好的倒塌動畫。
 
-[下載 v0.2a](https://github.com/rocky59487/block-reality/releases/download/v0.2a/blockreality-0.2a.zip)
+[下載 v0.3a](https://github.com/rocky59487/block-reality/releases/download/v0.3a/blockreality-0.3a.zip)
 · [快速上手](QUICKSTART.md)
 · [研究簡報](docs/RESEARCH_BRIEF.md)
 · [驗證紀錄](evidence/VERIFICATION.md)
@@ -294,16 +308,23 @@ Block Reality 是實驗性的研究與教育軟體，**不是**建築法規檢�
 
 ## 安裝
 
-1. 下載
-   [**`blockreality-0.2a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.2a/blockreality-0.2a.zip)
-   （2.4 MB）。之後的版本在
-   [Releases 頁](https://github.com/rocky59487/block-reality/releases/latest)
-2. 解壓縮後，Windows 執行 `install.bat`，Linux 執行 `./install.sh`
-   （macOS：mod 可安裝可玩，但發行包尚無 macOS 版引擎——除非自行建置 `br-sidecar`，分析為關閉狀態）
-3. 用平常的啟動器開遊戲
+**把 `blockreality-0.3a.jar` 丟進 `mods/` 資料夾，開遊戲。** 就這樣——分析引擎就在 jar 裡面，
+第一次要用到的時候自己解出來。jar 可以從 CurseForge、Modrinth，或
+[Releases 頁](https://github.com/rocky59487/block-reality/releases/latest)取得。
 
-安裝器不帶參數執行時，會在原生啟動器、Prism、MultiMC、Modrinth、CurseForge 的慣用位置尋找
-Minecraft 實例；找到多個會列出來讓你選。也可以自行指定遊戲目錄：
+引擎會出現在 `<遊戲目錄>/blockreality/engine/<雜湊>/br-sidecar[.exe]`。資料夾以二進位的
+SHA-256 命名，所以更新 mod 時新引擎落在舊的旁邊而不是覆蓋它，寫到一半的檔案也不可能被
+當成好的。**全程不下載任何東西**——那些位元組本來就在你安裝的 jar 裡，雜湊記在旁邊，
+對不上就拒絕執行。你自己放的二進位永遠不會被動到。
+
+只有 Windows 與 Linux 的 x86-64。macOS 或 ARM 上模組照常載入、照常遊玩，分析關閉並說明原因；
+想在那裡分析請自行建置 `br-sidecar` 並用 `sidecarPath` 指向它。
+
+<details>
+<summary>完整壓縮檔——想驗證引擎、或想在遊戲外執行它的話</summary>
+
+[**`blockreality-0.3a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.3a/blockreality-0.3a.zip)
+另外附上兩顆引擎的獨立檔、`SHA256SUMS.txt` 與安裝腳本：
 
 ```
 install.bat "D:\games\my-instance\.minecraft"
@@ -311,19 +332,21 @@ install.bat "D:\games\my-instance\.minecraft"
 ./install.sh --list      # 只列出找到的實例，不安裝
 ```
 
-壓縮檔內容：
-
 | | |
 |---|---|
-| `blockreality-*.jar` | Forge 模組，安裝至 `<實例>/mods/` |
-| `br-sidecar` / `br-sidecar.exe` | 分析引擎，安裝至 `<實例>/` |
+| `blockreality-*.jar` | Forge 模組——光是這個檔案就是完整安裝 |
+| `br-sidecar` / `br-sidecar.exe` | 同樣的兩顆引擎，獨立檔，供查驗或單獨執行 |
 | `START-HERE.txt` / `讀我-中文.txt` | 說明文件，英文與中文 |
 | `SHA256SUMS.txt` | 每個檔案的 SHA-256 |
 
-FrameCore 已靜態連結進 `br-sidecar`，沒有另外要安裝的函式庫。`br-sidecar` 以獨立程序執行而非
-由模組載入（D-013），因此 C++ 端的錯誤只影響一次分析，不影響伺服器與存檔。模組尋找引擎的順序
-為設定檔、`-Dbr.sidecar`、`BR_SIDECAR`、遊戲目錄、`PATH`。引擎為選配，沒有它模組仍正常載入，
-分析功能關閉並顯示狀態。
+獨立檔與 jar 裡那兩顆逐位元相同，並且有建置 gate 釘住這件事。兩者都可重現：在另一台機器
+從原始碼建置引擎會得到相同的雜湊。
+</details>
+
+FrameCore 已靜態連結進 `br-sidecar`，沒有另外要安裝的函式庫。它以獨立程序執行而非由模組
+載入（D-013），因此 C++ 端的錯誤只影響一次分析，不影響伺服器與存檔。模組尋找引擎的順序為：
+設定檔、`-Dbr.sidecar`、`BR_SIDECAR`、**jar 內附的那顆**、遊戲目錄、`PATH`——明確設定排在
+最前面，所以你指定的路徑永遠不會被安靜地覆蓋。
 
 ### 從原始碼執行
 
@@ -413,7 +436,7 @@ fallback 與除錯面）。wire 上的每一個力學數值都是引擎函式的
 | | |
 |---|---|
 | 引擎 | `sidecar/verify.py` 251 項全過，每一項都對閉合解、不依賴求解器的不變量,或傳輸等價 oracle |
-| Java | 188 項測試全過（純 Java 155、Forge 側 33），其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore |
+| Java | 201 項測試全過（純 Java 168、Forge 側 33），其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore |
 | 對閉合解 | 31 項非零參考，最差相對誤差 1.2e-14；10 項零參考，最差絕對殘差 1.5e-08。（前兩版在這裡引用的 1.6e-10,後來查明是舊 wire 的 10 位截斷,不是引擎） |
 | 傳輸 | 數值以 raw little-endian double 走共用記憶體,從不文字化;JSON fallback 印 17 位有效數字。gate:三個代表案兩種傳輸逐位元相同 |
 | 板元素收斂 | 固端方形板：跨中彎矩 8 元素 1.75%、20 元素 0.28%，實測收斂階 2.06；還原後的支承彎矩 20 元素 2.7% |
@@ -439,6 +462,7 @@ fallback 與除錯面）。wire 上的每一個力學數值都是引擎函式的
 | [`docs/GATES.md`](docs/GATES.md) | 驗收判準 |
 | [`evidence/VERIFICATION.md`](evidence/VERIFICATION.md) | 驗證紀錄，自動產生 |
 | [`docs/outreach/`](docs/outreach/OUTREACH.md) | 學術合作、社群發佈與資助申請的行動手冊 |
+| [`docs/outreach/LISTING.md`](docs/outreach/LISTING.md) | CurseForge／Modrinth 上架文案與原生執行檔申報 |
 | [`CLAUDE.md`](CLAUDE.md) | 開發指引與不變式 |
 
 ## 授權
