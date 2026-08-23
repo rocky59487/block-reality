@@ -309,7 +309,9 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
         return it != grid.end() && !isPlate(it->second.section);
     };
 
-    for (const BlockPos& axis : kAxes) {
+    std::vector<int> runAxis;
+    for (int ax = 0; ax < 3; ++ax) {
+        const BlockPos& axis = kAxes[ax];
         for (const auto& [pos, blk] : grid) {
             if (isPlate(blk.section)) continue;
             // Only start at a run head: the previous cell must not continue this run.
@@ -324,24 +326,75 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
                 run.push_back(cur);
                 cur = add(cur, axis);
             }
-            // Bearing: extend into an adjacent plate block at either end so the run ENDS
-            // on the shell node instead of one block short of it. Without this a steel
-            // column under a concrete slab stops at its own top block, the slab hangs on
-            // nothing, and the whole model is a mechanism — while every member in it still
-            // reports a believable stress.
-            const BlockPos before = sub(run.front(), axis);
-            if (shellNodes.count(before)) run.insert(run.begin(), before);
-            const BlockPos beyond = add(run.back(), axis);
-            if (shellNodes.count(beyond)) run.push_back(beyond);
 
             // A single block is L/h = 1 — not a valid beam element. Skipped here and
             // reported back so the game side can tell the player why nothing appeared.
+            //
+            // This filter now runs BEFORE the extension pass, and that ordering is the
+            // fix: with it after, a lone beam block sitting on a slab was extended into
+            // the slab's node and shipped as a spurious one-metre member carrying the
+            // beam's full section. The bearing rule fires on all three axes, so a plate
+            // merely underneath a beam grew a vertical member out of it and inflated the
+            // model's self weight 2.3x (PR26_REVIEW MECH-03). Only a run that is already
+            // a member may bear on anything.
             if (run.size() >= 2) {
                 rawRuns.push_back(std::move(run));
                 runMat.push_back(blk.mat);
                 runSec.push_back(blk.section);
+                runAxis.push_back(ax);
             }
         }
+    }
+
+    // Which axes' runs claim each block, from the runs AS FOUND. A run may then extend
+    // into a block that already belongs to another run, and that shared block is the node
+    // where the two meet.
+    std::map<BlockPos, std::set<int>> claimedBy;
+    for (size_t r = 0; r < rawRuns.size(); ++r)
+        for (const BlockPos& p : rawRuns[r]) claimedBy[p].insert(runAxis[r]);
+
+    // Extension pass. Two rules, both saying "end ON the shared node, not one block short":
+    //
+    //  1. BEARING on a plate. Without it a steel column under a concrete slab stops at its
+    //     own top block, the slab hangs on nothing, and the whole model is a mechanism —
+    //     while every member in it still reports a believable stress.
+    //
+    //  2. BUTT JOINT across a change of material (MEMBER_SEMANTICS 7.4 rule 2: two runs
+    //     whose endpoint blocks are face-adjacent share a node). Runs break at a change of
+    //     material because two materials are two members — but nothing then JOINED them,
+    //     and nothing else could: the only other route to a shared node is a shared block,
+    //     which continues() had just refused to create. A timber beam on brick piers was
+    //     therefore three islands; the beam's had no support, so it left the answer
+    //     entirely — no member row, no self weight in applied, and a 500 kN load a player
+    //     hung on it came back ok:true with nothing moved (PR26_REVIEW A-1). That
+    //     contradicts MEMBER_SEMANTICS 7.6 in as many words: joint stiffness follows from
+    //     HOW it is joined, not from the material. Same-material joints have always worked
+    //     exactly this way — continues() swallows the neighbouring block and useCount makes
+    //     it a node — so this gives the cross-material case the same treatment rather than
+    //     inventing a second mechanism for it.
+    //
+    // At a COLLINEAR butt joint only one of the two runs may extend, or both grow into each
+    // other and the joint metre is modelled twice, in parallel, with two different sections.
+    // The rule: a run extends forward into its neighbour; it extends BACKWARD only when the
+    // block behind it is not claimed by a run along its own axis, because such a run is
+    // already coming forward to meet it.
+    for (size_t r = 0; r < rawRuns.size(); ++r) {
+        std::vector<BlockPos>& run = rawRuns[r];
+        const BlockPos& axis   = kAxes[runAxis[r]];
+        const BlockPos  before = sub(run.front(), axis);
+        const BlockPos  beyond = add(run.back(), axis);
+        auto joinable = [&](const BlockPos& q, bool backward) {
+            auto it = grid.find(q);
+            if (it == grid.end() || isPlate(it->second.section)) return false;
+            auto cb = claimedBy.find(q);
+            if (cb == claimedBy.end()) return false;   // a lone block is nobody's member
+            if (backward && cb->second.count(runAxis[r])) return false;   // it comes to us
+            return true;
+        };
+        if (shellNodes.count(before))     run.insert(run.begin(), before);
+        else if (joinable(before, true))  run.insert(run.begin(), before);
+        if (shellNodes.count(beyond))     run.push_back(beyond);
+        else if (joinable(beyond, false)) run.push_back(beyond);
     }
 
     // Junction detection: a block shared by two runs, or a support, is a node.
@@ -381,6 +434,28 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
         }
     }
 
+    // A span with a support at BOTH ends and nothing between them has no interior node,
+    // so the model carries no degree of freedom anywhere along it. A five-block beam
+    // resting on the ground at each end came back nodes:2, dof:12, every DOF constrained;
+    // FrameCore correctly reported "fully constrained (no free DOF)" and the game showed
+    // that to the player as "nothing is holding this up" — the exact opposite of the
+    // truth, on a shape dist/START-HERE.txt tells them to build (PR26_REVIEW A-6).
+    //
+    // One interior node is enough. Euler-Bernoulli elements with consistent load vectors
+    // are EXACT AT THEIR NODES, so two elements reproduce a fixed-fixed beam's midspan
+    // deflection and its whole moment diagram; more elements would only cost DOF.
+    std::set<BlockPos> spanNodes;
+    for (const auto& run : rawRuns) {
+        size_t last = 0;
+        for (size_t k = 1; k < run.size(); ++k) {
+            if (!nodeBlocks.count(run[k]) && k + 1 != run.size()) continue;
+            if (k - last >= 2 && grid.at(run[last]).support && grid.at(run[k]).support)
+                spanNodes.insert(run[(last + k) / 2]);
+            last = k;
+        }
+    }
+    nodeBlocks.insert(spanNodes.begin(), spanNodes.end());
+
     std::vector<RunSeg> out;
     for (size_t r = 0; r < rawRuns.size(); ++r) {
         const auto& run = rawRuns[r];
@@ -400,10 +475,18 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
                 //
                 // A bearing plate block declares a PLATE token, which names no beam
                 // section, so the search walks past it to the first block that does.
+                //
+                // It must also be a block of THIS segment's own material: the extension
+                // pass can put a foreign block at either end of a run, and taking its
+                // section would give a brick pier a timber section because the timber
+                // beam it butts against happens to come first in the list.
                 seg.section.clear();
                 for (const BlockPos& p : seg.blocks) {
-                    const std::string& s = grid.at(p).section;
-                    if (!isPlate(s)) { seg.section = s; break; }
+                    const InBlock& ib = grid.at(p);
+                    if (!isPlate(ib.section) && ib.mat == seg.mat) {
+                        seg.section = ib.section;
+                        break;
+                    }
                 }
                 if (seg.blocks.size() >= 2 && !seg.section.empty()) out.push_back(std::move(seg));
                 start = k;
@@ -602,6 +685,7 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
 
     // Nodes sit at block centres, so a block shared by two runs is one node.
     std::map<BlockPos, int> nodeId;
+    bool anyFreeNode = false;
     auto nodeFor = [&](const BlockPos& p) -> int {
         auto it = nodeId.find(p);
         if (it != nodeId.end()) return it->second;
@@ -617,6 +701,7 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         frame::Node n(id, p.x * kBlockMm + h, p.z * kBlockMm + h, p.y * kBlockMm + h);
         auto blk = grid.find(p);
         if (blk != grid.end() && blk->second.support) n.fixAll();
+        else                                         anyFreeNode = true;
         m.nodes.push_back(n);
         nodeId[p] = id;
         return id;
@@ -751,6 +836,34 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
     // FrameCore keeps it opt-in to preserve a bit-identical OpenSees ShellMITC4 PLATE gate;
     // it touches the membrane block only, and the plate-bending convergence table in
     // evidence/VERIFICATION.md is unchanged to every digit with it on.
+    // EVERY node of this island is grounded. There is no system to solve — FrameCore
+    // says exactly that ("fully constrained (no free DOF)") and reports it as singular,
+    // which this file then counted as a mechanism and the HUD printed as "nothing is
+    // holding this up", to a player who had laid a beam flat on the ground. It is the
+    // opposite of the truth and it is not a mechanism (PR26_REVIEW A-6).
+    //
+    // Most of that case is gone before it reaches here: a span with a support at each end
+    // now gets an interior node in extractRuns, so it has degrees of freedom and solves
+    // normally. What is left is genuinely immobile — a run whose every block is grounded.
+    // It counts as a structure, it is NOT counted as a mechanism, and its blocks are
+    // reported so the game can say why no member appeared for them rather than leaving
+    // the player with an empty list and no reason.
+    if (!anyFreeNode) {
+        ++out.islands;
+        out.nodes += static_cast<int>(m.nodes.size());
+        if (out.diagnostic.empty()) {
+            out.diagnostic = "fully supported: every node of one structure is grounded, so "
+                             "it has no degree of freedom and no internal response to solve";
+        }
+        std::set<BlockPos> immobile;
+        for (const auto& seg : segs)
+            for (const BlockPos& bp : seg.blocks) immobile.insert(bp);
+        for (const auto& q : quads)
+            for (const BlockPos& c : q.c) immobile.insert(c);
+        for (const BlockPos& bp : immobile) out.unassigned.push_back(bp);
+        return true;
+    }
+
     frame::SolveOptions sopts;
     sopts.useIncompatibleMembrane = true;
     // Shell geometric stiffness, on. Without it the buckling analysis is blind to plates:
