@@ -133,9 +133,17 @@ jobs:
               with the neutral axis, and a linear buckling factor — a slender column
               that "looks safe" on stress says so
             - nine structural blocks: three steel sections, plain concrete, timber,
-              a brick pier, two slab thicknesses, 20 mm steel plate
+              a brick pier, two slab thicknesses, 20 mm steel plate — and they mix:
+              a timber beam on brick piers is one structure, joined where the blocks
+              touch, not three that ignore each other
             - every number is gated: 251 acceptance checks against closed forms and
               invariants per build, record in `evidence/VERIFICATION.md`
+
+            **Commands that change something** — `/br load`, `/br unload`, `/br scan`,
+            `/br resolve` and `/br reset` — need operator level 2, which a single-player
+            creative world has by default. The Stress Glasses need no permission: they
+            apply one configured downward test load. Reading commands (`/br status`,
+            `members`, `section`, `loads`) are open to everyone.
 
             **What it deliberately does not do yet**
             - no fracture, collapse or falling-block consequences — analysis reports;
