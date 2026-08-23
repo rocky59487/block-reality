@@ -1223,6 +1223,13 @@ def main():
                         "support": h == 0})
         return out
 
+    # Turning a column upside down is NOT a symmetry — gravity does not turn with it, and
+    # a brick pier under a timber post really is a different structure from a timber post
+    # under a brick pier. What must not change is the MODEL: the same lengths and the same
+    # mass. Asserting maxDC here as well was this gate's first cut and it was wrong; the
+    # measured 3.79x is load path, not discretisation. Registered in docs/GATES.md, with
+    # the horizontal case below added in the same edit so the tolerance-free half of the
+    # claim did not simply disappear.
     for n in (4, 6, 12):
         ra = sc.call({"op": "solve", "revision": 300 + n,
                       "blocks": two_material_column(n, False), "loads": []})
@@ -1230,10 +1237,36 @@ def main():
                       "blocks": two_material_column(n, True), "loads": []})
         check(f"n={n}: self weight is mirror-invariant", -rb["equilibrium"]["applied"][1],
               -ra["equilibrium"]["applied"][1], 1e-12)
-        check(f"n={n}: maxDC is mirror-invariant", rb.get("maxDC", 0), ra.get("maxDC", 0), 1e-9)
         la = sorted(round(m["lengthMm"]) for m in ra.get("members", []))
         lb = sorted(round(m["lengthMm"]) for m in rb.get("members", []))
         check_true(f"n={n}: the same member lengths appear", la == lb, f"{la} vs {lb}")
+
+    # Mirroring HORIZONTALLY is a real symmetry: gravity is unaffected, so every number
+    # has to come back identical, D/C included. This is the version of the claim with no
+    # physics excuse available, and it is the one that would catch a direction-dependent
+    # extraction rule reappearing in any form.
+    def two_material_beam(n, flip):
+        lo, hi = (TI, BR) if flip else (BR, TI)
+        out = []
+        for i in range(n):
+            k = (n - 1 - i) if flip else i
+            mat, sec = (BR if k < n // 2 else TI)
+            out.append({"x": i, "y": 64, "z": 0, "mat": mat, "section": sec,
+                        "support": i in (0, n - 1)})
+        return out
+
+    for n in (6, 12):
+        ra = sc.call({"op": "solve", "revision": 320 + n,
+                      "blocks": two_material_beam(n, False), "loads": []})
+        rb = sc.call({"op": "solve", "revision": 330 + n,
+                      "blocks": two_material_beam(n, True), "loads": []})
+        check(f"n={n}: horizontal mirror keeps the weight", -rb["equilibrium"]["applied"][1],
+              -ra["equilibrium"]["applied"][1], 1e-12)
+        check(f"n={n}: horizontal mirror keeps maxDC", rb.get("maxDC", 0),
+              ra.get("maxDC", 0), 1e-9)
+        la = sorted(round(m["lengthMm"]) for m in ra.get("members", []))
+        lb = sorted(round(m["lengthMm"]) for m in rb.get("members", []))
+        check_true(f"n={n}: horizontal mirror keeps the lengths", la == lb, f"{la} vs {lb}")
 
     # ...and the joint lands where the two blocks actually meet, so each material carries
     # its own length and neither is credited with a metre of the other's.
@@ -1437,9 +1470,11 @@ def main():
         gk = c.u32()
         if gk:
             r["governingKind"] = "member" if gk == 1 else "shell"
-        bf = c.f64()
-        if bf > 0:
-            r["bucklingFactor"] = bf
+        # Always present now, on both transports. It used to be dropped when not
+        # positive, which made "not computed", "no positive eigenvalue" and "the solver
+        # failed" one state — and the binary path carried it regardless, so the two
+        # transports disagreed about what a reply even contains.
+        r["bucklingFactor"] = c.f64()
         r["nodes"] = c.u32()
         r["dof"] = c.u32()
         r["members"] = []
