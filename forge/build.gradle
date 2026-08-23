@@ -102,8 +102,16 @@ tasks.register('bundleEngines') {
     if (src != null) inputs.files(fileTree(src) { include 'br-sidecar', 'br-sidecar.exe' })
     outputs.dir(brEngineOut)
     doLast {
-        def dest = new File(brEngineOut, 'blockreality/engine')
-        dest.deleteDir()
+        // The WHOLE generated directory is cleared, not just the destination below. It
+        // used to clear only its own subdirectory, and renaming that subdirectory left
+        // the previous one behind — so the next jar shipped BOTH copies of both engines
+        // and grew from 2.4 MB to 4.5 MB. This task owns brEngineOut (it declares it as
+        // an output); anything in there that this run did not write does not belong in
+        // the jar.
+        brEngineOut.deleteDir()
+        // Hyphenated so the directory can never be read as a JPMS package name —
+        // see BundledEngine.DIR. Changing it here means changing it there.
+        def dest = new File(brEngineOut, 'blockreality-engine')
         dest.mkdirs()
         def lines = []
         // (file name, os, arch). Only x86-64 binaries are built today; a platform with no

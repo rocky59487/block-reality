@@ -44,15 +44,29 @@ import java.util.function.Consumer;
  */
 public final class BundledEngine {
 
+    /**
+     * Where the build puts the manifest.
+     *
+     * <p>The HYPHEN in the directory name is deliberate and must stay. Forge loads mods as
+     * named JPMS modules, and a resource directory whose name is a valid Java identifier
+     * is treated as a PACKAGE — {@code blockreality/engine/} would be the package
+     * {@code blockreality.engine}, and package-encapsulated resources have access rules.
+     * Reading them from inside the same module is allowed, so the dotted form would in
+     * fact work; a name that cannot be a package name never raises the question at all.
+     * This is the mod's install path and it cannot be tested outside a running game, so
+     * it is built not to have the failure mode rather than argued out of it.
+     */
+    public static final String DIR = "/blockreality-engine/";
+
     /** Where the build puts the manifest. */
-    public static final String MANIFEST = "/blockreality/engine/engine.manifest";
+    public static final String MANIFEST = DIR + "engine.manifest";
 
     private BundledEngine() { }
 
     /** One shipped binary: which platform it is for, what it is called, and its hash. */
     public record Entry(String os, String arch, String fileName, String sha256, long size) {
         /** Resource path of this binary inside the jar. */
-        public String resource() { return "/blockreality/engine/" + fileName; }
+        public String resource() { return DIR + fileName; }
 
         /** First 12 hex characters of the hash — the unpack directory's name. */
         public String shortHash() { return sha256.substring(0, 12); }
@@ -158,6 +172,8 @@ public final class BundledEngine {
      * that takes the mod's load with it.
      *
      * @param root    directory to unpack under, usually {@code <gamedir>/blockreality/engine}
+     *                — the unpack DESTINATION, unrelated to {@link #DIR}, which is where
+     *                the bytes come from inside the jar
      * @param loader  reads resources out of the mod jar
      * @param osName  {@code os.name}
      * @param osArch  {@code os.arch}

@@ -53,8 +53,8 @@ class BundledEngineTest {
     private static BundledEngine.Loader jar() {
         return path -> switch (path) {
             case BundledEngine.MANIFEST -> new ByteArrayInputStream(manifest().getBytes(StandardCharsets.UTF_8));
-            case "/blockreality/engine/br-sidecar.exe" -> new ByteArrayInputStream(WIN);
-            case "/blockreality/engine/br-sidecar" -> new ByteArrayInputStream(LIN);
+            case "/blockreality-engine/br-sidecar.exe" -> new ByteArrayInputStream(WIN);
+            case "/blockreality-engine/br-sidecar" -> new ByteArrayInputStream(LIN);
             default -> null;
         };
     }
@@ -70,7 +70,7 @@ class BundledEngineTest {
         assertEquals("br-sidecar.exe", e.get(0).fileName());
         assertEquals(WIN.length, e.get(0).size());
         assertEquals(12, e.get(0).shortHash().length());
-        assertEquals("/blockreality/engine/br-sidecar", e.get(1).resource());
+        assertEquals("/blockreality-engine/br-sidecar", e.get(1).resource());
     }
 
     @Test

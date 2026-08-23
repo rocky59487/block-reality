@@ -11,7 +11,7 @@
 ## D-027 · 引擎隨 jar 出貨，首次使用時自解；不下載、不覆蓋、不猜平台
 
 **決定**：`br-sidecar` 的兩顆二進位（Windows / Linux，x86-64）**放進 mod jar**，
-路徑 `blockreality/engine/`，旁邊放一份建置時產生的 `engine.manifest`（`os arch 檔名
+路徑 `blockreality-engine/`（連字號是刻意的：Forge 以 JPMS 具名模組載入 mod，能當成合法 Java 識別字的資源目錄會被視為 package，用一個不可能是 package 名的名字就永遠不必問這個問題），旁邊放一份建置時產生的 `engine.manifest`（`os arch 檔名
 sha256 大小`）。首次需要引擎時解到
 
     <遊戲目錄>/blockreality/engine/<sha256 前 12 碼>/br-sidecar[.exe]

@@ -22,7 +22,7 @@ import sys
 import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PREFIX = "blockreality/engine/"
+PREFIX = "blockreality-engine/"      # hyphenated on purpose; see BundledEngine.DIR
 # manifest os/arch -> the field evidence.py records it under
 EVIDENCE_FIELD = {("linux", "x86_64"): "binary", ("windows", "x86_64"): "binary_windows"}
 
@@ -103,6 +103,19 @@ def main():
         for want in EVIDENCE_FIELD:
             if want not in seen:
                 problems.append(f"nothing shipped for {want[0]}/{want[1]}")
+
+        # ...and nothing ELSE large is in there. The check above passed happily while the
+        # jar carried two copies of both engines — a renamed resource directory had left
+        # the old one behind in the build's generated folder, and 2.4 MB became 4.5 MB
+        # with every gate still green. A gate that only looks where it expects to find
+        # things cannot see what it did not expect.
+        expected = {PREFIX + n for n in
+                    ["engine.manifest"] + [line.split()[2] for line in manifest.splitlines()
+                                           if line.strip() and not line.startswith("#")]}
+        for n in names:
+            info = z.getinfo(n)
+            if info.file_size >= 512 * 1024 and n not in expected:
+                problems.append(f"unexpected {info.file_size // 1024} KB payload in the jar: {n}")
 
     if problems:
         print(f"{jars[0]}:")
