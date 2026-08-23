@@ -47,8 +47,11 @@ CONTENTS
   SHA256SUMS.txt         hashes of every file in this archive
 
 The loose engines are byte-identical to the copies inside the jar, and a build
-gate holds them to that. Both are reproducible: building from source on another
-machine gives the same hashes.
+gate holds them to that. The build also pins the one field that made it
+non-deterministic (the PE link timestamp), so two clean builds on the same
+toolchain give identical hashes. That is not the same as YOU reproducing them:
+the engine links FrameCore, which this repository does not carry, so an
+independent rebuild is not something anyone outside can do today.
 
 FrameCore is statically linked into br-sidecar, so there is no separate library
 to install. br-sidecar runs as its own process rather than as a library loaded

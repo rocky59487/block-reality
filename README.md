@@ -5,15 +5,15 @@
 > **A playable structural-analysis laboratory inside Minecraft.** Build a structure,
 > apply loads, and inspect its load path instead of guessing why it works.
 
-[Download v0.3a](https://github.com/rocky59487/block-reality/releases/download/v0.3a/blockreality-0.3a.zip)
+[Download v0.3b](https://github.com/rocky59487/block-reality/releases/download/v0.3b/blockreality-0.3b.zip)
 · [Quick start](QUICKSTART.md)
 · [Research brief](docs/RESEARCH_BRIEF.md)
 · [Verification record](evidence/VERIFICATION.md)
 · [Share technical feedback](https://github.com/rocky59487/block-reality/issues/new?template=research-feedback.yml)
 
 ![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A)
-![Release v0.3a](https://img.shields.io/badge/release-v0.3a-3B82F6)
-![Verification](https://img.shields.io/badge/verification-251_engine_%2B_201_Java_checks-passing)
+![Release v0.3b](https://img.shields.io/badge/release-v0.3b-3B82F6)
+![Verification](https://img.shields.io/badge/verification-282_engine_%2B_209_Java_checks-passing)
 [![License](https://img.shields.io/github/license/rocky59487/block-reality)](LICENSE)
 
 Block Reality is a structural analysis mod for Minecraft 1.20.1. Blocks placed in the
@@ -60,7 +60,7 @@ continue.
 
 ## Install
 
-**Put `blockreality-0.3a.jar` in your `mods/` folder and launch the game.** That is the
+**Put `blockreality-0.3b.jar` in your `mods/` folder and launch the game.** That is the
 whole procedure; the analysis engine is inside the jar and unpacks itself the first time
 it is needed. Get the jar from CurseForge, from Modrinth, or from the
 [Releases page](https://github.com/rocky59487/block-reality/releases/latest).
@@ -80,7 +80,7 @@ it if you want analysis there.
 <details>
 <summary>The full archive, for verifying or running the engine outside the game</summary>
 
-[**`blockreality-0.3a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.3a/blockreality-0.3a.zip)
+[**`blockreality-0.3b.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.3b/blockreality-0.3b.zip)
 also ships both engines loose, with `SHA256SUMS.txt` and installer scripts:
 
 ```
@@ -97,8 +97,11 @@ install.bat "D:\games\my-instance\.minecraft"
 | `SHA256SUMS.txt` | SHA-256 of every file |
 
 The loose binaries are byte-identical to the ones inside the jar, and a build gate holds
-them to that. Both are reproducible: building the engine from source on another machine
-gives the same hashes.
+them to that. The build also pins the one field that made it non-deterministic (the PE
+link timestamp), so two clean builds on the same toolchain give identical hashes —
+measured. That is not the same as *you* being able to reproduce them: the engine links
+FrameCore, which this repository does not carry, so an independent rebuild is not
+something anyone outside can do today.
 </details>
 
 FrameCore is statically linked into `br-sidecar`, so there is no separate library to
@@ -217,8 +220,8 @@ a gate that has run — is why this paragraph exists rather than a quieter omiss
 
 | | |
 |---|---|
-| Engine | `sidecar/verify.py`, 251 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
-| Java | 201 tests, all passing (168 pure-Java, 33 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real |
+| Engine | `sidecar/verify.py`, 282 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
+| Java | 209 tests, all passing (176 pure-Java, 33 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real |
 | Closed form | 31 non-zero references, worst relative error 1.2e-14; 10 zero references, worst absolute residual 1.5e-08. (Two earlier releases quoted 1.6e-10 here — that floor turned out to be the old wire's 10-digit truncation, not the engine) |
 | Transport | numbers cross as raw little-endian doubles in shared memory, never textualised; the JSON fallback prints 17 significant digits. Gate: three representative solves bit-identical across both transports |
 | Shell convergence | clamped square plate: span moment 1.75% at 8 elements down to 0.28% at 20, observed convergence order 2.06; recovered support moment 2.7% at 20 |
@@ -266,7 +269,7 @@ components keep their own licences and copyright notices.
 > **Minecraft 裡可直接玩的結構分析實驗室。** 蓋出結構、施加荷載，再沿著荷載路徑理解它為什麼成立，
 > 而不是只看一場預先編好的倒塌動畫。
 
-[下載 v0.3a](https://github.com/rocky59487/block-reality/releases/download/v0.3a/blockreality-0.3a.zip)
+[下載 v0.3b](https://github.com/rocky59487/block-reality/releases/download/v0.3b/blockreality-0.3b.zip)
 · [快速上手](QUICKSTART.md)
 · [研究簡報](docs/RESEARCH_BRIEF.md)
 · [驗證紀錄](evidence/VERIFICATION.md)
@@ -308,7 +311,7 @@ Block Reality 是實驗性的研究與教育軟體，**不是**建築法規檢�
 
 ## 安裝
 
-**把 `blockreality-0.3a.jar` 丟進 `mods/` 資料夾，開遊戲。** 就這樣——分析引擎就在 jar 裡面，
+**把 `blockreality-0.3b.jar` 丟進 `mods/` 資料夾，開遊戲。** 就這樣——分析引擎就在 jar 裡面，
 第一次要用到的時候自己解出來。jar 可以從 CurseForge、Modrinth，或
 [Releases 頁](https://github.com/rocky59487/block-reality/releases/latest)取得。
 
@@ -323,7 +326,7 @@ SHA-256 命名，所以更新 mod 時新引擎落在舊的旁邊而不是覆蓋�
 <details>
 <summary>完整壓縮檔——想驗證引擎、或想在遊戲外執行它的話</summary>
 
-[**`blockreality-0.3a.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.3a/blockreality-0.3a.zip)
+[**`blockreality-0.3b.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.3b/blockreality-0.3b.zip)
 另外附上兩顆引擎的獨立檔、`SHA256SUMS.txt` 與安裝腳本：
 
 ```
@@ -339,8 +342,9 @@ install.bat "D:\games\my-instance\.minecraft"
 | `START-HERE.txt` / `讀我-中文.txt` | 說明文件，英文與中文 |
 | `SHA256SUMS.txt` | 每個檔案的 SHA-256 |
 
-獨立檔與 jar 裡那兩顆逐位元相同，並且有建置 gate 釘住這件事。兩者都可重現：在另一台機器
-從原始碼建置引擎會得到相同的雜湊。
+獨立檔與 jar 裡那兩顆逐位元相同，並且有建置 gate 釘住這件事。建置也把唯一那個造成不確定性的
+欄位釘死了（PE 連結時間戳），所以同一套工具鏈上兩次乾淨建置得到相同雜湊——這是實測的。但那
+不等於**你**重現得出來：引擎連結 FrameCore，而本倉庫不收錄它，外部獨立重建目前做不到。
 </details>
 
 FrameCore 已靜態連結進 `br-sidecar`，沒有另外要安裝的函式庫。它以獨立程序執行而非由模組
@@ -435,8 +439,8 @@ fallback 與除錯面）。wire 上的每一個力學數值都是引擎函式的
 
 | | |
 |---|---|
-| 引擎 | `sidecar/verify.py` 251 項全過，每一項都對閉合解、不依賴求解器的不變量,或傳輸等價 oracle |
-| Java | 201 項測試全過（純 Java 168、Forge 側 33），其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore |
+| 引擎 | `sidecar/verify.py` 282 項全過，每一項都對閉合解、不依賴求解器的不變量,或傳輸等價 oracle |
+| Java | 209 項測試全過（純 Java 176、Forge 側 33），其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore |
 | 對閉合解 | 31 項非零參考，最差相對誤差 1.2e-14；10 項零參考，最差絕對殘差 1.5e-08。（前兩版在這裡引用的 1.6e-10,後來查明是舊 wire 的 10 位截斷,不是引擎） |
 | 傳輸 | 數值以 raw little-endian double 走共用記憶體,從不文字化;JSON fallback 印 17 位有效數字。gate:三個代表案兩種傳輸逐位元相同 |
 | 板元素收斂 | 固端方形板：跨中彎矩 8 元素 1.75%、20 元素 0.28%，實測收斂階 2.06；還原後的支承彎矩 20 元素 2.7% |

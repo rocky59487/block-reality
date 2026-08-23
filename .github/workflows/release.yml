@@ -30,6 +30,49 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Publishing is now downstream of the suite rather than beside it. release.yml runs
+      # no tests of its own and had no link to the one that does: a tag pushed from a side
+      # branch — with mods.toml, the jar name, SHA256SUMS and verification.json all moved
+      # to the new version, which one package.sh run produces — passed every gate here
+      # while ci.yml never ran at all, and Main's branch protection was nowhere on that
+      # path. workflow_dispatch was shorter still: the publish action creates the tag for
+      # you (V03A_REVIEW 1-6).
+      - name: The suite must be green on this exact commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          # ci.yml now runs on tag pushes too, so it is usually still going when this
+          # starts. Wait for both required checks to CONCLUDE, then insist they concluded
+          # green. A timeout is a refusal, not a pass — "we could not tell" and "it was
+          # fine" must never be the same outcome.
+          deadline=$(( $(date +%s) + 1500 ))
+          while :; do
+            gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
+              --paginate --jq '.check_runs[] | [.name, (.conclusion // "pending")] | @tsv' > runs.tsv
+            pending=0
+            fail=0
+            for name in "engine acceptance suite vs shipped binary" \
+                        "Java suites, cross-language against the shipped engine"; do
+              got=$(awk -F'\t' -v n="$name" '$1 == n { print $2; exit }' runs.tsv)
+              case "${got:-missing}" in
+                success) ;;
+                pending|missing) pending=1 ;;
+                *) echo "::error::'$name' concluded '$got' on ${{ github.sha }}"; fail=1 ;;
+              esac
+            done
+            [ "$fail" = 1 ] && exit 1
+            [ "$pending" = 0 ] && break
+            if [ "$(date +%s)" -ge "$deadline" ]; then
+              echo "::error::the required checks did not conclude within 25 minutes"
+              cat runs.tsv
+              exit 1
+            fi
+            echo "waiting for the suite..."
+            sleep 20
+          done
+          cat runs.tsv
+
       - name: Resolve version
         id: v
         run: |
@@ -141,8 +184,10 @@ jobs:
               a brick pier, two slab thicknesses, 20 mm steel plate — and they mix:
               a timber beam on brick piers is one structure, joined where the blocks
               touch, not three that ignore each other
-            - every number is gated: 251 acceptance checks against closed forms and
-              invariants per build, record in `evidence/VERIFICATION.md`
+            - 282 acceptance checks against closed forms and invariants run per build,
+              record in `evidence/VERIFICATION.md`. Not *every* number: the shear and
+              torsion demand/capacity modes still have no oracle and are documented as
+              ungated in `docs/GATES.md`
             - one jar to install: the engine travels inside it and unpacks itself,
               verified against a hash recorded beside it, with no network access at any
               point
@@ -173,5 +218,8 @@ jobs:
             The archive also carries both engines loose, with `SHA256SUMS.txt`, optional
             installer scripts, and instructions in `START-HERE.txt` and `讀我-中文.txt`.
             The loose binaries are byte-identical to the ones inside the jar and a build
-            gate holds them to that; both are byte-reproducible, so building the engine
-            from source on another machine gives the same hashes.
+            gate holds them to that. The build pins the one field that made it
+            non-deterministic (the PE link timestamp), so two clean builds on the same
+            toolchain give identical hashes — which is not the same as you being able to
+            reproduce them, because the engine links FrameCore and this repository does
+            not carry it.

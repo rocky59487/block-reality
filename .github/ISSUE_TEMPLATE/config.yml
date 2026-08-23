@@ -1,7 +1,7 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Download Block Reality v0.3a
-    url: https://github.com/rocky59487/block-reality/releases/download/v0.3a/blockreality-0.3a.zip
+  - name: Download Block Reality v0.3b
+    url: https://github.com/rocky59487/block-reality/releases/download/v0.3b/blockreality-0.3b.zip
     about: Install the current structural preview.
   - name: Read the research brief
     url: https://github.com/rocky59487/block-reality/blob/Main/docs/RESEARCH_BRIEF.md

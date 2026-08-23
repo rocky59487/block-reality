@@ -54,7 +54,7 @@ technology 的老師都是好對象。一次寄 3–5 封,分開寫,不群發。
 > column "looks safe" on stress alone and the eigenvalue says otherwise, which is
 > exactly the lesson I want players to trip over.
 >
-> The part I hope earns your 30 minutes: the verification record. 251 acceptance
+> The part I hope earns your 30 minutes: the verification record. 282 acceptance
 > checks run against closed forms and solver-independent invariants on every build —
 > worst relative error 1.2e-14 over 31 non-zero references, clamped-plate support
 > moments recovered by interior extrapolation (39.8% low raw → 14.3% at 8 elements),
@@ -91,7 +91,7 @@ technology 的老師都是好對象。一次寄 3–5 封,分開寫,不群發。
 > player who *watches* a slender column report "stress fine, stability not" internalises
 > P_cr ∝ 1/L² before ever seeing the formula.
 >
-> The engineering is verified (251 closed-form acceptance checks per build, record in
+> The engineering is verified (41 closed-form acceptance checks in a 282-check suite per build, record in
 > the repo), but the *learning* claims are exactly that — claims. That is what I would
 > value your judgement on:
 > 1. What would a minimal, honest classroom pilot look like for a tool like this?

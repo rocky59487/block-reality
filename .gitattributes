@@ -13,6 +13,14 @@ scripts/dist-docs/* text eol=lf
 # ("set: pipefail: invalid option name" — the option was 'pipefail\r'), and a
 # release packaged from such a checkout ships an install.sh that no Linux or
 # macOS machine can run. Batch files have the mirrored problem.
+# The licence texts ship INSIDE dist/ and inside the jar, and their bytes are hashed in
+# SHA256SUMS.txt. dist/** is already pinned to LF, so if the working copy these are
+# COPIED FROM is CRLF, the hash is taken over CRLF and a Linux checkout of dist/ fails
+# `sha256sum -c` on content that is "the same". Pin the sources too.
+LICENSE          text eol=lf
+NOTICE           text eol=lf
+third_party/*    text eol=lf
+
 *.sh      text eol=lf
 gradlew   text eol=lf
 *.py      text eol=lf

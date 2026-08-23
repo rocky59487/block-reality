@@ -106,7 +106,16 @@ public final class StructureManager {
 
     private StructureManager(ResourceKey<Level> dimension) {
         this.dimension = dimension;
-        this.location = SidecarLocator.locate();
+        // The master switch has to reach the UNPACK, not only the solve. Its guard lives
+        // in the tick loop, while the search — and therefore writing 4 MB of native
+        // executable to disk — happened here, in the constructor. A server admin who
+        // turned analysis off to avoid exactly that got it anyway, and the disclosure
+        // written for CurseForge and Modrinth says the switch covers it.
+        this.location = BRConfig.INSTANCE.analysisEnabled.get()
+                ? SidecarLocator.locate()
+                : new SidecarLocator.Result(java.util.Optional.empty(),
+                        List.of("analysis is disabled in this world's server config; "
+                                + "nothing was unpacked and no engine was started"));
         BlockRealityMod.LOG.info("[{}] {}", dimension.location(), SidecarLocator.describe(location));
 
         // A path is still handed over when nothing was found, so the client reports
@@ -134,6 +143,10 @@ public final class StructureManager {
 
     /** Clears a disabled engine so the next tick tries again, for {@code /br reset}. */
     public void resetEngine() {
+        // ...including the unpack, which cached its failures for the life of the JVM: a
+        // player whose antivirus quarantined the engine once had to restart the game after
+        // adding an exclusion, and nothing said so.
+        SidecarLocator.forgetBundled();
         // Off the server thread: reset() takes the client's conversation lock, and a
         // wedged solve holds that lock for up to the request timeout (CONC-2).
         if (!AnalysisExecutor.submit(sidecar::reset)) {

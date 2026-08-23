@@ -51,7 +51,18 @@ def main():
 
     problems = []
     with zipfile.ZipFile(jar) as z:
-        names = set(z.namelist())
+        # infolist(), not a set of names. A zip may carry the SAME name twice and readers
+        # disagree about which copy wins — z.read() takes the last, most tools show the
+        # last, some extractors write both. Padding a 3 MB duplicate in front of the real
+        # engine passed every check here and moved the jar by 324 bytes, because a set had
+        # already thrown the evidence away.
+        infos = z.infolist()
+        names = set()
+        for info in infos:
+            if info.filename in names:
+                problems.append(f"the jar carries {info.filename} more than once — readers "
+                                f"disagree about which copy wins")
+            names.add(info.filename)
         if PREFIX + "engine.manifest" not in names:
             return fail(f"{jars[0]} carries no {PREFIX}engine.manifest — it was built without "
                         f"an engine. Pass -PbrEngineDir to the forge build, or run "
@@ -112,10 +123,51 @@ def main():
         expected = {PREFIX + n for n in
                     ["engine.manifest"] + [line.split()[2] for line in manifest.splitlines()
                                            if line.strip() and not line.startswith("#")]}
-        for n in names:
-            info = z.getinfo(n)
-            if info.file_size >= 512 * 1024 and n not in expected:
-                problems.append(f"unexpected {info.file_size // 1024} KB payload in the jar: {n}")
+        # 64 KB, not 512 KB. The largest legitimate non-engine entry in this jar is 17 KB,
+        # so anything above 64 KB that is not an engine wants explaining; the old threshold
+        # let 511 KB through for free.
+        for info in infos:
+            if info.file_size >= 64 * 1024 and info.filename not in expected:
+                problems.append(f"unexpected {info.file_size // 1024} KB payload in the jar: "
+                                f"{info.filename}")
+            # ...and nothing unlisted may sit in the engine directory, at any size.
+            if info.filename.startswith(PREFIX) and info.filename not in expected \
+                    and not info.filename.endswith("/"):
+                problems.append(f"{info.filename} is in the engine directory but not in "
+                                f"the manifest")
+
+    for required in ("META-INF/LICENSE", "META-INF/NOTICE"):
+        if required not in names:
+            problems.append(f"the jar does not carry {required} (Apache-2.0 4(a)/4(d))")
+    if not any(n.startswith("META-INF/third_party/") for n in names):
+        problems.append("the jar carries no third-party licence texts, and the engine "
+                        "statically links FrameCore (MIT) and Eigen (MPL-2.0)")
+
+    # `sha256sum -c` only verifies the files ON the list, and the release workflow zips
+    # the whole directory with no allow-list — so one stray file in this TRACKED directory
+    # would ship publicly with every gate green. A rehearsal carried a .env holding a fake
+    # secret and a debug build all the way into the published archive, exit 0 throughout.
+    sums = os.path.join(dist, "SHA256SUMS.txt")
+    if not os.path.exists(sums):
+        problems.append("dist/SHA256SUMS.txt is missing")
+    else:
+        listed = set()
+        with open(sums, encoding="utf-8") as f:
+            for line in f:
+                parts = line.split(None, 1)
+                if len(parts) == 2:
+                    listed.add(parts[1].strip().lstrip("*"))
+        present = set()
+        for base, _dirs, files in os.walk(dist):
+            for name in files:
+                rel = os.path.relpath(os.path.join(base, name), dist).replace(os.sep, "/")
+                if rel != "SHA256SUMS.txt":
+                    present.add(rel)
+        for stray in sorted(present - listed):
+            problems.append(f"dist/{stray} is not in SHA256SUMS.txt — it would be published "
+                            f"in the archive with nothing vouching for it")
+        for gone in sorted(listed - present):
+            problems.append(f"SHA256SUMS.txt lists {gone}, which is not there")
 
     if problems:
         print(f"{jars[0]}:")

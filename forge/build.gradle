@@ -3,7 +3,7 @@ plugins {
     id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
 }
 
-version = '0.3a'
+version = '0.3b'
 group = 'com.blockreality'
 base { archivesName = 'blockreality' }
 
@@ -131,6 +131,19 @@ tasks.register('bundleEngines') {
             new File(dest, name).bytes = f.bytes
             lines << "${os} ${arch} ${name} ${hex} ${f.length()}"
         }
+        // Apache-2.0 4(a) and 4(d) are about the ARTEFACT, not the repository: a
+        // recipient of the jar must get the licence and the NOTICE with it. Both files
+        // existed at the repo root and neither was in the jar or the archive. The engine
+        // statically links FrameCore (MIT) and Eigen (MPL-2.0), whose terms travel with
+        // every copy of that binary, so their texts go too — MPL-2.0 3.2 also wants the
+        // recipient told where the source is, which NOTICE now says.
+        def meta = new File(brEngineOut, 'META-INF')
+        meta.mkdirs()
+        ['LICENSE', 'NOTICE'].each { n -> new File(meta, n).bytes = file("../${n}").bytes }
+        def tp = new File(meta, 'third_party')
+        tp.mkdirs()
+        file('../third_party').listFiles()?.each { f -> new File(tp, f.name).bytes = f.bytes }
+
         if (lines.isEmpty()) {
             logger.lifecycle("bundleEngines: no engine found in ${src ?: 'none'} — " +
                     'building a jar without one (development build)')

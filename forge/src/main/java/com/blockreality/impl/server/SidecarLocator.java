@@ -1,7 +1,9 @@
 package com.blockreality.impl.server;
 
 import com.blockreality.core.sidecar.BundledEngine;
+import com.blockreality.core.sidecar.SidecarPaths;
 import com.blockreality.impl.BRConfig;
+import com.blockreality.impl.BlockRealityMod;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.nio.file.Files;
@@ -35,22 +37,22 @@ public final class SidecarLocator {
     public static Result locate() {
         List<String> tried = new ArrayList<>();
 
-        String configured = BRConfig.INSTANCE.sidecarPath.get();
-        if (configured != null && !configured.isBlank()) {
-            // An explicit setting is never silently overridden. If it is wrong the user
-            // gets told about that path and no other, because a fallback here would hide
-            // a typo behind a binary they did not mean to run.
-            Path p = Path.of(configured);
-            tried.add("config: " + p);
-            return new Result(usable(p) ? Optional.of(p) : Optional.empty(), tried);
-        }
-
-        for (String prop : new String[]{ System.getProperty("br.sidecar"), System.getenv("BR_SIDECAR") }) {
-            if (prop != null && !prop.isBlank()) {
-                Path p = Path.of(prop);
-                tried.add((prop.equals(System.getenv("BR_SIDECAR")) ? "BR_SIDECAR: " : "-Dbr.sidecar: ") + p);
-                if (usable(p)) return new Result(Optional.of(p), tried);
-            }
+        // The three EXPLICIT settings, each of which somebody typed. Any one of them
+        // present ends the search whether or not it works: "never quietly overridden" is
+        // what README and D-027 promise, and only sidecarPath was actually keeping it —
+        // a wrong -Dbr.sidecar or BR_SIDECAR fell through to some other binary and ran it
+        // without a word.
+        String[][] explicit = {
+                { "config", BRConfig.INSTANCE.sidecarPath.get() },
+                { "-Dbr.sidecar", System.getProperty("br.sidecar") },
+                { "BR_SIDECAR", System.getenv("BR_SIDECAR") },
+        };
+        for (String[] e : explicit) {
+            if (e[1] == null || e[1].isBlank()) continue;
+            Optional<Path> parsed = SidecarPaths.parse(e[1], msg -> tried.add(e[0] + ": " + msg));
+            if (parsed.isEmpty()) return new Result(Optional.empty(), tried);
+            tried.add(e[0] + ": " + parsed.get());
+            return new Result(usable(parsed.get()) ? parsed : Optional.empty(), tried);
         }
 
         // The engine that travelled inside the jar, unpacked on first use (D-027).
@@ -64,6 +66,15 @@ public final class SidecarLocator {
         for (String line : bundled().tried) tried.add(line);
         Path fromJar = bundled().path;
         if (fromJar != null && usable(fromJar)) return new Result(Optional.of(fromJar), tried);
+        if (fromJar == null) {
+            // Falling past this point means something looser is about to be run: a
+            // br-sidecar of unknown vintage in the game directory or on PATH, most often
+            // the one an older release's installer left there. The protocol version has
+            // never changed, so the handshake will wave it through. Say so at WARN.
+            BlockRealityMod.LOG.warn("[engine] the bundled engine could not be unpacked; if an "
+                    + "older br-sidecar is present it will be used instead. Reasons above; "
+                    + "`/br status` lists every path tried.");
+        }
 
         try {
             Path gameDir = FMLPaths.GAMEDIR.get();
@@ -80,7 +91,16 @@ public final class SidecarLocator {
         if (path != null) {
             for (String dir : path.split(java.io.File.pathSeparator)) {
                 if (dir.isBlank()) continue;
-                Path p = Path.of(dir).resolve(EXE);
+                // A quoted entry in PATH is legal on Windows and is nobody's typo, and an
+                // unparseable one is somebody else's problem, not a reason to stop.
+                Optional<Path> base = SidecarPaths.parse(dir, msg -> { });
+                if (base.isEmpty()) continue;
+                Path p;
+                try {
+                    p = base.get().resolve(EXE);
+                } catch (RuntimeException bad) {
+                    continue;
+                }
                 if (usable(p)) {
                     tried.add("PATH: " + p);
                     return new Result(Optional.of(p), tried);
@@ -90,6 +110,19 @@ public final class SidecarLocator {
         }
 
         return new Result(Optional.empty(), tried);
+    }
+
+    /**
+     * Forgets the unpack decision so the next {@link #locate()} tries again.
+     *
+     * <p>The memo cached failures as well as successes for the life of the JVM, so a
+     * player whose antivirus quarantined the engine once had to restart the game after
+     * adding an exclusion — {@code /br reset} would not do it, and nothing said so.
+     */
+    public static void forgetBundled() {
+        synchronized (SidecarLocator.class) {
+            bundledOnce = null;
+        }
     }
 
     private static boolean usable(Path p) {
@@ -136,6 +169,14 @@ public final class SidecarLocator {
         StringBuilder b = new StringBuilder();
         if (r.found().isPresent()) {
             b.append("engine: ").append(r.found().get());
+            // ...and everything tried on the way, which used to be thrown away on success.
+            // That silence hid the case this whole search order exists to prevent: the
+            // unpack failing and the engine quietly coming from a game directory instead —
+            // a different binary, from an older release's installer, waved through by a
+            // protocol version that has never changed. It also swallowed the one-time
+            // "unpacked the bundled engine to ..." line, which is the single most
+            // interesting thing this mod does on a player's first launch.
+            for (String s : r.tried()) b.append("\n  ").append(s);
         } else {
             b.append("engine not found. Looked in:");
             for (String t : r.tried()) b.append("\n  ").append(t);

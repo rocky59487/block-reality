@@ -156,19 +156,27 @@ chmod +x "$STAGE/install.sh" "$STAGE/br-sidecar"
 
 # The two READMEs that go in the archive live in scripts/dist-docs/ rather than in
 # a heredoc here, so that editing them does not mean editing the packaging script.
+# Apache-2.0 4(a)/4(d): whoever receives the archive receives these with it.
+cp "$ROOT/LICENSE" "$ROOT/NOTICE" "$STAGE/"
+mkdir -p "$STAGE/third_party"
+cp "$ROOT"/third_party/*.txt "$STAGE/third_party/"
+
 cp "$ROOT/scripts/dist-docs/START-HERE.txt" "$STAGE/"
 cp "$ROOT/scripts/dist-docs/讀我-中文.txt" "$STAGE/"
 
-# The jar must carry the engines this run built and gated, and they must be the same
-# bytes the evidence record verified and the same bytes shipping loose beside them.
-# Any two of those three agreeing is not enough (D-027).
+# Hashes of everything that is about to be shipped, so a download can be checked
+# against the archive it claims to be. Generated over the finished stage, and BEFORE the
+# bundle gate, which now also asks whether the list covers everything that is there.
+echo "==> hashing"
+(cd "$STAGE" && find . -type f ! -name SHA256SUMS.txt -printf '%P\n' | sort \
+    | xargs sha256sum > SHA256SUMS.txt)
+
+# The jar must carry the engines this run built and gated, they must be the same bytes the
+# evidence record verified and the same bytes shipping loose beside them, the licences must
+# be in the jar, and SHA256SUMS.txt must account for every file in the archive. Any subset
+# of those agreeing is not enough (D-027).
 echo "==> checking the bundled engines"
 python3 "$ROOT/scripts/check_bundle.py" "$STAGE"
-
-# Hashes of everything that is about to be shipped, so a download can be checked
-# against the archive it claims to be. Generated last, over the finished stage.
-echo "==> hashing"
-(cd "$STAGE" && sha256sum -- * > SHA256SUMS.txt)
 
 # ------------------------------------------------------------------- swap + zip
 # Only now does dist/ change: the pipeline passed end to end.
