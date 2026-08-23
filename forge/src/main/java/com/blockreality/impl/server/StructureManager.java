@@ -23,6 +23,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.event.level.ExplosionEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -304,6 +305,33 @@ public final class StructureManager {
         m.structural.remove(e.getPos().immutable());
         m.loaded.remove(e.getPos().immutable());
         m.markDirty();
+    }
+
+    /**
+     * An explosion removes blocks without a {@code BreakEvent} for any of them.
+     *
+     * <p>Nothing in this mod noticed, so a creeper could take out a column and the
+     * analysis would keep reporting the structure that used to be there — the
+     * silently-safe answer, on the most ordinary event in the game (PR26_REVIEW DF-01).
+     *
+     * <p>{@code Detonate} fires after the affected-block list is final and before the
+     * blocks are removed, so the positions here are exactly the ones about to go. The
+     * tracked set is pruned and the world marked dirty; the gather does the rest.
+     */
+    @SubscribeEvent
+    public static void onExplode(ExplosionEvent.Detonate e) {
+        if (!(e.getLevel() instanceof ServerLevel level)) return;
+        StructureManager m = BY_DIMENSION.get(level.dimension());
+        if (m == null) return;
+        boolean touched = false;
+        for (BlockPos pos : e.getAffectedBlocks()) {
+            if (!(level.getBlockState(pos).getBlock() instanceof StructuralBlock)) continue;
+            BlockPos at = pos.immutable();
+            m.structural.remove(at);
+            m.loaded.remove(at);
+            touched = true;
+        }
+        if (touched) m.markDirty();
     }
 
     /**
