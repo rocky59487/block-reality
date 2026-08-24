@@ -83,10 +83,29 @@ frame 的軸向宣告順帶從根源殺掉 grillage 雙倍計重：一個格子�
 
 ### 2.3 任意斷面性質
 
-單位正方形聯集斷面：A、Iy、Iz、形心是精確整式。**扭轉常數 J** 用 St. Venant
-（Prandtl 應力函數）在斷面格點上做小型 FD 解，對矩形 β 表閉合值 gate 收斂。
-剪力面積 Av 同批。短胖 member（L/h < 3，例如 1×1×2 的墩）啟用 FrameCore 的
-opt-in Timoshenko，並在回覆帶適用性註記（INV-6 的路線，這次真的接出來）。
+單位正方形聯集斷面：A、Iy、Iz、形心是精確整式。**扭轉常數 J** 的設計（文獻掃描
+第二批的結論，2026-08-24）：
+
+- **雙式夾擠自驗**：Prandtl 應力函數 FD（Dirichlet，互補能）從下方逼近、warping
+  function（位能極小，sectionproperties 的方法，MIT 授權可抄）從上方逼近——兩式各跑
+  一次得到不需外部參考值的區間。（嚴格界只對 conforming FEM 保證，FD 版在 M1 先實測
+  再宣稱。）
+- **主 gate 用 n×m 矩形的 Timoshenko 精確級數**（單位邊長）：1×1 = 0.1406、
+  2×1 = 0.4574、3×1 = 0.7899、4×1 = 1.1232、2×2 = 2.2492、3×2 = 4.699——涵蓋所有
+  矩形聯集，走同一條組裝路徑。**薄壁疊加式 Σ⅓bt³ 不得當 gate**：對 2×1 高估 45%，
+  t/b≈1 的方塊型斷面完全不適用。
+- **L/十字型無公認閉合解**：用 sectionproperties 收斂值當黃金值 + 雙式夾擠交叉驗證，
+  在 GATES.md 登記為**參考值 gate（結論低一級）**，不是解析 gate。
+- **凹角兩條鐵律**（M1 凍 gate 時升格為正式決策）：(1) 凹角奇異性使 L/十字的 J 收斂
+  掉到 O(h^{4/3})——容差按斷面凸性分兩類寫，**凹斷面禁用 h² Richardson**；(2) 凹角的
+  理論剪應力無限大，任何網格下的局部峰值都是網格相依值，**不得進入 D/C 判定**——
+  扭轉 D/C 對凹斷面用斷面級量 + 保守係數。
+- **剪力面積 Av 是慣例相依的**（Cowper ν=0.3 矩形 κ=0.8497 vs Timoshenko/Hutchinson
+  0.8667 vs 教科書 5/6）——慣例在 M1 凍死一種（預設 Cowper 1966）寫進 GATES.md，
+  否則日後必出「沒 bug 卻過不了」的假輸格。
+
+短胖 member（L/h < 3，例如 1×1×2 的墩）啟用 FrameCore 的 opt-in Timoshenko，
+並在回覆帶適用性註記（INV-6 的路線，這次真的接出來）。
 
 已查證（M0）：FrameCore 的 `Section` 是開放 struct——A/Iy/Iz/J/cy/cz/**Asy/Asz**
 （Timoshenko 剪力面積）/Zy/Zz（塑性模數，v1 塑鉸要用）全部可直接填，`shape` 只決定
@@ -95,9 +114,21 @@ opt-in Timoshenko，並在回覆帶適用性註記（INV-6 的路線，這次真
 
 ### 2.4 厚殼的適用界線
 
-1 m 厚的 MITC4 在 t/L 大時是 Mindlin 板，不是 Kirchhoff——這是 MITC4 的主場，但要
-gate：對 3D 彈性精確解（厚板基準，文獻對照見 §7）驗收 t/L = 1/4 附近的行為，並把
-「t/L 超過界線讀成指示性」寫進註記，與 INV-6 同一格式。
+1 m 厚的 MITC4 是 Mindlin 板。文獻掃描第二批的裁定：驗收**拆成兩層**，混在一起會把
+理論誤差誤判成元素 bug（MITC4 的病在薄極限 locking，不在厚極限）：
+
+1. **元素 gate（閉合解，容差緊）**：對 FSDT Navier 解——簡支方板正弦載重
+   `w/w_Kirchhoff = 1 + 5.6398·(h/a)²`（κ=5/6、ν=0.3、m=n=1），在 t/L = 0.1／0.25／
+   0.5／1.0 四點測**元素本身**。（此式 M1 入 GATES 前對 Reddy 的 FSDT Navier 章複核。）
+2. **理論 gate（業界標準）**：NAFEMS **LE10** 厚板基準——規格公開完整，目標值
+   σ_yy = −5.38 MPa 於指定點。Srinivas (1969) 3D 彈性表為第三層選配（付費牆，
+   數值未取得前不引用）。
+
+**t/L 門檻是會拒絕的閘門，不是註解**（判準先凍：事後才加就是移線）：暫定
+**t/L > 1/4 的殼結果降級為指示性**並在回覆註記——Mindlin 的公認適用界在 1/10 量級，
+1/4–1/5 是誤差數個百分點的邊緣，t/L → 1 的東西是塊體不是板。實際門檻值 M1 凍定。
+對玩家的意義：一格厚的 monolith 樓板要跨得夠遠（≳5 格）才有定量 D/C，短跨讀成指示性
+——這與真實工程「那不是板是塊體」的判斷一致。
 
 ### 2.5 物件身分
 
@@ -127,8 +158,8 @@ blocks 條目新增 `axis`（frame 用）；回覆新增 `bulk` 區段與 `unass
 | N1 | **質量恰一次**：`applied == ρ·V·g`，rel ≤ 1e-12 | 樓板、牆、厚柱、L 牆、含塊狀殘餘的混合區域，全部場景 |
 | N2 | 水平鏡像與 90° 旋轉後全量不變；上下鏡像幾何與質量不變 | [M1] 的形式，作用於新分解 |
 | N3 | 2×2 與 L 型稜柱斷面性質對手算精確值 | A、Iy、Iz、形心 |
-| N4 | J 解算器對矩形 β 表；網格加密收斂階 | 閉合解 |
-| N5 | 厚板 MITC4 對 3D 彈性基準 | 文獻數值表 |
+| N4 | J：矩形對 Timoshenko 精確級數（六點表）；雙式夾擠區間成立；凸斷面收斂 O(h²)、凹斷面 O(h^{4/3}) 分類容差；L/十字對 sectionproperties 黃金值（**參考級**）；Av 慣例凍定 | 閉合解＋參考值，分級 |
+| N5 | 厚殼兩層：MITC4 對 FSDT Navier 閉合式（t/L 四點）＋ NAFEMS LE10（σ_yy = −5.38 MPa）；t/L 降級門檻行為 | 閉合解＋業界基準 |
 | N6 | L 牆是 **1 個 island**，轉角傳力（兩腳反力和 = 總重） | 修掉今天的 2-island |
 | N7 | **分解完備性**：每格恰屬 member/shell/bulk/unassigned(帶理由) 之一 | 不再有靜默消失 |
 | N8 | 決定性 8/8、雙平台一致 | 沿用現行程序 |
@@ -143,7 +174,7 @@ blocks 條目新增 `axis`（frame 用）；回覆新增 `bulk` 區段與 `unass
 
 | | 內容 | 規模 |
 |---|---|---|
-| M0 | 文獻對照 + **FrameCore 能力查證**。**2026-08-24 已做大半**：MPC 無（→R1）、Timoshenko 有（`SolveOptions.useTimoshenko` + `Asy/Asz`）、倒塌驅動器齊備（§5）。剩：殼在折面的 drilling 行為實測、文獻第二批（J 解法、厚板基準） | S，收尾 |
+| M0 | 文獻對照 + **FrameCore 能力查證**。**2026-08-24 已完成主體**：MPC 無（→R1）、Timoshenko 有（`SolveOptions.useTimoshenko` + `Asy/Asz`）、倒塌驅動器齊備（§5）、文獻兩批入 §7。剩：殼在折面的 drilling 行為實測、§7 的待確認清單 | S，收尾 |
 | M1 | 判準凍結（GATES.md + verify.py 紅測試） | M |
 | M2 | 協定 + frame 軸向（Java BlockState、放置 UX、wire） | M |
 | M3 | monolith 融合 + 分解核心（稜柱/面/線/塊分類、介面節點） | **L，主戰場** |
@@ -190,9 +221,9 @@ blocks 條目新增 `axis`（frame 用）；回覆新增 `bulk` 區段與 `unass
 | # | 風險 | 對策 |
 |---|---|---|
 | R1 | **已查證：FrameCore 沒有剛性連結/MPC 元素**（公開頭檔無此物；grep 到的 rigid 都是碎塊/板帶語彙）。bulk 介面若用高剛度假樑會傷條件數 | 二選一：patch 系列加 MPC（已有三個 patch 的先例），或高剛度元素 + pivot ratio gate 盯條件數；M1 凍 gate 時定案 |
-| R2 | J 的 FD 解算器是新數值元件 | N4 閉合解 + 收斂階 gate；與既有 SHEAR/TORSION 零 oracle 缺口一起處理，順序：先查 FrameCore 的 τ 公式再動數字 |
+| R2 | J 的解算器是新數值元件 | N4 的分級 gate（閉合解主幹 + 夾擠自驗 + 參考級黃金值）；與既有 SHEAR/TORSION 零 oracle 缺口一起處理，順序：先查 FrameCore 的 τ 公式再動數字。凹角應力不進 D/C |
 | R3 | 稜柱判定的退化（立方體沿三軸都是稜柱） | 長度 ≥ 截面最大邊；tie 落到塊狀。鏡像/旋轉 gate 盯裁決對稱性 |
-| R4 | t/L → 1 時 Mindlin 本身失效 | N5 定界線，超界讀成指示性並註記 |
+| R4 | t/L → 1 時 Mindlin 本身失效 | §2.4 的降級門檻（暫定 1/4，M1 凍定）；LE10 只到 t/L≈0.09，**擋不住極端厚**——所以門檻靠理論界線不靠基準通過 |
 | R5 | Physics Mod 閉源，API 未知 | spike 限時；結論寫進 D-032 的否證欄 |
 | R6 | 大牆的殼數量 × 挫屈成本 | §2.6 門檻先擋；挫屈演算法升級（子空間法）留給下一輪 |
 
@@ -236,4 +267,16 @@ frame 材料的「肉」（混凝土包鋼）、自由模式對**非結構**原�
 自承粗解。**對外文案的合規寫法**：「據我們所查，尚無遊戲以梁殼理想化的 FEA 做結構
 判定」——帶查證日期，不寫絕對句；M7 時進 check_docs.py 禁句表管理。
 
-（斷面 J 解算器的方法對照與厚板基準解表：文獻掃描第二批，回來後補入 §2.3/N4/N5。）
+**文獻掃描第二批（斷面與厚板，2026-08-24）**——結論已分別寫入 §2.3、§2.4、N4、N5。
+補充事實與待確認：
+
+- sectionproperties（MIT）的方法是 **warping function FEM**（Tri6，Lagrange multiplier
+  處理純 Neumann 零空間），不是 Prandtl；它做 warping 前強制檢查斷面連通——「連通性
+  是 J 的必要條件」與本專案不變式 4 是同一件事的兩面。
+- 矩形 J 的精確級數出自 Timoshenko & Goodier《Theory of Elasticity》；本檔 §2.3 的
+  六點表由該級數計算。
+- NAFEMS LE10 的 t/L ≈ 0.09，屬中厚——它驗證元素，**不驗證極端厚的理論效力**，
+  所以 §2.4 的降級門檻獨立於它。
+- 待確認清單（M1 前結案）：FSDT Navier 式對 Reddy 教科書複核；FD 版 Prandtl 是否嚴格
+  下界；sectionproperties 的 Av 與 Cowper 的實際差距；NASA TP-3608 是否含 L 型高精度
+  J 值（PDF 未取得）。
