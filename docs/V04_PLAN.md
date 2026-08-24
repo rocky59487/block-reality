@@ -374,6 +374,32 @@ frame 材料的「肉」（混凝土包鋼）、自由模式對**非結構**原�
 - **它還沒有的**：monolith 聚合（vocab 只有 Member/Panel/Support 角色）——正是 T2/T3
   要送進去的東西；剛性連結/MPC（D-030 修訂後短期不需要）。
 
+### 7.6 T1 落地與 B1 spike（2026-08-25）
+
+**T1 已落地**（tectonic2 PR #6，rebase 進 main `44d7632`）：判準凍結（spec §1d）→
+面節點實作 → MC2 升 22 條斷言（含「柱底 N = ρAg·3.5 對 1e-9」的物理 oracle——斷連的
+舊抽取不可能給出）→ 六套全綠。R9 關閉。
+
+**B1 spike（換裝傳輸路徑實證）**：ctypes 客戶端驅動 `frame_capi_v2.dll`（sha 44d7632，
+含 T1）完成 open → hello → world.declare（40 B 方塊記錄）→ solve.request → 9 B/塊
+utilization 讀回。單柱**往返 0.2 ms**；D/C = 0.002771 Axial 與 ρAgL/(A·σ_allow) 手算
+一致；`frame_v2_abi_version()=2`、engine 1.1.0。傳輸與框架層零障礙。
+
+**B1 凍判準前要解的四件事**（依實測記錄，不是猜的）：
+
+1. **詞彙固定 `Vocab::builtin()`（v1 明文）**——block-reality 的材料表（D-012 值：
+   steel/rebar/concrete/timber/brick）推不進 wire。引擎需求：vocab datapack 動詞，
+   與 T2 的 monolith 詞彙一起議（monolith 本來就要動 vocab）。
+2. **無 vocab 查詢動詞**——材料/斷面 id 映射得靠 host 寫死。需求：hello 或查詢動詞
+   曝露詞彙版本與 id 表，否則 host 與引擎建置隱性耦合。
+3. **單位**——wire 端 SI（公尺、Pa 系），block-reality 端 mm/MPa（D-012 慣例）。
+   host 轉換恰一次，gate 用閉合值釘。
+4. **回覆形狀是 B1 的主設計題**——tectonic wire 只回 per-block D/C＋主導模式＋diag
+   計數（不變式 7 的純化形），而 block-reality 現行 Java 消費 member 級明細
+   （stations/forces/equilibrium/bucklingFactor）。B2 對數以 per-block 軌為準；
+   明細軌二選一：引擎加 readback 動詞，或 Java 面收斂到 per-block。傾向前者
+   （hover 的教學價值靠 member 明細），T2 時一併議。
+
 ---
 
 ## 8. PR #60 審核處置紀錄（2026-08-25）
