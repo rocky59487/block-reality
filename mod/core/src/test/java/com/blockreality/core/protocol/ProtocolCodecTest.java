@@ -88,6 +88,24 @@ class ProtocolCodecTest {
     }
 
     @Test
+    void bucklingIsWrittenOnlyWhenOff() {
+        // Absent means the engine default (on): every pre-existing request byte
+        // stream is unchanged by the field's existence.
+        SolveRequest on = SolveRequest.builder(REV)
+                .block(new BlockKey(0, 64, 0), "steel", "steel_rect_200x400", true)
+                .build();
+        assertFalse(JsonValue.parse(ProtocolCodec.encodeSolve(on)).has("buckling"));
+
+        SolveRequest off = SolveRequest.builder(REV)
+                .block(new BlockKey(0, 64, 0), "steel", "steel_rect_200x400", true)
+                .buckling(false)
+                .build();
+        JsonValue v = JsonValue.parse(ProtocolCodec.encodeSolve(off));
+        assertTrue(v.has("buckling"));
+        assertFalse(v.bool("buckling", true));
+    }
+
+    @Test
     void solveShmDoorbellCarriesRevisionAndByteCount() {
         // The byte count is the frame boundary (#27). It must travel as a plain
         // integer so the exact-integer reading accepts it at the far end.

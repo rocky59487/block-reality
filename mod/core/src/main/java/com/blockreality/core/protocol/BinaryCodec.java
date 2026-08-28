@@ -110,7 +110,7 @@ public final class BinaryCodec {
         long rev = req.revision().value();
         buf.putInt((int) (rev & 0xffffffffL));
         buf.putInt((int) ((rev >>> 32) & 0xffffffffL));
-        buf.putInt(1);   // flags bit0: buckling on, matching the JSON default
+        buf.putInt(req.buckling() ? 1 : 0);   // flags bit0: buckling (1 = on, the JSON default)
         buf.putInt(req.blocks().size());
         for (SolveRequest.Block b : req.blocks()) {
             int mat = mats.indexOf(b.material());

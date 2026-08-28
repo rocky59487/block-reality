@@ -81,6 +81,32 @@ class StressResultPacketTest {
                 members, shells, List.of());
     }
 
+    @org.junit.jupiter.api.Test
+    void bucklingSkippedRoundTripsAndAContradictionIsRejected() {
+        // Skipped + zero factor: the honest wire shape when the server chose not to ask.
+        AnalysisResult skipped = result(List.of(), List.of(), 0.4, -1, "", 0.0);
+        StressResultPacket out = roundTrip(StressResultPacket.of(skipped, DIM, true));
+        assertTrue(out.valid(), out.invalidReason());
+        assertTrue(out.bucklingSkipped());
+
+        // Skipped + NONZERO factor cannot come from this server (skipping means not
+        // asking, and an unasked engine answers 0) — strict decode refuses it.
+        AnalysisResult contradictory = result(List.of(), List.of(), 0.4, -1, "", 2.5);
+        StressResultPacket bad = roundTrip(StressResultPacket.of(contradictory, DIM, true));
+        assertFalse(bad.valid());
+    }
+
+    @org.junit.jupiter.api.Test
+    void anOverlongDimensionIsClippedNotThrown() {
+        // writeUtf THROWS on an overlong string; one long datapack dimension id must
+        // not disconnect a whole dimension of players (v0.3a review §3-6).
+        String longDim = "datapack:" + "x".repeat(400);
+        AnalysisResult r = result(List.of(), List.of(), 0.4, -1, "", 0.0);
+        StressResultPacket out = roundTrip(StressResultPacket.of(r, longDim, false));
+        assertTrue(out.valid(), out.invalidReason());
+        assertEquals(256, out.dimension().length());
+    }
+
     private static StressResultPacket roundTrip(StressResultPacket in) {
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         StressResultPacket.encode(in, buf);
@@ -135,7 +161,7 @@ class StressResultPacketTest {
         }
         AnalysisResult r = result(members, List.of(shell(1, 0.1)), 1.48, 4, "member", 3.75);
 
-        StressResultPacket in = StressResultPacket.of(r, DIM);
+        StressResultPacket in = StressResultPacket.of(r, DIM, false);
         StressResultPacket out = roundTrip(in);
         assertTrue(out.valid(), out.invalidReason());
         assertEquals(in.members().size(), out.members().size());
@@ -206,7 +232,7 @@ class StressResultPacketTest {
                 GoverningFibre.CRUSH, 5, f.endI(), f.endJ(),
                 List.of(new BlockKey(1, 64, 0)), f.stations(11), Optional.of(f));
         StressResultPacket out = roundTrip(
-                StressResultPacket.of(result(List.of(m), List.of(), 0.4, 1, "member", 0), DIM));
+                StressResultPacket.of(result(List.of(m), List.of(), 0.4, 1, "member", 0), DIM, false));
         assertTrue(out.valid(), out.invalidReason());
         assertEquals(48, out.members().get(0).section().length());
     }
@@ -215,7 +241,7 @@ class StressResultPacketTest {
     void roundTripPreservesTheDrawableResult() {
         AnalysisResult r = result(List.of(member(1, 0.25, 5)), List.of(shell(1, 0.1)),
                 0.25, 1, "member", 14.25);
-        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM));
+        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
 
         assertTrue(out.valid(), out.invalidReason());
         assertEquals(9, out.revision());
@@ -254,7 +280,7 @@ class StressResultPacketTest {
         // station, which for the same station count is the same index.
         AnalysisResult r = result(List.of(member(1, 0.8, 5)), List.of(),
                 0.8, 1, "member", 0);
-        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM));
+        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
         assertEquals(5, out.members().get(0).governingStation(),
                 "mid-span governing station must not decode as 0");
     }
@@ -262,7 +288,7 @@ class StressResultPacketTest {
     @Test
     void aMemberWithoutAGoverningStationDecodesAsNone() {
         AnalysisResult r = result(List.of(member(1, 0.8, -1)), List.of(), 0.8, 1, "member", 0);
-        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM));
+        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
         assertEquals(-1, out.members().get(0).governingStation());
     }
 
@@ -274,7 +300,7 @@ class StressResultPacketTest {
         for (int i = 1; i <= 70; i++) members.add(member(i, i == 70 ? 1.31 : 0.2, -1));
         AnalysisResult r = result(members, List.of(), 1.31, 70, "member", 0);
 
-        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM));
+        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
         assertTrue(out.valid(), out.invalidReason());
         assertTrue(out.membersTruncated());
         assertEquals(70, out.totalMembers());
@@ -290,7 +316,7 @@ class StressResultPacketTest {
         double dcJustOver = Math.nextUp(1.0);
         AnalysisResult r = result(List.of(member(1, dcJustOver, -1)), List.of(),
                 dcJustOver, 1, "member", Math.nextUp(0.0));
-        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM));
+        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
 
         assertTrue(out.overCapacity(), "server verdict maxDc > 1 must survive the float trip");
         assertTrue(out.members().get(0).isOverloaded(),
@@ -303,7 +329,7 @@ class StressResultPacketTest {
         AnalysisResult r = result(List.of(member(1, 0.25, 5)), List.of(shell(1, 0.1)),
                 0.25, 1, "member", 14.25);
         FriendlyByteBuf full = new FriendlyByteBuf(Unpooled.buffer());
-        StressResultPacket.encode(StressResultPacket.of(r, DIM), full);
+        StressResultPacket.encode(StressResultPacket.of(r, DIM, false), full);
         byte[] bytes = new byte[full.readableBytes()];
         full.getBytes(0, bytes);
 
@@ -347,7 +373,7 @@ class StressResultPacketTest {
         AnalysisResult r = result(List.of(member(1, 0.5, -1)), List.of(),
                 Double.NaN, 1, "member", 0);
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
-        StressResultPacket.encode(StressResultPacket.of(r, DIM), buf);
+        StressResultPacket.encode(StressResultPacket.of(r, DIM, false), buf);
         StressResultPacket out = StressResultPacket.decode(buf);
         assertFalse(out.valid());
         assertTrue(out.invalidReason().contains("finite"), out.invalidReason());
@@ -360,7 +386,7 @@ class StressResultPacketTest {
         AnalysisResult r = new AnalysisResult(new WorldRevision(4), true, true,
                 "no restrained structure", 0, -1, "", 1, 1, 0, 0,
                 List.of(), List.of(), List.of());
-        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM));
+        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
         assertTrue(out.valid(), out.invalidReason());
         assertTrue(out.singular());
         assertEquals(1, out.singularIslands());

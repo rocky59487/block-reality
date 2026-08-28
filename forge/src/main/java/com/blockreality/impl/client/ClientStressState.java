@@ -50,6 +50,7 @@ public final class ClientStressState {
     /** Server-side double verdicts; the client displays them, never re-derives (#55). */
     private static boolean overCapacity;
     private static boolean bucklingCriticalFlag;
+    private static boolean bucklingSkippedFlag;
     private static List<MemberSnapshot> members = List.of();
     private static List<ShellSnapshot> shells = List.of();
     private static List<BlockKey> plateBlocks = List.of();
@@ -89,6 +90,9 @@ public final class ClientStressState {
      * could flip the judgement within a ulp of the boundary (#55).
      */
     public static boolean bucklingCritical() { return bucklingCriticalFlag; }
+
+    /** The server skipped the buckling screen for size; the HUD must say so. */
+    public static boolean bucklingSkipped() { return bucklingSkippedFlag; }
 
     /** Whether max D/C exceeds 1 — the server's double-precision verdict (#55). */
     public static boolean overCapacity() { return overCapacity; }
@@ -203,6 +207,7 @@ public final class ClientStressState {
         singularIslands = p.singularIslands();
         bucklingFactor = p.bucklingFactor();
         bucklingCriticalFlag = p.bucklingCritical();
+        bucklingSkippedFlag = p.bucklingSkipped();
         totalMembers = p.totalMembers();
         totalShells = p.totalShells();
         members = p.members();
@@ -234,6 +239,7 @@ public final class ClientStressState {
         maxDc = 0;
         overCapacity = false;
         bucklingCriticalFlag = false;
+        bucklingSkippedFlag = false;
         islands = 0;
         singularIslands = 0;
         bucklingFactor = 0;
@@ -274,9 +280,16 @@ public final class ClientStressState {
         // distinguishes them; only the message did not.
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null) {
-            String key = SidecarClient.Status.READY.name().equals(p.status())
-                    ? "br.engine.refused" : "br.engine.unavailable";
-            mc.player.displayClientMessage(Component.translatable(key, p.detail()), true);
+            if (p.detail().startsWith(EngineStatusPacket.PLATFORM_PREFIX)) {
+                // The one absence the player cannot fix: no bundled engine for this
+                // platform. A sentence in their language, not a relayed log line.
+                mc.player.displayClientMessage(Component.translatable("br.engine.platform",
+                        p.detail().substring(EngineStatusPacket.PLATFORM_PREFIX.length())), true);
+            } else {
+                String key = SidecarClient.Status.READY.name().equals(p.status())
+                        ? "br.engine.refused" : "br.engine.unavailable";
+                mc.player.displayClientMessage(Component.translatable(key, p.detail()), true);
+            }
         }
     }
 
