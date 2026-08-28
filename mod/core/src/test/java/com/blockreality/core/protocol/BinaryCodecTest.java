@@ -28,6 +28,21 @@ class BinaryCodecTest {
 
     private static final WorldRevision REV = new WorldRevision(7);
 
+    @Test
+    void theBucklingFlagBitFollowsTheRequest() {
+        // Layout: magic(4) + revision(8) + flags(4) — the flags word sits at offset 12,
+        // and the sidecar refuses unknown bits, so bit0 is the whole vocabulary.
+        SolveRequest.Builder b = SolveRequest.builder(REV)
+                .block(new BlockKey(0, 64, 0), "steel", "steel_rect_200x400", true);
+        ByteBuffer on = ByteBuffer.allocate(4096);
+        assertTrue(BinaryCodec.encodeSolve(b.build(), CAT, on) > 0);
+        assertEquals(1, on.order(ByteOrder.LITTLE_ENDIAN).getInt(12));
+
+        ByteBuffer off = ByteBuffer.allocate(4096);
+        assertTrue(BinaryCodec.encodeSolve(b.buckling(false).build(), CAT, off) > 0);
+        assertEquals(0, off.order(ByteOrder.LITTLE_ENDIAN).getInt(12));
+    }
+
     private static final EngineCatalogue CAT = new EngineCatalogue(
             "FrameCore", 1,
             List.of("steel", "concrete"),

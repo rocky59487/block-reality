@@ -21,6 +21,13 @@ public record EngineStatusPacket(String status, String detail) {
     private static final int MAX_STATUS = 32;
 
     /**
+     * A detail carrying this prefix means "no bundled engine for this platform" with the
+     * platform string after it — the one absence a player cannot fix, so the client
+     * renders it as a translatable sentence instead of relaying a log line (§2-7).
+     */
+    public static final String PLATFORM_PREFIX = "platform:";
+
+    /**
      * The canonical constructor truncates rather than trusting callers: {@code
      * writeUtf(s, n)} does not shorten an overlong string, it throws — and an encoder
      * that throws mid-broadcast disconnects every player in the dimension over one

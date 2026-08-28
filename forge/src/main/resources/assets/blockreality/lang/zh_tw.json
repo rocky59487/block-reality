@@ -62,5 +62,7 @@
   "block.blockreality.brick_pier": "磚柱",
   "block.blockreality.concrete_slab_150": "混凝土樓板 150",
   "block.blockreality.steel_plate": "鋼板 20",
-  "br.load.not_structural": "請對準結構方塊。/br load 會在你注視的方塊上施加測試荷載。"
+  "br.load.not_structural": "請對準結構方塊。/br load 會在你注視的方塊上施加測試荷載。",
+  "br.hud.buckling_skipped": "挫屈未評估（結構規模）",
+  "br.engine.platform": "此平台（%s）沒有隨附的分析引擎，分析停用。可自行編譯 br-sidecar 並在設定 sidecarPath 指定。"
 }

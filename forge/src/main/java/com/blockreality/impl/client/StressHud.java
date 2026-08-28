@@ -136,6 +136,12 @@ public final class StressHud {
                     String.format(Locale.ROOT, "%.2f", ClientStressState.bucklingFactor())),
                     x, y, crit ? 0xFF6B6B : 0xAAAAAA);
             y += 11;
+        } else if (ClientStressState.bucklingSkipped()) {
+            // Skipped is a fact worth a line: a blank here reads as "stable", which is a
+            // different and unearned claim (the 0-conflation is on record, V04_PLAN §2.6).
+            g.drawString(mc.font, Component.translatable("br.hud.buckling_skipped"),
+                    x, y, 0xC8A24A);
+            y += 11;
         }
         // Without this the contour is only ordinal. With it, a colour can be read as MPa.
         g.drawString(mc.font, Component.translatable("br.hud.scale",

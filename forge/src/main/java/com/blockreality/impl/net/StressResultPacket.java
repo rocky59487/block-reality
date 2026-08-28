@@ -80,6 +80,9 @@ public final class StressResultPacket {
     private final double bucklingFactor;
     /** Server-side double verdict of {@code 0 < bucklingFactor <= 1}. */
     private final boolean bucklingCritical;
+    /** The SERVER skipped the buckling screen (size policy). A factor of 0 alone cannot
+     *  distinguish "skipped" from "no positive mode"; this flag is the client's answer. */
+    private final boolean bucklingSkipped;
     /** Solved totals BEFORE truncation, so the HUD can say what it is not showing (#42). */
     private final int totalMembers;
     private final int totalShells;
@@ -91,12 +94,16 @@ public final class StressResultPacket {
                                double maxDc, boolean overCapacity,
                                int islands, int singularIslands,
                                double bucklingFactor, boolean bucklingCritical,
+                               boolean bucklingSkipped,
                                int totalMembers, int totalShells,
                                List<MemberSnapshot> members, List<ShellSnapshot> shells) {
         this.valid = valid;
         this.invalidReason = invalidReason;
         this.revision = revision;
-        this.dimension = dimension;
+        // Clipped, not trusted: writeUtf THROWS on an overlong string, and an encoder
+        // that throws mid-broadcast disconnects every player over one long datapack
+        // dimension id (the FORGE-2 failure shape; v0.3a review §3-6).
+        this.dimension = clip(dimension == null ? "" : dimension, 256);
         this.singular = singular;
         this.maxDc = maxDc;
         this.overCapacity = overCapacity;
@@ -104,6 +111,7 @@ public final class StressResultPacket {
         this.singularIslands = singularIslands;
         this.bucklingFactor = bucklingFactor;
         this.bucklingCritical = bucklingCritical;
+        this.bucklingSkipped = bucklingSkipped;
         this.totalMembers = totalMembers;
         this.totalShells = totalShells;
         this.members = members;
@@ -112,10 +120,10 @@ public final class StressResultPacket {
 
     private static StressResultPacket invalid(String reason) {
         return new StressResultPacket(false, reason, 0, "", false, 0, false, 0, 0, 0, false,
-                0, 0, List.of(), List.of());
+                false, 0, 0, List.of(), List.of());
     }
 
-    public static StressResultPacket of(AnalysisResult r, String dimension) {
+    public static StressResultPacket of(AnalysisResult r, String dimension, boolean bucklingSkipped) {
         List<MemberSnapshot> m = keepGoverning(r.members(), MAX_MEMBERS,
                 "member".equals(r.governingKind()) ? r.governing() : Integer.MIN_VALUE,
                 MemberSnapshot::id, "members");
@@ -126,7 +134,7 @@ public final class StressResultPacket {
                 r.revision().value(), dimension, r.singular(),
                 r.maxDc(), r.maxDc() > 1.0,
                 r.islands(), r.singularIslands(),
-                r.bucklingFactor(), r.bucklingCritical(),
+                r.bucklingFactor(), r.bucklingCritical(), bucklingSkipped,
                 r.members().size(), r.shells().size(), m, s);
     }
 
@@ -180,6 +188,8 @@ public final class StressResultPacket {
     /** The server's double-precision verdict; the client never re-derives it. */
     public boolean bucklingCritical() { return bucklingCritical; }
 
+    public boolean bucklingSkipped() { return bucklingSkipped; }
+
     public int totalMembers() { return totalMembers; }
 
     public int totalShells() { return totalShells; }
@@ -208,6 +218,7 @@ public final class StressResultPacket {
         buf.writeVarInt(Math.max(0, p.singularIslands));
         buf.writeFloat((float) p.bucklingFactor);
         buf.writeBoolean(p.bucklingCritical);
+        buf.writeBoolean(p.bucklingSkipped);
         buf.writeVarInt(Math.max(0, p.totalMembers));
         buf.writeVarInt(Math.max(0, p.totalShells));
         buf.writeVarInt(Math.min(p.members.size(), MAX_MEMBERS));
@@ -376,6 +387,10 @@ public final class StressResultPacket {
         double bucklingFactor = finite(buf.readFloat(), "bucklingFactor");
         if (bucklingFactor < 0) throw new Bad("negative bucklingFactor");
         boolean bucklingCritical = buf.readBoolean();
+        boolean bucklingSkipped = buf.readBoolean();
+        // The server only ever skips by not ASKING, and the engine answers 0 when not
+        // asked — a nonzero factor beside the flag is a contradiction, not a schema.
+        if (bucklingSkipped && bucklingFactor != 0) throw new Bad("bucklingSkipped with a nonzero factor");
         int totalMembers = count(buf.readVarInt(), Integer.MAX_VALUE, "totalMembers");
         int totalShells = count(buf.readVarInt(), Integer.MAX_VALUE, "totalShells");
         int nMembers = count(buf.readVarInt(), MAX_MEMBERS, "members");
@@ -459,7 +474,8 @@ public final class StressResultPacket {
 
         return new StressResultPacket(true, "", revision, dimension, singular,
                 maxDc, overCapacity, islands, singularIslands,
-                bucklingFactor, bucklingCritical, totalMembers, totalShells, members, shells);
+                bucklingFactor, bucklingCritical, bucklingSkipped,
+                totalMembers, totalShells, members, shells);
     }
 
     /** The regenerated station closest to the wire's governing position; -1 if none. */

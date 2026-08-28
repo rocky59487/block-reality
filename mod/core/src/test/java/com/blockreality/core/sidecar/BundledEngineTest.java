@@ -50,6 +50,19 @@ class BundledEngineTest {
                 + "linux x86_64 br-sidecar " + sha(LIN) + " " + LIN.length + "\n";
     }
 
+    @org.junit.jupiter.api.Test
+    void platformSupportAnswersFromTheManifestAndNeverCriesWolf() {
+        // The shipped pair is supported; a platform with no row is not.
+        org.junit.jupiter.api.Assertions.assertTrue(
+                BundledEngine.platformSupported(jar(), "Windows 11", "amd64"));
+        org.junit.jupiter.api.Assertions.assertFalse(
+                BundledEngine.platformSupported(jar(), "Mac OS X", "aarch64"));
+        // A development jar with no manifest is NOT a platform problem — saying it is
+        // would send the player to the wrong explanation.
+        org.junit.jupiter.api.Assertions.assertTrue(
+                BundledEngine.platformSupported(path -> null, "Mac OS X", "aarch64"));
+    }
+
     /** A jar that carries the manifest and both binaries. */
     private static BundledEngine.Loader jar() {
         return path -> switch (path) {

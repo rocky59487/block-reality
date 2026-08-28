@@ -130,9 +130,20 @@ public final class SidecarLocator {
     }
 
     /** What the unpack decided, and what it said. Computed once per launch. */
-    private record Bundled(Path path, List<String> tried) { }
+    private record Bundled(Path path, List<String> tried, boolean platformUnsupported) { }
 
     private static volatile Bundled bundledOnce;
+
+    /**
+     * The one engine-absence cause a PLAYER can do nothing about: this build ships no
+     * engine for their platform (macOS, ARM). Present only in that case, so the client
+     * can say it in their language instead of relaying a log line (v0.3b review §2-7).
+     */
+    public static java.util.Optional<String> platformReason() {
+        return bundled().platformUnsupported
+                ? java.util.Optional.of(System.getProperty("os.name") + " / " + System.getProperty("os.arch"))
+                : java.util.Optional.empty();
+    }
 
     /**
      * Unpacks the bundled engine, at most once per JVM.
@@ -149,17 +160,20 @@ public final class SidecarLocator {
             if (bundledOnce != null) return bundledOnce;
             List<String> said = new ArrayList<>();
             Path found = null;
+            boolean platform = false;
             try {
                 Path root = FMLPaths.GAMEDIR.get().resolve("blockreality").resolve("engine");
+                String os = System.getProperty("os.name"), arch = System.getProperty("os.arch");
                 found = BundledEngine.ensure(root, BundledEngine.class::getResourceAsStream,
-                        System.getProperty("os.name"), System.getProperty("os.arch"),
-                        msg -> said.add("bundled: " + msg)).orElse(null);
+                        os, arch, msg -> said.add("bundled: " + msg)).orElse(null);
+                platform = found == null && !BundledEngine.platformSupported(
+                        BundledEngine.class::getResourceAsStream, os, arch);
             } catch (Throwable t) {
                 // FMLPaths outside a running game, a security manager, a broken jar: the
                 // mod plays without analysis rather than failing to load (D-013).
                 said.add("bundled: unavailable (" + t + ")");
             }
-            bundledOnce = new Bundled(found, List.copyOf(said));
+            bundledOnce = new Bundled(found, List.copyOf(said), platform);
             return bundledOnce;
         }
     }

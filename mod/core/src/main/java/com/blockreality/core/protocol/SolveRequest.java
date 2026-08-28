@@ -15,11 +15,25 @@ import java.util.List;
  * appears here that describes the structural model rather than the world, the boundary
  * has leaked.
  */
-public record SolveRequest(WorldRevision revision, List<Block> blocks, List<PointLoad> loads) {
+public record SolveRequest(WorldRevision revision, List<Block> blocks, List<PointLoad> loads,
+                           boolean buckling) {
 
     public SolveRequest {
         blocks = List.copyOf(blocks);
         loads = List.copyOf(loads);
+    }
+
+    /**
+     * The historical shape: buckling on, which is also the engine's default.
+     *
+     * <p>{@code buckling} is an analysis OPTION, not model vocabulary — like the
+     * revision, it says how much work to do, never what the structure is. D-006 holds.
+     * The game side turns it off above a size threshold because the eigensolve is
+     * cubic (measured 72.8 s at 1000 nodes) and a skipped screen must be a deliberate,
+     * visible choice — never a hang.
+     */
+    public SolveRequest(WorldRevision revision, List<Block> blocks, List<PointLoad> loads) {
+        this(revision, blocks, loads, true);
     }
 
     /**
@@ -43,6 +57,7 @@ public record SolveRequest(WorldRevision revision, List<Block> blocks, List<Poin
         private final WorldRevision revision;
         private final List<Block> blocks = new ArrayList<>();
         private final List<PointLoad> loads = new ArrayList<>();
+        private boolean buckling = true;
 
         private Builder(WorldRevision revision) { this.revision = revision; }
 
@@ -53,6 +68,11 @@ public record SolveRequest(WorldRevision revision, List<Block> blocks, List<Poin
 
         public Builder load(PointLoad l) { loads.add(l); return this; }
 
-        public SolveRequest build() { return new SolveRequest(revision, blocks, loads); }
+        public Builder buckling(boolean on) { buckling = on; return this; }
+
+        /** How many blocks so far — the size the buckling threshold is judged on. */
+        public int blockCount() { return blocks.size(); }
+
+        public SolveRequest build() { return new SolveRequest(revision, blocks, loads, buckling); }
     }
 }

@@ -24,6 +24,13 @@ import java.util.function.Supplier;
  */
 public record AnalysisPendingPacket(String dimension, long revision) {
 
+    public AnalysisPendingPacket {
+        // Clipped, not trusted: writeUtf THROWS on an overlong string, so one long
+        // datapack dimension id would disconnect every player it broadcasts to.
+        if (dimension == null) dimension = "";
+        if (dimension.length() > 256) dimension = dimension.substring(0, 255) + "…";
+    }
+
     public static void encode(AnalysisPendingPacket p, FriendlyByteBuf buf) {
         buf.writeUtf(p.dimension, 256);
         buf.writeVarLong(p.revision);

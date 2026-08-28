@@ -10,6 +10,7 @@ import com.blockreality.impl.BRConfig;
 import com.blockreality.impl.BlockRealityMod;
 import com.blockreality.impl.block.StructuralBlock;
 import com.blockreality.impl.net.BRNetwork;
+import com.blockreality.impl.net.EngineStatusPacket;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -89,6 +90,8 @@ public final class StructureManager {
     private boolean probeWithoutLoads;
     /** The reply now arriving is that probe: use it to drop loads, do not draw it. */
     private final AtomicBoolean probeInFlight = new AtomicBoolean(false);
+    /** Whether the LAST dispatched request skipped the buckling screen (size policy). */
+    private boolean lastBucklingSkipped;
     private boolean dirty;
     private int ticksSinceSolve;
     private AnalysisResult latest;
@@ -331,7 +334,10 @@ public final class StructureManager {
      * blocks are removed, so the positions here are exactly the ones about to go. The
      * tracked set is pruned and the world marked dirty; the gather does the rest.
      */
-    @SubscribeEvent
+    // LOWEST: protection mods edit the affected-block list at their own priorities, and
+    // pruning must act on the FINAL list — removing a block from tracking that a claim
+    // mod then saves would desynchronise the model from the world (v0.3a review §3-6).
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onExplode(ExplosionEvent.Detonate e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
         StructureManager m = BY_DIMENSION.get(level.dimension());
@@ -500,6 +506,16 @@ public final class StructureManager {
             if (p != null) loaded.remove(p);
         }
 
+        // The buckling screen is skipped, loudly, above the configured size — the
+        // eigensolve is cubic and a silent multi-second stall reads as a hang. The
+        // decision is remembered so the result packet can tell the HUD to SAY it:
+        // a factor of 0 alone cannot distinguish "skipped" from "no positive mode"
+        // (the wire conflation is on record in V04_PLAN §2.6).
+        boolean buckle = BucklingPolicy.enabled(cycleBuilder.blockCount(),
+                BRConfig.INSTANCE.bucklingBlockLimit.get());
+        cycleBuilder.buckling(buckle);
+        lastBucklingSkipped = !buckle;
+
         SolveRequest request = cycleBuilder.build();
         cycleBuilder = null;
         cycleIncluded = null;
@@ -574,6 +590,14 @@ public final class StructureManager {
      */
     private void apply(ServerLevel level, AnalysisResult result) {
         if (probeInFlight.getAndSet(false) && result.ok()) {
+            // A STALE probe drops nothing (A-5 follow-up, v0.3a review §3-6): the player
+            // edited while it solved, so it is a picture of an old world — a load it
+            // says has nowhere to stand may stand fine now. dirty re-solves; if loads
+            // still break the solve, the UNAVAILABLE path re-arms the probe itself.
+            if (gate.isStale(result)) {
+                dirty = true;
+                return;
+            }
             // The probe answered. Every load standing on a block that became no element
             // is dropped, the player is told which, and the world is marked dirty so the
             // next tick solves the real request — with the surviving loads. The probe
@@ -591,7 +615,15 @@ public final class StructureManager {
 
         if (display == RevisionGate.Display.UNAVAILABLE) {
             latest = result;
-            BRNetwork.sendEngineStatus(level, sidecar.status(), result.diagnostic());
+            // When there is no engine AND the cause is the one thing a player cannot fix
+            // — no bundled build for their platform — say THAT, in their language, not a
+            // log line (v0.3b review §2-7). Every other diagnostic passes unchanged.
+            String detail = location.found().isEmpty()
+                    ? SidecarLocator.platformReason()
+                            .map(p -> EngineStatusPacket.PLATFORM_PREFIX + p)
+                            .orElse(result.diagnostic())
+                    : result.diagnostic();
+            BRNetwork.sendEngineStatus(level, sidecar.status(), detail);
             // A failure used to leave `dirty` false, so the dimension went quiet until the
             // player next edited a block: one engine timeout and analysis was over for the
             // session (DF-03). Retrying is throttled by minTicksBetweenSolves and bounded
@@ -614,7 +646,7 @@ public final class StructureManager {
         latest = result;
         boolean committed = gate.acceptForCommit(result);
         if (committed || display == RevisionGate.Display.MECHANISM) {
-            BRNetwork.sendResult(level, result);
+            BRNetwork.sendResult(level, result, lastBucklingSkipped);
             lastAnnouncedRevision = result.revision().value();
         }
     }

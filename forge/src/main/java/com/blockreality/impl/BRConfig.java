@@ -20,6 +20,7 @@ public final class BRConfig {
     public final ForgeConfigSpec.BooleanValue analysisEnabled;
     public final ForgeConfigSpec.IntValue minTicksBetweenSolves;
     public final ForgeConfigSpec.IntValue requestTimeoutMs;
+    public final ForgeConfigSpec.IntValue bucklingBlockLimit;
     public final ForgeConfigSpec.DoubleValue demoLoadNewtons;
 
     private BRConfig(ForgeConfigSpec.Builder b) {
@@ -44,6 +45,14 @@ public final class BRConfig {
                 .comment("Minimum ticks between solves. A player laying a row of blocks",
                         "should produce one analysis, not twenty.")
                 .defineInRange("minTicksBetweenSolves", 10, 1, 200);
+
+        bucklingBlockLimit = b
+                .comment("Above this many structural blocks the linear-buckling screen is",
+                        "SKIPPED and the HUD says so; strength (D/C) always runs. The",
+                        "eigensolve is cubic — measured 8.55 s at 500 nodes and 72.8 s at",
+                        "1000 (~n^3.1), so 300 blocks lands near 2 s on that machine.",
+                        "0 means never compute buckling.")
+                .defineInRange("bucklingBlockLimit", 300, 0, 1_000_000);
 
         b.pop().push("demo");
 

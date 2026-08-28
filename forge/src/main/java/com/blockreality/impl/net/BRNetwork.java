@@ -37,7 +37,8 @@ import java.util.Optional;
 public final class BRNetwork {
 
     /** Bumped when the packet layout changes; 2 = classification flags + dimension. */
-    private static final String PROTOCOL = "2";
+    // "3": StressResultPacket gained bucklingSkipped (v0.4 mod-side round 1)
+    private static final String PROTOCOL = "3";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(BlockRealityMod.MOD_ID, "main"),
@@ -72,9 +73,9 @@ public final class BRNetwork {
      * demo is one structure, and a distance filter that is wrong is harder to notice than
      * one that is absent.
      */
-    public static void sendResult(ServerLevel level, AnalysisResult result) {
+    public static void sendResult(ServerLevel level, AnalysisResult result, boolean bucklingSkipped) {
         StressResultPacket packet = StressResultPacket.of(result,
-                level.dimension().location().toString());
+                level.dimension().location().toString(), bucklingSkipped);
         for (ServerPlayer player : level.players()) {
             CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
         }

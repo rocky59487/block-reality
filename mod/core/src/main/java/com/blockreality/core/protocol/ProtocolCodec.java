@@ -76,6 +76,9 @@ public final class ProtocolCodec {
         JsonWriter w = new JsonWriter();
         w.beginObj();
         w.kv("op", "solve").kv("revision", req.revision().value());
+        // Only ever written when OFF: absent means the engine default (on), so every
+        // request byte stream that existed before this field exists unchanged after it.
+        if (!req.buckling()) w.kv("buckling", false);
 
         w.key("blocks").beginArr();
         for (SolveRequest.Block b : req.blocks()) {

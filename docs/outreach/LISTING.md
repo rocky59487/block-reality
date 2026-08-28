@@ -177,7 +177,7 @@ Modrinth 對「內含原生執行檔」同樣要透明；第 1 節那段照貼�
 > - an explosion is noticed; a piston can no longer move a structural block to a position
 >   the analysis does not know about
 >
-> Verification: 282 engine checks, 209 Java tests, worst closed-form relative error
+> Verification: 282 engine checks, 215 Java tests, worst closed-form relative error
 > 1.216e-14, cross-platform determinism 8/8.
 
 ---

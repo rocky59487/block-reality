@@ -568,14 +568,17 @@ class SidecarEngineTest {
 
     @Test
     void theSpanMomentMatchesTimoshenko() {
-        // Clamped square plate under a uniform load. The tabulated centre coefficient
-        // 0.0231 is for nu = 0.3; at the centre the two curvatures are equal by symmetry,
-        // so M = D*k*(1+nu) and it rescales as (1+nu)/1.3 for our nu = 0.2.
+        // Clamped square plate under a uniform load. The centre coefficient for nu = 0.3
+        // is 0.0229051 — the INDEPENDENTLY RECOMPUTED value (scripts/plate_reference.py,
+        // GATES.md 2026-08-21: the tabulated 0.0231 was itself wrong by 0.85%). At the
+        // centre the two curvatures are equal by symmetry, so M = D*k*(1+nu) and it
+        // rescales as (1+nu)/1.3 for our nu = 0.2. 12 elements measured 0.79% from this
+        // reference, inside the 1% line.
         int n = 13;
         AnalysisResult r = client.solve(clampedSlab(41, n));
         double a = (n - 1) * 1000.0;
         double centre = (n - 1) / 2.0 * 1000.0 + 500.0;
-        double expect = 0.0231 / 1.3 * (1 + SLAB_NU) * Q_SLAB * a * a;
+        double expect = 0.0229051 / 1.3 * (1 + SLAB_NU) * Q_SLAB * a * a;
 
         Optional<ShellMesh.Hit> hit = ShellMesh.locate(r.shells(), new Vec3d(centre, 64500, centre));
         assertTrue(hit.isPresent());

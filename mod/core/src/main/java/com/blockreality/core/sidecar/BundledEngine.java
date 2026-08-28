@@ -208,6 +208,25 @@ public final class BundledEngine {
      * @param osArch  {@code os.arch}
      * @param log     one line per interesting decision, for the game log
      */
+    /**
+     * Whether this build ships an engine for the given platform — the question a
+     * player-facing message needs answered, separate from {@link #ensure}'s work.
+     *
+     * <p>"No manifest at all" reads as SUPPORTED: a development jar without engines is
+     * not a platform problem, and a platform message for it would send the player to
+     * the wrong explanation. An unreadable manifest likewise carries its own message.
+     */
+    public static boolean platformSupported(Loader loader, String osName, String osArch) {
+        try (InputStream in = loader.open(MANIFEST)) {
+            if (in == null) return true;
+            List<Entry> entries = parse(new String(in.readAllBytes(),
+                    java.nio.charset.StandardCharsets.UTF_8));
+            return select(entries, osName, osArch).isPresent();
+        } catch (IOException | RuntimeException e) {
+            return true;
+        }
+    }
+
     public static Optional<Path> ensure(Path root, Loader loader,
                                         String osName, String osArch, Consumer<String> log) {
         List<Entry> entries;

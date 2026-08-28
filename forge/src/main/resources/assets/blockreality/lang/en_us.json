@@ -62,5 +62,7 @@
   "block.blockreality.brick_pier": "Brick Pier",
   "block.blockreality.concrete_slab_150": "Concrete Slab 150",
   "block.blockreality.steel_plate": "Steel Plate 20",
-  "br.load.not_structural": "Aim at a structural block. /br load applies a test load where you look."
+  "br.load.not_structural": "Aim at a structural block. /br load applies a test load where you look.",
+  "br.hud.buckling_skipped": "buckling not evaluated (structure size)",
+  "br.engine.platform": "No bundled engine for this platform (%s) — analysis is off. You can build br-sidecar from source and point sidecarPath at it."
 }
