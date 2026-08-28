@@ -122,10 +122,18 @@ build 照樣 SUCCESSFUL。靠「不跑」變綠是最糟的一種綠。
 1. `config/blockreality-server.toml` 的 `sidecarPath`
 2. `-Dbr.sidecar` 系統屬性
 3. `BR_SIDECAR` 環境變數
-4. `<遊戲目錄>/br-sidecar` 或 `<遊戲目錄>/blockreality/br-sidecar`
-5. `PATH`
+4. **jar 內建的引擎**，首次使用時自解到 `<遊戲目錄>/blockreality/engine/<雜湊>/`
+5. `<遊戲目錄>/br-sidecar` 或 `<遊戲目錄>/blockreality/br-sidecar`
+6. `PATH`
 
-`run.bat` / `run.sh` 已經幫你放好第 4 項了。
+前三項是你親手指定的，永遠優先。第 4 項排在第 5 項**前面**是刻意的：遊戲目錄裡的
+`br-sidecar` 最常是舊版安裝器留下的那顆，內建的才保證和正在跑的 jar 同一版。自解
+目錄以引擎的 SHA-256 命名，更新會落在舊引擎旁邊而不是覆寫它，寫到一半的檔案也
+不會被誤認成完好的引擎。
+
+`run.bat` / `run.sh` 幫你放好的是第 5 項那顆——開發用客戶端從原始碼直接跑，沒有
+內建引擎的 jar（引擎要 `scripts/package.sh` 才放得進去），所以這條流程實際用到的
+正是它。
 
 ---
 
