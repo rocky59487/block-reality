@@ -306,11 +306,23 @@ Modrinth 對「內含原生執行檔」同樣要透明；第 1 節那段照貼�
 1. **先在遊戲裡裝一次。** 把 Releases 頁的 `blockreality-0.3c.zip` 下載回來（或直接用
    `dist/blockreality-0.3c.jar`），丟進 `mods/`，開 1.20.1 Forge 47.x，放一根懸臂，
    看到 D/C 讀數。**這是 §0 唯一的紅燈**——沒有任何自動化 gate 涵蓋它。
-2. **CurseForge**：登入 → Create Project → 選 Minecraft → Mods。依 §2 的表填欄位，
-   Description 貼 `paste/description.md`。上傳 `blockreality-0.3c.jar`，Release type 選
-   **Beta**，Game Version 1.20.1，Modloader Forge，changelog 貼
-   `paste/release-notes-0.3c.md`。**預期會轉人工審核**（jar 內含 `.exe`），
-   §1.1 的回信範本備著。
+2. **CurseForge**（專案已建，id **`1673233`**）。頁面本身的欄位——Description、
+   Categories、License、Links——**只能從網頁填**，API 碰不到：依 §2 的表填，Description
+   貼 `paste/description.md`。
+
+   **檔案上傳可以自動化**：
+
+   ```bash
+   python3 scripts/publish_curseforge.py --project 1673233 --dry-run
+   CURSEFORGE_TOKEN=... python3 scripts/publish_curseforge.py --project 1673233
+   ```
+
+   token 在 <https://legacy.curseforge.com/account/api-tokens> 產生。腳本從 env 或
+   `--token-file` 讀，不印不寫檔。它會自己把 `1.20.1` 與 `Forge` 解析成 CurseForge 的
+   **整數 id**——那個 API 不吃 `"1.20.1"` 這種字串，而且**漏掉 modloader 的 id 會讓檔案
+   出現在每一個 loader 底下**；解析不到就拒絕上傳，不猜。
+
+   **預期會轉人工審核**（jar 內含 `.exe`），§1.1 的回信範本備著。
 3. **Modrinth**：登入 → Create a project。slug `block-reality`，依 §3 的表填。
    Body 貼同一份 `paste/description.md`。上傳同一顆 jar，Release channel **Beta**。
    Modrinth 專案預設 draft，填完要按 **Submit for review**。
@@ -330,9 +342,14 @@ Modrinth 對「內含原生執行檔」同樣要透明；第 1 節那段照貼�
    上面那支腳本會直接把它們送成 Modrinth 圖庫；CurseForge 要手動上傳同一批。
 5. **Website 欄位**填 `https://rocky59487.github.io/block-reality-site/`。
 
-> CurseForge 沒有對應的路：**建專案只能從網頁**，它的 upload API 要已經存在的
-> project id。所以 CurseForge 那邊第 2 步無論如何要你自己開一次；開完之後檔案上傳
-> 可以自動化。**token 一律自己產生、存 GitHub Secrets 或本機檔案，不要貼進對話。**
+> 兩邊自動化的程度不一樣，寫清楚免得誤會：Modrinth 從建專案到送審全都打得到；
+> **CurseForge 只有檔案上傳能自動化**，建專案與頁面文案只能從網頁做。
+> **token 一律自己產生、存 GitHub Secrets 或本機檔案，不要貼進對話**——貼進去就永遠
+> 留在轉錄檔裡，只能靠事後撤銷補救。
+>
+> Modrinth 的 PAT 要記得**連 read scope 一起勾**（`READ_PROJECT`、`READ_VERSION`）。
+> 只勾 `CREATE_`/`WRITE_` 的話寫得進去、讀不回來，而且 Modrinth 對沒有讀權限的資源
+> 回 **404 而不是 403**，看起來像東西不存在。v0.3c 上架時就是這樣，送審之後無法自我覆核。
 
 ---
 
