@@ -45,6 +45,21 @@ def check(tag, got, expect, tol):
     print(f"  {'[PASS]' if ok else '[FAIL]'} {tag:<38} got={got:<14.6g} exp={expect:<14.6g} {label}")
 
 
+def unassigned_blocks(r):
+    """Every unassigned coordinate, reason discarded.
+
+    `unassigned` is a list of reason GROUPS since N17, so len() of it counts reasons,
+    not blocks. Every gate that wants a block tally goes through here; the ones that
+    care which reason ask for it by name.
+    """
+    return [b for g in r.get("unassigned", []) for b in g["blocks"]]
+
+
+def unassigned_why(r):
+    """Reason -> block count, for the gates that assert on the reason and not the tally."""
+    return {g["why"]: len(g["blocks"]) for g in r.get("unassigned", [])}
+
+
 def check_true(tag, cond, detail=""):
     global total
     total += 1
@@ -155,7 +170,7 @@ def main():
     # downstream may route on it alone.
     check_true("governing fibre is the compression face (steel: 350 < 500)",
                mem["governingFibre"] == "CRUSH", mem["governingFibre"])
-    check_true("no unassigned blocks", len(r.get("unassigned", [])) == 0)
+    check_true("no unassigned blocks", len(unassigned_blocks(r)) == 0)
 
     # ------------------------------------------- C1b: mode tracks the material
     # Same geometry in concrete, where tension is the weak side (Rtens 3.0 vs
@@ -320,7 +335,7 @@ def main():
     check_true("ok", r6.get("ok") is True, r6.get("error", ""))
     check_true("two members", len(r6.get("members", [])) == 2,
                f"got {len(r6.get('members', []))}")
-    check_true("no unassigned blocks", len(r6.get("unassigned", [])) == 0,
+    check_true("no unassigned blocks", len(unassigned_blocks(r6)) == 0,
                str(r6.get("unassigned", [])))
 
     # ------------------- C8: the interior governs — the case end-only screening missed
@@ -755,7 +770,7 @@ def main():
     check_true("one facet per 2x2 block square",
                len(r_slab.get("shells", [])) == (n - 1) ** 2,
                f"shells={len(r_slab.get('shells', []))} expected={(n - 1) ** 2}")
-    check_true("nothing left unassigned", len(r_slab.get("unassigned", [])) == 0,
+    check_true("nothing left unassigned", len(unassigned_blocks(r_slab)) == 0,
                str(r_slab.get("unassigned", [])[:4]))
     # Beam tokens in the same shape are the counter-example: that IS a grillage, and it
     # double-counts every block. The token is what tells the two cases apart.
@@ -841,14 +856,14 @@ def main():
     lone = sc.call({"op": "solve", "revision": 80,
                     "blocks": [{"x": 0, "y": 64, "z": 0, "mat": "concrete",
                                 "section": "concrete_slab_200", "support": True}], "loads": []})
-    check_true("a lone plate block is unassigned", len(lone.get("unassigned", [])) == 1,
+    check_true("a lone plate block is unassigned", len(unassigned_blocks(lone)) == 1,
                str(lone.get("unassigned")))
     strip = sc.call({"op": "solve", "revision": 81,
                      "blocks": [{"x": i, "y": 64, "z": 0, "mat": "concrete",
                                  "section": "concrete_slab_200", "support": i == 0}
                                 for i in range(5)], "loads": []})
     check_true("a one-block-wide strip is unassigned",
-               len(strip.get("unassigned", [])) == 5 and not strip.get("shells"),
+               len(unassigned_blocks(strip)) == 5 and not strip.get("shells"),
                f"unassigned={len(strip.get('unassigned', []))}")
     # Two sheets stacked is a SOLID. Meshing it as three intersecting sheets would triple
     # its mass and stiffness — the grillage bug wearing a different hat.
@@ -858,7 +873,7 @@ def main():
                                 for i in range(3) for j in range(3) for h in range(2)],
                      "loads": []})
     check_true("a solid block of plate is refused, not meshed",
-               len(solid.get("shells", [])) == 0 and len(solid.get("unassigned", [])) == 18,
+               len(solid.get("shells", [])) == 0 and len(unassigned_blocks(solid)) == 18,
                f"shells={len(solid.get('shells', []))} unassigned={len(solid.get('unassigned', []))}")
 
     print("\n[S7] a column bears on the slab it holds up")
@@ -1093,7 +1108,7 @@ def main():
     check_true("not a mechanism", rj.get("singular") is False, rj.get("diagnostic", ""))
     check_true("three members", len(rj.get("members", [])) == 3,
                f"members={len(rj.get('members', []))}")
-    check_true("nothing unassigned", len(rj.get("unassigned", [])) == 0,
+    check_true("nothing unassigned", len(unassigned_blocks(rj)) == 0,
                str(rj.get("unassigned")))
     # Self weight of ALL THREE members, computed here from the catalogue. The beam's
     # 791 N is the term that used to be missing: it was solved, found itself alone in a
@@ -1152,7 +1167,9 @@ def main():
     check_true("no member was invented", len(rj3.get("members", [])) == 0,
                f"members={len(rj3.get('members', []))}")
     check_true("the lone block is reported instead",
-               [1, 65, 1] in rj3.get("unassigned", []), str(rj3.get("unassigned")))
+               [1, 65, 1] in unassigned_blocks(rj3), str(rj3.get("unassigned")))
+    check_true("...and it says why: one block is L/h = 1",
+               unassigned_why(rj3) == {"RUN_TOO_SHORT": 1}, str(unassigned_why(rj3)))
 
     # ============================================================== SPANS =====
     # A beam resting on the ground at BOTH ends had a node at each end and none between,
@@ -1193,7 +1210,7 @@ def main():
     check_true("no mechanism island", rf.get("singularIslands") == 0,
                str(rf.get("singularIslands")))
     check_true("counted as one structure", rf.get("islands") == 1, str(rf.get("islands")))
-    check_true("its blocks are reported", len(rf.get("unassigned", [])) == 3,
+    check_true("its blocks are reported", len(unassigned_blocks(rf)) == 3,
                str(rf.get("unassigned")))
     check_true("and the diagnostic says why", "fully supported" in rf.get("diagnostic", ""),
                rf.get("diagnostic", ""))
@@ -1329,7 +1346,135 @@ def main():
                    and len(rp.get("members", [])) == 1,
                    f"singular={rp.get('singular')} members={len(rp.get('members', []))}")
         check_true(f"{mat} pad: and the pad itself is reported",
-                   [0, 64, 0] in rp.get("unassigned", []), str(rp.get("unassigned")))
+                   [0, 64, 0] in unassigned_blocks(rp), str(rp.get("unassigned")))
+        check_true(f"{mat} pad: with the reason, not just a coordinate",
+                   unassigned_why(rp).get("RUN_TOO_SHORT") == 1, str(unassigned_why(rp)))
+
+    # ========================================================== ACCOUNTING ====
+    # N17/N18, frozen in docs/GATES.md before any of this was written.
+    #
+    # The complaint these close is "blocks suddenly stop taking part in the
+    # calculation". N14 shut the input-side source (chunks the host skipped without
+    # saying so). This is the output side, and it was bigger: a singular island's
+    # blocks appeared in NEITHER members NOR shells NOR unassigned, so a 20-block
+    # ungrounded beam came back ok:true with twenty blocks missing from the reply.
+    # Logged as N4-2 in V03A_REVIEW_2026-08-23 and never fixed until now.
+    print("\n[N17] every block sent comes back somewhere, with a reason")
+
+    def account(tag, rev, blocks, expect_why=None):
+        """Send blocks, and check the reply accounts for every one of them."""
+        r = sc.call({"op": "solve", "revision": rev, "blocks": blocks, "loads": []})
+        check_true(f"{tag}: ok", r.get("ok") is True, r.get("error", ""))
+        want = {tuple(b[k] for k in ("x", "y", "z")) for b in blocks}
+        got = set()
+        for m in r.get("members", []):
+            got |= {tuple(c) for c in m["blocks"]}
+        for sh in r.get("shells", []):
+            got |= {tuple(c) for c in sh["blocks"]}
+        un = {tuple(c) for c in unassigned_blocks(r)}
+        # N17-a: coverage. Nothing sent may be absent from all three places.
+        check_true(f"{tag}: every block is accounted for",
+                   want <= (got | un), f"missing {sorted(want - (got | un))[:4]}")
+        # N17-b: disjointness. An element block is not also an unassigned block.
+        check_true(f"{tag}: unassigned does not overlap the elements",
+                   not (un & got), f"both {sorted(un & got)[:4]}")
+        if expect_why is not None:
+            check_true(f"{tag}: reported as {expect_why}",
+                       set(unassigned_why(r)) == {expect_why} if expect_why else not un,
+                       str(unassigned_why(r)))
+        return r
+
+    # N17-d: the case that was losing blocks outright.
+    floating = [{"x": i, "y": 64, "z": 0, "mat": "steel",
+                 "section": "steel_rect_200x400"} for i in range(6)]
+    mech = account("floating beam", 5010, floating, "MECHANISM")
+    check_true("a mechanism is still called one", mech.get("singularIslands") == 1,
+               str(mech.get("singularIslands")))
+    check_true("and all six of its blocks come back",
+               len(unassigned_blocks(mech)) == 6, str(unassigned_why(mech)))
+
+    # The mixed world: one sound structure and one mechanism beside it. The sound one
+    # must keep its answer and the other one must still be named.
+    col = [{"x": 0, "y": 64 + y, "z": 0, "mat": "steel",
+            "section": "steel_rect_200x400", "support": y == 0} for y in range(5)]
+    far = [{"x": 10 + i, "y": 67, "z": 0, "mat": "steel",
+            "section": "steel_rect_200x400"} for i in range(6)]
+    mixed = account("column beside a floating beam", 5011, col + far, "MECHANISM")
+    check_true("the sound structure keeps its member",
+               len(mixed.get("members", [])) == 1, str(len(mixed.get("members", []))))
+
+    # N17-e: fully supported is not an extraction failure and must not share its name.
+    flat = [{"x": i, "y": 64, "z": 0, "mat": "steel",
+             "section": "steel_rect_200x400", "support": True} for i in range(6)]
+    fs = account("beam flat on the ground", 5012, flat, "FULLY_SUPPORTED")
+    check_true("a fully supported structure is not a mechanism",
+               fs.get("singularIslands") == 0, str(fs.get("singularIslands")))
+
+    # The plate reasons, which call for three different fixes and used to be one silence.
+    strip = [{"x": i, "y": 64, "z": 0, "mat": "concrete",
+              "section": "concrete_slab_200", "support": True} for i in range(6)]
+    account("one-block-wide slab strip", 5013, strip, "PLATE_STRIP")
+    solid = [{"x": x, "y": 64 + y, "z": z, "mat": "concrete",
+              "section": "concrete_slab_200", "support": y == 0}
+             for x in range(3) for y in range(3) for z in range(3)]
+    account("plate blocks stacked solid", 5014, solid, "PLATE_SOLID")
+    account("a lone plate block", 5015,
+            [{"x": 0, "y": 64, "z": 0, "mat": "concrete",
+              "section": "concrete_slab_200", "support": True}], "PLATE_LONE")
+
+    # N17-g: a reply with nothing unassigned says nothing about it.
+    span = [{"x": i, "y": 64, "z": 0, "mat": "steel", "section": "steel_rect_200x400",
+             "support": i in (0, 5)} for i in range(6)]
+    clean = account("an ordinary span", 5016, span, "")
+    check_true("an ordinary span reports no reasons at all",
+               clean.get("unassigned") == [], str(clean.get("unassigned")))
+
+    print("\n[N18] the buckling number says what it is")
+    tall = ([{"x": 0, "y": 64, "z": 0, "mat": "steel",
+              "section": "steel_rect_200x400", "support": True}]
+            + [{"x": 0, "y": 64 + y, "z": 0, "mat": "steel",
+                "section": "steel_rect_200x400"} for y in range(1, 12)])
+    tip = [{"x": 0, "y": 75, "z": 0, "fz": -50000.0}]
+
+    def bstate(tag, rev, blocks, loads=None, buckling=None):
+        req = {"op": "solve", "revision": rev, "blocks": blocks, "loads": loads or []}
+        if buckling is not None:
+            req["buckling"] = buckling
+        r = sc.call(req)
+        check_true(f"{tag}: ok", r.get("ok") is True, r.get("error", ""))
+        return r
+
+    seen = {}
+    seen["computed"] = bstate("column under load", 5020, tall, tip, True)
+    seen["off"] = bstate("same column, not asked", 5021, tall, tip, False)
+    seen["nothing"] = bstate("nothing eligible", 5022, flat, None, True)
+    seen["no mode"] = bstate("span with no compression to lose", 5023, span, None, True)
+
+    check_true("a computed factor says computed",
+               seen["computed"]["bucklingState"] == "computed"
+               and seen["computed"]["bucklingFactor"] > 0,
+               str(seen["computed"].get("bucklingState")))
+    # N18-a: the zeros are the point. Three replies carry 0 and they are three states.
+    zeros = [seen["off"], seen["nothing"], seen["no mode"]]
+    check_true("every other state carries no factor",
+               all(z["bucklingFactor"] == 0 for z in zeros),
+               str([z["bucklingFactor"] for z in zeros]))
+    check_true("...and the three zeros are three different states",
+               len({z["bucklingState"] for z in zeros}) == 3,
+               str([z["bucklingState"] for z in zeros]))
+    check_true("not asked says so", seen["off"]["bucklingState"] == "disabled-by-request",
+               seen["off"]["bucklingState"])
+    check_true("nothing to run it on says so",
+               seen["nothing"]["bucklingState"] == "not-eligible",
+               seen["nothing"]["bucklingState"])
+    check_true("ran and found nothing says so",
+               seen["no mode"]["bucklingState"] == "no-positive-eigenvalue",
+               seen["no mode"]["bucklingState"])
+    # N18-b: no reply may carry a factor while claiming it did not compute one.
+    check_true("no state contradicts its factor",
+               all((r["bucklingState"] == "computed") == (r["bucklingFactor"] > 0)
+                   for r in list(seen.values())),
+               str({k: (v["bucklingState"], v["bucklingFactor"]) for k, v in seen.items()}))
 
     # ================================================================ SCALE ====
     # The island partition's union-find was recursive, so a long enough chain of segments
@@ -1380,7 +1525,9 @@ def main():
 
     print("\n[T] shared-memory transport: bit-exact against JSON")
     hs = sc.call({"op": "hello"})
-    check_true("shm capability advertised", hs.get("shm") == 1, str(hs.get("shm")))
+    # 2 since N17/N18: the reply gained a buckling state string and the unassigned
+    # section became reason-grouped, so every offset after either point moved.
+    check_true("shm capability advertised", hs.get("shm") == 2, str(hs.get("shm")))
     t_mats = list(hs.get("materials", []))
     t_toks = list(hs.get("sections", [])) + [p["id"] for p in hs.get("plates", [])]
     FIBRE_NAMES = ["NONE", "CRUSH", "TENSION", "SHEAR", "BENDING", "TORSION", "SHELL_VM"]
@@ -1475,6 +1622,9 @@ def main():
         # failed" one state — and the binary path carried it regardless, so the two
         # transports disagreed about what a reply even contains.
         r["bucklingFactor"] = c.f64()
+        # What that number is. Both transports carry it, and the JSON/shm agreement gate
+        # below compares whole replies, so a state on one and not the other is caught.
+        r["bucklingState"] = c.s()
         r["nodes"] = c.u32()
         r["dof"] = c.u32()
         r["members"] = []
@@ -1522,7 +1672,8 @@ def main():
             sh["McRaw"] = [c.f64n(3) for _ in range(4)]
             sh["vmTop"], sh["vmBot"] = c.f64n(2)
             r["shells"].append(sh)
-        r["unassigned"] = [c.i32n(3) for _ in range(c.u32())]
+        r["unassigned"] = [{"why": c.s(), "blocks": [c.i32n(3) for _ in range(c.u32())]}
+                           for _ in range(c.u32())]
         return r
 
     def deep_eq(a, b, path):

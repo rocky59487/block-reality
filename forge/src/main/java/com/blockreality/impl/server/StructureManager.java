@@ -709,7 +709,13 @@ public final class StructureManager {
         for (BlockPos p : loaded.keySet()) {
             posOf.put(new BlockKey(p.getX(), p.getY(), p.getZ()), p);
         }
-        for (BlockKey k : SnapshotLoads.refusedBy(posOf.keySet(), probe.unassigned())) {
+        // NOT every unassigned block: only the ones whose reason means they belong to
+        // no element at all. Since N17 the list also holds the blocks of mechanisms and of
+        // fully supported structures, and both of those ARE nodes -- the engine accepts a
+        // load on them. Passing the whole list here would delete a player's test load the
+        // moment the thing it sat on lost its last support, citing a reason that is not
+        // true. (The fully-supported half of that was already happening.)
+        for (BlockKey k : SnapshotLoads.refusedBy(posOf.keySet(), probe.blocksFormingNoElement())) {
             BlockPos p = posOf.get(k);
             if (p == null || loaded.remove(p) == null) continue;
             Component msg = Component.translatable("br.msg.load_dropped",

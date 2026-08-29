@@ -101,23 +101,36 @@ def main():
         holes += len(audit(name, bs, sc.solve(bs)))
 
     print()
-    print("  accounting holes across the batch: %d blocks" % holes)
-    print("  (every hole above is a SINGULAR island: its blocks are in neither members")
-    print("   nor shells nor unassigned. V03A_REVIEW N4-2, still open.)")
+    print("  N17-a accounting holes across the batch: %d blocks  -> %s"
+          % (holes, "PASS" if holes == 0 else "FAIL"))
+    print("  (before N17 this was 12: every hole was a SINGULAR island, whose blocks")
+    print("   were in neither members nor shells nor unassigned. V03A_REVIEW N4-2.)")
+    print()
+    print("  reasons seen, by case:")
+    for name, bs in cases:
+        r = sc.solve(bs)
+        by = ", ".join("%s x%d" % (g.get("why", "?"), len(g.get("blocks", [])))
+                       for g in r.get("unassigned", []) if isinstance(g, dict))
+        print("    %-42s %s" % (name, by or "-"))
     print()
 
     print("B. what does bucklingFactor 0 mean?")
     print()
     col = ([blk(0, 0, 0, support=True)] + [blk(0, y, 0) for y in range(1, 12)])
     load = [{"x": 0, "y": Y0 + 11, "z": 0, "fz": -50000.0}]
-    r = sc.solve(col, loads=load, buckling=True)
-    print("  B1 column, buckling=true            bucklingFactor=%r" % r.get("bucklingFactor"))
-    r = sc.solve(col, loads=load, buckling=False)
-    print("  B2 same column, buckling=false      bucklingFactor=%r" % r.get("bucklingFactor"))
-    r = sc.solve([blk(x, 0, 0, support=True) for x in range(6)], buckling=True)
-    print("  B3 nothing to buckle, buckling=true bucklingFactor=%r" % r.get("bucklingFactor"))
-    print("  buckling-related keys in the reply: %r"
-          % (sorted(k for k in r if "uckling" in k),))
+    def bstate(name, r):
+        print("  %-36s factor=%-20r state=%r"
+              % (name, r.get("bucklingFactor"), r.get("bucklingState")))
+    bstate("B1 column, buckling=true", sc.solve(col, loads=load, buckling=True))
+    bstate("B2 same column, buckling=false", sc.solve(col, loads=load, buckling=False))
+    bstate("B3 nothing to buckle, buckling=true",
+           sc.solve([blk(x, 0, 0, support=True) for x in range(6)], buckling=True))
+    bstate("B4 mechanism, buckling=true", sc.solve([blk(x, 0, 0) for x in range(6)], buckling=True))
+    print()
+    print("  N18-a: the three zeros above must not share one state -> %s"
+          % ("PASS" if len({sc.solve(col, loads=load, buckling=False)["bucklingState"],
+                            sc.solve([blk(x, 0, 0, support=True) for x in range(6)],
+                                     buckling=True)["bucklingState"]}) == 2 else "FAIL"))
     print()
 
 

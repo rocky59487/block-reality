@@ -1,6 +1,7 @@
 package com.blockreality.impl.net;
 
 import com.blockreality.api.AnalysisResult;
+import com.blockreality.api.BucklingState;
 import com.blockreality.api.EndForces;
 import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.MemberSnapshot;
@@ -8,6 +9,8 @@ import com.blockreality.api.ShellFieldSpec;
 import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.StressFieldSpec;
 import com.blockreality.api.StressStation;
+import com.blockreality.api.UnassignedBlocks;
+import com.blockreality.api.UnassignedReason;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.api.WorldRevision;
 import com.blockreality.api.geom.Vec3d;
@@ -81,9 +84,23 @@ public final class StressResultPacket {
     private final double bucklingFactor;
     /** Server-side double verdict of {@code 0 < bucklingFactor <= 1}. */
     private final boolean bucklingCritical;
-    /** The SERVER skipped the buckling screen (size policy). A factor of 0 alone cannot
-     *  distinguish "skipped" from "no positive mode"; this flag is the client's answer. */
-    private final boolean bucklingSkipped;
+    /**
+     * What the buckling number is, in one field instead of a factor plus a flag.
+     *
+     * <p>A factor of 0 cannot distinguish "skipped for size" from "no positive mode" from
+     * "nothing eligible", and until N18 the wire carried only the first of those, as a
+     * boolean. {@link BucklingState#DISABLED_BY_SCALE} is substituted here and nowhere
+     * else: the engine cannot know it was the host that declined to ask.
+     */
+    private final BucklingState bucklingState;
+    /**
+     * How many blocks fell out of the model, per reason.
+     *
+     * <p>Counts, not coordinates. A fully supported raft can list fourteen thousand blocks
+     * and the HUD only ever needs the tally; {@code /br status} runs on the server and
+     * reads the coordinates straight off the result.
+     */
+    private final int[] unassignedByReason;
     /** Solved totals BEFORE truncation, so the HUD can say what it is not showing (#42). */
     private final int totalMembers;
     private final int totalShells;
@@ -107,7 +124,7 @@ public final class StressResultPacket {
                                double maxDc, boolean overCapacity,
                                int islands, int singularIslands,
                                double bucklingFactor, boolean bucklingCritical,
-                               boolean bucklingSkipped,
+                               BucklingState bucklingState, int[] unassignedByReason,
                                int totalMembers, int totalShells,
                                int truncatedBlocks,
                                Set<Integer> withheldMembers, Set<Integer> withheldShells,
@@ -126,7 +143,8 @@ public final class StressResultPacket {
         this.singularIslands = singularIslands;
         this.bucklingFactor = bucklingFactor;
         this.bucklingCritical = bucklingCritical;
-        this.bucklingSkipped = bucklingSkipped;
+        this.bucklingState = bucklingState == null ? BucklingState.UNKNOWN : bucklingState;
+        this.unassignedByReason = normaliseReasons(unassignedByReason);
         this.totalMembers = totalMembers;
         this.totalShells = totalShells;
         this.truncatedBlocks = Math.max(0, truncatedBlocks);
@@ -138,7 +156,16 @@ public final class StressResultPacket {
 
     private static StressResultPacket invalid(String reason) {
         return new StressResultPacket(false, reason, 0, "", false, 0, false, 0, 0, 0, false,
-                false, 0, 0, 0, Set.of(), Set.of(), List.of(), List.of());
+                BucklingState.UNKNOWN, null, 0, 0, 0, Set.of(), Set.of(), List.of(), List.of());
+    }
+
+    /** A per-reason tally sized to this build of the enum, whatever the caller passed. */
+    private static int[] normaliseReasons(int[] in) {
+        int[] out = new int[UnassignedReason.values().length];
+        if (in != null) {
+            for (int i = 0; i < out.length && i < in.length; i++) out[i] = Math.max(0, in[i]);
+        }
+        return out;
     }
 
     public static StressResultPacket of(AnalysisResult r, String dimension, boolean bucklingSkipped) {
@@ -154,11 +181,18 @@ public final class StressResultPacket {
         List<ShellSnapshot> s = keepGoverning(r.shells(), MAX_SHELLS,
                 "shell".equals(r.governingKind()) ? r.governing() : Integer.MIN_VALUE,
                 ShellSnapshot::id, "plate facets");
+        // The one place DISABLED_BY_SCALE can be said. The engine was asked not to run
+        // the screen and answered accordingly; only this side knows the reason was size.
+        BucklingState state = bucklingSkipped ? BucklingState.DISABLED_BY_SCALE : r.bucklingState();
+        int[] byReason = new int[UnassignedReason.values().length];
+        for (UnassignedBlocks g : r.unassigned()) {
+            byReason[g.reason().ordinal()] += g.blocks().size();
+        }
         return new StressResultPacket(true, "",
                 r.revision().value(), dimension, r.singular(),
                 r.maxDc(), r.maxDc() > 1.0,
                 r.islands(), r.singularIslands(),
-                r.bucklingFactor(), r.bucklingCritical(), bucklingSkipped,
+                r.bucklingFactor(), r.bucklingCritical(), state, byReason,
                 r.members().size(), r.shells().size(),
                 truncatedBlocks, withheldMembers, withheldShells, m, s);
     }
@@ -213,7 +247,22 @@ public final class StressResultPacket {
     /** The server's double-precision verdict; the client never re-derives it. */
     public boolean bucklingCritical() { return bucklingCritical; }
 
-    public boolean bucklingSkipped() { return bucklingSkipped; }
+    public BucklingState bucklingState() { return bucklingState; }
+
+    /** Kept for the callers that only ask the old question. */
+    public boolean bucklingSkipped() { return bucklingState == BucklingState.DISABLED_BY_SCALE; }
+
+    /** Blocks that fell out of the model with this reason. */
+    public int unassignedCount(UnassignedReason reason) {
+        return unassignedByReason[reason.ordinal()];
+    }
+
+    /** Blocks that fell out of the model, all reasons together. */
+    public int unassignedTotal() {
+        int t = 0;
+        for (int c : unassignedByReason) t += c;
+        return t;
+    }
 
     /** Tracked blocks the server could not read that touched this request (#74, N14-b). */
     public int truncatedBlocks() { return truncatedBlocks; }
@@ -251,7 +300,10 @@ public final class StressResultPacket {
         buf.writeVarInt(Math.max(0, p.singularIslands));
         buf.writeFloat((float) p.bucklingFactor);
         buf.writeBoolean(p.bucklingCritical);
-        buf.writeBoolean(p.bucklingSkipped);
+        buf.writeByte(p.bucklingState.ordinal());
+        // Fixed length: both ends come out of the same jar, so the enum cannot differ
+        // between them, and a length prefix would only add a number to disagree about.
+        for (int c : p.unassignedByReason) buf.writeVarInt(c);
         buf.writeVarInt(p.truncatedBlocks);
         buf.writeVarInt(Math.max(0, p.totalMembers));
         buf.writeVarInt(Math.max(0, p.totalShells));
@@ -433,10 +485,27 @@ public final class StressResultPacket {
         double bucklingFactor = finite(buf.readFloat(), "bucklingFactor");
         if (bucklingFactor < 0) throw new Bad("negative bucklingFactor");
         boolean bucklingCritical = buf.readBoolean();
-        boolean bucklingSkipped = buf.readBoolean();
-        // The server only ever skips by not ASKING, and the engine answers 0 when not
-        // asked — a nonzero factor beside the flag is a contradiction, not a schema.
-        if (bucklingSkipped && bucklingFactor != 0) throw new Bad("bucklingSkipped with a nonzero factor");
+        int stateOrdinal = buf.readByte();
+        if (stateOrdinal < 0 || stateOrdinal >= BucklingState.values().length) {
+            throw new Bad("unknown bucklingState ordinal " + stateOrdinal);
+        }
+        BucklingState bucklingState = BucklingState.values()[stateOrdinal];
+        // A positive factor smaller than the smallest float degrades to 0.0f in transit,
+        // which would look like a contradiction while being nothing but the same lossy
+        // trip alignToVerdict already handles for maxDc. The server said a factor was
+        // computed and that it was positive; the magnitude is what the wire lost, so
+        // restore the smallest positive value rather than reject the packet. The
+        // verdict itself never depended on this number — it travels as its own flag.
+        if (bucklingState.hasFactor() && bucklingFactor == 0) bucklingFactor = Float.MIN_VALUE;
+        // A factor and a state that disagree is a contradiction, not a schema: every
+        // state but COMPUTED means the number was never produced.
+        if (bucklingState.hasFactor() != (bucklingFactor > 0)) {
+            throw new Bad("bucklingState " + bucklingState + " beside factor " + bucklingFactor);
+        }
+        int[] unassignedByReason = new int[UnassignedReason.values().length];
+        for (int i = 0; i < unassignedByReason.length; i++) {
+            unassignedByReason[i] = count(buf.readVarInt(), Integer.MAX_VALUE, "unassigned count");
+        }
         int truncatedBlocks = count(buf.readVarInt(), Integer.MAX_VALUE, "truncatedBlocks");
         int totalMembers = count(buf.readVarInt(), Integer.MAX_VALUE, "totalMembers");
         int totalShells = count(buf.readVarInt(), Integer.MAX_VALUE, "totalShells");
@@ -537,7 +606,7 @@ public final class StressResultPacket {
 
         return new StressResultPacket(true, "", revision, dimension, singular,
                 maxDc, overCapacity, islands, singularIslands,
-                bucklingFactor, bucklingCritical, bucklingSkipped,
+                bucklingFactor, bucklingCritical, bucklingState, unassignedByReason,
                 totalMembers, totalShells,
                 truncatedBlocks, withheldMembers, withheldShells, members, shells);
     }

@@ -25,7 +25,7 @@ class ProtocolCodecTest {
         return """
             {"ok":true,"op":"solve","revision":7,
              "singular":false,"islands":1,"singularIslands":0,
-             "bucklingFactor":14.25,
+             "bucklingFactor":14.25,"bucklingState":"computed",
              "nodes":6,"dof":36,
              "equilibrium":{"applied":[0,-20000,0],"reaction":[0,20000,0],"residual":1.5e-15},
              "maxDC":0.25,"governing":1,"governingKind":"member",
@@ -61,7 +61,7 @@ class ProtocolCodecTest {
                "vmTop":8,"vmBot":3,
                "dcRaw":0.1,"edgeRecovered":false
              }],
-             "unassigned":[[5,64,0]]}
+             "unassigned":[{"why":"RUN_TOO_SHORT","blocks":[[5,64,0]]}]}
             """;
     }
 
@@ -261,7 +261,7 @@ class ProtocolCodecTest {
 
     // ------------------------------------------------------------------- hello
     private static String fullHello() {
-        return "{\"ok\":true,\"op\":\"hello\",\"engine\":\"FrameCore\",\"protocol\":1,\"shm\":1,"
+        return "{\"ok\":true,\"op\":\"hello\",\"engine\":\"FrameCore\",\"protocol\":2,\"shm\":2,"
                 + "\"materials\":[\"steel\",\"concrete\"],"
                 + "\"sections\":[\"steel_rect_200x400\"],"
                 + "\"plates\":[{\"id\":\"concrete_slab_200\",\"t\":200}]}";
@@ -284,7 +284,7 @@ class ProtocolCodecTest {
         // shm is a capability, not a requirement: engines that predate the binary
         // transport simply stay on JSON.
         Optional<EngineCatalogue> cat = ProtocolCodec.decodeHello(
-                fullHello().replace("\"shm\":1,", ""));
+                fullHello().replace("\"shm\":2,", ""));
         assertTrue(cat.isPresent());
         assertFalse(cat.get().supportsShm());
     }
@@ -314,10 +314,10 @@ class ProtocolCodecTest {
                 fullHello().replace("\"t\":200", "\"t\":0"),
                 fullHello().replace("\"t\":200", "\"t\":-50"),
                 // protocol written as a double defeats the exact-integer version gate
-                fullHello().replace("\"protocol\":1", "\"protocol\":1.0"),
+                fullHello().replace("\"protocol\":2", "\"protocol\":2.0"),
                 // shm present but not a plain non-negative integer
-                fullHello().replace("\"shm\":1", "\"shm\":1.5"),
-                fullHello().replace("\"shm\":1", "\"shm\":-1"),
+                fullHello().replace("\"shm\":2", "\"shm\":1.5"),
+                fullHello().replace("\"shm\":2", "\"shm\":-1"),
                 // a material that is not a string cannot be a token
                 fullHello().replace("\"materials\":[\"steel\",\"concrete\"]",
                                     "\"materials\":[\"steel\",42]"),

@@ -1,6 +1,7 @@
 package com.blockreality.core.sidecar;
 
 import com.blockreality.api.AnalysisResult;
+import com.blockreality.api.EngineCatalogue;
 import com.blockreality.api.WorldRevision;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.core.protocol.SolveRequest;
@@ -115,7 +116,7 @@ class SidecarLifecycleTest {
     void aWedgedSidecarTimesOutAndIsKilled() throws IOException {
         Path exe = script("wedged.sh",
                 "read -r line\n"
-                        + "printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":1,"
+                        + "printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":" + EngineCatalogue.SUPPORTED_PROTOCOL + ","
                         + "\"materials\":[],\"sections\":[],\"plates\":[]}\\n'\n"
                         + "sleep 60\n");
         client = clientFor(exe, 300);
@@ -136,7 +137,7 @@ class SidecarLifecycleTest {
                 "while read -r line; do\n"
                         + "  case \"$line\" in\n"
                         + "    *'\"op\":\"hello\"'*)\n"
-                        + "      printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":1,"
+                        + "      printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":" + EngineCatalogue.SUPPORTED_PROTOCOL + ","
                         + "\"materials\":[],\"sections\":[],\"plates\":[]}\\n' ;;\n"
                         + "    *)\n"
                         + "      if [ ! -f '" + marker + "' ]; then touch '" + marker + "'; exit 1; fi\n"
@@ -169,7 +170,7 @@ class SidecarLifecycleTest {
                         + "while read -r line; do\n"
                         + "  case \"$line\" in\n"
                         + "    *'\"op\":\"hello\"'*)\n"
-                        + "      printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":1,"
+                        + "      printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":" + EngineCatalogue.SUPPORTED_PROTOCOL + ","
                         + "\"materials\":[],\"sections\":[],\"plates\":[]}\\n' ;;\n"
                         + "    *)\n"
                         + "      n=$((n+1))\n"
@@ -204,7 +205,7 @@ class SidecarLifecycleTest {
                 "while read -r line; do\n"
                         + "  case \"$line\" in\n"
                         + "    *'\"op\":\"bye\"'*) touch '" + marker + "'; exit 0 ;;\n"
-                        + "    *) printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":1,"
+                        + "    *) printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":" + EngineCatalogue.SUPPORTED_PROTOCOL + ","
                         + "\"materials\":[],\"sections\":[],\"plates\":[]}\\n' ;;\n"
                         + "  esac\n"
                         + "done\n");
@@ -229,7 +230,7 @@ class SidecarLifecycleTest {
                         + "while read -r line; do\n"
                         + "  case \"$line\" in\n"
                         + "    *'\"op\":\"bye\"'*) exit 0 ;;\n"
-                        + "    *) printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":1,"
+                        + "    *) printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":" + EngineCatalogue.SUPPORTED_PROTOCOL + ","
                         + "\"materials\":[],\"sections\":[],\"plates\":[]}\\n' ;;\n"
                         + "  esac\n"
                         + "done\n");
@@ -296,9 +297,9 @@ class SidecarLifecycleTest {
     // (TEST-5 — these paths had zero coverage; every stub was JSON-only).
 
     private static final String SHM_HELLO =
-            "printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":1,"
+            "printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":" + EngineCatalogue.SUPPORTED_PROTOCOL + ","
                     + "\"materials\":[\"steel\"],\"sections\":[\"steel_rect_200x400\"],"
-                    + "\"plates\":[],\"shm\":1}\\n'";
+                    + "\"plates\":[],\"shm\":" + EngineCatalogue.SUPPORTED_SHM_LAYOUT + "}\\n'";
 
     private static final String JSON_SOLVE_REPLY =
             "printf '{\"ok\":true,\"revision\":%s,\"singular\":false,"
@@ -397,7 +398,7 @@ class SidecarLifecycleTest {
 
         script("later.sh",
                 "while read -r line; do\n"
-                        + "  printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":1,"
+                        + "  printf '{\"ok\":true,\"op\":\"hello\",\"engine\":\"stub\",\"protocol\":" + EngineCatalogue.SUPPORTED_PROTOCOL + ","
                         + "\"materials\":[],\"sections\":[],\"plates\":[]}\\n'\n"
                         + "done\n");
         client.reset();

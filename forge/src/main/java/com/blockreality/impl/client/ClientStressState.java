@@ -1,11 +1,13 @@
 package com.blockreality.impl.client;
 
+import com.blockreality.api.BucklingState;
 import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.api.StressStation;
 import com.blockreality.api.geom.Vec3d;
 import com.blockreality.api.ScanMode;
+import com.blockreality.api.UnassignedReason;
 import com.blockreality.api.render.StressPalette;
 import com.blockreality.core.render.MemberPick;
 import com.blockreality.core.render.ShellMesh;
@@ -50,7 +52,9 @@ public final class ClientStressState {
     /** Server-side double verdicts; the client displays them, never re-derives (#55). */
     private static boolean overCapacity;
     private static boolean bucklingCriticalFlag;
-    private static boolean bucklingSkippedFlag;
+    private static BucklingState bucklingStateValue = BucklingState.UNKNOWN;
+    /** Blocks the model left out this round, per reason. Counts only; see the packet. */
+    private static int[] unassignedByReason = new int[UnassignedReason.values().length];
     /** Tracked blocks the server could not read that touched this request (#74, N14). */
     private static int truncatedBlocks;
     /** Ids whose verdict the server withheld because their input was cut (N14-c). */
@@ -110,8 +114,30 @@ public final class ClientStressState {
      */
     public static boolean bucklingCritical() { return bucklingCriticalFlag; }
 
+    /**
+     * What the buckling number is. Every state but COMPUTED means there is no number, and
+     * the HUD has a different sentence for each — before N18 it had one sentence for
+     * "skipped for size" and silence for the rest, so a screen that ran and found nothing
+     * looked exactly like a screen that never ran.
+     */
+    public static BucklingState bucklingState() { return bucklingStateValue; }
+
     /** The server skipped the buckling screen for size; the HUD must say so. */
-    public static boolean bucklingSkipped() { return bucklingSkippedFlag; }
+    public static boolean bucklingSkipped() {
+        return bucklingStateValue == BucklingState.DISABLED_BY_SCALE;
+    }
+
+    /** Blocks left out of the model this round with this reason. */
+    public static int unassignedCount(UnassignedReason r) {
+        return unassignedByReason[r.ordinal()];
+    }
+
+    /** Blocks left out of the model this round, all reasons together. */
+    public static int unassignedTotal() {
+        int t = 0;
+        for (int c : unassignedByReason) t += c;
+        return t;
+    }
 
     public static int truncatedBlocks() { return truncatedBlocks; }
 
@@ -233,7 +259,12 @@ public final class ClientStressState {
         singularIslands = p.singularIslands();
         bucklingFactor = p.bucklingFactor();
         bucklingCriticalFlag = p.bucklingCritical();
-        bucklingSkippedFlag = p.bucklingSkipped();
+        bucklingStateValue = p.bucklingState();
+        int[] byReason = new int[UnassignedReason.values().length];
+        for (UnassignedReason r : UnassignedReason.values()) {
+            byReason[r.ordinal()] = p.unassignedCount(r);
+        }
+        unassignedByReason = byReason;
         truncatedBlocks = p.truncatedBlocks();
         withheldMembers = p.withheldMembers();
         withheldShells = p.withheldShells();
@@ -268,7 +299,8 @@ public final class ClientStressState {
         maxDc = 0;
         overCapacity = false;
         bucklingCriticalFlag = false;
-        bucklingSkippedFlag = false;
+        bucklingStateValue = BucklingState.UNKNOWN;
+        unassignedByReason = new int[UnassignedReason.values().length];
         truncatedBlocks = 0;
         withheldMembers = java.util.Set.of();
         withheldShells = java.util.Set.of();

@@ -1,8 +1,10 @@
 package com.blockreality.core.protocol;
 
 import com.blockreality.api.AnalysisResult;
+import com.blockreality.api.BucklingState;
 import com.blockreality.api.EngineCatalogue;
 import com.blockreality.api.GoverningFibre;
+import com.blockreality.api.UnassignedReason;
 import com.blockreality.api.WorldRevision;
 import com.blockreality.api.geom.BlockKey;
 import org.junit.jupiter.api.Test;
@@ -63,20 +65,7 @@ class BinaryCodecTest {
      */
     private static ByteBuffer reply(Knobs k) {
         ByteBuffer b = ByteBuffer.allocate(8192).order(ByteOrder.LITTLE_ENDIAN);
-        b.putInt(BinaryCodec.RESP_MAGIC);
-        b.putInt(7).putInt(0);            // revision lo/hi
-        b.putInt(1);                      // ok
-        b.putInt(0);                      // singular
-        b.putInt(1).putInt(0);            // islands, singularIslands
-        b.putInt(0);                      // diagnostic: ""
-        b.putInt(0);                      // note: ""
-        for (int i = 0; i < 6; i++) b.putDouble(0);   // applied[3] + reaction[3]
-        b.putDouble(1.5e-15);             // residual
-        b.putDouble(0.25);                // maxDC
-        b.putInt(1);                      // governing
-        b.putInt(1);                      // governingKind: member
-        b.putDouble(14.25);               // bucklingFactor
-        b.putInt(6).putInt(36);           // nodes, dof
+        writeHeader(b);
 
         b.putInt(1);                      // nMembers
         b.putInt(1);                      // id
@@ -128,9 +117,44 @@ class BinaryCodecTest {
         for (int i = 0; i < 12; i++) b.putDouble(1e5);         // McRaw
         b.putDouble(8).putDouble(3);                           // vmTop, vmBot
 
-        b.putInt(1);                      // nUnassigned
+        b.putInt(1);                      // unassigned groups
+        putStr(b, "RUN_TOO_SHORT");       // ...this one's reason
+        b.putInt(1);                      // ...and its block count
         b.putInt(5).putInt(64).putInt(0);
         return b;
+    }
+
+    /** A length-prefixed UTF-8 string, the way the C++ encoder writes one. */
+    private static void putStr(ByteBuffer b, String s) {
+        byte[] raw = s.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        b.putInt(raw.length);
+        b.put(raw);
+    }
+
+    /**
+     * Magic through {@code dof}: the fixed part of the frame, before any count.
+     *
+     * <p>Split out because two tests need a header and nothing else, and they used to
+     * get one by slicing the first 124 bytes off a full frame. That literal was correct
+     * exactly until the buckling state string moved in ahead of {@code nodes} -- a
+     * number two tests quote and nothing checks goes stale the next time it grows.
+     */
+    private static void writeHeader(ByteBuffer b) {
+        b.putInt(BinaryCodec.RESP_MAGIC);
+        b.putInt(7).putInt(0);            // revision lo/hi
+        b.putInt(1);                      // ok
+        b.putInt(0);                      // singular
+        b.putInt(1).putInt(0);            // islands, singularIslands
+        b.putInt(0);                      // diagnostic: ""
+        b.putInt(0);                      // note: ""
+        for (int i = 0; i < 6; i++) b.putDouble(0);   // applied[3] + reaction[3]
+        b.putDouble(1.5e-15);             // residual
+        b.putDouble(0.25);                // maxDC
+        b.putInt(1);                      // governing
+        b.putInt(1);                      // governingKind: member
+        b.putDouble(14.25);               // bucklingFactor
+        putStr(b, "computed");            // bucklingState
+        b.putInt(6).putInt(36);           // nodes, dof
     }
 
     private static AnalysisResult decode(ByteBuffer b, int frameBytes) {
@@ -148,7 +172,10 @@ class BinaryCodecTest {
         assertEquals(1.5e-15, r.equilibriumResidual(), 0);
         assertEquals(1, r.members().size());
         assertEquals(1, r.shells().size());
-        assertEquals(List.of(new BlockKey(5, 64, 0)), r.unassigned());
+        assertEquals(BucklingState.COMPUTED, r.bucklingState());
+        assertEquals(1, r.unassigned().size());
+        assertEquals(UnassignedReason.RUN_TOO_SHORT, r.unassigned().get(0).reason());
+        assertEquals(List.of(new BlockKey(5, 64, 0)), r.unassignedBlocks());
 
         var m = r.members().get(0);
         assertEquals("steel", m.material());
@@ -261,14 +288,12 @@ class BinaryCodecTest {
 
     @Test
     void aHostileCountFailsBeforeAllocating() {
-        // A frame that is nothing but the fixed header (124 bytes: magic through dof,
-        // both strings empty) followed by a member count of one million. The count is
-        // under the flat plausibility cap, so only the byte-budget guard can refuse
-        // it — and it must, from one comparison, before any list is sized.
-        ByteBuffer b = reply(valid());
+        // A frame that is nothing but the fixed header, followed by a member count of
+        // one million. The count is under the flat plausibility cap, so only the
+        // byte-budget guard can refuse it — and it must, from one comparison, before
+        // any list is sized.
         ByteBuffer small = ByteBuffer.allocate(256).order(ByteOrder.LITTLE_ENDIAN);
-        b.limit(124).position(0);
-        small.put(b);                     // header prefix only
+        writeHeader(small);
         small.putInt(1_000_000);          // member count with zero bytes behind it
         AnalysisResult r = BinaryCodec.decodeSolve(small, small.position(), REV, CAT);
         assertFalse(r.ok());
@@ -302,10 +327,8 @@ class BinaryCodecTest {
 
     @Test
     void aNegativeCountIsRejected() {
-        ByteBuffer b = reply(valid());
         ByteBuffer broken = ByteBuffer.allocate(256).order(ByteOrder.LITTLE_ENDIAN);
-        b.limit(124).position(0);
-        broken.put(b);                 // header prefix only
+        writeHeader(broken);
         broken.putInt(-1);             // member count
         AnalysisResult r = BinaryCodec.decodeSolve(broken, broken.position(), REV, CAT);
         assertFalse(r.ok());

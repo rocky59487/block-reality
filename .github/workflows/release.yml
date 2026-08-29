@@ -184,7 +184,7 @@ jobs:
               a brick pier, two slab thicknesses, 20 mm steel plate — and they mix:
               a timber beam on brick piers is one structure, joined where the blocks
               touch, not three that ignore each other
-            - 282 acceptance checks against closed forms and invariants run per build,
+            - 330 acceptance checks against closed forms and invariants run per build,
               record in `evidence/VERIFICATION.md`. Not *every* number: the shear and
               torsion demand/capacity modes still have no oracle and are documented as
               ungated in `docs/GATES.md`

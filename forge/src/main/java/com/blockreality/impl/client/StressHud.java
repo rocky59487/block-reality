@@ -1,7 +1,9 @@
 package com.blockreality.impl.client;
 
+import com.blockreality.api.BucklingState;
 import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.ShellSnapshot;
+import com.blockreality.api.UnassignedReason;
 import com.blockreality.api.ScanMode;
 import com.blockreality.api.StressStation;
 import com.blockreality.api.render.Rgb;
@@ -130,18 +132,33 @@ public final class StressHud {
         // Stability is a SEPARATE answer from strength and is printed as one. A slender
         // column reaches its buckling load at a stress the D/C line calls comfortable, so a
         // player who only ever sees D/C is being told the safe half of the story.
-        if (ClientStressState.bucklingFactor() > 0) {
+        BucklingState bs = ClientStressState.bucklingState();
+        if (bs.hasFactor()) {
             boolean crit = ClientStressState.bucklingCritical();
             g.drawString(mc.font, Component.translatable(
                     crit ? "br.hud.buckling_critical" : "br.hud.buckling",
                     String.format(Locale.ROOT, "%.2f", ClientStressState.bucklingFactor())),
                     x, y, crit ? 0xFF6B6B : 0xAAAAAA);
             y += 11;
-        } else if (ClientStressState.bucklingSkipped()) {
-            // Skipped is a fact worth a line: a blank here reads as "stable", which is a
-            // different and unearned claim (the 0-conflation is on record, V04_PLAN §2.6).
-            g.drawString(mc.font, Component.translatable("br.hud.buckling_skipped"),
-                    x, y, 0xC8A24A);
+        } else if (bs != BucklingState.UNKNOWN) {
+            // Every non-COMPUTED state gets a line, not just the one the old boolean could
+            // express. A blank here reads as "stable", which is a claim nobody made: the
+            // screen may have been skipped for size, refused, run on nothing, or run and
+            // found nothing, and those are four different things to know (N18-a).
+            g.drawString(mc.font, Component.translatable(bs.translationKey()), x, y, 0xC8A24A);
+            y += 11;
+        }
+        // Blocks that reached the server and came back in no element. Silence here was the
+        // second half of "blocks suddenly stop taking part": the first half was the chunk
+        // truncation above, and this is the half where the block arrived and still did not
+        // appear in the answer. One line per reason, because the reasons call for
+        // different moves — widen the slab, ground the structure, or nothing at all.
+        for (UnassignedReason r : UnassignedReason.values()) {
+            int c = ClientStressState.unassignedCount(r);
+            if (c <= 0) continue;
+            boolean benign = !r.formsNoElement();
+            g.drawString(mc.font, Component.translatable(r.translationKey(), c), x, y,
+                    benign ? 0x9AA0A6 : 0xC8A24A);
             y += 11;
         }
         // Part of what the server tracks was in a chunk it could not read, and the pieces

@@ -33,7 +33,7 @@
 > named, and a linear buckling factor — so a slender column that "looks fine" on
 > stress tells you it is about to fold anyway.
 >
-> Not a physics gimmick: 282 acceptance checks against textbook closed forms run on
+> Not a physics gimmick: 330 acceptance checks against textbook closed forms run on
 > every build (worst relative error 1.2e-14), and the full verification record is
 > public in the repository. Honest about its limits too — everything is linear
 > elastic, and the section catalogue says "solid rectangle" because that is what is

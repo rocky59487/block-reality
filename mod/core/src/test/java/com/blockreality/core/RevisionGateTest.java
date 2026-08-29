@@ -1,6 +1,7 @@
 package com.blockreality.core;
 
 import com.blockreality.api.AnalysisResult;
+import com.blockreality.api.BucklingState;
 import com.blockreality.api.EndForces;
 import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.MemberSnapshot;
@@ -19,19 +20,22 @@ class RevisionGateTest {
     /** A solved result must actually carry an element, or it is not usable by definition. */
     private static AnalysisResult solved(long rev) {
         return new AnalysisResult(new WorldRevision(rev), true, false, "", 0.5, 1, "member",
-                1, 0, 0, 0, List.of(member()), List.of(), List.of());
+                1, 0, 0, 0, BucklingState.DISABLED_BY_REQUEST,
+                List.of(member()), List.of(), List.of());
     }
 
     /** Every structure in the world is a mechanism: nothing at all to draw. */
     private static AnalysisResult mechanism(long rev) {
         return new AnalysisResult(new WorldRevision(rev), true, true, "unrestrained", 0, -1, "",
-                1, 1, 0, 0, List.of(), List.of(), List.of());
+                1, 1, 0, 0, BucklingState.DISABLED_BY_REQUEST,
+                List.of(), List.of(), List.of());
     }
 
     /** One structure is a mechanism and one is not — the ordinary case in a built world. */
     private static AnalysisResult partlyMechanism(long rev) {
         return new AnalysisResult(new WorldRevision(rev), true, true, "unrestrained", 0.5, 1,
-                "member", 2, 1, 0, 0, List.of(member()), List.of(), List.of());
+                "member", 2, 1, 0, 0, BucklingState.DISABLED_BY_REQUEST,
+                List.of(member()), List.of(), List.of());
     }
 
     private static MemberSnapshot member() {
