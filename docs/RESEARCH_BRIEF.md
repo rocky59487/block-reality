@@ -1,6 +1,6 @@
 # Block Reality — research brief
 
-**Release:** v0.3b · 23 August 2026  
+**Release:** v0.3c · 29 August 2026  
 **Repository:** https://github.com/rocky59487/block-reality  
 **Platform:** Minecraft Java 1.20.1 · Forge 47.x  
 **License:** Apache-2.0
@@ -32,7 +32,7 @@ backend disables analysis explicitly while leaving the mod playable.
 
 ## Implemented numerical scope
 
-| Area | v0.3b |
+| Area | v0.3c |
 |---|---|
 | Members | 3D 6-DOF beam/column members |
 | Plates | MITC4 shell facets for floors and shear walls |
@@ -48,7 +48,7 @@ tokens are intentionally named by what the solver actually receives.
 
 ## Verification snapshot
 
-| Evidence | v0.3b result |
+| Evidence | v0.3c result |
 |---|---|
 | Engine checks | 282/282 passing; each uses a closed form or solver-independent invariant |
 | Java tests | 215/215 passing; 28 start the real sidecar and FrameCore |
@@ -58,7 +58,7 @@ tokens are intentionally named by what the solver actually receives.
 | Slender shear wall | Shear flow and overturning agree with beam theory to 1e-7 |
 | Column buckling | Textbook single-element value to 1.6e-05; inverse-length-squared law to 2.3e-10 |
 | Cross-platform determinism | 8/8 cases byte-for-byte identical between Linux native and Windows cross-build |
-| End-to-end timing | 199 members / 1200 DOF in 52 ms median, including buckling and process round trip |
+| End-to-end timing | 199 members / 1200 DOF in 50 ms median, including buckling and process round trip. One sample on a loaded laptop; the previous build measured 85 ms for the same case, so treat it as an order of magnitude |
 
 The detailed, generated record is in
 [`evidence/VERIFICATION.md`](../evidence/VERIFICATION.md). It should be treated as the
@@ -70,8 +70,15 @@ source of truth when this summary and the evidence ever disagree.
 - There is no per-plate buckling check or plate ultimate-strength model.
 - Reinforced-concrete composite sections are not implemented.
 - Buckling is the linear onset, not a nonlinear post-buckling path.
+- **A collinear run of blocks is meshed as one beam element** unless a load, a junction or
+  a material change forces an interior node, so the buckling factor is mesh-dependent in
+  the regime where the axial force varies along the member. Measured against the shipped
+  engine: a 19 m self-weight cantilever reports 3.14 against Greenhill's exact 9.89 (68%
+  low, i.e. conservative), rising to 9.15 at 19 elements; the same column under a top load
+  400× its self weight is within 0.5% of Euler on one element. Reproduce with
+  `sidecar/repro_selfweight_buckling.py` and `sidecar/repro_euler_direction.py`.
 - Construction sequence, persistent damage, fracture and progressive collapse are not in
-  v0.3b.
+  v0.3c.
 - The current support rule is intentionally narrow: a structural block is grounded only
   when the directly-below neighbour is solid and non-structural.
 - This is research and education software, not a building-code checker or a tool for

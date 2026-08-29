@@ -8,11 +8,11 @@
       "supernodal_lane": "compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT"
     },
     "binary": {
-      "path": "/mnt/c/Users/wmc02/Desktop/block-reality/dist/br-sidecar",
+      "path": "/mnt/c/Users/wmc02/Desktop/block-reality/dist.stage/br-sidecar",
       "sha256": "d9721cc6070695e752b2211e065fdedce07a14fc3bc9b3273682eeec7606974f"
     },
     "binary_windows": {
-      "path": "/mnt/c/Users/wmc02/Desktop/block-reality/dist/br-sidecar.exe",
+      "path": "/mnt/c/Users/wmc02/Desktop/block-reality/dist.stage/br-sidecar.exe",
       "sha256": "c4d571a5911b21d405394609d7430f428c0492520510af3bc92250ca140f56d2"
     },
     "sources": {
@@ -658,81 +658,81 @@
       "blocks": 3,
       "members": 1,
       "dof": 12,
-      "with_buckling_ms": 0.592,
-      "min_ms": 0.474,
-      "max_ms": 0.744,
-      "without_buckling_ms": 0.506,
-      "median_ms": 0.592
+      "with_buckling_ms": 0.287,
+      "min_ms": 0.278,
+      "max_ms": 0.409,
+      "without_buckling_ms": 0.277,
+      "median_ms": 0.287
     },
     {
       "blocks": 6,
       "members": 3,
       "dof": 24,
-      "with_buckling_ms": 1.31,
-      "min_ms": 1.097,
-      "max_ms": 1.495,
-      "without_buckling_ms": 1.27,
-      "median_ms": 1.31
+      "with_buckling_ms": 0.74,
+      "min_ms": 0.671,
+      "max_ms": 1.692,
+      "without_buckling_ms": 0.671,
+      "median_ms": 0.74
     },
     {
       "blocks": 15,
       "members": 9,
       "dof": 60,
-      "with_buckling_ms": 3.457,
-      "min_ms": 3.116,
-      "max_ms": 5.154,
-      "without_buckling_ms": 3.259,
-      "median_ms": 3.457
+      "with_buckling_ms": 2.033,
+      "min_ms": 1.951,
+      "max_ms": 2.218,
+      "without_buckling_ms": 1.834,
+      "median_ms": 2.033
     },
     {
       "blocks": 30,
       "members": 19,
       "dof": 120,
-      "with_buckling_ms": 7.395,
-      "min_ms": 6.971,
-      "max_ms": 10.147,
-      "without_buckling_ms": 7.069,
-      "median_ms": 7.395
+      "with_buckling_ms": 4.525,
+      "min_ms": 4.122,
+      "max_ms": 4.77,
+      "without_buckling_ms": 4.136,
+      "median_ms": 4.525
     },
     {
       "blocks": 60,
       "members": 39,
       "dof": 240,
-      "with_buckling_ms": 14.952,
-      "min_ms": 13.474,
-      "max_ms": 15.581,
-      "without_buckling_ms": 14.794,
-      "median_ms": 14.952
+      "with_buckling_ms": 9.069,
+      "min_ms": 8.253,
+      "max_ms": 9.504,
+      "without_buckling_ms": 8.593,
+      "median_ms": 9.069
     },
     {
       "blocks": 90,
       "members": 59,
       "dof": 360,
-      "with_buckling_ms": 22.711,
-      "min_ms": 20.896,
-      "max_ms": 30.141,
-      "without_buckling_ms": 22.069,
-      "median_ms": 22.711
+      "with_buckling_ms": 13.013,
+      "min_ms": 12.49,
+      "max_ms": 15.024,
+      "without_buckling_ms": 12.551,
+      "median_ms": 13.013
     },
     {
       "blocks": 150,
       "members": 99,
       "dof": 600,
-      "with_buckling_ms": 39.729,
-      "min_ms": 36.432,
-      "max_ms": 57.61,
-      "without_buckling_ms": 38.264,
-      "median_ms": 39.729
+      "with_buckling_ms": 23.446,
+      "min_ms": 22.426,
+      "max_ms": 26.098,
+      "without_buckling_ms": 23.482,
+      "median_ms": 23.446
     },
     {
       "blocks": 300,
       "members": 199,
       "dof": 1200,
-      "with_buckling_ms": 84.765,
-      "min_ms": 77.239,
-      "max_ms": 112.195,
-      "without_buckling_ms": 87.133,
-      "median_ms": 84.765
+      "with_buckling_ms": 50.392,
+      "min_ms": 48.538,
+      "max_ms": 57.509,
+      "without_buckling_ms": 48.688,
+      "median_ms": 50.392
     }
   ],
   "transport": {
@@ -740,13 +740,13 @@
     "members": 86,
     "dof": 360,
     "rounds": 20,
-    "json_median_ms": 24.28,
-    "json_min_ms": 22.2,
+    "json_median_ms": 15.74,
+    "json_min_ms": 14.41,
     "json_reply_bytes": 491037,
-    "shm_median_ms": 3.9,
-    "shm_min_ms": 3.52,
+    "shm_median_ms": 2.29,
+    "shm_min_ms": 2.23,
     "shm_reply_bytes": 132536,
-    "saving_ms": 20.37,
-    "saving_pct": 83.9
+    "saving_ms": 13.44,
+    "saving_pct": 85.4
   }
 }
