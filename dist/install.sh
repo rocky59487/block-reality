@@ -39,9 +39,15 @@ looks_like_instance() {
 }
 
 # Forge 有沒有裝：找 versions/ 底下的 forge 資料夾，或 libraries 裡的 forge 座標。
+# CurseForge 兩個都不放在實例裡——loader 由 launcher 在外部管理，實例內唯一知道這件事
+# 的是 minecraftinstance.json（#66）。抓 "forgeVersion" 這個 key 而不是裸字 forge：
+# manifest 的 installPath 必含 …/curseforge/…，裸字對每個實例都會中，等於沒檢查；
+# 沒裝 loader 的實例 baseModLoader 是 null，沒有這個 key。這一條的作用是別對裝好
+# Forge 的人亮紅字，不是驗證版本相容，所以寬一點的偽陽性可以接受。
 has_forge() {
     compgen -G "$1/versions/*forge*" >/dev/null 2>&1 && return 0
     [[ -d "$1/libraries/net/minecraftforge" ]] && return 0
+    grep -qi 'forgeVersion' "$1/minecraftinstance.json" 2>/dev/null && return 0
     return 1
 }
 

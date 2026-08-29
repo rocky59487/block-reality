@@ -9,7 +9,7 @@ issueTrackerURL = "https://github.com/rocky59487/block-reality/issues"
 
 [[mods]]
 modId = "blockreality"
-version = "0.3b"
+version = "0.3c"
 displayName = "Block Reality"
 # Shown as the mod list's link. Point it at the project site once that is the page
 # you want a curious player to land on; the repository is the honest default.

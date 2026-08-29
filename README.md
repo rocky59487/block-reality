@@ -5,14 +5,14 @@
 > **A playable structural-analysis laboratory inside Minecraft.** Build a structure,
 > apply loads, and inspect its load path instead of guessing why it works.
 
-[Download v0.3b](https://github.com/rocky59487/block-reality/releases/download/v0.3b/blockreality-0.3b.zip)
+[Download v0.3c](https://github.com/rocky59487/block-reality/releases/download/v0.3c/blockreality-0.3c.zip)
 · [Quick start](QUICKSTART.md)
 · [Research brief](docs/RESEARCH_BRIEF.md)
 · [Verification record](evidence/VERIFICATION.md)
 · [Share technical feedback](https://github.com/rocky59487/block-reality/issues/new?template=research-feedback.yml)
 
 ![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A)
-![Release v0.3b](https://img.shields.io/badge/release-v0.3b-3B82F6)
+![Release v0.3c](https://img.shields.io/badge/release-v0.3c-3B82F6)
 ![Verification](https://img.shields.io/badge/verification-282_engine_%2B_215_Java_checks-passing)
 [![License](https://img.shields.io/github/license/rocky59487/block-reality)](LICENSE)
 
@@ -60,7 +60,7 @@ continue.
 
 ## Install
 
-**Put `blockreality-0.3b.jar` in your `mods/` folder and launch the game.** That is the
+**Put `blockreality-0.3c.jar` in your `mods/` folder and launch the game.** That is the
 whole procedure; the analysis engine is inside the jar and unpacks itself the first time
 it is needed. Get the jar from CurseForge, from Modrinth, or from the
 [Releases page](https://github.com/rocky59487/block-reality/releases/latest).
@@ -80,7 +80,7 @@ it if you want analysis there.
 <details>
 <summary>The full archive, for verifying or running the engine outside the game</summary>
 
-[**`blockreality-0.3b.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.3b/blockreality-0.3b.zip)
+[**`blockreality-0.3c.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.3c/blockreality-0.3c.zip)
 also ships both engines loose, with `SHA256SUMS.txt` and installer scripts:
 
 ```
@@ -204,8 +204,24 @@ Not implemented: the plate D/C is an elastic surface screen only — transverse 
 recovered and reported but not screened, there is no per-plate buckling check and no plate
 ultimate strength. There are no composite reinforced-concrete sections; the section
 catalogue is solid rectangles and circles and is named accordingly. There is no nonlinear
-post-buckling: the buckling factor is the linear onset, an upper bound on the real
-critical load.
+post-buckling: the buckling factor is the linear onset, and it says nothing about what
+happens after the structure folds.
+
+**A run of collinear blocks is one beam element, and the buckling factor feels it.** The
+extractor turns each straight run into a single member unless something — a load, a
+junction, a change of material — forces an interior node, and one element carries one
+constant axial force. Where the axial force really is nearly constant that costs almost
+nothing: a 19 m cantilever under a top load more than 400× its self weight comes back
+0.5% from the Euler value on a single element. Where the axial force varies along the
+member it costs a great deal. The same column buckling under **its own weight** reports
+3.14 against Greenhill's exact 9.89 — 68% low — climbing to 5.28, 7.05, 8.55 and 9.15 as
+2, 4, 10 and 19 elements are forced. So in that regime the reported factor is
+conservative rather than an upper bound, and it is visibly mesh-dependent: dropping a
+**one-newton** test load at mid-height raises it by 68%, because the run splits in two.
+Both measurements are one command each against the shipped engine —
+`sidecar/repro_selfweight_buckling.py` and `sidecar/repro_euler_direction.py`. Element
+subdivision is a meshing policy, so it is registered as a v0.4 criterion rather than
+changed inside a patch release; see `docs/GATES.md`.
 
 **Two of the five D/C modes have no closed-form gate.** `ElasticAllowable` takes the
 argmax of five ratios, and the acceptance suite pins three of them — CRUSH, TENSION and
@@ -228,7 +244,7 @@ a gate that has run — is why this paragraph exists rather than a quieter omiss
 | Shear wall | h/w ≥ 5 agrees with beam theory to 1.4e-7 (shear flow) and ~1e-9 (overturning); h/w = 3 is 2.7e-5 / 6.8e-7; a square wall is a deep beam, where beam theory itself is the wrong model (1e-3 to 2e-2 is the reference's error) |
 | Buckling | single-element column against the textbook value, 1.6e-05; the 1/L² law, 2.3e-10 |
 | Determinism | 8/8 cases byte-for-byte identical, Linux native against the Windows cross-build |
-| Performance | transport, same 86-member solve both ways: 4.5 ms over shared memory vs 28.3 ms over JSON (84% saving); a 199-member, 1200-DOF frame completes its full round trip including buckling in ~0.1 s on the noisy reference laptop — and never on the tick thread, so this is latency to a result, not time taken from the game |
+| Performance | transport, same 86-member solve both ways: 2.3 ms over shared memory vs 15.7 ms over JSON (85% saving); a 199-member, 1200-DOF frame completes its full round trip including buckling in ~50 ms — and never on the tick thread, so this is latency to a result, not time taken from the game. These are one sample on a noisy reference laptop and they move: the same three figures were 3.9 / 24.3 / 85 ms one build earlier. The saving ratio is stable; the absolute numbers are not, so read them as an order of magnitude and take `evidence/VERIFICATION.md`, which re-measures on every build, as the record |
 
 Every solve returns a global equilibrium residual recomputed from geometry and density
 rather than read back out of the assembled load vector. The full record is in
@@ -269,7 +285,7 @@ components keep their own licences and copyright notices.
 > **Minecraft 裡可直接玩的結構分析實驗室。** 蓋出結構、施加荷載，再沿著荷載路徑理解它為什麼成立，
 > 而不是只看一場預先編好的倒塌動畫。
 
-[下載 v0.3b](https://github.com/rocky59487/block-reality/releases/download/v0.3b/blockreality-0.3b.zip)
+[下載 v0.3c](https://github.com/rocky59487/block-reality/releases/download/v0.3c/blockreality-0.3c.zip)
 · [快速上手](QUICKSTART.md)
 · [研究簡報](docs/RESEARCH_BRIEF.md)
 · [驗證紀錄](evidence/VERIFICATION.md)
@@ -311,7 +327,7 @@ Block Reality 是實驗性的研究與教育軟體，**不是**建築法規檢�
 
 ## 安裝
 
-**把 `blockreality-0.3b.jar` 丟進 `mods/` 資料夾，開遊戲。** 就這樣——分析引擎就在 jar 裡面，
+**把 `blockreality-0.3c.jar` 丟進 `mods/` 資料夾，開遊戲。** 就這樣——分析引擎就在 jar 裡面，
 第一次要用到的時候自己解出來。jar 可以從 CurseForge、Modrinth，或
 [Releases 頁](https://github.com/rocky59487/block-reality/releases/latest)取得。
 
@@ -326,7 +342,7 @@ SHA-256 命名，所以更新 mod 時新引擎落在舊的旁邊而不是覆蓋�
 <details>
 <summary>完整壓縮檔——想驗證引擎、或想在遊戲外執行它的話</summary>
 
-[**`blockreality-0.3b.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.3b/blockreality-0.3b.zip)
+[**`blockreality-0.3c.zip`**](https://github.com/rocky59487/block-reality/releases/download/v0.3c/blockreality-0.3c.zip)
 另外附上兩顆引擎的獨立檔、`SHA256SUMS.txt` 與安裝腳本：
 
 ```
@@ -426,7 +442,18 @@ fallback 與除錯面）。wire 上的每一個力學數值都是引擎函式的
 
 未實作：板的 D/C 只是彈性表面篩選——橫向剪力有算出來也有回報，但不納入篩選；沒有逐片板的挫屈
 檢核，也沒有板的極限強度。沒有 RC 複合斷面，斷面目錄裡是實心矩形與實心圓形，命名也照實寫。
-沒有非線性後挫屈：挫屈倍數是線性起始點，是真實臨界載重的上界。
+沒有非線性後挫屈：挫屈倍數是線性起始點，它不告訴你失穩之後會怎麼樣。
+
+**一段共線方塊是一個樑元素，而挫屈倍數吃這個。** 抽取層把每一段直線 run 變成單一構件，
+除非有東西（載重、接頭、材料變更）逼出內部節點，而一個元素只帶一個定值軸力。軸力本來就
+接近均勻時，這幾乎不花代價：19 m 懸臂柱在超過自重 400 倍的頂部載重下，單元素的結果距
+Euler 值 0.5%。軸力沿桿變化時，代價很大——同一根柱**受自身重量**挫屈，回報 3.14，
+Greenhill 的精確解是 9.89，**低 68%**；逼出 2、4、10、19 個元素後依序爬到 5.28、7.05、
+8.55、9.15。所以在這個情形下回報值是**偏保守**而不是上界，而且它的網格依賴是玩家看得見的：
+在半高處丟一個**一牛頓**的測試載重，倍數就上升 68%，因為那段 run 被切成兩個元素。
+兩項量測各一行指令，對出貨引擎跑：`sidecar/repro_selfweight_buckling.py` 與
+`sidecar/repro_euler_direction.py`。元素細分是網格策略，因此登記為 v0.4 的判準項目，
+不在修訂版裡改；見 `docs/GATES.md`。
 
 **五個 D/C 模式裡有兩個沒有閉合解 gate。** `ElasticAllowable` 取五個比值的 argmax，
 驗收套件釘住其中三個（CRUSH、TENSION、彎曲纖維）對閉合解。**SHEAR 與 TORSION 有回報、
@@ -447,7 +474,7 @@ fallback 與除錯面）。wire 上的每一個力學數值都是引擎函式的
 | 剪力牆 | h/w ≥ 5 對梁理論：剪力流 1.4e-7、傾覆 ~1e-9；h/w = 3 是 2.7e-5 / 6.8e-7；方形牆是深樑，樑理論本身不適用（1e-3 至 2e-2 是參考模型的誤差） |
 | 線性挫屈 | 單元素柱對課本值 1.6e-05；1/L² 關係 2.3e-10 |
 | 跨平台決定性 | 8/8 逐位元相同，Linux 原生對 Windows 交叉編譯 |
-| 效能 | 傳輸（同一個 86 構件模型兩種走法）：共用記憶體 4.5 ms、JSON 28.3 ms（省 84%）；199 構件、1200 自由度的完整往返（含挫屈）在充滿雜訊的參考筆電上約 0.1 s——且永不在 tick 執行緒上,這是「拿到結果的延遲」不是「從遊戲拿走的時間」 |
+| 效能 | 傳輸（同一個 86 構件模型兩種走法）：共用記憶體 2.3 ms、JSON 15.7 ms（省 85%）；199 構件、1200 自由度的完整往返（含挫屈）約 50 ms——且永不在 tick 執行緒上,這是「拿到結果的延遲」不是「從遊戲拿走的時間」。這三個數是充滿雜訊的參考筆電上的**單次取樣**,而且會動：上一次建置同樣三個數是 3.9 / 24.3 / 85 ms。比值穩定、絕對值不穩定,所以請當成數量級讀,以每次建置都重測的 `evidence/VERIFICATION.md` 為準 |
 
 每一次求解的回覆都附帶全域平衡殘差，該值由幾何與密度重算，而非從組裝後的載重向量讀回。完整
 紀錄見 [`evidence/VERIFICATION.md`](evidence/VERIFICATION.md)，由 `scripts/evidence.py` 產生。

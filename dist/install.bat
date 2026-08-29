@@ -171,10 +171,21 @@ set "INST_%COUNT%=%CAND%"
 exit /b
 
 rem :forge <dir> — sets HASFORGE if Forge is installed in that instance.
+rem CurseForge keeps neither versions\ nor libraries\ inside the instance — the
+rem launcher manages the loader outside, and minecraftinstance.json is the only
+rem thing in here that knows (#66). Match the "forgeVersion" key, not bare "forge":
+rem the manifest's installPath always contains ...\curseforge\..., so bare "forge"
+rem hits every instance and checks nothing; an instance with no loader has
+rem baseModLoader null and no such key. This check exists to not flash a warning
+rem at someone whose Forge works, not to verify version compatibility.
 :forge
 set "HASFORGE="
 for /d %%v in ("%~1\versions\*forge*") do set "HASFORGE=1"
 if exist "%~1\libraries\net\minecraftforge\" set "HASFORGE=1"
+if exist "%~1\minecraftinstance.json" (
+    findstr /i /c:"forgeVersion" "%~1\minecraftinstance.json" >nul 2>&1
+    if not errorlevel 1 set "HASFORGE=1"
+)
 exit /b
 
 rem :show <n> — print one numbered candidate, tagged with whether it has Forge.

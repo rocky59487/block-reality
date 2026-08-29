@@ -290,16 +290,16 @@ one warm-up; the cold process start is excluded because it happens once.
 
 | blocks | members | DOF | default (ms) | min | max | ms/member | no buckling (ms) | buckling |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 3 | 1 | 12 | 0.592 | 0.474 | 0.744 | 0.592 | 0.506 | x1.17 |
-| 6 | 3 | 24 | 1.31 | 1.097 | 1.495 | 0.437 | 1.27 | x1.03 |
-| 15 | 9 | 60 | 3.457 | 3.116 | 5.154 | 0.384 | 3.259 | x1.06 |
-| 30 | 19 | 120 | 7.395 | 6.971 | 10.147 | 0.389 | 7.069 | x1.05 |
-| 60 | 39 | 240 | 14.952 | 13.474 | 15.581 | 0.383 | 14.794 | x1.01 |
-| 90 | 59 | 360 | 22.711 | 20.896 | 30.141 | 0.385 | 22.069 | x1.03 |
-| 150 | 99 | 600 | 39.729 | 36.432 | 57.61 | 0.401 | 38.264 | x1.04 |
-| 300 | 199 | 1200 | 84.765 | 77.239 | 112.195 | 0.426 | 87.133 | x0.97 |
+| 3 | 1 | 12 | 0.287 | 0.278 | 0.409 | 0.287 | 0.277 | x1.04 |
+| 6 | 3 | 24 | 0.74 | 0.671 | 1.692 | 0.247 | 0.671 | x1.10 |
+| 15 | 9 | 60 | 2.033 | 1.951 | 2.218 | 0.226 | 1.834 | x1.11 |
+| 30 | 19 | 120 | 4.525 | 4.122 | 4.77 | 0.238 | 4.136 | x1.09 |
+| 60 | 39 | 240 | 9.069 | 8.253 | 9.504 | 0.233 | 8.593 | x1.06 |
+| 90 | 59 | 360 | 13.013 | 12.49 | 15.024 | 0.221 | 12.551 | x1.04 |
+| 150 | 99 | 600 | 23.446 | 22.426 | 26.098 | 0.237 | 23.482 | x1.00 |
+| 300 | 199 | 1200 | 50.392 | 48.538 | 57.509 | 0.253 | 48.688 | x1.03 |
 
-At 199 members the whole round trip is 84.8 ms,
+At 199 members the whole round trip is 50.4 ms,
 against a Minecraft tick of 50 ms — and the solve does not run on the tick
 thread, so this is latency to a result rather than time taken from the game.
 
@@ -311,10 +311,10 @@ difference is the transport.
 
 | wire | median (ms) | min (ms) | reply size |
 |---|---:|---:|---:|
-| JSON lines | 24.28 | 22.2 | 491037 bytes over the pipe |
-| shared memory | 3.9 | 3.52 | 132536 bytes in the region, ~60-byte doorbell |
+| JSON lines | 15.74 | 14.41 | 491037 bytes over the pipe |
+| shared memory | 2.29 | 2.23 | 132536 bytes in the region, ~60-byte doorbell |
 
-Transport saving: 20.37 ms per solve (83.9%).
+Transport saving: 13.44 ms per solve (85.4%).
 Measured by `scripts/bench_transport.py`, imported and run by this script
 so the record regenerates with everything else.
 
