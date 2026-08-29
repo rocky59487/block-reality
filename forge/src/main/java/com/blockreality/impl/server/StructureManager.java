@@ -1,9 +1,12 @@
 package com.blockreality.impl.server;
 
 import com.blockreality.api.AnalysisResult;
+import com.blockreality.api.MemberSnapshot;
+import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.core.RevisionGate;
 import com.blockreality.core.protocol.SolveRequest;
+import com.blockreality.core.protocol.Truncation;
 import com.blockreality.core.sidecar.SidecarClient;
 import com.blockreality.core.sidecar.SidecarConfig;
 import com.blockreality.impl.BRConfig;
@@ -101,6 +104,16 @@ public final class StructureManager {
     private SolveRequest.Builder cycleBuilder;
     private Set<BlockKey> cycleIncluded;
     private List<BlockPos> cycleStale;
+    /** Tracked blocks this cycle could not read, because their chunk is not loaded. */
+    private List<BlockKey> cycleSkipped;
+
+    /**
+     * Blocks that were left out of the request in flight and touch what was sent (N14-b).
+     *
+     * <p>Empty is a fact, not an absence: the gather ran and nothing was missing. It is
+     * recomputed every cycle, so a reply is always read against its own request.
+     */
+    private Set<BlockKey> truncationFace = Set.of();
 
     /** Last revision the clients were told about, result or pending signal (INV-4). */
     private long lastAnnouncedRevision = -1;
@@ -455,6 +468,7 @@ public final class StructureManager {
         cycleBuilder = SolveRequest.builder(gate.current());
         cycleIncluded = new HashSet<>();
         cycleStale = new ArrayList<>();
+        cycleSkipped = new ArrayList<>();
         // A STABLE order: the live set may change while the cycle is parked, and an
         // iterator over it would be invalidated. The copy is O(n) refs, once per cycle.
         cycle.begin(List.copyOf(structural), revision);
@@ -465,7 +479,16 @@ public final class StructureManager {
         // Never touch an unloaded chunk: getBlockState would force it to load, and a
         // background structure could drag chunks in behind the player's back.
         // Such blocks are skipped, NOT forgotten — they come back with their chunk.
-        if (!level.isLoaded(pos)) return;
+        //
+        // But skipping used to end here, and that was the whole of #74: the block left
+        // the request, nothing recorded that it had, and the engine was asked about a
+        // structure with a piece missing. It answered confidently, because from where it
+        // sits nothing was missing. Now the skip is written down, so finishCycle can work
+        // out whether it cut through anything (N14-a).
+        if (!level.isLoaded(pos)) {
+            cycleSkipped.add(new BlockKey(pos.getX(), pos.getY(), pos.getZ()));
+            return;
+        }
         BlockState state = level.getBlockState(pos);
         if (!(state.getBlock() instanceof StructuralBlock sb)) {
             // Removed by something that raised no event — a command, another mod,
@@ -516,10 +539,23 @@ public final class StructureManager {
         cycleBuilder.buckling(buckle);
         lastBucklingSkipped = !buckle;
 
+        // Which of the blocks we could not read were touching what we did send (N14-b).
+        // A skipped block far from everything in the request is a different structure
+        // that happens to be unloaded, not a truncation of this one — the distinction is
+        // the reason this is an intersection rather than a count, and the reason analysis
+        // does not switch itself off on every world bigger than the loaded radius.
+        truncationFace = Truncation.face(cycleSkipped, cycleIncluded);
+        if (!truncationFace.isEmpty()) {
+            BlockRealityMod.LOG.debug("[{}] request truncated at {} block(s), e.g. {}",
+                    dimension.location(), truncationFace.size(),
+                    Truncation.examples(truncationFace, 3));
+        }
+
         SolveRequest request = cycleBuilder.build();
         cycleBuilder = null;
         cycleIncluded = null;
         cycleStale = null;
+        cycleSkipped = null;
         return request;
     }
 
@@ -571,7 +607,15 @@ public final class StructureManager {
         BlockState under = level.getBlockState(below);
         if (under.isAir()) return false;
         if (under.getBlock() instanceof StructuralBlock) return false;
-        return under.isSolidRender(level, below);
+        // isSolidRender was the old test, and it asks a question about VISUAL OCCLUSION:
+        // whether the block fills its cube for the light and culling passes. Carrying
+        // load and blocking sight are different properties, and the nine structural
+        // blocks happen not to tell them apart, so nothing was visibly wrong. Barriers
+        // and glass are where they part company — a barrier occludes nothing and would
+        // have been refused as ground; tinted glass occludes everything and would have
+        // been accepted. isFaceSturdy asks the question actually meant: is the top face
+        // of that block something a thing can stand on.
+        return under.isFaceSturdy(level, below, net.minecraft.core.Direction.UP);
     }
 
     /**
@@ -646,7 +690,15 @@ public final class StructureManager {
         latest = result;
         boolean committed = gate.acceptForCommit(result);
         if (committed || display == RevisionGate.Display.MECHANISM) {
-            BRNetwork.sendResult(level, result, lastBucklingSkipped);
+            // Elements standing against a block we could not read do not get a verdict
+            // (N14-c). Everything else is shown exactly as before — an empty face makes
+            // both sets empty and the packet identical to the one v0.3c sent (N14-e).
+            BRNetwork.sendResult(level, result, lastBucklingSkipped,
+                    Truncation.touching(truncationFace, result.members(),
+                            MemberSnapshot::blocks, MemberSnapshot::id),
+                    Truncation.touching(truncationFace, result.shells(),
+                            ShellSnapshot::blocks, ShellSnapshot::id),
+                    truncationFace.size());
             lastAnnouncedRevision = result.revision().value();
         }
     }

@@ -38,7 +38,8 @@ public final class BRNetwork {
 
     /** Bumped when the packet layout changes; 2 = classification flags + dimension. */
     // "3": StressResultPacket gained bucklingSkipped (v0.4 mod-side round 1)
-    private static final String PROTOCOL = "3";
+    // "4": ...and truncatedBlocks plus a per-element withheld flag (N14, #74)
+    private static final String PROTOCOL = "4";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(BlockRealityMod.MOD_ID, "main"),
@@ -74,8 +75,16 @@ public final class BRNetwork {
      * one that is absent.
      */
     public static void sendResult(ServerLevel level, AnalysisResult result, boolean bucklingSkipped) {
+        sendResult(level, result, bucklingSkipped, java.util.Set.of(), java.util.Set.of(), 0);
+    }
+
+    public static void sendResult(ServerLevel level, AnalysisResult result, boolean bucklingSkipped,
+                                  java.util.Set<Integer> withheldMembers,
+                                  java.util.Set<Integer> withheldShells,
+                                  int truncatedBlocks) {
         StressResultPacket packet = StressResultPacket.of(result,
-                level.dimension().location().toString(), bucklingSkipped);
+                level.dimension().location().toString(), bucklingSkipped,
+                withheldMembers, withheldShells, truncatedBlocks);
         for (ServerPlayer player : level.players()) {
             CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
         }
