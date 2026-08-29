@@ -11,8 +11,8 @@ binary named below; none is transcribed by hand.
 | commit | `10395c3c4c5f7442702318a22160b4920301de0d` (2026-08-20T11:41:38+08:00) |
 | worktree clean | True |
 | solver lane | compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT |
-| binary sha256 | `d9721cc6070695e752b2211e065fdedce07a14fc3bc9b3273682eeec7606974f` |
-| windows binary sha256 | `c4d571a5911b21d405394609d7430f428c0492520510af3bc92250ca140f56d2` |
+| binary sha256 | `a713e2c5aa2d13bac87109e31d4589be6533cd3bf603345a78b5197538fa2eca` |
+| windows binary sha256 | `5dd50e9cb8e3a62915cc1781fa03e90ccf4f9ebe8f140dd2270f33b86e0abdcb` |
 | host | Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35 |
 
 Source hashes, over content with line endings normalised to LF so the
@@ -20,12 +20,12 @@ record is checkable from a clean checkout on either platform:
 
 | file | sha256 |
 |---|---|
-| `sidecar/main.cpp` | `fb5fd9f6f0b81625b9aecde3d9c9a4be14773faf42e2222a56bdfe7453171e1f` |
+| `sidecar/main.cpp` | `38bd3e83dbc2184bf532f7098183a87dc3218619f4a23c73ab294c0bcc15aa88` |
 | `sidecar/json.hpp` | `f3418ff18ee405ecc77a3fcb9bb7c349e55c2f85ee37f217f4fe69a621c430dc` |
 | `sidecar/shm.hpp` | `dde97360c39dbf69ad17245667ae8f6f30a88cfebc2b7d9193228b2e3cd4b5ef` |
-| `sidecar/verify.py` | `1b6aae60353ae65b4f2a57bca66fa5266360c64ba0efd87bfe817469c69755d0` |
+| `sidecar/verify.py` | `4ec2725cef7241812579a0df39386b71af5e6cc0b4b2491c37943151e8ede473` |
 | `sidecar/CMakeLists.txt` | `4e86e0f6a300abe01f500dbf742e1a726d87f12a12b90fe00bd6399fe9c2c08a` |
-| `scripts/evidence.py` | `c619105aed0be47bb6b7674b2cd364ce00706a6f13145cc14d726f17e465cc35` |
+| `scripts/evidence.py` | `a19411cabddc5587ec88c8dd3d5c41fcf73d39f638eaf0249ea32a6789492666` |
 
 ## Accuracy against closed-form solutions
 
@@ -278,7 +278,7 @@ nothing else, and it matches to 1e-10.
 native Linux binary and the Windows cross-build. Comparison is of the whole
 reply line, not of selected fields.
 
-Method: native Windows replies from binary c4d571a5911b, compared byte for byte against this host's. The reply file names the sha256 of the binary that
+Method: native Windows replies from binary 5dd50e9cb8e3, compared byte for byte against this host's. The reply file names the sha256 of the binary that
 produced it and is refused if that is not the binary this record is about,
 so a stale file cannot become a fabricated agreement.
 
@@ -290,16 +290,16 @@ one warm-up; the cold process start is excluded because it happens once.
 
 | blocks | members | DOF | default (ms) | min | max | ms/member | no buckling (ms) | buckling |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 3 | 1 | 12 | 0.287 | 0.278 | 0.409 | 0.287 | 0.277 | x1.04 |
-| 6 | 3 | 24 | 0.74 | 0.671 | 1.692 | 0.247 | 0.671 | x1.10 |
-| 15 | 9 | 60 | 2.033 | 1.951 | 2.218 | 0.226 | 1.834 | x1.11 |
-| 30 | 19 | 120 | 4.525 | 4.122 | 4.77 | 0.238 | 4.136 | x1.09 |
-| 60 | 39 | 240 | 9.069 | 8.253 | 9.504 | 0.233 | 8.593 | x1.06 |
-| 90 | 59 | 360 | 13.013 | 12.49 | 15.024 | 0.221 | 12.551 | x1.04 |
-| 150 | 99 | 600 | 23.446 | 22.426 | 26.098 | 0.237 | 23.482 | x1.00 |
-| 300 | 199 | 1200 | 50.392 | 48.538 | 57.509 | 0.253 | 48.688 | x1.03 |
+| 3 | 1 | 12 | 0.266 | 0.255 | 0.527 | 0.266 | 0.262 | x1.02 |
+| 6 | 3 | 24 | 0.651 | 0.621 | 0.972 | 0.217 | 0.596 | x1.09 |
+| 15 | 9 | 60 | 1.823 | 1.76 | 2.163 | 0.203 | 1.717 | x1.06 |
+| 30 | 19 | 120 | 3.821 | 3.659 | 4.161 | 0.201 | 3.896 | x0.98 |
+| 60 | 39 | 240 | 7.9 | 7.584 | 8.307 | 0.203 | 7.71 | x1.02 |
+| 90 | 59 | 360 | 12.25 | 11.661 | 15.176 | 0.208 | 12.471 | x0.98 |
+| 150 | 99 | 600 | 21.678 | 20.502 | 26.253 | 0.219 | 21.177 | x1.02 |
+| 300 | 199 | 1200 | 45.582 | 41.979 | 48.079 | 0.229 | 44.355 | x1.03 |
 
-At 199 members the whole round trip is 50.4 ms,
+At 199 members the whole round trip is 45.6 ms,
 against a Minecraft tick of 50 ms — and the solve does not run on the tick
 thread, so this is latency to a result rather than time taken from the game.
 
@@ -311,10 +311,10 @@ difference is the transport.
 
 | wire | median (ms) | min (ms) | reply size |
 |---|---:|---:|---:|
-| JSON lines | 15.74 | 14.41 | 491037 bytes over the pipe |
-| shared memory | 2.29 | 2.23 | 132536 bytes in the region, ~60-byte doorbell |
+| JSON lines | 13.77 | 13.4 | 491064 bytes over the pipe |
+| shared memory | 2.18 | 2.1 | 132548 bytes in the region, ~60-byte doorbell |
 
-Transport saving: 13.44 ms per solve (85.4%).
+Transport saving: 11.6 ms per solve (84.2%).
 Measured by `scripts/bench_transport.py`, imported and run by this script
 so the record regenerates with everything else.
 

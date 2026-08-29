@@ -45,6 +45,11 @@ def check(tag, got, expect, tol):
     print(f"  {'[PASS]' if ok else '[FAIL]'} {tag:<38} got={got:<14.6g} exp={expect:<14.6g} {label}")
 
 
+# The reply shape this suite is written against. Bumped with the sidecar's kProtocol,
+# and checked at the top of main() so a stale binary fails with a sentence.
+EXPECT_PROTOCOL = 2
+
+
 def unassigned_blocks(r):
     """Every unassigned coordinate, reason discarded.
 
@@ -122,6 +127,18 @@ def main():
     check_true("engine is FrameCore", h.get("engine") == "FrameCore", h.get("engine", ""))
     check_true("materials advertised", "steel" in h.get("materials", []))
     check_true("sections advertised", "steel_rect_200x400" in h.get("sections", []))
+
+    # An engine older than this suite cannot satisfy the gates written against a newer
+    # reply shape, and it should say so in one sentence rather than die inside a decoder.
+    # Running the N17 helpers against protocol 1 produced
+    # "TypeError: list indices must be integers or slices, not str" -- true, useless, and
+    # sitting in a CI log where the reader has no idea which binary is stale.
+    if h.get("protocol") != EXPECT_PROTOCOL:
+        print()
+        print(f"  this binary speaks protocol {h.get('protocol')}; this suite is written"
+              f" for {EXPECT_PROTOCOL}.")
+        print("  rebuild the engine (scripts/package.sh) before reading anything below.")
+        return 1
 
     # ------------------------------------------- C1: cantilever vs closed form
     # 5 blocks -> one member, centre-to-centre length 4000 mm, root fixed.

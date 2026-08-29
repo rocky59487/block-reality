@@ -8,20 +8,20 @@
       "supernodal_lane": "compiled out (FRAMECORE_SUPERNODAL=0); solves via Eigen SimplicialLDLT"
     },
     "binary": {
-      "path": "/mnt/c/Users/wmc02/Desktop/block-reality/dist.stage/br-sidecar",
-      "sha256": "d9721cc6070695e752b2211e065fdedce07a14fc3bc9b3273682eeec7606974f"
+      "path": "/mnt/c/Users/wmc02/Desktop/block-reality/dist/br-sidecar",
+      "sha256": "a713e2c5aa2d13bac87109e31d4589be6533cd3bf603345a78b5197538fa2eca"
     },
     "binary_windows": {
-      "path": "/mnt/c/Users/wmc02/Desktop/block-reality/dist.stage/br-sidecar.exe",
-      "sha256": "c4d571a5911b21d405394609d7430f428c0492520510af3bc92250ca140f56d2"
+      "path": "/mnt/c/Users/wmc02/Desktop/block-reality/dist/br-sidecar.exe",
+      "sha256": "5dd50e9cb8e3a62915cc1781fa03e90ccf4f9ebe8f140dd2270f33b86e0abdcb"
     },
     "sources": {
-      "sidecar/main.cpp": "fb5fd9f6f0b81625b9aecde3d9c9a4be14773faf42e2222a56bdfe7453171e1f",
+      "sidecar/main.cpp": "38bd3e83dbc2184bf532f7098183a87dc3218619f4a23c73ab294c0bcc15aa88",
       "sidecar/json.hpp": "f3418ff18ee405ecc77a3fcb9bb7c349e55c2f85ee37f217f4fe69a621c430dc",
       "sidecar/shm.hpp": "dde97360c39dbf69ad17245667ae8f6f30a88cfebc2b7d9193228b2e3cd4b5ef",
-      "sidecar/verify.py": "1b6aae60353ae65b4f2a57bca66fa5266360c64ba0efd87bfe817469c69755d0",
+      "sidecar/verify.py": "4ec2725cef7241812579a0df39386b71af5e6cc0b4b2491c37943151e8ede473",
       "sidecar/CMakeLists.txt": "4e86e0f6a300abe01f500dbf742e1a726d87f12a12b90fe00bd6399fe9c2c08a",
-      "scripts/evidence.py": "c619105aed0be47bb6b7674b2cd364ce00706a6f13145cc14d726f17e465cc35"
+      "scripts/evidence.py": "a19411cabddc5587ec88c8dd3d5c41fcf73d39f638eaf0249ea32a6789492666"
     },
     "host": {
       "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
@@ -32,8 +32,8 @@
     "ok": true,
     "op": "hello",
     "engine": "FrameCore",
-    "protocol": 1,
-    "shm": 1,
+    "protocol": 2,
+    "shm": 2,
     "materials": [
       "brick",
       "concrete",
@@ -650,7 +650,7 @@
     "checked": true,
     "identical": 8,
     "cases": 8,
-    "method": "native Windows replies from binary c4d571a5911b, compared byte for byte against this host's",
+    "method": "native Windows replies from binary 5dd50e9cb8e3, compared byte for byte against this host's",
     "note": "byte-for-byte comparison of the full reply line"
   },
   "performance": [
@@ -658,81 +658,81 @@
       "blocks": 3,
       "members": 1,
       "dof": 12,
-      "with_buckling_ms": 0.287,
-      "min_ms": 0.278,
-      "max_ms": 0.409,
-      "without_buckling_ms": 0.277,
-      "median_ms": 0.287
+      "with_buckling_ms": 0.266,
+      "min_ms": 0.255,
+      "max_ms": 0.527,
+      "without_buckling_ms": 0.262,
+      "median_ms": 0.266
     },
     {
       "blocks": 6,
       "members": 3,
       "dof": 24,
-      "with_buckling_ms": 0.74,
-      "min_ms": 0.671,
-      "max_ms": 1.692,
-      "without_buckling_ms": 0.671,
-      "median_ms": 0.74
+      "with_buckling_ms": 0.651,
+      "min_ms": 0.621,
+      "max_ms": 0.972,
+      "without_buckling_ms": 0.596,
+      "median_ms": 0.651
     },
     {
       "blocks": 15,
       "members": 9,
       "dof": 60,
-      "with_buckling_ms": 2.033,
-      "min_ms": 1.951,
-      "max_ms": 2.218,
-      "without_buckling_ms": 1.834,
-      "median_ms": 2.033
+      "with_buckling_ms": 1.823,
+      "min_ms": 1.76,
+      "max_ms": 2.163,
+      "without_buckling_ms": 1.717,
+      "median_ms": 1.823
     },
     {
       "blocks": 30,
       "members": 19,
       "dof": 120,
-      "with_buckling_ms": 4.525,
-      "min_ms": 4.122,
-      "max_ms": 4.77,
-      "without_buckling_ms": 4.136,
-      "median_ms": 4.525
+      "with_buckling_ms": 3.821,
+      "min_ms": 3.659,
+      "max_ms": 4.161,
+      "without_buckling_ms": 3.896,
+      "median_ms": 3.821
     },
     {
       "blocks": 60,
       "members": 39,
       "dof": 240,
-      "with_buckling_ms": 9.069,
-      "min_ms": 8.253,
-      "max_ms": 9.504,
-      "without_buckling_ms": 8.593,
-      "median_ms": 9.069
+      "with_buckling_ms": 7.9,
+      "min_ms": 7.584,
+      "max_ms": 8.307,
+      "without_buckling_ms": 7.71,
+      "median_ms": 7.9
     },
     {
       "blocks": 90,
       "members": 59,
       "dof": 360,
-      "with_buckling_ms": 13.013,
-      "min_ms": 12.49,
-      "max_ms": 15.024,
-      "without_buckling_ms": 12.551,
-      "median_ms": 13.013
+      "with_buckling_ms": 12.25,
+      "min_ms": 11.661,
+      "max_ms": 15.176,
+      "without_buckling_ms": 12.471,
+      "median_ms": 12.25
     },
     {
       "blocks": 150,
       "members": 99,
       "dof": 600,
-      "with_buckling_ms": 23.446,
-      "min_ms": 22.426,
-      "max_ms": 26.098,
-      "without_buckling_ms": 23.482,
-      "median_ms": 23.446
+      "with_buckling_ms": 21.678,
+      "min_ms": 20.502,
+      "max_ms": 26.253,
+      "without_buckling_ms": 21.177,
+      "median_ms": 21.678
     },
     {
       "blocks": 300,
       "members": 199,
       "dof": 1200,
-      "with_buckling_ms": 50.392,
-      "min_ms": 48.538,
-      "max_ms": 57.509,
-      "without_buckling_ms": 48.688,
-      "median_ms": 50.392
+      "with_buckling_ms": 45.582,
+      "min_ms": 41.979,
+      "max_ms": 48.079,
+      "without_buckling_ms": 44.355,
+      "median_ms": 45.582
     }
   ],
   "transport": {
@@ -740,13 +740,13 @@
     "members": 86,
     "dof": 360,
     "rounds": 20,
-    "json_median_ms": 15.74,
-    "json_min_ms": 14.41,
-    "json_reply_bytes": 491037,
-    "shm_median_ms": 2.29,
-    "shm_min_ms": 2.23,
-    "shm_reply_bytes": 132536,
-    "saving_ms": 13.44,
-    "saving_pct": 85.4
+    "json_median_ms": 13.77,
+    "json_min_ms": 13.4,
+    "json_reply_bytes": 491064,
+    "shm_median_ms": 2.18,
+    "shm_min_ms": 2.1,
+    "shm_reply_bytes": 132548,
+    "saving_ms": 11.6,
+    "saving_pct": 84.2
   }
 }
