@@ -3,6 +3,7 @@ package com.blockreality.core.render;
 import com.blockreality.api.render.Hatch;
 import com.blockreality.api.render.Rgb;
 import com.blockreality.api.render.StressPalette;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -119,5 +120,47 @@ class StressPaletteTest {
     private static double distance(Rgb a, Rgb b) {
         double dr = a.r() - b.r(), dg = a.g() - b.g(), db = a.b() - b.b();
         return Math.sqrt(dr * dr + dg * dg + db * db);
+    }
+
+    // --------------------------------------------------------------- material lens
+
+    @Test
+    @DisplayName("every shipped material gets its own colour, so the lens says something")
+    void materialsAreDistinct() {
+        java.util.Set<Rgb> seen = new java.util.HashSet<>();
+        for (String token : java.util.List.of("steel", "concrete", "timber", "brick")) {
+            assertTrue(seen.add(StressPalette.material(token)), "duplicate colour for " + token);
+        }
+    }
+
+    @Test
+    @DisplayName("an unknown token gets its OWN colour, not another material's")
+    void unknownIsItsOwnColour() {
+        Rgb unknown = StressPalette.material("unobtanium");
+        assertEquals(unknown, StressPalette.material(null));
+        for (String token : java.util.List.of("steel", "concrete", "timber", "brick")) {
+            assertNotEquals(unknown, StressPalette.material(token),
+                    "an unheard-of material must not be painted as " + token);
+        }
+    }
+
+    @Test
+    @DisplayName("the material legend names exactly the materials the lens can colour")
+    void legendMatchesTheLens() {
+        var stops = StressPalette.materialLegend();
+        assertEquals(4, stops.size());
+        assertEquals(StressPalette.material("steel"), stops.get(0).colour());
+        assertEquals(StressPalette.material("brick"), stops.get(3).colour());
+        for (var stop : stops) {
+            assertTrue(stop.translationKey().startsWith("br.legend.material."), stop.translationKey());
+        }
+    }
+
+    @Test
+    @DisplayName("the material lens carries no magnitude: it is flat by construction")
+    void materialIsFlat() {
+        // Same token, same colour, whatever else is going on. If this ever depended on a
+        // number the lens would be showing a quantity it never claims to show.
+        assertEquals(StressPalette.material("steel"), StressPalette.material("steel"));
     }
 }

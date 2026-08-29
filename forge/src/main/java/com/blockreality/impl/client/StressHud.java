@@ -19,6 +19,7 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -172,7 +173,7 @@ public final class StressHud {
 
         g.drawString(mc.font, Component.translatable("br.hud.aim"), x, y, 0xAAAAAA);
         y += 14;
-        drawUtilizationLegend(g, mc, x, y);
+        drawLegend(g, mc, x, y, mode);
     }
 
     /**
@@ -313,8 +314,20 @@ public final class StressHud {
         return (sigma > 0 ? p.tensionColour() : p.compressionColour()).argb(1f);
     }
 
-    private static void drawUtilizationLegend(GuiGraphics g, Minecraft mc, int x, int y) {
-        for (StressPalette.LegendStop stop : StressPalette.utilizationLegend()) {
+    /**
+     * The legend for the lens actually being used.
+     *
+     * <p>It printed the utilisation legend in every mode, which made the material lens
+     * look like a broken utilisation lens rather than a different question — and the
+     * material lens was itself drawing stress at the time, so the two wrongs agreed.
+     */
+    private static void drawLegend(GuiGraphics g, Minecraft mc, int x, int y, ScanMode mode) {
+        List<StressPalette.LegendStop> stops = switch (mode) {
+            case MATERIAL -> StressPalette.materialLegend();
+            case STRESS -> ClientStressState.palette().stressLegend();
+            default -> StressPalette.utilizationLegend();
+        };
+        for (StressPalette.LegendStop stop : stops) {
             g.fill(x, y + 1, x + SWATCH, y + 1 + SWATCH, stop.colour().argb(1f));
             g.drawString(mc.font, Component.translatable(stop.translationKey()),
                     x + SWATCH + 4, y, 0xFFFFFF);
