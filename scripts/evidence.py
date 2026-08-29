@@ -269,6 +269,16 @@ def properties(sc):
     """Behaviours with no closed form: they are either right or wrong, not approximate."""
     out = []
 
+    def unassigned_count(reply):
+        """Unassigned BLOCKS, not reason groups.
+
+        `unassigned` became a list of {why, blocks} groups with N17. Counting the outer
+        list counts reasons: P9 wanted 18 blocks and started reading 1. P2 kept passing
+        because one block in one group is 1 either way -- a coincidence, and exactly the
+        kind that leaves a property looking checked when it is not.
+        """
+        return sum(len(g["blocks"]) for g in reply.get("unassigned", []))
+
     r = sc.call({"op": "solve", "revision": 20,
                  "blocks": [dict(b, support=False) for b in beam(5)]})
     out.append(("P1  unsupported structure reported as a mechanism",
@@ -276,7 +286,8 @@ def properties(sc):
 
     r = sc.call({"op": "solve", "revision": 21, "blocks": beam(1)})
     out.append(("P2  a single block is not a beam",
-                r.get("ok") is True and not r.get("members") and len(r.get("unassigned", [])) == 1))
+                r.get("ok") is True and not r.get("members")
+                and unassigned_count(r) == 1))
 
     # A load on a block that forms no element at all has nowhere to go and is refused.
     # (A load in the MIDDLE of a member is representable now — it splits the run — so the
@@ -328,7 +339,7 @@ def properties(sc):
                                  "section": "concrete_slab_200", "support": False}
                                 for i in range(3) for j in range(3) for h in range(2)]})
     out.append(("P9  a solid of plate blocks is refused, not meshed",
-                not solid.get("shells") and len(solid.get("unassigned", [])) == 18))
+                not solid.get("shells") and unassigned_count(solid) == 18))
 
     # P10 the support-moment recovery may only ever RAISE a reported demand. If it could
     # lower one, a failure to recover would make a plate look safer than it is.

@@ -14,11 +14,25 @@ import java.util.List;
 public record EngineCatalogue(String engine, int protocol, List<String> materials,
                               List<String> sections, List<String> plates, int shmLayout) {
 
-    /** The protocol version this build of the mod speaks. */
-    public static final int SUPPORTED_PROTOCOL = 1;
+    /**
+     * The protocol version this build of the mod speaks.
+     *
+     * <p>1 -> 2 (N17/N18): the reply gained a buckling state, and {@code unassigned}
+     * became a list of reason groups instead of a flat list of coordinates. Both are
+     * shape changes a version-1 decoder would misread rather than ignore, so the
+     * mismatch is refused outright. Engine and jar ship together (D-027), so in a normal
+     * install the two numbers cannot drift.
+     */
+    public static final int SUPPORTED_PROTOCOL = 2;
 
-    /** The shared-memory wire layout this build can decode. 0 means "JSON only". */
-    public static final int SUPPORTED_SHM_LAYOUT = 1;
+    /**
+     * The shared-memory wire layout this build can decode. 0 means "JSON only".
+     *
+     * <p>Bumped with the protocol for the same two fields: the binary frame gained a
+     * string after {@code bucklingFactor} and its unassigned section became grouped.
+     * Every offset after either point moved.
+     */
+    public static final int SUPPORTED_SHM_LAYOUT = 2;
 
     public EngineCatalogue {
         materials = List.copyOf(materials);

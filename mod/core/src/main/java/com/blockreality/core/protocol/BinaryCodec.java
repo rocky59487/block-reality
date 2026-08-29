@@ -1,6 +1,7 @@
 package com.blockreality.core.protocol;
 
 import com.blockreality.api.AnalysisResult;
+import com.blockreality.api.BucklingState;
 import com.blockreality.api.EndForces;
 import com.blockreality.api.EngineCatalogue;
 import com.blockreality.api.Fibre;
@@ -10,6 +11,7 @@ import com.blockreality.api.ShellFieldSpec;
 import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.StressFieldSpec;
 import com.blockreality.api.StressStation;
+import com.blockreality.api.UnassignedBlocks;
 import com.blockreality.api.WorldRevision;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.api.geom.Vec3d;
@@ -76,6 +78,8 @@ public final class BinaryCodec {
     private static final int STATION_BYTES = 104;
     private static final int SHELL_BYTES = 532;
     private static final int BLOCK_BYTES = 12;
+    /** A reason group at its smallest: an empty token, then a zero block count. */
+    private static final int GROUP_MIN_BYTES = 8;
 
     private BinaryCodec() { }
 
@@ -208,6 +212,14 @@ public final class BinaryCodec {
         if (bucklingFactor < 0) {
             return AnalysisResult.failed(expected, "shm reply: bucklingFactor must be >= 0");
         }
+        BucklingState bucklingState = BucklingState.fromWire(str(b));
+        // Same contradiction check the JSON path applies, for the same reason: the two
+        // transports must accept and reject the same solves, or a gate that passes on one
+        // says nothing about the other (N18-b).
+        if ((bucklingState == BucklingState.COMPUTED) != (bucklingFactor > 0)) {
+            return AnalysisResult.failed(expected, "shm reply: bucklingState \""
+                    + bucklingState.wire() + "\" disagrees with factor " + bucklingFactor);
+        }
         b.getInt();   // nodes: not consumed by the Java side today
         b.getInt();   // dof
 
@@ -223,10 +235,16 @@ public final class BinaryCodec {
             shells.add(shell(b, mats, toks, nSections));
         }
 
-        int nUn = guardedCount(b, BLOCK_BYTES, "unassigned");
-        List<BlockKey> unassigned = new ArrayList<>(nUn);
-        for (int k = 0; k < nUn; k++) {
-            unassigned.add(new BlockKey(b.getInt(), b.getInt(), b.getInt()));
+        int nGroups = guardedCount(b, GROUP_MIN_BYTES, "unassigned group");
+        List<UnassignedBlocks> unassigned = new ArrayList<>(nGroups);
+        for (int g = 0; g < nGroups; g++) {
+            String why = str(b);
+            int nUn = guardedCount(b, BLOCK_BYTES, "unassigned");
+            List<BlockKey> blocks = new ArrayList<>(nUn);
+            for (int k = 0; k < nUn; k++) {
+                blocks.add(new BlockKey(b.getInt(), b.getInt(), b.getInt()));
+            }
+            unassigned.add(UnassignedBlocks.of(why, blocks));
         }
 
         // Consumed exactly, or not a reply. Bytes left inside the declared frame mean
@@ -240,7 +258,7 @@ public final class BinaryCodec {
 
         return new AnalysisResult(new WorldRevision(rev), true, singular, diagnostic,
                 maxDC, governing, governingKind, islands, singularIslands,
-                residual, bucklingFactor, members, shells, unassigned);
+                residual, bucklingFactor, bucklingState, members, shells, unassigned);
     }
 
     private static MemberSnapshot member(ByteBuffer b, List<String> mats, List<String> toks,

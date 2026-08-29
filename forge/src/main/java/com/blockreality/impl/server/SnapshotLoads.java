@@ -33,9 +33,12 @@ import java.util.Set;
  * hurt: an <em>included</em> block the engine forms no element from — a single structural
  * block, a plate block closing no facet. The load travels, the engine refuses the whole
  * request, and it refuses it again every tick, so the dimension's analysis stays dark
- * until the player thinks to remove a load nothing told them about. Placing one block and
- * sneak-clicking it is the first thing {@code br.hint.first_use} tells a player to do
- * (PR26_REVIEW A-5).
+ * until the player thinks to remove a load nothing told them about. The glasses add a
+ * load on any sneak-right-click with no feasibility check at all
+ * ({@code StressGlassesItem.useOn}), so trying one block before building a span reaches
+ * it immediately (PR26_REVIEW A-5, as corrected in {@code docs/pr26_findings}: the
+ * hint string that claim rested on was never wired to anything, and has since been
+ * deleted along with the three other dead keys).
  *
  * <p>The refusal reply carries no block list — it is written before the {@code unassigned}
  * field — so the recovery is a probe: re-solve the same world with NO loads, which cannot

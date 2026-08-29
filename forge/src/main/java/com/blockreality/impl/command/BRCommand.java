@@ -3,6 +3,7 @@ package com.blockreality.impl.command;
 import com.blockreality.api.AnalysisResult;
 import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.StressStation;
+import com.blockreality.api.UnassignedBlocks;
 import com.blockreality.core.sidecar.SidecarClient;
 import com.blockreality.impl.server.SidecarLocator;
 import com.blockreality.impl.server.StructureManager;
@@ -213,19 +214,55 @@ public final class BRCommand {
             // column reaches its buckling load at a stress the D/C line calls comfortable.
             // Absent means the structure carries no compression that could buckle it, which
             // is a real state and not a missing number.
-            if (r.bucklingFactor() > 0) {
+            if (r.bucklingState().hasFactor()) {
                 line(src, String.format(Locale.ROOT,
                                 "  buckling        lambda_cr %.3f%s   (linear onset, an upper bound)",
                                 r.bucklingFactor(),
                                 r.bucklingCritical() ? "   ALREADY UNSTABLE" : ""),
                         r.bucklingCritical() ? ChatFormatting.RED : ChatFormatting.GRAY);
+            } else {
+                line(src, "  buckling        not reported: " + r.bucklingState().wire(),
+                        ChatFormatting.GRAY);
             }
-            if (!r.unassigned().isEmpty()) {
-                line(src, "  unassigned      " + r.unassigned().size()
-                        + " blocks formed no element", ChatFormatting.YELLOW);
+            // One line per reason. The old single line said "N blocks formed no element"
+            // for every block in the list, and for a beam lying flat on the ground -- a
+            // structure that is entirely in the model -- that sentence was false.
+            for (UnassignedBlocks g : r.unassigned()) {
+                line(src, String.format(Locale.ROOT, "  %-15s %d blocks   %s",
+                                "unassigned", g.blocks().size(), explain(g)),
+                        g.reason().formsNoElement() ? ChatFormatting.YELLOW : ChatFormatting.GRAY);
             }
         }
         return 1;
+    }
+
+    /**
+     * One sentence per reason a block produced no element.
+     *
+     * <p>Kept next to the line that prints it so the two cannot drift. An unknown code
+     * quotes the raw token rather than guessing: this build not recognising a reason is
+     * itself worth seeing, and inventing an explanation for it would hide exactly the
+     * case a reader needs to catch.
+     */
+    private static String explain(UnassignedBlocks g) {
+        switch (g.reason()) {
+            case RUN_TOO_SHORT:
+                return "the piece each one landed in was a single block (L/h = 1)";
+            case PLATE_LONE:
+                return "plate blocks with no plate neighbour on any axis";
+            case PLATE_STRIP:
+                return "a plate strip one block wide; it cannot close a facet";
+            case PLATE_SOLID:
+                return "plate blocks stacked solid; a solid is not a shell";
+            case PLATE_NO_FACET:
+                return "plate blocks that closed no complete 2x2 facet";
+            case MECHANISM:
+                return "part of a structure nothing is holding up (not a modelling fault)";
+            case FULLY_SUPPORTED:
+                return "fully supported: in the model, but with no freedom to respond";
+            default:
+                return "reason \"" + g.label() + "\" is not one this build knows";
+        }
     }
 
     private static int members(CommandSourceStack src) {

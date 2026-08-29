@@ -49,12 +49,17 @@ import java.util.Optional;
  *                        not computed. Deliberately not called a safety factor — it is
  *                        the eigenvalue of the linear onset problem and therefore an
  *                        upper bound on the real critical load, not a margin.
- * @param unassigned  blocks this solve produced no element result for. Two causes, and
- *                    the game side does not need to tell them apart: no element could be
- *                    extracted (a lone block, a plate block closing no facet), or the
- *                    structure they belong to is fully supported and therefore has no
- *                    internal response to report (D-026). Either way there is nothing to
- *                    draw on them, and a test load placed on one will be refused.
+ * @param bucklingState what {@code bucklingFactor} is. The number alone cannot say: 0 was
+ *                      "not asked for", "nothing eligible" and "asked, found nothing" at
+ *                      once (N18)
+ * @param unassigned  blocks this solve produced no element result for, grouped by reason.
+ *                    The reasons are NOT interchangeable and the game side does have to
+ *                    tell them apart: a plate block that closed no facet is a modelling
+ *                    problem the player can fix, a fully supported block is a sound state,
+ *                    and a mechanism block belongs to a structure that is simply not held
+ *                    up yet. They used to arrive as one undifferentiated list rendered as
+ *                    one sentence — which was false for two of the three — and the
+ *                    mechanism ones did not arrive at all (N17)
  */
 public record AnalysisResult(
         WorldRevision revision,
@@ -68,14 +73,16 @@ public record AnalysisResult(
         int singularIslands,
         double equilibriumResidual,
         double bucklingFactor,
+        BucklingState bucklingState,
         List<MemberSnapshot> members,
         List<ShellSnapshot> shells,
-        List<BlockKey> unassigned) {
+        List<UnassignedBlocks> unassigned) {
 
     public AnalysisResult {
         members = List.copyOf(members);
         shells = List.copyOf(shells);
         unassigned = List.copyOf(unassigned);
+        bucklingState = bucklingState == null ? BucklingState.UNKNOWN : bucklingState;
         diagnostic = diagnostic == null ? "" : diagnostic;
         governingKind = governingKind == null ? "" : governingKind;
     }
@@ -103,7 +110,35 @@ public record AnalysisResult(
 
     public static AnalysisResult failed(WorldRevision rev, String why) {
         return new AnalysisResult(rev, false, false, why, 0, -1, "", 0, 0, 0, 0,
-                List.of(), List.of(), List.of());
+                BucklingState.UNKNOWN, List.of(), List.of(), List.of());
+    }
+
+    /**
+     * Every unassigned block, reason discarded.
+     *
+     * <p>For the callers that only need membership — "is this coordinate in the list" —
+     * and would otherwise each flatten the groups themselves. Anything that reports to a
+     * player wants {@link #unassigned()} instead: the reason is the part worth saying.
+     */
+    public List<BlockKey> unassignedBlocks() {
+        List<BlockKey> out = new java.util.ArrayList<>();
+        for (UnassignedBlocks g : unassigned) out.addAll(g.blocks());
+        return List.copyOf(out);
+    }
+
+    /**
+     * The unassigned blocks whose reason means they belong to no element at all.
+     *
+     * <p>The subset a test load can never be accepted on — see
+     * {@link UnassignedReason#formsNoElement()}. Distinct from {@link #unassignedBlocks()},
+     * and the difference is a player's placed load either surviving or being deleted.
+     */
+    public List<BlockKey> blocksFormingNoElement() {
+        List<BlockKey> out = new java.util.ArrayList<>();
+        for (UnassignedBlocks g : unassigned) {
+            if (g.reason().formsNoElement()) out.addAll(g.blocks());
+        }
+        return List.copyOf(out);
     }
 
     public Optional<MemberSnapshot> member(int id) {

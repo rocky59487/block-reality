@@ -41,7 +41,10 @@ public final class BRNetwork {
     // "4": ...and truncatedBlocks plus a per-element withheld flag (N14, #74),
     //      and the material token, which the decoder used to drop on the floor.
     //      One number for both: v0.3c shipped "3", so nothing released speaks "4" yet.
-    private static final String PROTOCOL = "4";
+    // "5": ...and the buckling STATE in place of the skipped flag, plus a per-reason
+    //      tally of the blocks left out of the model (N17/N18). Same note applies:
+    //      nothing released speaks "4" or "5", so this is still one unshipped step.
+    private static final String PROTOCOL = "5";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(BlockRealityMod.MOD_ID, "main"),

@@ -46,6 +46,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <cstring>
 #include <set>
 #include <array>
 #include <algorithm>
@@ -54,7 +55,23 @@
 namespace {
 
 constexpr double kBlockMm = 1000.0;   // one Minecraft block
-constexpr int    kProtocol = 1;
+constexpr int    kProtocol = 2;
+
+// Why a block produced no element result (N17-c). BOOKKEEPING, NEVER MECHANICS:
+// every code names what the extractor or the solver DID with the block, not what any
+// internal force says about it. N17-f exists to keep it that way -- a code that needed
+// a stress value to decide would be this process computing mechanics, which it does not.
+//
+// The enum is OPEN on the wire. The game side must show a code it does not recognise
+// as "unknown reason" and still list the blocks, so a later engine can add one (D-030's
+// BULK_UNSUPPORTED is the next in line) without another protocol change.
+constexpr const char* kWhyMechanism      = "MECHANISM";
+constexpr const char* kWhyFullySupported = "FULLY_SUPPORTED";
+constexpr const char* kWhyPlateLone      = "PLATE_LONE";
+constexpr const char* kWhyPlateStrip     = "PLATE_STRIP";
+constexpr const char* kWhyPlateSolid     = "PLATE_SOLID";
+constexpr const char* kWhyPlateNoFacet   = "PLATE_NO_FACET";
+constexpr const char* kWhyRunTooShort    = "RUN_TOO_SHORT";
 
 // ------------------------------------------------------------------ inputs
 struct BlockPos {
@@ -238,6 +255,13 @@ struct QuadSeg {
     int         normalAxis = 1;   // 0 = MC x, 1 = MC y, 2 = MC z
 };
 
+// One block that produced no element result, and the reason. Grouped by reason on the
+// wire, so a fully supported raft pays for one copy of the string rather than 14,400.
+struct Unassigned {
+    BlockPos    pos;
+    const char* why;
+};
+
 // The plane a plate block belongs to is DERIVED, not declared: a sheet is one block
 // thick, so its normal is the axis along which the block has no plate neighbour.
 //
@@ -251,7 +275,11 @@ struct QuadSeg {
 // game side can say why nothing appeared instead of leaving a floor that silently carries
 // no load. Two causes share the field, deliberately (D-026): no element could be extracted,
 // or the structure it belongs to is fully supported and has no internal response to report.
-int sheetNormalAxis(const std::map<BlockPos, InBlock>& grid, const BlockPos& p, const InBlock& b) {
+// `freeAxes`, when asked for, is what separates the three ways this can fail from each
+// other: 3 is a lone block, 2 is a strip one block wide, 0 is plate blocks stacked into a
+// solid. The player's next move is different in each case, so the reply says which.
+int sheetNormalAxis(const std::map<BlockPos, InBlock>& grid, const BlockPos& p, const InBlock& b,
+                    int* freeAxes = nullptr) {
     int free = 0, axis = -1;
     for (int a = 0; a < 3; ++a) {
         bool neighbour = false;
@@ -266,12 +294,13 @@ int sheetNormalAxis(const std::map<BlockPos, InBlock>& grid, const BlockPos& p, 
         }
         if (!neighbour) { ++free; axis = a; }
     }
+    if (freeAxes) *freeAxes = free;
     return free == 1 ? axis : -1;
 }
 
 std::vector<QuadSeg> extractSheets(const std::map<BlockPos, InBlock>& grid,
                                    std::set<BlockPos>&                shellNodes,
-                                   std::vector<BlockPos>&             unassigned) {
+                                   std::vector<Unassigned>&           unassigned) {
     std::map<BlockPos, int> normalOf;
     for (const auto& [pos, blk] : grid) {
         if (!isPlate(blk.section)) continue;
@@ -304,10 +333,18 @@ std::vector<QuadSeg> extractSheets(const std::map<BlockPos, InBlock>& grid,
         for (const BlockPos& c : q) shellNodes.insert(c);
     }
 
-    // A plate block that closed no square is reported, never quietly ignored.
+    // A plate block that closed no square is reported, never quietly ignored -- and now
+    // with the reason, because "this slab is one block wide" and "these plate blocks are
+    // stacked solid" call for opposite fixes and used to arrive as the same silence.
     for (const auto& [pos, blk] : grid) {
         if (!isPlate(blk.section)) continue;
-        if (!shellNodes.count(pos)) unassigned.push_back(pos);
+        if (shellNodes.count(pos)) continue;
+        int freeAxes = -1;
+        sheetNormalAxis(grid, pos, blk, &freeAxes);
+        unassigned.push_back({ pos, freeAxes == 3 ? kWhyPlateLone
+                                  : freeAxes == 2 ? kWhyPlateStrip
+                                  : freeAxes == 0 ? kWhyPlateSolid
+                                  : kWhyPlateNoFacet });
     }
     return out;
 }
@@ -324,7 +361,7 @@ std::vector<QuadSeg> extractSheets(const std::map<BlockPos, InBlock>& grid,
 std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
                                 const std::set<BlockPos>&          shellNodes,
                                 const std::set<BlockPos>&          loadBlocks,
-                                std::vector<BlockPos>&             unassigned) {
+                                std::vector<Unassigned>&           unassigned) {
     std::vector<std::vector<BlockPos>> rawRuns;
     std::vector<std::string>           runMat, runSec;
 
@@ -605,7 +642,9 @@ std::vector<RunSeg> extractRuns(const std::map<BlockPos, InBlock>& grid,
         for (const BlockPos& p : s.blocks) covered.insert(p);
     for (const auto& [pos, blk] : grid) {
         if (isPlate(blk.section)) continue;       // plate blocks are answered by the sheet pass
-        if (!covered.count(pos)) unassigned.push_back(pos);
+        // Whatever piece it landed in was one block long, and a 1 m block is L/h = 1 --
+        // beam theory does not hold there (invariant 1). That is the whole reason.
+        if (!covered.count(pos)) unassigned.push_back({ pos, kWhyRunTooShort });
     }
 
     return out;
@@ -706,8 +745,14 @@ struct SolveOut {
 
     std::vector<MemberOut> members;
     std::vector<ShellOut>  shells;
-    std::vector<BlockPos>  unassigned;
+    std::vector<Unassigned> unassigned;
     std::string            governingKind;     // "member" | "shell" | ""
+
+    // Whether solveBuckling was actually invoked. Without it, "the eigensolver found no
+    // positive factor" and "there was nothing eligible to run it on" both look like 0,
+    // which is the ambiguity N18 exists to remove.
+    bool        bucklingRan = false;
+    const char* buckling    = "disabled-by-request";
 
     // A world holds many structures, and they are solved one at a time. `singular` stays
     // true if ANY of them is a mechanism, but the others still report their results.
@@ -1019,7 +1064,12 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
             for (const BlockPos& bp : seg.blocks) immobile.insert(bp);
         for (const auto& q : quads)
             for (const BlockPos& c : q.c) immobile.insert(c);
-        for (const BlockPos& bp : immobile) out.unassigned.push_back(bp);
+        // These blocks ARE the structure -- they simply have nowhere to move, so there
+        // is no internal response to report. Sharing one list with "no element could be
+        // extracted" was fine; sharing one SENTENCE was not (N17-e): /br status told a
+        // player who had laid a beam flat on the ground that it formed no element, while
+        // the reply's own diagnostic said the opposite two lines further up.
+        for (const BlockPos& bp : immobile) out.unassigned.push_back({ bp, kWhyFullySupported });
         return true;
     }
 
@@ -1076,6 +1126,23 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         out.singular = true;
         ++out.singularIslands;
         if (out.diagnostic.empty()) out.diagnostic = r.diagnostic;
+        // ...but the blocks it was made of are not nothing. They used to appear in
+        // members, in shells and in unassigned alike: a 20-block ungrounded beam came
+        // back ok:true, islands:1, singularIslands:1, unassigned:[] and twenty blocks
+        // simply were not in the reply (V03A_REVIEW N4-2, measured again for N17). A
+        // player halfway through a build has an island like this most of the time, and
+        // the overlay had nothing to draw and nothing to say.
+        //
+        // The verdict is the ENGINE's -- rank deficiency out of the factorisation. This
+        // process only relays it. It does not run its own connectivity test to guess at
+        // mechanisms, because connectivity is a pre-filter and not an authority
+        // (invariant 4).
+        std::set<BlockPos> inIsland;
+        for (const auto& seg : segs)
+            for (const BlockPos& bp : seg.blocks) inIsland.insert(bp);
+        for (const auto& q : quads)
+            for (const BlockPos& c : q.c) inIsland.insert(c);
+        for (const BlockPos& bp : inIsland) out.unassigned.push_back({ bp, kWhyMechanism });
         return true;
     }
 
@@ -1338,6 +1405,7 @@ bool solveIsland(const std::map<BlockPos, InBlock>& grid,
         // gate (verify.py C12), not assumed.
         frame::BucklingOptions bopts;
         bopts.denseThreshold = 0;
+        out.bucklingRan = true;
         const frame::BucklingResult bk = frame::solveBuckling(prepared, m, bopts);
         if (!bk.singular && std::isfinite(bk.criticalFactor) && bk.criticalFactor > 0) {
             if (out.bucklingFactor <= 0 || bk.criticalFactor < out.bucklingFactor) {
@@ -1400,6 +1468,10 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
                   const std::vector<BlockPos>&              loadAt,
                   bool wantBuckling) {
     SolveOut out;
+    // Set here rather than at the end, because this function has three ok-returning
+    // exits and only one of them is the bottom. Left to the bottom, "nothing structural
+    // was placed" reported `disabled-by-request` for a request that had asked.
+    out.buckling = wantBuckling ? "not-eligible" : "disabled-by-request";
 
     std::map<BlockPos, InBlock> grid;
     for (const auto& b : blocks) grid[b.pos] = b;
@@ -1481,6 +1553,14 @@ SolveOut runSolve(const std::vector<InBlock>& blocks,
     if (out.members.empty() && out.shells.empty() && out.error.empty()) {
         out.error = "no members or plates extracted";
     }
+    // N18-a: bucklingFactor 0 used to mean "not asked for", "nothing eligible" and
+    // "asked for, found nothing" all at once, and the reply carried no other buckling
+    // key to tell them apart. It says which now. `disabled-by-scale` is deliberately
+    // NOT produced here -- that decision belongs to whoever set `buckling:false`, and
+    // from this side it is indistinguishable from any other refusal to ask.
+    if (wantBuckling && out.bucklingRan) {
+        out.buckling = out.bucklingFactor > 0 ? "computed" : "no-positive-eigenvalue";
+    }
     return out;
 }
 
@@ -1493,6 +1573,20 @@ void writeForces(bjson::Writer& w, const char* key, const frame::MemberEndForces
 
 void writeVec(bjson::Writer& w, const char* key, const McVec& v) {
     w.key(key).beginArr().val(v.x).val(v.y).val(v.z).endArr();
+}
+
+// Distinct reasons in first-seen order. Stable across runs because the extractors walk
+// an ordered map, and stable order is what lets a gate diff two replies.
+std::vector<const char*> reasonOrder(const std::vector<Unassigned>& v) {
+    std::vector<const char*> order;
+    for (const Unassigned& u : v) {
+        bool seen = false;
+        for (const char* o : order) {
+            if (std::strcmp(o, u.why) == 0) { seen = true; break; }
+        }
+        if (!seen) order.push_back(u.why);
+    }
+    return order;
 }
 
 void writeBlocks(bjson::Writer& w, const char* key, const std::vector<BlockPos>& v) {
@@ -1695,6 +1789,9 @@ std::string handleSolve(const bjson::Value& req) {
     // binary transport carried it unconditionally, so the two transports did not even
     // agree on what a reply contains. Zero means not computed, as documented.
     w.kv("bucklingFactor", s.bucklingFactor);
+    // What that number is. Never omitted, so "the key is missing" and "the engine had
+    // nothing to say" cannot be confused either (N18-a).
+    w.kv("bucklingState", s.buckling);
     w.kv("nodes", s.nodes).kv("dof", s.nodes * 6);
     w.key("equilibrium").beginObj();
     w.key("applied").beginArr().val(s.appliedN[0]).val(s.appliedN[1]).val(s.appliedN[2]).endArr();
@@ -1788,7 +1885,25 @@ std::string handleSolve(const bjson::Value& req) {
     }
     w.endArr();
 
-    writeBlocks(w, "unassigned", s.unassigned);
+    // Grouped by reason rather than one reason per block. The size of this field is
+    // already a registered concern -- a fully supported 120x120 raft lists all 14,400 of
+    // its blocks on every solve (V02A_POSTRELEASE_REVIEW) -- and giving each of those its
+    // own copy of the string would have been the easiest way to make it worse. No cap is
+    // applied: a cap would be a new way to lose blocks silently, which is the exact thing
+    // this field now exists to prevent.
+    w.key("unassigned").beginArr();
+    for (const char* why : reasonOrder(s.unassigned)) {
+        w.beginObj();
+        w.kv("why", why);
+        w.key("blocks").beginArr();
+        for (const Unassigned& u : s.unassigned) {
+            if (std::strcmp(u.why, why) != 0) continue;
+            w.beginArr().val(u.pos.x).val(u.pos.y).val(u.pos.z).endArr();
+        }
+        w.endArr();
+        w.endObj();
+    }
+    w.endArr();
     w.endObj();
     return w.done();
 }
@@ -1892,6 +2007,7 @@ size_t encodeShmReply(const SolveOut& s, long long revision) {
     w.i32(s.governing);
     w.u32(s.governingKind == "member" ? 1u : s.governingKind == "shell" ? 2u : 0u);
     w.f64(s.bucklingFactor);
+    writeStr(s.buckling);
     w.u32(static_cast<std::uint32_t>(s.nodes));
     w.u32(static_cast<std::uint32_t>(s.nodes * 6));
 
@@ -1965,8 +2081,19 @@ size_t encodeShmReply(const SolveOut& s, long long revision) {
         w.f64(sh.vmBot);
     }
 
-    w.u32(static_cast<std::uint32_t>(s.unassigned.size()));
-    for (const BlockPos& p : s.unassigned) writeBlock(w, p);
+    const std::vector<const char*> order = reasonOrder(s.unassigned);
+    w.u32(static_cast<std::uint32_t>(order.size()));
+    for (const char* why : order) {
+        writeStr(why);
+        std::uint32_t count = 0;
+        for (const Unassigned& u : s.unassigned) {
+            if (std::strcmp(u.why, why) == 0) ++count;
+        }
+        w.u32(count);
+        for (const Unassigned& u : s.unassigned) {
+            if (std::strcmp(u.why, why) == 0) writeBlock(w, u.pos);
+        }
+    }
 
     return w.ok ? static_cast<size_t>(w.p - g_shm.data()) : 0;
 }
@@ -2121,9 +2248,12 @@ std::string handleHello() {
     w.beginObj();
     w.kv("ok", true).kv("op", "hello").kv("engine", "FrameCore").kv("protocol", kProtocol);
     // Capability, not version: protocol 1 clients that predate the shared-memory
-    // transport ignore the key and keep speaking JSON. shm=1 names the binary
+    // transport ignore the key and keep speaking JSON. shm=2 names the binary
     // layout (BRQ1/BRP1); a layout change bumps this number, never reuses it.
-    w.kv("shm", 1);
+    // 1 -> 2 with protocol 1 -> 2: the reply gained a buckling state string and
+    // `unassigned` became reason-grouped. Both ends ship in the same jar (D-027), and
+    // an external sidecar on the old number is refused rather than misread.
+    w.kv("shm", 2);
     w.key("materials").beginArr();
     for (const auto& [id, _] : materialCatalogue()) w.val(id);
     w.endArr();

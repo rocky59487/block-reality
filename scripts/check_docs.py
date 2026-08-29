@@ -80,6 +80,18 @@ TABLE = [
     ("docs/outreach/LISTING.md", r"> (\d+) acceptance checks run on every build", "ENGINE"),
     ("docs/outreach/LISTING.md", r"> Verification: (\d+) engine checks", "ENGINE"),
     ("docs/outreach/LISTING.md", r"> Verification: \d+ engine checks, (\d+) Java tests", "JAVA_TOTAL"),
+    # The evergreen store description, which is the file actually pasted into the form.
+    # It was outside this table while LISTING.md's COPY of it was inside, so the copy
+    # tracked HEAD and the original did not: the copy reached 245 Java tests while the
+    # pasted text still said 215, and nothing compared them.
+    #
+    # paste/release-notes-<version>.md is deliberately NOT gated. Those are per-release
+    # records of text that was submitted at a point in time; pinning them to HEAD would
+    # rewrite history rather than check it.
+    ("docs/outreach/paste/description.md",
+     r"(\d+) acceptance checks run on every build", "ENGINE"),
+    ("docs/outreach/paste/description.md",
+     r"\*\*(\d+) of them are comparisons against", "CLOSED_FORM"),
     ("docs/outreach/COMMUNITY.md", r"gimmick: (\d+) acceptance checks", "ENGINE"),
 ]
 

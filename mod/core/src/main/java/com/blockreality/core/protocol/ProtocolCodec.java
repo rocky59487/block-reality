@@ -1,6 +1,7 @@
 package com.blockreality.core.protocol;
 
 import com.blockreality.api.AnalysisResult;
+import com.blockreality.api.BucklingState;
 import com.blockreality.api.EndForces;
 import com.blockreality.api.EngineCatalogue;
 import com.blockreality.api.GoverningFibre;
@@ -10,6 +11,7 @@ import com.blockreality.api.ShellFieldSpec;
 import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.StressFieldSpec;
 import com.blockreality.api.StressStation;
+import com.blockreality.api.UnassignedBlocks;
 import com.blockreality.api.WorldRevision;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.api.geom.Vec3d;
@@ -389,7 +391,32 @@ public final class ProtocolCodec {
             shells.add(decodeShell(s, path));
         }
 
-        List<BlockKey> unassigned = blocksOf(reqArr(v, "unassigned", ""), "unassigned");
+        List<JsonValue> unassignedValues = reqArr(v, "unassigned", "");
+        List<UnassignedBlocks> unassigned = new ArrayList<>(unassignedValues.size());
+        for (int k = 0; k < unassignedValues.size(); k++) {
+            JsonValue g = unassignedValues.get(k);
+            String path = "unassigned[" + k + "]";
+            if (!g.isObject()) throw new Reject(path, "not an object");
+            // The token is read as a string and resolved to an enum that has an UNKNOWN
+            // member, rather than rejected when unrecognised. The opposite choice is right
+            // for governing fibre -- see fibreOf -- because there an unknown name would
+            // leave a member coloured with no reason. Here the blocks are the payload and
+            // the reason is the label: refusing the whole reply over a label this build
+            // has not met would lose the blocks too, which is what N17 is closing.
+            unassigned.add(UnassignedBlocks.of(reqStr(g, "why", path),
+                    blocksOf(reqArr(g, "blocks", path), path + ".blocks")));
+        }
+
+        // Absent means UNKNOWN, not COMPUTED. A reply that does not say must not be read
+        // as one that said the reassuring thing.
+        BucklingState bucklingState = BucklingState.fromWire(optStr(v, "bucklingState", ""));
+        if (bucklingState == BucklingState.COMPUTED && !(bucklingFactor > 0)) {
+            throw new Reject("bucklingState", "says computed with no factor (N18-b)");
+        }
+        if (bucklingState != BucklingState.COMPUTED && bucklingFactor > 0) {
+            throw new Reject("bucklingState", "carries a factor while claiming \""
+                    + bucklingState.wire() + "\" (N18-b)");
+        }
 
         return new AnalysisResult(
                 new WorldRevision(rev),
@@ -403,6 +430,7 @@ public final class ProtocolCodec {
                 singularIslands,
                 residual,
                 bucklingFactor,
+                bucklingState,
                 members,
                 shells,
                 unassigned);

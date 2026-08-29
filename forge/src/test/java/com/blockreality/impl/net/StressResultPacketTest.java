@@ -1,11 +1,14 @@
 package com.blockreality.impl.net;
 
 import com.blockreality.api.AnalysisResult;
+import com.blockreality.api.BucklingState;
 import com.blockreality.api.EndForces;
 import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.ShellFieldSpec;
 import com.blockreality.api.ShellSnapshot;
+import com.blockreality.api.UnassignedBlocks;
+import com.blockreality.api.UnassignedReason;
 import com.blockreality.api.StressFieldSpec;
 import com.blockreality.api.WorldRevision;
 import com.blockreality.api.geom.BlockKey;
@@ -76,9 +79,21 @@ class StressResultPacketTest {
     private static AnalysisResult result(List<MemberSnapshot> members, List<ShellSnapshot> shells,
                                          double maxDc, int governing, String governingKind,
                                          double bucklingFactor) {
+        return result(members, shells, maxDc, governing, governingKind, bucklingFactor,
+                List.of());
+    }
+
+    private static AnalysisResult result(List<MemberSnapshot> members, List<ShellSnapshot> shells,
+                                         double maxDc, int governing, String governingKind,
+                                         double bucklingFactor,
+                                         List<UnassignedBlocks> unassigned) {
+        // The state has to agree with the factor or the codecs reject it, which is the
+        // point of N18-b: there is no such thing as a factor without a state.
+        BucklingState state = bucklingFactor > 0
+                ? BucklingState.COMPUTED : BucklingState.NO_POSITIVE_EIGENVALUE;
         return new AnalysisResult(new WorldRevision(9), true, false, "",
-                maxDc, governing, governingKind, 1, 0, 1e-14, bucklingFactor,
-                members, shells, List.of());
+                maxDc, governing, governingKind, 1, 0, 1e-14, bucklingFactor, state,
+                members, shells, unassigned);
     }
 
     @org.junit.jupiter.api.Test
@@ -94,6 +109,123 @@ class StressResultPacketTest {
         AnalysisResult contradictory = result(List.of(), List.of(), 0.4, -1, "", 2.5);
         StressResultPacket bad = roundTrip(StressResultPacket.of(contradictory, DIM, true));
         assertFalse(bad.valid());
+    }
+
+    @org.junit.jupiter.api.Test
+    void everyBucklingStateSurvivesTheTrip() {
+        // N18-a on this wire: the three zeros are three states, and they have to still
+        // be three states on the client. Before this the packet carried one boolean, so
+        // "ran and found nothing" arrived looking exactly like "never ran".
+        for (BucklingState s : BucklingState.values()) {
+            if (s == BucklingState.COMPUTED || s == BucklingState.DISABLED_BY_SCALE) continue;
+            AnalysisResult r = new AnalysisResult(new WorldRevision(9), true, false, "",
+                    0.4, -1, "", 1, 0, 1e-14, 0, s, List.of(), List.of(), List.of());
+            StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
+            assertTrue(out.valid(), s + ": " + out.invalidReason());
+            assertEquals(s, out.bucklingState());
+            assertFalse(out.bucklingSkipped(), s + " is not a size decision");
+        }
+    }
+
+    @org.junit.jupiter.api.Test
+    void theHostSubstitutesDisabledByScaleAndNobodyElseCan() {
+        // The engine says disabled-by-request because from its side that is all it knows.
+        // Only this side knows the reason was size, and this is the one place it is said.
+        AnalysisResult asked = new AnalysisResult(new WorldRevision(9), true, false, "",
+                0.4, -1, "", 1, 0, 1e-14, 0, BucklingState.DISABLED_BY_REQUEST,
+                List.of(), List.of(), List.of());
+        StressResultPacket out = roundTrip(StressResultPacket.of(asked, DIM, true));
+        assertEquals(BucklingState.DISABLED_BY_SCALE, out.bucklingState());
+        assertTrue(out.bucklingSkipped());
+
+        StressResultPacket kept = roundTrip(StressResultPacket.of(asked, DIM, false));
+        assertEquals(BucklingState.DISABLED_BY_REQUEST, kept.bucklingState(),
+                "not skipping must leave the engine's own answer alone");
+    }
+
+    @org.junit.jupiter.api.Test
+    void aFactorTooSmallForAFloatIsRestoredNotRejected() {
+        // The smallest positive double becomes 0.0f in transit. The state says a factor
+        // WAS computed and was positive; only its magnitude is lost, so the decoder puts
+        // back the smallest positive value rather than calling the packet a contradiction.
+        // Same treatment maxDc already gets, and for the same reason: the verdict travels
+        // as its own flag and never depended on this number.
+        AnalysisResult r = result(List.of(), List.of(), 0.4, -1, "", Double.MIN_VALUE);
+        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
+        assertTrue(out.valid(), out.invalidReason());
+        assertEquals(BucklingState.COMPUTED, out.bucklingState());
+        assertTrue(out.bucklingFactor() > 0, "a computed factor must stay positive");
+        assertTrue(out.bucklingCritical(), "0 < factor <= 1, decided on the server's double");
+    }
+
+    @org.junit.jupiter.api.Test
+    void unassignedCountsTravelPerReason() {
+        // Counts, not coordinates: a fully supported raft lists fourteen thousand blocks
+        // and the HUD only needs the tally. The reasons must stay apart on the way, or
+        // the client is back to one number it cannot explain.
+        AnalysisResult r = result(List.of(), List.of(), 0.4, -1, "", 0.0, List.of(
+                UnassignedBlocks.of("MECHANISM", List.of(new BlockKey(0, 64, 0),
+                        new BlockKey(1, 64, 0))),
+                UnassignedBlocks.of("PLATE_STRIP", List.of(new BlockKey(4, 70, 0))),
+                UnassignedBlocks.of("SOMETHING_NEW", List.of(new BlockKey(9, 70, 0)))));
+        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
+        assertTrue(out.valid(), out.invalidReason());
+        assertEquals(2, out.unassignedCount(UnassignedReason.MECHANISM));
+        assertEquals(1, out.unassignedCount(UnassignedReason.PLATE_STRIP));
+        assertEquals(1, out.unassignedCount(UnassignedReason.UNKNOWN),
+                "a code this build does not know still gets counted, not dropped");
+        assertEquals(0, out.unassignedCount(UnassignedReason.FULLY_SUPPORTED));
+        assertEquals(4, out.unassignedTotal());
+    }
+
+    @org.junit.jupiter.api.Test
+    void aStateThatContradictsItsFactorIsRejected() {
+        // Hand-written, because no encoder on this side will produce it: a state that
+        // claims nothing was computed, beside a factor big enough to survive the float.
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+        buf.writeVarLong(9);
+        buf.writeUtf(DIM, 256);
+        buf.writeBoolean(false);   // singular
+        buf.writeFloat(0.25f);     // maxDc
+        buf.writeBoolean(false);   // overCapacity
+        buf.writeVarInt(1);        // islands
+        buf.writeVarInt(0);        // singularIslands
+        buf.writeFloat(2.5f);      // bucklingFactor
+        buf.writeBoolean(false);   // bucklingCritical
+        buf.writeByte(BucklingState.NOT_ELIGIBLE.ordinal());   // ...which cannot have one
+        for (int i = 0; i < UnassignedReason.values().length; i++) buf.writeVarInt(0);
+        buf.writeVarInt(0);        // truncatedBlocks
+        buf.writeVarInt(0);        // totalMembers
+        buf.writeVarInt(0);        // totalShells
+        buf.writeVarInt(0);        // members
+
+        StressResultPacket out = StressResultPacket.decode(buf);
+        assertFalse(out.valid());
+        assertTrue(out.invalidReason().contains("bucklingState"), out.invalidReason());
+    }
+
+    @org.junit.jupiter.api.Test
+    void anUnknownBucklingStateOrdinalIsRejectedNotClamped() {
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+        buf.writeVarLong(9);
+        buf.writeUtf(DIM, 256);
+        buf.writeBoolean(false);
+        buf.writeFloat(0.25f);
+        buf.writeBoolean(false);
+        buf.writeVarInt(1);
+        buf.writeVarInt(0);
+        buf.writeFloat(0f);
+        buf.writeBoolean(false);
+        buf.writeByte(120);        // no such state
+        for (int i = 0; i < UnassignedReason.values().length; i++) buf.writeVarInt(0);
+        buf.writeVarInt(0);
+        buf.writeVarInt(0);
+        buf.writeVarInt(0);
+        buf.writeVarInt(0);
+
+        StressResultPacket out = StressResultPacket.decode(buf);
+        assertFalse(out.valid());
+        assertTrue(out.invalidReason().contains("bucklingState"), out.invalidReason());
     }
 
     @org.junit.jupiter.api.Test
@@ -363,7 +495,10 @@ class StressResultPacketTest {
         buf.writeVarInt(0);
         buf.writeFloat(0f);    // bucklingFactor
         buf.writeBoolean(false);  // bucklingCritical
-        buf.writeBoolean(false);  // bucklingSkipped
+        buf.writeByte(BucklingState.NOT_ELIGIBLE.ordinal());   // bucklingState
+        for (int i = 0; i < UnassignedReason.values().length; i++) {
+            buf.writeVarInt(0);   // unassignedByReason[i]
+        }
         buf.writeVarInt(0);    // truncatedBlocks
         buf.writeVarInt(1000); // totalMembers
         buf.writeVarInt(0);    // totalShells
@@ -394,7 +529,7 @@ class StressResultPacketTest {
         // mechanism branch depends on this arriving intact (#43).
         AnalysisResult r = new AnalysisResult(new WorldRevision(4), true, true,
                 "no restrained structure", 0, -1, "", 1, 1, 0, 0,
-                List.of(), List.of(), List.of());
+                BucklingState.NOT_ELIGIBLE, List.of(), List.of(), List.of());
         StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
         assertTrue(out.valid(), out.invalidReason());
         assertTrue(out.singular());

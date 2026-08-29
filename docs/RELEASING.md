@@ -22,6 +22,26 @@ reply 檔會變成一組偽造的「8/8 相同」。
 > .exe**。所以只要 `sidecar/` 沒動,舊的 reply 檔仍然對得上,第 1 步就會自己把
 > determinism 補完,第 2、3 步只有在引擎真的改了才需要跑。
 
+## dist/ 裡的版本不一定是發布版
+
+`dist/` 是**目前這棵樹的建置產物**，不是「最後一次發布」的快照。引擎的 wire 一改，
+CI 的 `engine-gates` 就會拿新的 `verify.py` 去跑 `dist/br-sidecar`——舊引擎過不了新
+gate，PR 因此紅，所以改引擎的 PR 必須順手重打包。
+
+那時**不要沿用已發布的版本號**：重打包出來的 `blockreality-0.3c.jar` 與 GitHub Releases
+上那顆同名而不同位元，任何人拿兩邊對雜湊都會對不上，而且沒有東西會告訴他為什麼。
+改成一個明顯不是發布版的號（`0.4.0-dev`），三個地方要同步：
+
+```
+forge/build.gradle          version = '0.4.0-dev'
+mod/build.gradle            version = '0.4.0-dev'
+forge/.../META-INF/mods.toml    version = "0.4.0-dev"
+```
+
+README／QUICKSTART 裡的下載連結指的是**發布**，不跟著改。
+
+---
+
 ## 重新打包（需要 FrameCore）
 
 `br-sidecar` 靜態連結 FrameCore，而 FrameCore 是本倉庫不收錄的外部 source
