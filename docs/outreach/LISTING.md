@@ -298,58 +298,41 @@ Modrinth 對「內含原生執行檔」同樣要透明；第 1 節那段照貼�
 
 ---
 
-## 4.6 · 只有你能做的事（我做不到的部分，照實說）
+## 4.6 · 送出紀錄，與平台機制照登
 
-下面五件事需要帳號、需要憑證、或需要真的在遊戲裡看一眼。**建立帳號與輸入密碼我不會代做**，
-上傳與按下送審也需要你自己決定，這裡把每一步寫清楚，讓你照著做就好。
+**v0.3c 兩個平台都已送出（2026-08-29）**：
 
-1. **先在遊戲裡裝一次。** 把 Releases 頁的 `blockreality-0.3c.zip` 下載回來（或直接用
-   `dist/blockreality-0.3c.jar`），丟進 `mods/`，開 1.20.1 Forge 47.x，放一根懸臂，
-   看到 D/C 讀數。**這是 §0 唯一的紅燈**——沒有任何自動化 gate 涵蓋它。
-2. **CurseForge**（專案已建，id **`1673233`**）。頁面本身的欄位——Description、
-   Categories、License、Links——**只能從網頁填**，API 碰不到：依 §2 的表填，Description
-   貼 `paste/description.md`。
+| 平台 | 狀態 |
+|---|---|
+| Modrinth | project `uIbC5CRY` · slug `block-reality` · version `0.3c` = `v1qU6BJE` · 8 張圖庫 · 已 Submit for review |
+| CurseForge | project `1673233` · file id `8761350` · Beta · 1.20.1 / Forge / Client+Server |
 
-   **檔案上傳可以自動化**：
+發布用的腳本**不在這個倉庫裡**。上架不是模組的一部分；倉庫收模組與它的證據，不收
+把東西送到別人網站上的工具。它們在本機的 `br-publish/`，讀的仍然是本倉的
+`paste/description.md` 與 `paste/release-notes-<ver>.md`，所以文案的單一來源沒有變。
 
-   ```bash
-   python3 scripts/publish_curseforge.py --project 1673233 --dry-run
-   CURSEFORGE_TOKEN=... python3 scripts/publish_curseforge.py --project 1673233
-   ```
+平台機制照登，因為下一版還會再遇到：
 
-   token 在 <https://legacy.curseforge.com/account/api-tokens> 產生。腳本從 env 或
-   `--token-file` 讀，不印不寫檔。它會自己把 `1.20.1` 與 `Forge` 解析成 CurseForge 的
-   **整數 id**——那個 API 不吃 `"1.20.1"` 這種字串，而且**漏掉 modloader 的 id 會讓檔案
-   出現在每一個 loader 底下**；解析不到就拒絕上傳，不猜。
+- **Modrinth** 從建專案、上版本、上圖庫到送審全都有 API。PAT 記得**連 read scope 一起勾**
+  （`READ_PROJECT`、`READ_VERSION`）——只勾 `CREATE_`/`WRITE_` 的話寫得進去、讀不回來，
+  而且它對沒有讀權限的資源回 **404 而不是 403**，看起來像那個東西根本不存在。
+  v0.3c 送審之後因此無法自我覆核。
+- **CurseForge** 只有檔案上傳有 API。建專案，以及 Description、Categories、License、
+  Links，全部只能從網頁做。上傳時的 `gameVersions` 吃的是**整數 id**，不吃 `"1.20.1"`
+  這種字串，而且**三個群組各要至少一個**：遊戲版本、modloader、environment。
+  少了 environment 回 `errorCode 1021`；少了 modloader，檔案會出現在**每一個** loader
+  底下。v0.3c 用的是 `9990`（1.20.1）、`7498`（Forge）、`9638` / `9639`（Client / Server）。
+  它在 Cloudflare 後面，連續打幾次 `/game/versions` 就會被挑戰擋住，所以這幾個 id
+  值得留著。
+- **token 不要貼進對話**——貼進去就永遠留在轉錄檔裡，事後撤銷是唯一的補救。
 
-   **預期會轉人工審核**（jar 內含 `.exe`），§1.1 的回信範本備著。
-3. **Modrinth**：登入 → Create a project。slug `block-reality`，依 §3 的表填。
-   Body 貼同一份 `paste/description.md`。上傳同一顆 jar，Release channel **Beta**。
-   Modrinth 專案預設 draft，填完要按 **Submit for review**。
+剩下的：
 
-   **或者用腳本做掉前面全部**——Modrinth 的 API 開得夠完整，建專案、上傳版本、上傳
-   圖庫都能打：
-
-   ```bash
-   python3 scripts/publish_modrinth.py --dry-run --site ../block-reality-site   # 先看要送什麼
-   MODRINTH_TOKEN=... python3 scripts/publish_modrinth.py --site ../block-reality-site
-   ```
-
-   token 在 <https://modrinth.com/settings/pats> 產生，勾 `CREATE_PROJECT`、
-   `WRITE_PROJECT`、`CREATE_VERSION`、`WRITE_VERSION`。腳本從 env 或 `--token-file` 讀，
-   不印出來也不寫檔。它**做到 draft 就停**——按下 Submit for review 是人的決定。
-4. **截圖與影片**（§0 素材清單）——要進遊戲拍，我拍不了。站台的 `img/` 已經有 8 張可用，
-   上面那支腳本會直接把它們送成 Modrinth 圖庫；CurseForge 要手動上傳同一批。
-5. **Website 欄位**填 `https://rocky59487.github.io/block-reality-site/`。
-
-> 兩邊自動化的程度不一樣，寫清楚免得誤會：Modrinth 從建專案到送審全都打得到；
-> **CurseForge 只有檔案上傳能自動化**，建專案與頁面文案只能從網頁做。
-> **token 一律自己產生、存 GitHub Secrets 或本機檔案，不要貼進對話**——貼進去就永遠
-> 留在轉錄檔裡，只能靠事後撤銷補救。
->
-> Modrinth 的 PAT 要記得**連 read scope 一起勾**（`READ_PROJECT`、`READ_VERSION`）。
-> 只勾 `CREATE_`/`WRITE_` 的話寫得進去、讀不回來，而且 Modrinth 對沒有讀權限的資源
-> 回 **404 而不是 403**，看起來像東西不存在。v0.3c 上架時就是這樣，送審之後無法自我覆核。
+1. 🔴 **在遊戲裡裝一次。** 丟進 `mods/`、開 1.20.1 Forge 47.x、放一根懸臂、看到 D/C
+   讀數。**這是 §0 唯一的紅燈**，而兩個平台的頁面現在都已經在宣稱這件事，沒有任何
+   gate 涵蓋它。
+2. **60–90 秒影片**（§0 素材清單）。截圖夠了，影片還沒有。
+3. 審核通過、下載連結穩定之後才發社群文，見 `COMMUNITY.md`。
 
 ---
 
