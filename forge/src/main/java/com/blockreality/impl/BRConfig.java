@@ -48,11 +48,23 @@ public final class BRConfig {
 
         bucklingBlockLimit = b
                 .comment("Above this many structural blocks the linear-buckling screen is",
-                        "SKIPPED and the HUD says so; strength (D/C) always runs. The",
-                        "eigensolve is cubic — measured 8.55 s at 500 nodes and 72.8 s at",
-                        "1000 (~n^3.1), so 300 blocks lands near 2 s on that machine.",
-                        "0 means never compute buckling.")
-                .defineInRange("bucklingBlockLimit", 300, 0, 1_000_000);
+                        "SKIPPED and the HUD says so; strength (D/C) always runs.",
+                        "0 means never compute buckling.",
+                        "",
+                        "Measured cost of the screen itself, WSL/x86-64, shipped engine",
+                        "(sidecar/repro_buckling_cost.py). Three shapes at a similar",
+                        "block count, because the cost is not a function of blocks:",
+                        "  straight beam,  300 blocks,   18 dof  ->    1 ms",
+                        "  floor slab,     305 blocks, 1758 dof  ->   27 ms",
+                        "  portal frame,   504 blocks, 1212 dof  ->   82 ms",
+                        "and at the far end, where it does start to hurt:",
+                        "  floor slab,    1616 blocks, 9624 dof  ->  208 ms",
+                        "  portal frame,  1004 blocks, 2412 dof  -> 1005 ms",
+                        "  portal frame,  2004 blocks, 4812 dof  -> 10.4 s",
+                        "A frame costs ~24x a slab at the SAME dof: long chains of",
+                        "identical bays give the eigensolver clustered modes to separate.",
+                        "600 keeps a frame near 120 ms and a slab near 55 ms.")
+                .defineInRange("bucklingBlockLimit", 600, 0, 1_000_000);
 
         b.pop().push("demo");
 
