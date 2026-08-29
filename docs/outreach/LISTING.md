@@ -10,20 +10,30 @@
 
 ## 0 · 送審前必須為真的事
 
-- [ ] `Main` 上的 CI 綠（分支保護已把它設為 merge 必要條件）
-- [ ] `scripts/check_bundle.py` 通過：jar 內的引擎 == manifest == evidence == `dist/` 獨立檔
-- [ ] tag `v0.3c` 已推、release workflow 綠、Releases 頁上有 `blockreality-0.3c.zip`
-- [ ] 下載回來的 jar **實際安裝過一次**：丟進 `mods/`、開遊戲、放一根懸臂、看到讀數
-- [ ] `README.md` 的下載連結指向這一版（不是上一版）
-- [ ] 圖示 `forge/src/main/resources/blockreality_icon.png`（400×400）在 jar 裡，
+**狀態以 2026-08-29 v0.3c 為準。** 勾起來的是已驗過的，沒勾的是**還缺**，不是「大概好了」。
+
+- [x] `Main` 上的 CI 綠（分支保護已把它設為 merge 必要條件）
+- [x] `scripts/check_bundle.py` 通過：jar 內的引擎 == manifest == evidence == `dist/` 獨立檔
+- [x] `scripts/check_docs.py` 通過：34 處引用數字對得上實測（282 / 215 / 41 / 28）
+- [x] tag `v0.3c` 已推、release workflow 綠、Releases 頁上有 `blockreality-0.3c.zip`
+- [x] `README.md` 的下載連結指向這一版（中英各兩處，共七處版本字串）
+- [x] 圖示 `forge/src/main/resources/blockreality_icon.png`（400×400）在 jar 裡，
       `mods.toml` 的 `logoFile` 指得到它
+- [ ] 🔴 **下載回來的 jar 實際安裝過一次**：丟進 `mods/`、開遊戲、放一根懸臂、看到讀數。
+      **這條只有你能做，而且是唯一的硬阻擋**——所有自動化 gate 驗的是位元與數值，
+      沒有一條驗過「Forge 真的載入它、玩家真的看到讀數」
 
 素材（一次做齊，兩個平台共用）：
 
-- [ ] **圖示** 400×400 PNG —— 已有，`scripts/make_icon.py` 產生，可重跑
-- [ ] **截圖 5 張** —— 利用率鏡頭全景、斷面 HUD 特寫、挫屈警告、剪力牆、`/br members` 文字輸出
+- [x] **圖示** 400×400 PNG —— `scripts/make_icon.py` 產生，可重跑，非 AI 圖
+- [ ] **截圖 5 張** —— 目前 `docs/images/` 只有 2 張（`utilisation-lens.jpg`、
+      `section-view.jpg`）。還缺：挫屈警告、剪力牆、`/br members` 文字輸出
 - [ ] **GIF 1–2 個**（<10 MB）—— 放樑 → 加載 → 變紅；細長柱挫屈
 - [ ] **60–90 秒影片** —— 仍是最大缺件
+
+> 兩個平台都**允許先建專案、上傳檔案、把描述填好而不發布**（CurseForge 存草稿等審核；
+> Modrinth 專案預設是 draft，要按 Submit for review 才進佇列）。所以截圖與影片不擋你
+> 今天就把文字與檔案就位——但**在真的按下發布之前，上面那條紅的要先做掉**。
 
 ---
 
@@ -271,6 +281,45 @@ Modrinth 對「內含原生執行檔」同樣要透明；第 1 節那段照貼�
 >
 > Verification: 282 engine checks, 215 Java tests (179 pure-Java, 36 Forge-side), worst
 > closed-form relative error 1.216e-14, cross-platform determinism 8/8.
+
+---
+
+## 4.5 · 貼上目標檔（不必從這份文件裡挑）
+
+這份是參考文件，中英夾雜、有表格有註解。真正要貼進網頁表單的兩段文字另外放，
+可以整檔全選複製：
+
+| 檔案 | 貼到哪 |
+|---|---|
+| `docs/outreach/paste/description.md` | CurseForge 的 Description、Modrinth 的 Body（同一份，兩邊都吃 Markdown） |
+| `docs/outreach/paste/release-notes-0.3c.md` | 兩邊的 version changelog |
+
+檔頭的 HTML 註解不會顯示，但要不要刪隨你。**改動請先改本檔再同步過去**，別讓兩份漂開。
+
+---
+
+## 4.6 · 只有你能做的事（我做不到的部分，照實說）
+
+下面五件事需要帳號、需要憑證、或需要真的在遊戲裡看一眼。**建立帳號與輸入密碼我不會代做**，
+上傳與按下送審也需要你自己決定，這裡把每一步寫清楚，讓你照著做就好。
+
+1. **先在遊戲裡裝一次。** 把 Releases 頁的 `blockreality-0.3c.zip` 下載回來（或直接用
+   `dist/blockreality-0.3c.jar`），丟進 `mods/`，開 1.20.1 Forge 47.x，放一根懸臂，
+   看到 D/C 讀數。**這是 §0 唯一的紅燈**——沒有任何自動化 gate 涵蓋它。
+2. **CurseForge**：登入 → Create Project → 選 Minecraft → Mods。依 §2 的表填欄位，
+   Description 貼 `paste/description.md`。上傳 `blockreality-0.3c.jar`，Release type 選
+   **Beta**，Game Version 1.20.1，Modloader Forge，changelog 貼
+   `paste/release-notes-0.3c.md`。**預期會轉人工審核**（jar 內含 `.exe`），
+   §1.1 的回信範本備著。
+3. **Modrinth**：登入 → Create a project。slug `block-reality`，依 §3 的表填。
+   Body 貼同一份 `paste/description.md`。上傳同一顆 jar，Release channel **Beta**。
+   Modrinth 專案預設 draft，填完要按 **Submit for review**。
+4. **截圖與影片**（§0 素材清單）——要進遊戲拍，我拍不了。
+5. **Website 欄位**填你的站台網址；沒有就留空，兩邊都不是必填。
+
+> 若之後想改成自動上傳（Gradle 的 `minotaur` 對 Modrinth、`CurseGradle` 對 CurseForge），
+> 兩者都要一組 API token。**token 請你自己產生並存進 GitHub Secrets，不要貼進對話。**
+> 目前倉庫刻意沒有這條路徑：`.github/workflows/release.yml` 只發 GitHub Releases。
 
 ---
 
