@@ -20,6 +20,7 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -86,6 +87,18 @@ public final class StressResultPacket {
     /** Solved totals BEFORE truncation, so the HUD can say what it is not showing (#42). */
     private final int totalMembers;
     private final int totalShells;
+    /**
+     * Tracked blocks the SERVER could not read, that were touching what it did send.
+     *
+     * <p>Zero is a fact, not an absence: the gather ran and the model was whole. Nonzero
+     * means the engine answered about a structure with a piece missing — the answer is
+     * not wrong so much as about a different building (#74, N14-b).
+     */
+    private final int truncatedBlocks;
+    /** Ids of members whose input was cut; their verdict and colour are withheld (N14-c). */
+    private final Set<Integer> withheldMembers;
+    /** Ids of shell facets whose input was cut. */
+    private final Set<Integer> withheldShells;
     private final List<MemberSnapshot> members;
     private final List<ShellSnapshot> shells;
 
@@ -96,6 +109,8 @@ public final class StressResultPacket {
                                double bucklingFactor, boolean bucklingCritical,
                                boolean bucklingSkipped,
                                int totalMembers, int totalShells,
+                               int truncatedBlocks,
+                               Set<Integer> withheldMembers, Set<Integer> withheldShells,
                                List<MemberSnapshot> members, List<ShellSnapshot> shells) {
         this.valid = valid;
         this.invalidReason = invalidReason;
@@ -114,16 +129,25 @@ public final class StressResultPacket {
         this.bucklingSkipped = bucklingSkipped;
         this.totalMembers = totalMembers;
         this.totalShells = totalShells;
+        this.truncatedBlocks = Math.max(0, truncatedBlocks);
+        this.withheldMembers = withheldMembers == null ? Set.of() : Set.copyOf(withheldMembers);
+        this.withheldShells = withheldShells == null ? Set.of() : Set.copyOf(withheldShells);
         this.members = members;
         this.shells = shells;
     }
 
     private static StressResultPacket invalid(String reason) {
         return new StressResultPacket(false, reason, 0, "", false, 0, false, 0, 0, 0, false,
-                false, 0, 0, List.of(), List.of());
+                false, 0, 0, 0, Set.of(), Set.of(), List.of(), List.of());
     }
 
     public static StressResultPacket of(AnalysisResult r, String dimension, boolean bucklingSkipped) {
+        return of(r, dimension, bucklingSkipped, Set.of(), Set.of(), 0);
+    }
+
+    public static StressResultPacket of(AnalysisResult r, String dimension, boolean bucklingSkipped,
+                                        Set<Integer> withheldMembers, Set<Integer> withheldShells,
+                                        int truncatedBlocks) {
         List<MemberSnapshot> m = keepGoverning(r.members(), MAX_MEMBERS,
                 "member".equals(r.governingKind()) ? r.governing() : Integer.MIN_VALUE,
                 MemberSnapshot::id, "members");
@@ -135,7 +159,8 @@ public final class StressResultPacket {
                 r.maxDc(), r.maxDc() > 1.0,
                 r.islands(), r.singularIslands(),
                 r.bucklingFactor(), r.bucklingCritical(), bucklingSkipped,
-                r.members().size(), r.shells().size(), m, s);
+                r.members().size(), r.shells().size(),
+                truncatedBlocks, withheldMembers, withheldShells, m, s);
     }
 
     /**
@@ -190,6 +215,14 @@ public final class StressResultPacket {
 
     public boolean bucklingSkipped() { return bucklingSkipped; }
 
+    /** Tracked blocks the server could not read that touched this request (#74, N14-b). */
+    public int truncatedBlocks() { return truncatedBlocks; }
+
+    /** Ids of members whose verdict is withheld because their input was cut (N14-c). */
+    public Set<Integer> withheldMembers() { return withheldMembers; }
+
+    public Set<Integer> withheldShells() { return withheldShells; }
+
     public int totalMembers() { return totalMembers; }
 
     public int totalShells() { return totalShells; }
@@ -219,6 +252,7 @@ public final class StressResultPacket {
         buf.writeFloat((float) p.bucklingFactor);
         buf.writeBoolean(p.bucklingCritical);
         buf.writeBoolean(p.bucklingSkipped);
+        buf.writeVarInt(p.truncatedBlocks);
         buf.writeVarInt(Math.max(0, p.totalMembers));
         buf.writeVarInt(Math.max(0, p.totalShells));
         buf.writeVarInt(Math.min(p.members.size(), MAX_MEMBERS));
@@ -246,6 +280,11 @@ public final class StressResultPacket {
                 buf.writeVarInt(b.z());
             }
 
+            // Carried per element rather than as a separate id list: a list can disagree
+            // with the elements beside it after a truncation to MAX_MEMBERS, and a flag
+            // that has drifted off its member is worse than no flag.
+            buf.writeBoolean(p.withheldMembers.contains(m.id()));
+
             boolean hasField = m.field().isPresent();
             buf.writeBoolean(hasField);
             if (hasField) writeField(buf, m.field().get());
@@ -272,6 +311,8 @@ public final class StressResultPacket {
                 buf.writeVarInt(b.y());
                 buf.writeVarInt(b.z());
             }
+
+            buf.writeBoolean(p.withheldShells.contains(s.id()));
 
             boolean hasField = s.field().isPresent() && s.field().get().isComplete();
             buf.writeBoolean(hasField);
@@ -391,10 +432,13 @@ public final class StressResultPacket {
         // The server only ever skips by not ASKING, and the engine answers 0 when not
         // asked — a nonzero factor beside the flag is a contradiction, not a schema.
         if (bucklingSkipped && bucklingFactor != 0) throw new Bad("bucklingSkipped with a nonzero factor");
+        int truncatedBlocks = count(buf.readVarInt(), Integer.MAX_VALUE, "truncatedBlocks");
         int totalMembers = count(buf.readVarInt(), Integer.MAX_VALUE, "totalMembers");
         int totalShells = count(buf.readVarInt(), Integer.MAX_VALUE, "totalShells");
         int nMembers = count(buf.readVarInt(), MAX_MEMBERS, "members");
 
+        Set<Integer> withheldMembers = new java.util.LinkedHashSet<>();
+        Set<Integer> withheldShells = new java.util.LinkedHashSet<>();
         List<MemberSnapshot> members = new ArrayList<>(nMembers);
         for (int i = 0; i < nMembers; i++) {
             int id = buf.readVarInt();
@@ -419,6 +463,8 @@ public final class StressResultPacket {
             for (int k = 0; k < nb; k++) {
                 blocks.add(new BlockKey(buf.readVarInt(), buf.readVarInt(), buf.readVarInt()));
             }
+
+            if (buf.readBoolean()) withheldMembers.add(id);
 
             Optional<StressFieldSpec> field = buf.readBoolean()
                     ? Optional.of(readField(buf)) : Optional.empty();
@@ -460,9 +506,19 @@ public final class StressResultPacket {
                 blocks.add(new BlockKey(buf.readVarInt(), buf.readVarInt(), buf.readVarInt()));
             }
 
+            if (buf.readBoolean()) withheldShells.add(id);
+
             Optional<ShellFieldSpec> field = buf.readBoolean()
                     ? Optional.of(readShellField(buf, t)) : Optional.empty();
             shells.add(new ShellSnapshot(id, "", plate, t, dc, dcRaw, top, recovered, blocks, field));
+        }
+
+        // Nothing was left out, yet something claims its input was cut. The server sets
+        // both from one computation, so this cannot happen honestly — and a withheld
+        // flag with no reason behind it would grey out a member the player could not
+        // find an explanation for. Same posture as the buckling contradiction above.
+        if (truncatedBlocks == 0 && !(withheldMembers.isEmpty() && withheldShells.isEmpty())) {
+            throw new Bad("elements withheld with no truncated blocks");
         }
 
         if (buf.readableBytes() > 0) {
@@ -475,7 +531,8 @@ public final class StressResultPacket {
         return new StressResultPacket(true, "", revision, dimension, singular,
                 maxDc, overCapacity, islands, singularIslands,
                 bucklingFactor, bucklingCritical, bucklingSkipped,
-                totalMembers, totalShells, members, shells);
+                totalMembers, totalShells,
+                truncatedBlocks, withheldMembers, withheldShells, members, shells);
     }
 
     /** The regenerated station closest to the wire's governing position; -1 if none. */

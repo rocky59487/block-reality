@@ -346,6 +346,13 @@ class StressResultPacketTest {
     void aHostileMemberCountRejectsThePacket() {
         // Declared count past the cap: the old clamp read 64 and left the rest of the
         // frame to be misparsed as the shell section (#39). Rejection, not misparse.
+        //
+        // Every field is labelled because this frame is written by hand, and it was
+        // ALREADY misaligned before N14 added a field: bucklingSkipped was missing, the
+        // two bytes of varInt(1000) were read as that boolean plus totalMembers, and the
+        // test still passed because the misparse happened to land on the count check it
+        // was asserting. It only surfaced when one more field shifted the wreckage past
+        // that check. A hand-written frame has to be spelled out or it tests nothing.
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         buf.writeVarLong(9);
         buf.writeUtf(DIM, 256);
@@ -354,10 +361,12 @@ class StressResultPacketTest {
         buf.writeBoolean(false);
         buf.writeVarInt(1);
         buf.writeVarInt(0);
-        buf.writeFloat(0f);
-        buf.writeBoolean(false);
-        buf.writeVarInt(1000);
-        buf.writeVarInt(0);
+        buf.writeFloat(0f);    // bucklingFactor
+        buf.writeBoolean(false);  // bucklingCritical
+        buf.writeBoolean(false);  // bucklingSkipped
+        buf.writeVarInt(0);    // truncatedBlocks
+        buf.writeVarInt(1000); // totalMembers
+        buf.writeVarInt(0);    // totalShells
         buf.writeVarInt(65);   // one past MAX_MEMBERS
 
         StressResultPacket out = StressResultPacket.decode(buf);
@@ -392,5 +401,63 @@ class StressResultPacketTest {
         assertEquals(1, out.singularIslands());
         assertTrue(out.members().isEmpty());
         assertTrue(out.shells().isEmpty());
+    }
+
+    // ------------------------------------------------------------- N14, model completeness
+
+    @Test
+    void withheldElementsAndTheirReasonSurviveTheWire() {
+        // The server left two blocks out because their chunk was not loaded, and ruled
+        // that member 1 stands against that boundary. Both facts have to arrive: the
+        // count is what the HUD says, the id is what stops the colour (N14-b/c).
+        AnalysisResult r = result(List.of(member(1, 0.4, 5), member(2, 0.2, 5)),
+                List.of(shell(7, 0.3)), 0.4, 1, "member", 0.0);
+        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false,
+                java.util.Set.of(1), java.util.Set.of(7), 2));
+        assertTrue(out.valid(), out.invalidReason());
+        assertEquals(2, out.truncatedBlocks());
+        assertEquals(java.util.Set.of(1), out.withheldMembers());
+        assertEquals(java.util.Set.of(7), out.withheldShells());
+    }
+
+    @Test
+    void aWholeModelSendsNoWithholdingAtAll() {
+        // N14-e: nothing skipped must be indistinguishable from the previous release.
+        AnalysisResult r = result(List.of(member(1, 0.4, 5)), List.of(shell(7, 0.3)), 0.4, 1, "member", 0.0);
+        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
+        assertEquals(0, out.truncatedBlocks());
+        assertTrue(out.withheldMembers().isEmpty());
+        assertTrue(out.withheldShells().isEmpty());
+    }
+
+    @Test
+    void withholdingWithoutATruncatedBlockIsRejected() {
+        // A greyed-out member the player can find no reason for is worse than none.
+        // The server sets both from one computation, so the pair cannot disagree
+        // honestly — same posture as the buckling contradiction.
+        AnalysisResult r = result(List.of(member(1, 0.4, 5)), List.of(), 0.4, 1, "member", 0.0);
+        StressResultPacket in = StressResultPacket.of(r, DIM, false,
+                java.util.Set.of(1), java.util.Set.of(), 0);
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+        StressResultPacket.encode(in, buf);
+        StressResultPacket out = StressResultPacket.decode(buf);
+        assertFalse(out.valid());
+        assertTrue(out.invalidReason().contains("withheld"), out.invalidReason());
+    }
+
+    @Test
+    void theWithheldFlagFollowsItsMemberThroughOverlayTruncation() {
+        // The flag rides on the element rather than in a separate id list precisely so
+        // that dropping elements at MAX_MEMBERS cannot leave it pointing at the wrong
+        // one. Withhold a member that survives the cut and one that does not.
+        List<MemberSnapshot> many = new java.util.ArrayList<>();
+        for (int i = 0; i < 80; i++) many.add(member(i, 0.1 + i * 0.001, 5));
+        AnalysisResult r = result(many, List.of(), 0.179, 2, "member", 0.0);
+        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false,
+                java.util.Set.of(2, 70), java.util.Set.of(), 1));
+        assertTrue(out.valid(), out.invalidReason());
+        // 70 was dropped with the overlay truncation; 2 survived and keeps its flag
+        assertEquals(java.util.Set.of(2), out.withheldMembers());
+        assertTrue(out.members().stream().anyMatch(m -> m.id() == 2));
     }
 }

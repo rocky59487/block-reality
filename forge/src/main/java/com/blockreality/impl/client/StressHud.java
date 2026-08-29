@@ -143,6 +143,15 @@ public final class StressHud {
                     x, y, 0xC8A24A);
             y += 11;
         }
+        // Part of what the server tracks was in a chunk it could not read, and the pieces
+        // standing against that boundary were left uncoloured. Saying so is the whole
+        // point of #74: the previous behaviour was a confident number about a structure
+        // the engine had only seen part of.
+        if (ClientStressState.truncatedBlocks() > 0) {
+            g.drawString(mc.font, Component.translatable("br.hud.model_incomplete",
+                    ClientStressState.truncatedBlocks()), x, y, 0xC8A24A);
+            y += 11;
+        }
         // Without this the contour is only ordinal. With it, a colour can be read as MPa.
         g.drawString(mc.font, Component.translatable("br.hud.scale",
                 String.format(Locale.ROOT, "%.2f", ClientStressState.colourScaleMpa())),
@@ -211,11 +220,20 @@ public final class StressHud {
                 x, y, 0x9FE8FF);
         y += 11;
 
-        g.drawString(mc.font, Component.translatable("br.hud.focus_dc",
-                String.format(Locale.ROOT, "%.3f", m.dc()),
-                Component.translatable("br.fibre." + m.governingFibre().name().toLowerCase(Locale.ROOT))),
-                x, y, m.isOverloaded() ? 0xFF6B6B : 0xFFFFFF);
-        y += 11;
+        if (ClientStressState.withheld(m)) {
+            // The number exists, and it is about a structure with a piece missing. Showing
+            // it greyed would still be showing it, and a player reads a greyed number as a
+            // number. So the reason goes here instead of the ratio (N14-c).
+            g.drawString(mc.font, Component.translatable("br.hud.focus_withheld"),
+                    x, y, 0xC8A24A);
+            y += 11;
+        } else {
+            g.drawString(mc.font, Component.translatable("br.hud.focus_dc",
+                    String.format(Locale.ROOT, "%.3f", m.dc()),
+                    Component.translatable("br.fibre." + m.governingFibre().name().toLowerCase(Locale.ROOT))),
+                    x, y, m.isOverloaded() ? 0xFF6B6B : 0xFFFFFF);
+            y += 11;
+        }
 
         Optional<StressStation> st = ClientStressState.focusedStation();
         Optional<SectionDiagram> sd = ClientStressState.focusedSection();

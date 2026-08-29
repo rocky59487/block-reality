@@ -51,6 +51,11 @@ public final class ClientStressState {
     private static boolean overCapacity;
     private static boolean bucklingCriticalFlag;
     private static boolean bucklingSkippedFlag;
+    /** Tracked blocks the server could not read that touched this request (#74, N14). */
+    private static int truncatedBlocks;
+    /** Ids whose verdict the server withheld because their input was cut (N14-c). */
+    private static java.util.Set<Integer> withheldMembers = java.util.Set.of();
+    private static java.util.Set<Integer> withheldShells = java.util.Set.of();
     private static List<MemberSnapshot> members = List.of();
     private static List<ShellSnapshot> shells = List.of();
     private static List<BlockKey> plateBlocks = List.of();
@@ -93,6 +98,13 @@ public final class ClientStressState {
 
     /** The server skipped the buckling screen for size; the HUD must say so. */
     public static boolean bucklingSkipped() { return bucklingSkippedFlag; }
+
+    public static int truncatedBlocks() { return truncatedBlocks; }
+
+    /** True when this member's structure ran into a chunk nobody could read (N14-c). */
+    public static boolean withheld(MemberSnapshot m) { return withheldMembers.contains(m.id()); }
+
+    public static boolean withheldShell(ShellSnapshot s) { return withheldShells.contains(s.id()); }
 
     /** Whether max D/C exceeds 1 — the server's double-precision verdict (#55). */
     public static boolean overCapacity() { return overCapacity; }
@@ -208,6 +220,9 @@ public final class ClientStressState {
         bucklingFactor = p.bucklingFactor();
         bucklingCriticalFlag = p.bucklingCritical();
         bucklingSkippedFlag = p.bucklingSkipped();
+        truncatedBlocks = p.truncatedBlocks();
+        withheldMembers = p.withheldMembers();
+        withheldShells = p.withheldShells();
         totalMembers = p.totalMembers();
         totalShells = p.totalShells();
         members = p.members();
@@ -240,6 +255,9 @@ public final class ClientStressState {
         overCapacity = false;
         bucklingCriticalFlag = false;
         bucklingSkippedFlag = false;
+        truncatedBlocks = 0;
+        withheldMembers = java.util.Set.of();
+        withheldShells = java.util.Set.of();
         islands = 0;
         singularIslands = 0;
         bucklingFactor = 0;
@@ -338,21 +356,27 @@ public final class ClientStressState {
         // Cross-member comparison is carried by the utilisation colour on the axis line;
         // the fibre ribbons only ever show one member at a time, so their job is to make
         // that member's internal distribution as legible as possible.
-        occupied = StressSurfaceRenderer.cellsOf(members, shells);
+        // Elements whose input was cut are drawn as plain blocks: no contour, no
+        // utilisation colour (N14-c). Colour here means "this is how close to failing it
+        // is", and that sentence is not available for a structure the engine only saw
+        // part of. They stay in `members` so the picker can still name them and say why.
+        List<MemberSnapshot> shown = members.stream().filter(m -> !withheld(m)).toList();
+        List<ShellSnapshot> shownShells = shells.stream().filter(s -> !withheldShell(s)).toList();
+        occupied = StressSurfaceRenderer.cellsOf(shown, shownShells);
 
         // One scale for beams AND plates. That is only defensible because both report the
         // same quantity: a beam's fibre stress and a plate's largest signed principal
         // stress are both tension-positive MPa on the material's surface. Two scales would
         // make a lightly loaded floor look exactly as alarming as an overstressed beam.
         double peak = 0;
-        for (MemberSnapshot m : members) {
+        for (MemberSnapshot m : shown) {
             if (m.field().isPresent()) peak = Math.max(peak, m.field().get().peakMagnitudeMpa(21));
         }
-        peak = Math.max(peak, ShellMesh.peakMpa(shells));
+        peak = Math.max(peak, ShellMesh.peakMpa(shownShells));
         colourScaleMpa = peak > 0 ? peak : 1;
 
-        List<StressRibbon> out = new java.util.ArrayList<>(members.size());
-        for (MemberSnapshot m : members) {
+        List<StressRibbon> out = new java.util.ArrayList<>(shown.size());
+        for (MemberSnapshot m : shown) {
             out.add(StressRibbonBuilder.build(m, palette, StressRibbonBuilder.memberPeak(m)));
         }
         ribbons = List.copyOf(out);

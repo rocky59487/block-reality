@@ -64,5 +64,7 @@
   "block.blockreality.steel_plate": "Steel Plate 20",
   "br.load.not_structural": "Aim at a structural block. /br load applies a test load where you look.",
   "br.hud.buckling_skipped": "buckling not evaluated (structure size)",
+  "br.hud.model_incomplete": "%s block(s) outside the loaded area — parts of this structure are not judged",
+  "br.hud.focus_withheld": "not judged: this member runs into unloaded chunks",
   "br.engine.platform": "No bundled engine for this platform (%s) — analysis is off. You can build br-sidecar from source and point sidecarPath at it."
 }
