@@ -314,12 +314,25 @@ Modrinth 對「內含原生執行檔」同樣要透明；第 1 節那段照貼�
 3. **Modrinth**：登入 → Create a project。slug `block-reality`，依 §3 的表填。
    Body 貼同一份 `paste/description.md`。上傳同一顆 jar，Release channel **Beta**。
    Modrinth 專案預設 draft，填完要按 **Submit for review**。
-4. **截圖與影片**（§0 素材清單）——要進遊戲拍，我拍不了。
-5. **Website 欄位**填你的站台網址；沒有就留空，兩邊都不是必填。
 
-> 若之後想改成自動上傳（Gradle 的 `minotaur` 對 Modrinth、`CurseGradle` 對 CurseForge），
-> 兩者都要一組 API token。**token 請你自己產生並存進 GitHub Secrets，不要貼進對話。**
-> 目前倉庫刻意沒有這條路徑：`.github/workflows/release.yml` 只發 GitHub Releases。
+   **或者用腳本做掉前面全部**——Modrinth 的 API 開得夠完整，建專案、上傳版本、上傳
+   圖庫都能打：
+
+   ```bash
+   python3 scripts/publish_modrinth.py --dry-run --site ../block-reality-site   # 先看要送什麼
+   MODRINTH_TOKEN=... python3 scripts/publish_modrinth.py --site ../block-reality-site
+   ```
+
+   token 在 <https://modrinth.com/settings/pats> 產生，勾 `CREATE_PROJECT`、
+   `WRITE_PROJECT`、`CREATE_VERSION`、`WRITE_VERSION`。腳本從 env 或 `--token-file` 讀，
+   不印出來也不寫檔。它**做到 draft 就停**——按下 Submit for review 是人的決定。
+4. **截圖與影片**（§0 素材清單）——要進遊戲拍，我拍不了。站台的 `img/` 已經有 8 張可用，
+   上面那支腳本會直接把它們送成 Modrinth 圖庫；CurseForge 要手動上傳同一批。
+5. **Website 欄位**填 `https://rocky59487.github.io/block-reality-site/`。
+
+> CurseForge 沒有對應的路：**建專案只能從網頁**，它的 upload API 要已經存在的
+> project id。所以 CurseForge 那邊第 2 步無論如何要你自己開一次；開完之後檔案上傳
+> 可以自動化。**token 一律自己產生、存 GitHub Secrets 或本機檔案，不要貼進對話。**
 
 ---
 
