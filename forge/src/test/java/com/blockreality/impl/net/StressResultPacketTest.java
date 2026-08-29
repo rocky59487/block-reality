@@ -460,4 +460,18 @@ class StressResultPacketTest {
         assertEquals(java.util.Set.of(2), out.withheldMembers());
         assertTrue(out.members().stream().anyMatch(m -> m.id() == 2));
     }
+
+    @Test
+    void theMaterialTokenSurvivesTheWire() {
+        // It did not. The decoder built every snapshot with "" for material, so the
+        // client could not tell steel from timber and the material lens — a lens the
+        // listing advertises — rendered as the stress lens. Same shape as the endForces
+        // trap this class already carries a comment about.
+        AnalysisResult r = result(List.of(member(1, 0.4, 5)), List.of(shell(7, 0.3)),
+                0.4, 1, "member", 0.0);
+        StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
+        assertTrue(out.valid(), out.invalidReason());
+        assertEquals("steel", out.members().get(0).material());
+        assertEquals("concrete", out.shells().get(0).material());
+    }
 }

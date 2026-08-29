@@ -132,6 +132,44 @@ public enum StressPalette {
                 new LegendStop("br.legend.stress.tension", 1.0, tension, Hatch.DIAGONAL_UP));
     }
 
+    // ---------------------------------------------------------------- material
+    // The third lens. It answers a different question from the other two — not "how hard
+    // is this working" but "what is it made of" — so it deliberately shares nothing with
+    // the stress ramp: flat, unshaded, one colour per material, no magnitude at all.
+    // Reading a saturation here would be reading a quantity that is not being shown.
+    private static final Rgb MAT_STEEL = Rgb.hex(0x5B7C99);
+    private static final Rgb MAT_CONCRETE = Rgb.hex(0x9C9A93);
+    private static final Rgb MAT_TIMBER = Rgb.hex(0xA9773F);
+    private static final Rgb MAT_BRICK = Rgb.hex(0x9E4B34);
+    private static final Rgb MAT_UNKNOWN = Rgb.hex(0x6E6E6E);
+
+    /**
+     * Colour for a material token, as the engine spells it.
+     *
+     * <p>An unrecognised token gets its own neutral grey rather than borrowing another
+     * material's colour: a token this build has never heard of is a fact worth seeing,
+     * and painting it as concrete would hide exactly the case a reader needs to catch.
+     */
+    public static Rgb material(String token) {
+        if (token == null) return MAT_UNKNOWN;
+        switch (token) {
+            case "steel": return MAT_STEEL;
+            case "concrete": return MAT_CONCRETE;
+            case "timber": return MAT_TIMBER;
+            case "brick": return MAT_BRICK;
+            default: return MAT_UNKNOWN;
+        }
+    }
+
+    /** Legend stops for the material lens, in the order the creative tab lists them. */
+    public static List<LegendStop> materialLegend() {
+        return List.of(
+                new LegendStop("br.legend.material.steel", 0, MAT_STEEL, Hatch.NONE),
+                new LegendStop("br.legend.material.concrete", 1, MAT_CONCRETE, Hatch.NONE),
+                new LegendStop("br.legend.material.timber", 2, MAT_TIMBER, Hatch.NONE),
+                new LegendStop("br.legend.material.brick", 3, MAT_BRICK, Hatch.NONE));
+    }
+
     /** One entry in a legend. */
     public record LegendStop(String translationKey, double value, Rgb colour, Hatch hatch) { }
 

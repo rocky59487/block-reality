@@ -14,7 +14,7 @@
 
 - [x] `Main` 上的 CI 綠（分支保護已把它設為 merge 必要條件）
 - [x] `scripts/check_bundle.py` 通過：jar 內的引擎 == manifest == evidence == `dist/` 獨立檔
-- [x] `scripts/check_docs.py` 通過：34 處引用數字對得上實測（282 / 232 / 41 / 28）
+- [x] `scripts/check_docs.py` 通過：34 處引用數字對得上實測（282 / 245 / 41 / 28）
 - [x] tag `v0.3c` 已推、release workflow 綠、Releases 頁上有 `blockreality-0.3c.zip`
 - [x] `README.md` 的下載連結指向這一版（中英各兩處，共七處版本字串）
 - [x] 圖示 `forge/src/main/resources/blockreality_icon.png`（400×400）在 jar 裡，
@@ -279,7 +279,7 @@ Modrinth 對「內含原生執行檔」同樣要透明；第 1 節那段照貼�
 > longer drop a player's test load; and an over-long dimension id can no longer throw
 > while a result is being broadcast.
 >
-> Verification: 282 engine checks, 232 Java tests (192 pure-Java, 40 Forge-side), worst
+> Verification: 282 engine checks, 245 Java tests (204 pure-Java, 41 Forge-side), worst
 > closed-form relative error 1.216e-14, cross-platform determinism 8/8.
 
 ---

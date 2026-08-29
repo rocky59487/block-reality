@@ -38,7 +38,9 @@ public final class BRNetwork {
 
     /** Bumped when the packet layout changes; 2 = classification flags + dimension. */
     // "3": StressResultPacket gained bucklingSkipped (v0.4 mod-side round 1)
-    // "4": ...and truncatedBlocks plus a per-element withheld flag (N14, #74)
+    // "4": ...and truncatedBlocks plus a per-element withheld flag (N14, #74),
+    //      and the material token, which the decoder used to drop on the floor.
+    //      One number for both: v0.3c shipped "3", so nothing released speaks "4" yet.
     private static final String PROTOCOL = "4";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(

@@ -8,8 +8,10 @@ import com.blockreality.api.geom.BlockKey;
 import com.blockreality.api.geom.Vec3d;
 import com.blockreality.api.render.Rgb;
 import com.blockreality.api.render.StressPalette;
+import com.blockreality.core.render.DrawableCells;
 import com.blockreality.core.render.ShellMesh;
 import com.blockreality.impl.BRContent;
+import com.blockreality.impl.block.StructuralBlock;
 import com.blockreality.impl.BlockRealityMod;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -19,6 +21,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -29,7 +32,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.joml.Matrix4f;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -92,16 +94,31 @@ public final class StressSurfaceRenderer {
         if (player == null || !holdingGlasses(player)) return;
         if (!ClientStressState.hasData()) return;
 
-        List<MemberSnapshot> members = ClientStressState.members();
+        if (mc.level == null) return;
+        // The SHOWN lists: an element whose input was cut keeps its place in the HUD and
+        // the picker, but nothing gives it a colour (N14-c).
+        List<MemberSnapshot> members = ClientStressState.shownMembers();
         // Empty MEMBERS must not blank the pass: a pure-slab build has zero members
         // and every one of its stresses lives in the plate facets that drawPlates
         // renders below (FORGE-3). Only nothing-at-all means nothing to draw.
-        if (members.isEmpty() && ClientStressState.shells().isEmpty()) return;
+        if (members.isEmpty() && ClientStressState.shownShells().isEmpty()) return;
 
-        // Which cells are occupied, so shared faces can be skipped. Built from every
-        // member, not just the one being drawn: two members meeting at a joint hide each
-        // other's end faces exactly as the blocks do.
-        Set<Long> occupied = ClientStressState.occupiedCells();
+        // Which cells may be painted, and which faces are interior. Recomputed against
+        // the WORLD every frame rather than taken from the packet, because the packet is
+        // a picture of the world as it was when the request was gathered. Mining a block
+        // used to leave its coloured shell hanging in the air until the next solve came
+        // back — the tick throttle plus the solve plus the round trip. The client does
+        // not need to be told where the blocks are; it is standing in them. Stress waits
+        // for the server, presence does not.
+        //
+        // The cost is one palette lookup per block of the answer, per frame, and only
+        // while the glasses are held: tens of nanoseconds each, so a few hundred blocks
+        // is microseconds and a structure at the packet cap is still under a millisecond.
+        // A block in a chunk the CLIENT has not got reads as air and is simply not drawn,
+        // which is right — nothing is rendered there either. Nothing here loads a chunk.
+        Set<Long> occupied = DrawableCells.of(members, ClientStressState.shownShells(),
+                b -> mc.level.getBlockState(new BlockPos(b.x(), b.y(), b.z()))
+                        .getBlock() instanceof StructuralBlock);
 
         Vec3 cam = event.getCamera().getPosition();
         PoseStack pose = event.getPoseStack();
@@ -137,13 +154,23 @@ public final class StressSurfaceRenderer {
             if (Math.abs(f.originMm().x() / 1000.0 - cam.x) > DRAW_DISTANCE
                     || Math.abs(f.originMm().z() / 1000.0 - cam.z) > DRAW_DISTANCE) continue;
 
-            // In the utilisation lens the whole member takes one colour, so the surface
-            // answers "which member is in trouble" instead of "what is happening inside
-            // this one". Both are contours; they map different quantities.
-            Rgb flat = mode == ScanMode.UTILIZATION ? StressPalette.utilization(member.dc()) : null;
+            // Two of the three lenses are FLAT: the whole member takes one colour, so the
+            // surface answers a question about the member rather than about a point on it.
+            // Utilisation asks which member is in trouble; material asks what it is made
+            // of. Only the stress lens varies per vertex, and it is the one that leaves
+            // `flat` null. MATERIAL used to fall through to null with STRESS, which meant
+            // the player could select a third lens that silently drew the second one.
+            Rgb flat = switch (mode) {
+                case UTILIZATION -> StressPalette.utilization(member.dc());
+                case MATERIAL -> StressPalette.material(member.material());
+                default -> null;
+            };
             float alpha = alpha(focus, member.id());
 
             for (BlockKey b : member.blocks()) {
+                // Gone from the world this frame: painting a stress on empty air is a
+                // claim about something that is not there.
+                if (!occupied.contains(DrawableCells.key(b))) continue;
                 drawBlock(buf, m, b, f, occupied, flat, scale, alpha);
             }
         }
@@ -184,11 +211,12 @@ public final class StressSurfaceRenderer {
      */
     private static void drawPlates(BufferBuilder buf, Matrix4f m, Vec3 cam,
                                    Set<Long> occupied, ScanMode mode, double scale, float alpha) {
-        List<ShellSnapshot> shells = ClientStressState.shells();
+        List<ShellSnapshot> shells = ClientStressState.shownShells();
         if (shells.isEmpty()) return;
 
         for (BlockKey b : ClientStressState.plateBlocks()) {
             if (Math.abs(b.x() - cam.x) > DRAW_DISTANCE || Math.abs(b.z() - cam.z) > DRAW_DISTANCE) continue;
+            if (!occupied.contains(DrawableCells.key(b))) continue;
 
             // One facet lookup per block, not per vertex: the block is a metre across and
             // the mesh is a metre wide, so every vertex of it resolves to the same facet.
@@ -197,7 +225,11 @@ public final class StressSurfaceRenderer {
                                                          b.z() * 1000.0 + 500));
             if (hit.isEmpty()) continue;
             ShellMesh.Hit h = hit.get();
-            Rgb flat = mode == ScanMode.UTILIZATION ? StressPalette.utilization(h.shell().dc()) : null;
+            Rgb flat = switch (mode) {
+                case UTILIZATION -> StressPalette.utilization(h.shell().dc());
+                case MATERIAL -> StressPalette.material(h.shell().material());
+                default -> null;
+            };
 
             for (int[] face : FACES) {
                 if (occupied.contains(key(b.x() + face[0], b.y() + face[1], b.z() + face[2]))) continue;
@@ -292,21 +324,9 @@ public final class StressSurfaceRenderer {
     }
 
     static long key(int x, int y, int z) {
-        return ((long) (x & 0x3FFFFFF) << 38) | ((long) (z & 0x3FFFFFF) << 12) | (y & 0xFFF);
+        return DrawableCells.key(x, y, z);
     }
 
-    static Set<Long> cellsOf(List<MemberSnapshot> members, List<ShellSnapshot> shells) {
-        Set<Long> set = new HashSet<>();
-        for (MemberSnapshot m : members) {
-            for (BlockKey b : m.blocks()) set.add(key(b.x(), b.y(), b.z()));
-        }
-        // Plate blocks occupy cells too. Without them the underside of a floor would be
-        // drawn where a beam is buried in it, and the two surfaces would fight.
-        for (ShellSnapshot s : shells) {
-            for (BlockKey b : s.blocks()) set.add(key(b.x(), b.y(), b.z()));
-        }
-        return set;
-    }
 
     private static boolean holdingGlasses(Player p) {
         return p.getMainHandItem().is(BRContent.STRESS_GLASSES.get())

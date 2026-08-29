@@ -59,6 +59,15 @@ public final class ClientStressState {
     private static List<MemberSnapshot> members = List.of();
     private static List<ShellSnapshot> shells = List.of();
     private static List<BlockKey> plateBlocks = List.of();
+    /**
+     * The subset the overlay may paint: everything whose verdict was not withheld.
+     *
+     * <p>Kept beside the full lists rather than replacing them. The HUD and the picker
+     * still need a withheld member — naming it and saying why is the point — but nothing
+     * may give it a colour, and the renderer reads these.
+     */
+    private static List<MemberSnapshot> shownMembers = List.of();
+    private static List<ShellSnapshot> shownShells = List.of();
     private static int islands;
     private static int singularIslands;
     private static double bucklingFactor;
@@ -82,6 +91,11 @@ public final class ClientStressState {
 
     /** Every block that belongs to a facet, deduplicated — a block can be in four. */
     public static List<BlockKey> plateBlocks() { return plateBlocks; }
+
+    /** Members the overlay may colour: the withheld ones are excluded (N14-c). */
+    public static List<MemberSnapshot> shownMembers() { return shownMembers; }
+
+    public static List<ShellSnapshot> shownShells() { return shownShells; }
 
     public static int islands() { return islands; }
 
@@ -266,8 +280,9 @@ public final class ClientStressState {
         members = List.of();
         shells = List.of();
         plateBlocks = List.of();
+        shownMembers = List.of();
+        shownShells = List.of();
         ribbons = List.of();
-        occupied = java.util.Set.of();
         colourScaleMpa = 1;
         engineStatus = "";
         engineDetail = "";
@@ -328,10 +343,8 @@ public final class ClientStressState {
 
     // Occupied cells and the colour scale are computed once per packet, not per frame:
     // a frame draws tens of thousands of vertices and must not also be rebuilding sets.
-    private static java.util.Set<Long> occupied = java.util.Set.of();
     private static double colourScaleMpa = 1;
 
-    public static java.util.Set<Long> occupiedCells() { return occupied; }
 
     /**
      * The stress that maps to full saturation, shared by every member so the contour is
@@ -341,14 +354,21 @@ public final class ClientStressState {
     public static double colourScaleMpa() { return colourScaleMpa; }
 
     private static void rebuild() {
+        // Elements whose input was cut are drawn as plain blocks: no contour, no
+        // utilisation colour (N14-c). Colour means "this is how close to failing it is",
+        // and that sentence is not available for a structure the engine only saw part of.
+        // They stay in `members` so the picker can still name them and say why — which is
+        // exactly why the split has to happen HERE, before plateBlocks is built from it.
+        shownMembers = members.stream().filter(m -> !withheld(m)).toList();
+        shownShells = shells.stream().filter(s -> !withheldShell(s)).toList();
+
         java.util.LinkedHashSet<BlockKey> plate = new java.util.LinkedHashSet<>();
-        for (ShellSnapshot s : shells) plate.addAll(s.blocks());
+        for (ShellSnapshot s : shownShells) plate.addAll(s.blocks());
         plateBlocks = List.copyOf(plate);
 
         if (members.isEmpty() && shells.isEmpty()) {
             ribbons = List.of();
-            occupied = java.util.Set.of();
-            colourScaleMpa = 1;
+                colourScaleMpa = 1;
             return;
         }
         // Each member is scaled to its OWN peak, which is the opposite of what a shared
@@ -356,27 +376,20 @@ public final class ClientStressState {
         // Cross-member comparison is carried by the utilisation colour on the axis line;
         // the fibre ribbons only ever show one member at a time, so their job is to make
         // that member's internal distribution as legible as possible.
-        // Elements whose input was cut are drawn as plain blocks: no contour, no
-        // utilisation colour (N14-c). Colour here means "this is how close to failing it
-        // is", and that sentence is not available for a structure the engine only saw
-        // part of. They stay in `members` so the picker can still name them and say why.
-        List<MemberSnapshot> shown = members.stream().filter(m -> !withheld(m)).toList();
-        List<ShellSnapshot> shownShells = shells.stream().filter(s -> !withheldShell(s)).toList();
-        occupied = StressSurfaceRenderer.cellsOf(shown, shownShells);
 
         // One scale for beams AND plates. That is only defensible because both report the
         // same quantity: a beam's fibre stress and a plate's largest signed principal
         // stress are both tension-positive MPa on the material's surface. Two scales would
         // make a lightly loaded floor look exactly as alarming as an overstressed beam.
         double peak = 0;
-        for (MemberSnapshot m : shown) {
+        for (MemberSnapshot m : shownMembers) {
             if (m.field().isPresent()) peak = Math.max(peak, m.field().get().peakMagnitudeMpa(21));
         }
         peak = Math.max(peak, ShellMesh.peakMpa(shownShells));
         colourScaleMpa = peak > 0 ? peak : 1;
 
-        List<StressRibbon> out = new java.util.ArrayList<>(shown.size());
-        for (MemberSnapshot m : shown) {
+        List<StressRibbon> out = new java.util.ArrayList<>(shownMembers.size());
+        for (MemberSnapshot m : shownMembers) {
             out.add(StressRibbonBuilder.build(m, palette, StressRibbonBuilder.memberPeak(m)));
         }
         ribbons = List.copyOf(out);

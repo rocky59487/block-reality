@@ -269,6 +269,10 @@ public final class StressResultPacket {
             // station list would not survive the trip; a position does (INV-5).
             buf.writeFloat((float) governingXmm(m));
             buf.writeUtf(clip(m.section(), TOKEN_MAX), TOKEN_MAX);
+            // The material lens needs this, and it used to be dropped: the decoder built
+            // every MemberSnapshot with "" for material, so the client could not tell
+            // steel from timber and the third lens quietly rendered as the second one.
+            buf.writeUtf(clip(m.material(), TOKEN_MAX), TOKEN_MAX);
 
             List<BlockKey> blocks = m.blocks();
             int nb = Math.min(blocks.size(), MAX_BLOCKS);
@@ -295,6 +299,7 @@ public final class StressResultPacket {
             ShellSnapshot s = p.shells.get(i);
             buf.writeVarInt(s.id());
             buf.writeUtf(clip(s.plate(), TOKEN_MAX), TOKEN_MAX);
+            buf.writeUtf(clip(s.material(), TOKEN_MAX), TOKEN_MAX);
             buf.writeFloat((float) s.thicknessMm());
             buf.writeFloat((float) s.dc());
             buf.writeBoolean(s.dc() > 1.0);
@@ -457,6 +462,7 @@ public final class StressResultPacket {
                 throw new Bad("governingXmm is not finite");
             }
             String section = buf.readUtf(48);
+            String material = buf.readUtf(48);
 
             int nb = count(buf.readVarInt(), MAX_BLOCKS, "member blocks");
             List<BlockKey> blocks = new ArrayList<>(nb);
@@ -480,7 +486,7 @@ public final class StressResultPacket {
             // nothing read them, which is exactly why it survived: a public record
             // component that silently becomes 0.0 after a network trip is a trap for the
             // next caller, not a saving. Found by the display-track pipeline gate.
-            members.add(new MemberSnapshot(id, "", section, field.map(StressFieldSpec::lengthMm).orElse(0.0),
+            members.add(new MemberSnapshot(id, material, section, field.map(StressFieldSpec::lengthMm).orElse(0.0),
                     dc, fibre, nearestStation(stations, governingXmm),
                     field.map(StressFieldSpec::endI).orElse(EndForces.ZERO),
                     field.map(StressFieldSpec::endJ).orElse(EndForces.ZERO),
@@ -492,6 +498,7 @@ public final class StressResultPacket {
         for (int i = 0; i < nShells; i++) {
             int id = buf.readVarInt();
             String plate = buf.readUtf(48);
+            String shellMaterial = buf.readUtf(48);
             double t = finite(buf.readFloat(), "thickness");
             double dc = finite(buf.readFloat(), "shell dc");
             boolean overloaded = buf.readBoolean();
@@ -510,7 +517,7 @@ public final class StressResultPacket {
 
             Optional<ShellFieldSpec> field = buf.readBoolean()
                     ? Optional.of(readShellField(buf, t)) : Optional.empty();
-            shells.add(new ShellSnapshot(id, "", plate, t, dc, dcRaw, top, recovered, blocks, field));
+            shells.add(new ShellSnapshot(id, shellMaterial, plate, t, dc, dcRaw, top, recovered, blocks, field));
         }
 
         // Nothing was left out, yet something claims its input was cut. The server sets
