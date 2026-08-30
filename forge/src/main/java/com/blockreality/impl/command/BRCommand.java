@@ -201,6 +201,25 @@ public final class BRCommand {
                             r.governingKind().isEmpty() ? "-" : r.governingKind() + " #" + r.governing(),
                             r.maxDc() > 1.0 ? "  OVER CAPACITY" : ""),
                     r.maxDc() > 1.0 ? ChatFormatting.RED : ChatFormatting.GREEN);
+            // The overlay greys out elements whose input was cut and says why. This
+            // line used to print their D/C anyway, so one member read "not judged" on
+            // screen and a number in chat. Whichever surface a player believes, one of
+            // them was lying to them (N14-c).
+            StructureManager mgr = managerFor(src);
+            if (mgr.truncatedBlocks() > 0) {
+                line(src, String.format(Locale.ROOT,
+                                "  model           INCOMPLETE — %d block(s) outside the loaded "
+                                + "area; %d element(s) have no verdict",
+                                mgr.truncatedBlocks(), mgr.withheldCount()),
+                        ChatFormatting.YELLOW);
+                boolean govWithheld = "member".equals(r.governingKind())
+                        ? mgr.isWithheld(r.governing())
+                        : "shell".equals(r.governingKind()) && mgr.isShellWithheld(r.governing());
+                if (govWithheld) {
+                    line(src, "  ...and the element the max D/C above came from is one of "
+                            + "them, so that number is not a verdict", ChatFormatting.YELLOW);
+                }
+            }
             line(src, String.format(Locale.ROOT, "  structures      %d solved, %d unrestrained",
                             r.islands(), r.singularIslands()),
                     r.singularIslands() > 0 ? ChatFormatting.YELLOW : ChatFormatting.GRAY);
@@ -273,7 +292,17 @@ public final class BRCommand {
         }
         line(src, "members  " + r.members().size()
                 + "     plate facets  " + r.shells().size(), ChatFormatting.AQUA);
+        StructureManager mgr = managerFor(src);
         for (MemberSnapshot m : r.members()) {
+            if (mgr.isWithheld(m.id())) {
+                // No D/C, no peak, no fibre. Printing them greyed out would still be
+                // printing them, and a number a reader can see is a number they will use.
+                line(src, String.format(Locale.ROOT,
+                                "  #%d  %s %s  L=%.0fmm  NOT JUDGED — runs into unloaded chunks",
+                                m.id(), m.material(), m.section(), m.lengthMm()),
+                        ChatFormatting.YELLOW);
+                continue;
+            }
             String gov = m.governingStation() >= 0 && m.governingStation() < m.stations().size()
                     ? String.format(Locale.ROOT, " at x=%.0fmm", m.stations().get(m.governingStation()).xMm())
                     : "";
@@ -287,6 +316,13 @@ public final class BRCommand {
         // recovery fired, and seeing both is the only way to tell a recovered demand from
         // a raw one without reading the source.
         for (com.blockreality.api.ShellSnapshot sh : r.shells()) {
+            if (mgr.isShellWithheld(sh.id())) {
+                line(src, String.format(Locale.ROOT,
+                                "  P%d  %s  t=%.0fmm  NOT JUDGED — runs into unloaded chunks",
+                                sh.id(), sh.plate(), sh.thicknessMm()),
+                        ChatFormatting.YELLOW);
+                continue;
+            }
             line(src, String.format(Locale.ROOT,
                             "  P%d  %s  t=%.0fmm  D/C=%.4f (raw %.4f%s)  %s face  peak %.2f MPa",
                             sh.id(), sh.plate(), sh.thicknessMm(), sh.dc(), sh.dcRaw(),
@@ -316,6 +352,19 @@ public final class BRCommand {
             return 0;
         }
         MemberSnapshot m = found.get();
+        if (managerFor(src).isWithheld(memberId)) {
+            // The whole point of withholding is that this member's stresses came from a
+            // model missing part of the structure. A per-station table of them is the
+            // most convincing way to show a number that should not be trusted.
+            line(src, String.format(Locale.ROOT,
+                            "member #%d  %s %s  L=%.0fmm", m.id(), m.material(),
+                            m.section(), m.lengthMm()),
+                    ChatFormatting.AQUA);
+            line(src, "  NOT JUDGED — this member stands against a block the server could "
+                    + "not read, so the model it was solved in is missing part of the "
+                    + "structure. Load the area and try again.", ChatFormatting.YELLOW);
+            return 0;
+        }
         line(src, String.format(Locale.ROOT, "member #%d  %s %s  L=%.0fmm  D/C=%.4f",
                 m.id(), m.material(), m.section(), m.lengthMm(), m.dc()), ChatFormatting.AQUA);
         line(src, "  tension is positive; a cantilever hogs (top tension), a beam on two "

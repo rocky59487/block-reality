@@ -98,6 +98,15 @@ public final class StructureManager {
     private boolean dirty;
     private int ticksSinceSolve;
     private AnalysisResult latest;
+    /**
+     * Ids whose verdict was withheld because their input was cut (N14-c).
+     *
+     * <p>Kept beside {@link #latest} rather than recomputed per reader: the overlay and
+     * the commands have to withhold the SAME elements, and two call sites deriving the
+     * same set independently is how they stop agreeing.
+     */
+    private Set<Integer> withheldMembers = Set.of();
+    private Set<Integer> withheldShells = Set.of();
 
     // ---- the in-progress gather; all main-thread ----
     private final GatherCycle<BlockPos> cycle = new GatherCycle<>();
@@ -249,6 +258,17 @@ public final class StructureManager {
     public RevisionGate gate() { return gate; }
 
     public AnalysisResult latest() { return latest; }
+
+    /** True when this member's structure ran into a chunk the gather could not read. */
+    public boolean isWithheld(int memberId) { return withheldMembers.contains(memberId); }
+
+    public boolean isShellWithheld(int shellId) { return withheldShells.contains(shellId); }
+
+    /** How many members and facets have no verdict this round. */
+    public int withheldCount() { return withheldMembers.size() + withheldShells.size(); }
+
+    /** Tracked blocks the gather could not read that touched what it did send. */
+    public int truncatedBlocks() { return truncationFace.size(); }
 
     public SidecarClient.Status engineStatus() { return sidecar.status(); }
 
@@ -659,6 +679,13 @@ public final class StructureManager {
 
         if (display == RevisionGate.Display.UNAVAILABLE) {
             latest = result;
+            // ...and the withholding goes with it. This path replaces `latest` without
+            // recomputing them, so leaving the old sets in place would leave ids from a
+            // previous answer marked against a result that has no members at all. Nothing
+            // reads them on this path today; that is a reason to keep it that way, not a
+            // reason to leave a stale set lying where the next reader will find it.
+            withheldMembers = Set.of();
+            withheldShells = Set.of();
             // When there is no engine AND the cause is the one thing a player cannot fix
             // — no bundled build for their platform — say THAT, in their language, not a
             // log line (v0.3b review §2-7). Every other diagnostic passes unchanged.
@@ -688,17 +715,22 @@ public final class StructureManager {
         }
 
         latest = result;
+        // Computed HERE and not at the two places that read it. The overlay withheld
+        // these elements and `/br section` printed their D/C anyway, so the same member
+        // read "not judged" on screen and "D/C = 0.83" in chat -- one number, two
+        // surfaces, two answers, which is the thing N14-c exists to prevent. Deriving
+        // them once beside `latest` is what stops the two from drifting again.
+        withheldMembers = Truncation.touching(truncationFace, result.members(),
+                MemberSnapshot::blocks, MemberSnapshot::id);
+        withheldShells = Truncation.touching(truncationFace, result.shells(),
+                ShellSnapshot::blocks, ShellSnapshot::id);
         boolean committed = gate.acceptForCommit(result);
         if (committed || display == RevisionGate.Display.MECHANISM) {
             // Elements standing against a block we could not read do not get a verdict
             // (N14-c). Everything else is shown exactly as before — an empty face makes
             // both sets empty and the packet identical to the one v0.3c sent (N14-e).
             BRNetwork.sendResult(level, result, lastBucklingSkipped,
-                    Truncation.touching(truncationFace, result.members(),
-                            MemberSnapshot::blocks, MemberSnapshot::id),
-                    Truncation.touching(truncationFace, result.shells(),
-                            ShellSnapshot::blocks, ShellSnapshot::id),
-                    truncationFace.size());
+                    withheldMembers, withheldShells, truncationFace.size());
             lastAnnouncedRevision = result.revision().value();
         }
     }
