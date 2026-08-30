@@ -364,7 +364,7 @@ JSON 與 shm 兩條 wire 同步改，協定版本號 bump，`verify.py` 的 shm 
 | T3 | **聚合抽取實作**（✅ `core/mc/monolith.h`） | 完成 |
 | T4 | **斷面引擎**（✅ `core/mc/torsion.h`、MC47/MC48） | 完成 |
 | T5 | **殼縫合**（✅ MC46/MC49；V1-FIX-1 FIX-E-2 另縫上 line×sheet 的 seam） | 完成 |
-| **T6** | **member 側面 ↔ shell 接合**（N15，#75）。tectonic 宣稱 FIX-E-2 已縫 line×sheet——**先驗證再相信**：拿 §0.1(b) 的三個 fixture 在 tectonic 上跑一遍，綠了才劃掉 | S（若已縫）／M |
+| **T6** | **member 側面 ↔ shell 接合**（N15，#75）。~~tectonic 宣稱 FIX-E-2 已縫 line×sheet——先驗證再相信~~ **驗證做完了（2026-08-30）**：br-sidecar 側走完整條接觸邊界，規律是「run 的端碰到板接得上，側面一律接不上」，而且缺的是**引擎能力**（無剛性連結／MPC／偏心），不是擷取器的疏漏。依 D-036 走引擎路線，需求已提 `tectonic2#13`。判準 N15-a..e 已凍，四紅一綠 | M（tectonic 側） |
 | **T7** | **挫屈細分策略**（N16，#65）：凍結後決定 run 何時切元素。與 T3 的分解共用一次裁決，不要各做各的 | M |
 
 T1–T5 五項在 tectonic tag `v1.2` 全閉（來源 #69 的自查，附 file:line）。
