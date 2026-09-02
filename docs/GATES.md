@@ -99,6 +99,17 @@
 | 2026-08-21 | dist/br-sidecar.exe | 無任何 gate:不比雜湊、不在 evidence、連存在與否都沒人檢查 | 端到端模擬:拿掉 .exe 後照 package.sh 重生 SHA256SUMS,四道 gate 全綠 | package.sh 缺 mingw 直接 `exit 1`（除非 `ALLOW_NO_WINDOWS=1`）;evidence 記 `identity.binary_windows`;ci.yml 與 release.yml 各比一次雜湊 | 下游:v0.1a／v0.2a 之前所有「跨平台出貨」宣稱只有 Linux 那顆有紀錄支撐 |
 | 2026-08-25 | 不變式 2 的適用範圍與 monolith 斷面語意（D-030,規劃輪裁決,**尚未實作**） | 一格 `concrete_rect_400x600` = 0.24 m² 宣告斷面（Z 0.024 m³）;`brick_rect_230x350` 同理 0.0805 m² | 產品裁決:monolith 一格 = 1 m³ 材料本身 → 混凝土 A 4.17×、Z 6.94×、每公尺自重 5,533 → 23,054 N（g=9.81 口徑）。二審（`V04_PLAN_REVIEW_2026-08-25` A）指出本表漏登——D-028 為更小的下游都登了 | 依鐵則 1 補登;實作落地於 v0.4（T3,tectonic 側） | 下游:**v0.1a–v0.3b 所有已發表的混凝土與磚 D/C、自重、挫屈值於 v0.4 落地時作廢**（倍數級,非精度級）。鋼、木、板 token 不受影響。v0.4 之前引用舊值必須註明「v0.3b 語意」 |
 | 2026-08-25 | D-028 的釘住分支（支承/荷載釘在中心的共線對接） | 「維持舊的吞噬規則,材料名排序在後者長出去」 | T1 之後兩引擎慣例分歧:v0.3b 實測兩側釘住給**連通**模型（4 members/1 island,timber 依名序吞 x3;鏡像後長度多重集不變）;tectonic 1d 凍結為「單側=被釘格中心當接點;兩側=接地殘樁不建接點」。B2 對數在此類 fixture 必紅,且**不是引擎缺陷** | **以裁決退役**（D-035）:統一採 tectonic 1d 三條;br-sidecar 依 D-034 不改碼;B2 把釘住共線對接列**記名排除**（清單 ≤ 3 類,超過重議） | 下游:v0.3b 釘住共線對接 fixture 的結果於**換裝時由引擎側慣例取代**;verify.py [J] 系列中釘住案的數值屬 v0.3b 語意,不得跨引擎引用。D-028 否證 (2) 的 1% 線**未觸發**（本次是 B2/D-034 驅動的重裁,照實記） |
+| 2026-09-02 | **N16-c**（挫屈細分「單調且保守」） | 「細分數增加時對 Greenhill 的誤差單調下降，且回報值**不得高於**精確解」 | 純 Python 重算（tectonic2 `gate/evidence/MC66/prefreeze_kg.txt`）：一致幾何剛度（沿桿線性 N，與元素同形函數）的 λ 是 Rayleigh-Ritz **上界**——Greenhill 單元素 **+0.66%**、2 元素 +0.25%、4 元素 +0.02%，全部**從上**收斂；「元素內取最大軸力」的 Kg 才給 −68/−47/−29/−16/−9%，逐項重現 FrameCore 序列。原線「不得高於精確解」與正解矛盾（線畫在數學天花板之上） | 改為「**有界且方向具名**：對**同理論**精確解的上界；EB 臂單元素對 Greenhill ≤ 1%、對 Euler 頂載 ≤ 1%（[暫]，tectonic 首跑釘）；細分**單調從上**收斂；Timoshenko 臂對 Engesser 各自具名」（D-040） | 下游降級：所有「λ_cr 偏保守 / 上界」敘述**撤回**；`[C12]` 的單元素課本值（1.6e-05 容差）於 v0.4 作廢，改閉合式 1%；N16-a 由「載重不切段」達成而非細分 |
+| 2026-09-02 | **N18**（挫屈狀態四態） | `computed / no-positive-eigenvalue / not-eligible / disabled-by-request`（+ 宿主的 `disabled-by-scale`） | tectonic 的特徵值 lane 有第五個零：**Lanczos 未收斂**（`solver-failed`），且 `not-eligible-scale` 由引擎回（`budgetDof`）；另需 `buckling.kind` 標記篩 vs 特徵值 | 加第五態 `solver-failed`；`not-eligible-scale` 改為引擎態；加 `buckling.kind ∈ {eigen, screen}`（D-040）。矛盾檢查不變：有因子 ⇔ `computed` | 無降級；`[N18]` 在 tectonic 臂於 v1.5 前 expected-red（狀態字串在 v1.4 只有 `not-eligible`/`disabled`） |
+| 2026-09-02 | 板網格（`[S1]/[S2]/[S4]` 與 evidence 的板數字） | 2×2 方塊一片、角在方塊中心、邊緣少半格、自重面積 (n−1)² | tectonic：一方塊一片、角在中面格角、面積 n²；孤立格/板條也出 facet（`extract.h:1329-1340`） | **採引擎慣例**（D-042）；fixture 於 Phase 3 改寫；`[S4]` 的夾支邊 oracle 改簡支閉合式（板永不被旋轉夾持，MC58b-10） | 下游：v0.1a–v0.3c 所有板數字（S 系列 evidence）於 v0.4 作廢；「板收斂階 2.0」的敘述限於 FrameCore 臂 |
+| 2026-09-02 | 載重切段（`[C11]`「a load in the middle of a member splits it」） | 受載方塊成節點 | 那正是 N16 的病因（網格隨載重變）；tectonic MC54 不切、以站位載重掛在構件上 | 線**反轉**：受載構件**不得**因載重切段；端格 = 節點載重（tectonic MC64）（D-042） | 下游：`[C11]` 改寫；v0.3c 之前的「受載切段」結果語意作廢 |
+| 2026-09-02 | 樑理論預設 | Euler-Bernoulli（Java/sidecar 目錄無剪切面積） | tectonic 每種斷面帶 `Asy/Asz`（Rect `5/6A`）⇒ Timoshenko；EB 只能經 `eulerBernoulli` 旗標（MC63） | 遊戲預設 **Timoshenko**（D-042）；FrameCore parity 與閉合式對數用 EB 旗標；換算 gate `[U]` 分兩臂各對各的閉合式 | 下游：撓度數字對深梁差 ≥ 3%（H-400 L/h=5），差異帳歸 `convention`；靜定內力不變 |
+| 2026-09-02 | D/C 定義（`ElasticAllowable` 五比值 argmax + 殼 vM） | 五比值、argmax 控制纖維、殼 von Mises | tectonic：三元組纖維篩（壓面/拉面/剪+扭）+ 殼 Mohr 主應力（`readback.h:92-182`）；SHEAR/TORSION 零 oracle 缺口兩邊都在 | 採引擎定義（BSI `bsi.dc.fibre3`），差異帳歸 `convention`；**零 oracle 缺口照登不變** | 下游：兩臂的 D/C 值不可互相引用；「D/C = x」的對外數字自 v0.4 起是 fibre3 語意 |
+| 2026-09-02 | F76（patch 0002 夾支邊彎矩）能力 | 「支承彎矩是還原的，不是讀的」`[S5]` | tectonic MC 世界的板永不被旋轉夾持（`extract.h:1387-1397` 只鎖平移；MC58b-10）⇒ 該能力在換裝後不存在 | **退場**：v0.4 不宣稱；`docs/outreach` 掃除該宣稱（Phase 3） | 下游：`[S5]` 退役；patch 0002 的 F76 敘述限於 FrameCore 臂 |
+| 2026-09-02 | 支承語意（D-022 `support:bool`、隱含全固、Java 啟發式） | 「正下方是非結構實體 → 支承節點、6 DOF 全固」 | T2#15 / #85：裁決權要在引擎；tectonic 支承 = 相鄰 Support 角色方塊 + `supportKind`（MC63） | **D-039**：Java 送面相鄰地面格（Q1(a) 六面），引擎定固定度；`support:bool` 移除 | 下游：貼牆柱/坑內橋墩 D/C 趨零（照登）；`isSupported()` 的所有 Java 測試改為 N21 |
+| 2026-09-02 | `[M1]/[M2]` 的 `brick_rect_230x350` fixture | brick 為 Member 角色斷面 0.0805 m² | D-030 之下 brick 是 monolith（一格 = 1 m³）；tectonic MC61 F4 對同一 fixture 的裁決是「2 members + 2 monolith 格、無共節點、警告 ≥ 1、Singular」（縫合是具名開口） | fixture 改寫為 Member 角色的木/鋼對接（tectonic MC61 F1 的 `brick_pier`/`timber_post` 是 gate 值，不宣稱真值） | 下游：`[M1]/[M2]` expected-red 到 Phase 3；2026-08-25 D-030 列已登記的作廢範圍不變 |
+| 2026-09-02 | 構件身分（`lengthMm`、member id 跨 revision 對應） | 一根 run = 一個 member | tectonic MC60c：承載板的樑被切逐格（B3）；D-036 否證 (3) 兌現 | 採納（D-042）；hover/`/br members` 由 sidecar 依構造物件合併逐格 member；registry 改用 run 起訖鍵 | 下游：`MemberSnapshot` 的 id 語意改「構造物件」；v0.3c 的 member id 不可跨版本比對 |
+| 2026-09-02 | 重力常數 | g = 9.81（`main.cpp:1052,1108`、`verify.py:15`） | tectonic 預設 9.80665 但接受請求的 `gravity`（`tec_capi.cpp:640-647`） | **不移線**：請求送 `gravity:[0,-9.81,0]`，兩後端同 g | 無下游；登記是為了證明它被考慮過而**不是**漏了 |
 
 ### 2026-08-30 新增的 gate（N17／N18 落地，B4）
 
@@ -593,6 +604,98 @@ WSL/x86-64，對出貨引擎，取三次最小值）：
 
 下一步（不在本輪）：Windows 上改成「先試 move，`AccessDeniedException` 就退回檢查目標
 是否已經是正確的位元組」，因為輸掉競賽的那一方要的答案本來就已經在磁碟上了。
+
+### 2026-09-02 凍結：N19–N23（換裝總綱；Phase 0，先於任何程式碼）
+
+> 出處：`docs/SWAP_PROGRAM.md`（權威）與 D-038..D-043。受測者標在每條上：**Java** = `mod`/`forge` gradle test；
+> **sidecar/CI** = `verify.py` / `diff_engines.py` / workflow。引擎側的對應判準凍在 tectonic2 `docs/specs/MC6*.md`，**本倉不重複它們**。
+
+#### N19 判定旗標轉發（Java）
+
+| 線 | 內容 |
+|---|---|
+| **N19-a** | Java 原始碼（`mod/`、`forge/`）**零** `dc > 1.0` / `>= 1.0` 型比較（grep 型測試，白名單只允許測試檔） |
+| **N19-b** | 封包 `overCapacity` == 引擎 `blocks.flags.overloaded`，逐格；`bucklingCritical` == 引擎 `stability == critical` |
+| **N19-c** | `alignToVerdict` 對齊**引擎旗標**：f32 降轉值被推到旗標同一側（≤ 1 ulp）；旗標為 true 的格 f32 dc 必 > 1.0f，false 必 ≤ 1.0f |
+| **N19-d** | 界線 fixture：引擎回 `dc = 1 + 5e-9, overloaded=true`（f32 讀成 1.0）→ HUD 判超載（用假 sidecar 注入，不靠真引擎湊數字） |
+| **N19-e** | `stability == not-evaluated` 的格 HUD 顯示「未評估」，不顯示「穩定」 |
+
+#### N20 顯示軌精度與 Java 零公式（Java）
+
+| 線 | 內容 |
+|---|---|
+| **N20-a** | `DisplayTrackPrecisionTest` 延伸到站位（`s, x, sigma[4], tau, na, dc`）與殼角點（`s1, s2, theta, vm` × 上下面）：封包 f32 對 sidecar f64 rel ≤ **1e-5**（分母下限 = 該欄位量級的 1e-6 倍；零參考走絕對比較，沿 2026-08-20 TEST-8 慣例） |
+| **N20-b** | Java 零應力公式：`StressFieldSpec`/`ShellFieldSpec`/`SectionDiagram` 的力學段刪除後，grep 型測試斷言 `mod/`、`forge/` 內**不存在** `Iy`、`Iz`、`/ A`、`vonMises`、`principal` 等力學識別字於非測試檔（白名單明列）；wire == in-process 逐位屬 tectonic MC65b，本倉不重複 |
+| **N20-c** | client 對站位的內插只做**顯示**：兩站之間畫線，不重算任何應力；渲染測試以站位為輸入、以像素/頂點為輸出 |
+| **N20-d** | `precision.storage:"f32"` 請求下，sidecar 直接轉發引擎的 f32 區段（不再自己降轉）；與 f64 路徑的差 rel ≤ 1e-5（同 a） |
+
+#### N21 地面列舉（Java；依 D-039 Q1(a)）
+
+| 線 | 內容 |
+|---|---|
+| **N21-a** | 對每個結構方塊，六個面相鄰的「站得住」原版方塊（datapack 對映到 Support 角色材料者）各成一筆地面記錄；**去重**；規範序（座標升冪） |
+| **N21-b** | 鏡像/旋轉等變：世界鏡像後地面記錄集合等於原集合的映射 |
+| **N21-c** | 非「站得住」方塊（空氣、水、可掉落方塊、非固體）不成地面；datapack 未對映的方塊不成地面（fail-closed，不猜） |
+| **N21-d** | 記錄數照登：三個原型世界（地形上的房子、坑裡橋墩、貼地筏基 + 牆）的地面記錄數 / 結構方塊數比值進 evidence（D-039 否證 (2) 的量測；比值 > 2 觸發） |
+| **N21-e** | `support:bool` 與 `isSupported()` 於 protocol 3 不存在（grep 型） |
+| **N21-f** | N11 整合測試（#86 持久 registry）含地面鄰居列舉的**順序**穩定性：同一世界兩次列舉逐筆相同 |
+
+#### N22 差異帳：分類規則先凍，零 blocker 才發布（sidecar/CI）
+
+`sidecar/diff_engines.py` 對同一語料（`contract/conformance/` + `verify.py` fixture）驅動 `br-sidecar`（tectonic）與 `br-sidecar-fc`（FrameCore），逐欄比對，每筆差異歸入**恰一類**，寫 `evidence/differential.jsonl`：
+
+| 類 | 定義 | 預歸類（凍結；不得事後改類） |
+|---|---|---|
+| `convention` | 兩邊都對，慣例不同（D-042） | D/C 值（G18）；撓度（Timoshenko，G19）；端力號向（MC59）；facet 數與板數字（G9）；`PLATE_*` vs `PLATE_NO_FACET`（G23）；`FULLY_SUPPORTED` 的呈現（D-026）；殼 QM6 vs MITC4 膜；端格節點載重的格內內力分佈（MC64 B3） |
+| `old-defect` | FrameCore 臂錯、引擎臂對（有 oracle 證明） | 挫屈 −68% 序列（N16）；受載切段（C11）；浮空樑整包失敗以外的 D-017 差異 |
+| `new-defect` | 引擎臂錯（有 oracle 證明）→ **回引擎修，不得帶病換裝**（D-034 否證 (2)） | — |
+| `freedom` | 規格未定、兩邊皆可（例：tie-break） | `governingFibre` 對稱純彎 tie → TENSION（引擎定，本倉採） |
+| `blocker` | 未歸類、或消費者需要而引擎沒有 | 任何未預歸類的差異**預設 blocker** |
+
+| 線 | 內容 |
+|---|---|
+| **N22-a** | 靜定案反力與內力：EB 臂（`eulerBernoulli` 旗標）對 FrameCore rel ≤ **1e-9**（反力、位移）、端力 ≤ **1e-8**（tectonic MC32 凍結線；實測 1e-12 級但 1e-12 不是線） |
+| **N22-b** | 殼帶級：合力 5e-4、應力 1e-2（MC32 殼帶級；drilling 實作自由度） |
+| **N22-c** | 發布條件：`evidence/differential.jsonl` 零 `blocker`；`new-defect` 零（修完才發） |
+| **N22-d** | 記名排除 ≤ 3 類（D-035 釘住共線對接 + 至多兩類），清單在 `diff_engines.py` 檔頭，超過重議 |
+| **N22-e** | 分類規則改動 = 本表 dated 追記 + 下游結論降一級（鐵則 1） |
+
+#### N23 契約一致性（CI）
+
+| 線 | 內容 |
+|---|---|
+| **N23-a** | `python3 contract/check_contract.py` 綠：`contract/CONTRACT_SHA256` == 重算 |
+| **N23-b** | 與 tectonic2 釘住 tag 的 `contract/CONTRACT_SHA256` **逐字相同**（CI 從該 tag 取檔比對；不同即紅——這就是「強制兩邊使用」的機制） |
+| **N23-c** | `python3 contract/conformance/run.py --selfcheck` 綠（每條斷言路徑存在於 schema） |
+| **N23-d** | Java `BsiCodec` 對 `hello.contractSha256` 不符回 `BSI_VERSION` 並拒絕啟用引擎（假 sidecar 注入） |
+| **N23-e** | 契約檔的任何改動必須與 `CONTRACT_SHA256` 同 commit（CI 比對 diff 範圍） |
+| **N23-f** | 語料對真引擎：`run.py --adapter tectonic` 與 `--adapter framecore` 各 exit 0（Phase 3 起；未實作前 CI 標 `not-run`，**不得標綠**） |
+
+**expected-red 帳**：見下一節。
+
+### 2026-09-02 新登記：換裝期的 expected-red 帳（鐵則 2 的照登，先於程式碼）
+
+`verify.py` 對 tectonic 臂在 Phase 3 **不可能全綠**：14 條腿等引擎的 v1.4/v1.5 或等 fixture 依 D-042 改寫。
+帳在 `sidecar/expected_red.json`（每條：tag、`verify.py` 行、原因、轉綠 Phase、等待的引擎單元）。**三條規則**：
+
+1. 帳上的紅不算 CI 失敗；帳外的紅照樣紅。
+2. **帳上卻綠 = 過期 = 紅**：讓一條腿轉綠的那個 change 必須同時把它從帳上刪掉。帳不會腐爛。
+3. FrameCore 臂永遠不讀這份帳。
+
+| tag | 行 | 原因（一句） | 轉綠 |
+|---|---|---|---|
+| `[S1]` `[S2]` | 781 / 803 | 板網格慣例（D-042） | Phase 3（fixture 改寫） |
+| `[S4]` | 823 | 夾支邊 oracle；引擎板永不旋轉夾持 | Phase 3（改簡支閉合式） |
+| `[S5]` | 849 | F76 退場 | Phase 3（退役） |
+| `[S6]` | 872 | `PLATE_*` 碼在引擎不存在 | Phase 3（MC65a 對表） |
+| `[C1c]` | 214 | 讀 `governingFibre` | Phase 3（MC65a） |
+| `[C11]` | 547 | 線反轉：不切段 | Phase 3（改寫） |
+| `[C12]` `[C13]` `[C14]` | 577 / 619 / 654 | 特徵值 lane 在 v1.5 | Phase 4（MC66a/b） |
+| `[N17]` | 1379 | 未接地分量分離在 v1.4 | Phase 3（MC65a） |
+| `[N18]` | 1449 | 狀態字串與第五態 | Phase 4（MC66a） |
+| `[M1]` `[M2]` | 1247 / 1307 | brick = monolith | Phase 3（改寫） |
+
+其餘腿（含 `[S0]`、`[S3]`、`[S7]`、`[S8]`、`[S9]`、`[C15]`、`[C16]`、`[J]`、`[P]`、`[T]`、N14/N15）**預期綠**；若首跑紅，照登進本帳（附原因與 Phase），不得靜默加入。
 
 ## Evidence
 

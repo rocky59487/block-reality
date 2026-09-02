@@ -48,7 +48,36 @@ Minecraft 側與力學引擎之間的介面契約。目標：**換引擎不動 M
 
 ---
 
-## 目標協定（未實作——本節與下行目錄是方向，不是現況）
+## 目標協定 = BSI v1（`contract/BSI.md`；2026-09-02，D-043）
+
+**現況**：protocol 2（`hello` / `solve` / `solve.shm` / `bye`，line-JSON + shm，mm·MPa·N·mm）。
+**目標（protocol 3）**：**BSI v1** —— 引擎中立、傳輸無關的契約，與 tectonic2 的 `contract/` **逐位相同**、`contract/CONTRACT_SHA256` 釘死。
+Java 直接說 BSI（`BsiCodec`），sidecar 只做傳輸轉接（stdio 門鈴 + 零複製 arena `BSIA`，即 D-019 的通用化），單位一律 **SI**。
+本節只放對照表；欄位、記錄排布、錯誤碼、能力字串、一致性語料**一律以 `contract/` 為準**，本檔不再複述。
+
+| 概念 | protocol 2（現況） | BSI v1（目標） |
+|---|---|---|
+| 握手 | `hello`（目錄、shm 能力） | `bsi.hello`（`contractSha256`、能力字串、`threads`、`arena`、`precision`） |
+| 詞彙 | 寫死在 sidecar | `bsi.vocab.declare` / `bsi.vocab.query`（材料模型、斷面 kind、`supportKind`、`eulerBernoulli`、`x-` 擴充） |
+| 世界 | `solve` 全量 `blocks[]`（`support:bool`） | `bsi.world.declare` 40 B 記錄（`axis` 必填；地面 = Support 角色記錄，D-039）+ 可選 `attrs` |
+| 求解 | `solve` / `solve.shm` | `bsi.solve`（`loads` 64 B、`precision`、`buckling`、`numThreads`、`readback[]`） |
+| 每格結果 | `members[].blocks` 索引 | `blocks` 24 B（`dc, island, owner, mode, ownerKind, flags, reason`） |
+| 帳目 | `unassigned[{why,blocks}]` | `unassigned` 區段（開放列舉） |
+| 構件/站位 | `members[]` + 場參數 + `stations[11]` | `members` 160 B + `stations` 88 B（f32 44 B）—— D-038 |
+| 殼 | 形心上下層 | `facets` + `facetSurfaces`（四角 × 上下面、`n/m/q`） |
+| 平衡 | Java 加總 | `equilibrium` 56 B |
+| 挫屈 | `bucklingFactor` + 四態 | `buckling` 16 B（`kind`、六態、`factor`）—— D-040 |
+| 判定 | Java `> 1.0` | `flags.overloaded`、`stability`（引擎 double 定案）—— D-041/N19 |
+| 精度 | 封包 f32 | `precision{tier,targetRel,storage,warmStart,maxTimeMs}` → `quality` |
+| 錯誤 | 自由文字 | 21 碼 |
+| 版本 | protocol 2 / shm 2 / 封包 "5" | `bsi:1` + `contractSha256`；破壞 = 主版 bump |
+
+**強制**：`hello` 雜湊不符 → `BSI_VERSION`；兩倉 CI 各跑 `contract/conformance/run.py`（N23）；介面只在 `contract/` 改。
+
+**不變的東西**：Java 說方塊、引擎擁有模型（D-006）；元素身分詞彙不上 wire（D-021 的另一半，由語料押著）；
+程序隔離（D-013）；`worldRevision` 貫穿每則訊息。
+
+## 目標協定草圖（2026-08；**已由 BSI v1 取代**，保留供對照；本節與下行目錄是草圖，不是現況）
 
 > **實作狀態（2026-08-20，INV-8 修正）**：以下 `world.declare` / `world.edit` /
 > `solve.request` 與下行的 `result.*` / `event.*` / `diag.*` **全部不存在**。
@@ -166,11 +195,20 @@ OpenBLAS 執行緒數 process-global 的序列化要求。
 `frame_capi_v2`（D-002 原案的 in-process C ABI）仍是日後換裝方向之一;屆時 wire
 概念不變——門鈴變函式呼叫,映射區變 `MemorySegment`。
 
+> **2026-09-02 dated 追記（D-041/D-043）**：v0.4 起 sidecar 是 **BSI T-B 傳輸轉接**：stdio 只剩門鈴，請求/回覆躺在 arena
+> （`contract/BSI.md` Part D 的 `BSIA` 排布：world / attrs / loads / req / reply 五區 + doorbell；`ARENA_NEED_BIGGER` 協商）。
+> `solve` / `solve.shm` 兩個 verb 隨 protocol 3 退場；「兩傳輸逐位相同」的性質由 BSI C-2（T-A/T-B/T-B′ 等價）承接。
+> 引擎（tectonic2 原始碼）靜態連結在 sidecar 內；逾時 → sidecar 自行結束 → Java 退避重啟；同 revision 三次 → `ENGINE_FAILED`。
+
 ## 已知限制
 
 **`frame_capi_v2` 的 dispatcher 沒有暴露 LiveSession**，只有 `analysis.reanalysis_solve`（同拓撲 `ReSolveSession`）。也就是加節點無法增量，要全量重分解。
 
 在 D-008 之下這不構成阻礙：建築尺度的全量重分解約 100 ms，async 跑掉即可。放方塊 → 全量；拆模、構件失效、tension-only 翻轉 → 開關既有構件 → 精確 Woodbury。
+
+> **2026-09-02 更正**：上段的「`frame_capi_v2` 的 dispatcher 沒有暴露 LiveSession」說的是 **FrameCore** 的 capi。
+> tectonic2 的 frame_v2 有 `world.edit` + `LiveState` 兩軌（其 MC17–MC24）；但 v0.4 **每 revision 全量 `bsi.world.declare`**
+> （D-041 第 4 條；D-008 之下夠用），所以增量與否對本倉今天不是問題。tectonic 的 B6（帶耦合世界進不了編輯串流）因此對本倉不生效。
 
 ## 執行緒
 

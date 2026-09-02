@@ -1,0 +1,19 @@
+{"case":"C10-buckling-closed-forms","family":"C-10","grade":"provisional",
+ "requires":["bsi.core","bsi.buckling.eigen"],
+ "note":"Two closed forms, both on a 20-block vertical steel column (19 m node-to-node, base fixed by ground below block 0; ground grid records the ground contact at the base). Euler tip-load: lambda*P = pi^2 E I_min/(2L)^2 with P >> self weight (selfWeight=false). Greenhill self-weight: lambda*q*L^3/(E*I_min) = 7.837 (exact 7.8373). Numeric lines are PROVISIONAL: frozen as structure now, pinned after the first harvest (BSI.md C-10).",
+ "vocab":{"version":1,
+   "materials":[
+     {"name":"steel","role":"member","model":"isotropic","E":2.0e11,"nu":0.3,"rho":7850,"allow":{"sigmaC":2.5e8,"sigmaT":2.5e8,"tau":1.45e8},"defaultSection":"steel_rect_200x400","eulerBernoulli":true},
+     {"name":"ground_rigid","role":"support","supportKind":"fixAll"}],
+   "sections":[{"name":"steel_rect_200x400","kind":"rect","p":[0.2,0.4]}]},
+ "blocks":"column(x=0,z=0,y=0..19,steel,axis=1) + ground_rigid at (0,-1,0)",
+ "derive":{"L":19,"Imin":"0.4*0.2^3/12","E":2.0e11,"A":0.08,"q":"7850*0.08*9.81",
+           "Pcr":"pi^2*E*Imin/(2*L)^2","lamGreenhill":"7.8373*E*Imin/(L^3*q)"},
+ "variants":[
+   {"name":"euler-tip","loads":[[0,19,0,0,-1.0e6,0]],"solve":{"selfWeight":false,"buckling":{"mode":"eigen"}},
+    "assert":[{"path":"buckling.state","eq":"computed"},{"path":"buckling[0].factor","eq":"Pcr/1.0e6","rel":"PROVISIONAL(<=1e-2 expected; pin after harvest)"}]},
+   {"name":"greenhill","loads":[],"solve":{"selfWeight":true,"gravity":[0,-9.81,0],"buckling":{"mode":"eigen"}},
+    "assert":[{"path":"buckling.state","eq":"computed"},{"path":"buckling[0].factor","eq":"lamGreenhill","rel":"PROVISIONAL(<=1e-2 expected; upper bound; pin after harvest)"}]},
+   {"name":"probe-invariance","loads":[[0,10,0,0,-1.0e-9,0]],"solve":{"selfWeight":true,"gravity":[0,-9.81,0],"buckling":{"mode":"eigen"}},
+    "assert":[{"delta":["probe-invariance","greenhill"],"path":"buckling[0].factor","rel_le":1e-6,"note":"block-reality N16-a"}]}
+ ]}

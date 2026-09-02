@@ -11,10 +11,11 @@ Block Reality 開發指引。
 Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析。
 
 力學不在這個 process 裡跑。這個倉庫是 **Minecraft 側**：方塊、材料、工法狀態機、CAD 工具、渲染。
-力學引擎（FrameCore v4，日後 tectonic）在 process 之外，走本倉庫自訂的
-line-JSON + 共用記憶體協定（D-019；契約在 `docs/ENGINE_BOUNDARY.md`）。
-FrameCore 以 C++ 原始碼靜態連結進 br-sidecar；`frame_capi_v2` 是換裝方向，
-不是現況——這裡曾寫「凍結的 C ABI」，那從未發生（D-002/D-013 的實況修正）。
+力學引擎在 process 之外的 `br-sidecar` 裡（D-013）。**現況（v0.3c）**：FrameCore v4 以 C++ 原始碼靜態連結，
+走本倉庫自訂的 line-JSON + 共用記憶體協定（protocol 2，D-019）。**v0.4 目標（2026-09-02，D-041/D-043）**：
+引擎 = **tectonic2**（原始碼靜態連結），介面 = **BSI v1**（`contract/`，與 tectonic2 逐位相同、雜湊釘死），
+sidecar 退為傳輸轉接（stdio 門鈴 + 零複製 arena），FrameCore 保留為 CI 對數臂一個發布週期。
+總綱在 `docs/SWAP_PROGRAM.md`。`frame_capi_v2` 從未接上（D-002/D-013 的實況修正），也不再是換裝方向。
 
 ## 力學模型（必讀，決定了所有其他事）
 
@@ -30,7 +31,7 @@ FrameCore 以 C++ 原始碼靜態連結進 br-sidecar；`frame_capi_v2` 是換�
 | # | 不變式 | 違反後果 |
 |---|--------|---------|
 | 1 | **構件是共線 run，不是單一方塊。** 一個 1m³ 方塊的細長比 L/h = 1，樑理論不成立 | 平截面假設失效，內力全錯 |
-| 2 | **斷面與方塊尺寸解耦——適用於 frame 材料。** 一格「鋼骨」承載的是一個真實斷面（H-400 之類），不是 1m×1m 實心。monolith 材料（混凝土/磚）是明確例外：一格就是 1 m³ 材料本身（D-030） | 巨柱效應，D/C 恆為 0.01，什麼都壓不垮 |
+| 2 | **斷面與方塊尺寸解耦——適用於 frame 材料。** 一格「鋼骨」承載的是一個真實斷面（出貨目錄是實心矩形 `steel_rect_200x400` 之類；H-400 是同一意思的另一個例子），不是 1m×1m 實心。monolith 材料（混凝土/磚）是明確例外：一格就是 1 m³ 材料本身（D-030） | 巨柱效應，D/C 恆為 0.01，什麼都壓不垮 |
 | 3 | **結構角色由玩家用材料宣告，不由程式從方塊堆反推** | 形狀語意辨識是未解問題；反推會產生無法解釋的模型 |
 | 4 | **連通性分析只能當前篩，不能當權威。** 權威判定是因子代數（pivot ratio） | 連通 ≠ 穩定。機構會被判為安全 |
 | 5 | **兩軌精度分離。** 顯示軌可 stale（rel ≤ 1e-5）；承諾軌不可（rel ≤ 1e-9） | 玩家看到的和實際判定的不一致 |
@@ -85,3 +86,9 @@ FEA 決定失效集合；`FallingBlockEntity`、粒子、碎塊只負責演出�
 
 所有架構決策記在 `docs/DECISIONS.md`，每條附**理由**與**否證條件**。
 沒有否證條件的決策不是決策，是偏好。
+
+## 契約
+
+`contract/` 是 BSI v1 引擎介面契約，與 tectonic2 的 `contract/` **逐位相同**（`contract/CONTRACT_SHA256`）。
+改介面 = 改 `contract/` + `python3 contract/check_contract.py --write` + **兩倉各自 commit 同一份**；只改一邊，另一邊 CI 紅（N23）。
+Java 的 `BsiCodec` 與 sidecar 的傳輸轉接只能實作契約，不得自創欄位；要新欄位先改契約。

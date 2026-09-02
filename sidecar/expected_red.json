@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "frozen": "2026-09-02",
+  "registered_in": "docs/GATES.md 2026-09-02 新登記：換裝期的 expected-red 帳",
+  "applies_to_backend": "tectonic",
+  "rules": [
+    "A leg listed here that is RED on the tectonic backend is not a CI failure; a red leg NOT listed here is a failure exactly as before.",
+    "A leg listed here that is GREEN on the tectonic backend is a CI failure: the entry is stale and must be removed in the same change that made it green (the account may not rot).",
+    "Every entry names the phase that turns it green and the tectonic2 unit it waits on; an entry without both is invalid and fails the account check.",
+    "The FrameCore backend (br-sidecar-fc) never reads this file: every leg stays red-is-red there until that arm is retired.",
+    "Line numbers are the verify.py print(...) lines at block-reality f8a656f; the tag is authoritative, the line is a courtesy."
+  ],
+  "legs": [
+    {"tag": "[S1]", "verify_line": 781, "why": "plate mesh convention: FrameCore arm puts one facet per 2x2 blocks with corners at block centres; tectonic puts one facet per block with corners at mid-plane grid corners (D-042). Numbers differ by construction.", "green_phase": "3", "waits_on": "fixture rewrite to the tectonic convention (line move registered in GATES 2026-09-02)"},
+    {"tag": "[S2]", "verify_line": 803, "why": "shell self-weight conservation is asserted against the (n-1)^2 facet area of the old mesh; tectonic's area is n^2.", "green_phase": "3", "waits_on": "same fixture rewrite as [S1]"},
+    {"tag": "[S4]", "verify_line": 823, "why": "clamped-plate biharmonic oracle needs rotation-clamped edges; in tectonic MC worlds a panel next to a support is translation-fixed only (MC58b-10, R14: not changed). The tectonic arm solves a simply supported plate.", "green_phase": "3", "waits_on": "oracle changed to the simply supported closed form (line move registered)"},
+    {"tag": "[S5]", "verify_line": 849, "why": "support-moment recovery (patch 0002 / F76) has no counterpart: tectonic panels are never rotation-clamped in MC worlds (MC58b-10). Capability retired, not claimed for v0.4.", "green_phase": "3", "waits_on": "leg retired with registration (F76 退場)"},
+    {"tag": "[S6]", "verify_line": 872, "why": "PLATE_LONE / PLATE_STRIP / PLATE_SOLID reason codes do not exist in tectonic (lone blocks and strips still get a facet); tectonic reports PLATE_NO_FACET only when no facet was made.", "green_phase": "3", "waits_on": "tectonic2 MC65a (v1.4) reason-code table + fixture rewrite"},
+    {"tag": "[C1c]", "verify_line": 214, "why": "top-tension / bottom-compression is read from the FrameCore field; the tectonic arm reads governingFibre.", "green_phase": "3", "waits_on": "tectonic2 MC65a (v1.4) include:\"governing\""},
+    {"tag": "[C11]", "verify_line": 547, "why": "asserts that a load in the middle of a member SPLITS it; tectonic's MC54 mounts the load on the member without splitting (D-042). The old behaviour was the N16 defect.", "green_phase": "3", "waits_on": "leg rewritten to assert no split + station load (line move registered)"},
+    {"tag": "[C12]", "verify_line": 577, "why": "single-element textbook buckling value; tectonic has no eigenvalue lane before v1.5, and the new oracle is the closed form within 1% (upper bound), not the single-element course value.", "green_phase": "4", "waits_on": "tectonic2 MC66a (v1.5); N16-c revision"},
+    {"tag": "[C13]", "verify_line": 619, "why": "stress-vs-stability contrast needs the eigenvalue lane.", "green_phase": "4", "waits_on": "tectonic2 MC66a (v1.5)"},
+    {"tag": "[C14]", "verify_line": 654, "why": "wall out-of-plane buckling needs shell geometric stiffness.", "green_phase": "4", "waits_on": "tectonic2 MC66b (v1.5)"},
+    {"tag": "[N17]", "verify_line": 1379, "why": "singularIslands / MECHANISM listing for an ungrounded component: tectonic fails the whole solve today (island.h:81-84).", "green_phase": "3", "waits_on": "tectonic2 MC65a (v1.4) body.islands + readback.unassigned"},
+    {"tag": "[N18]", "verify_line": 1449, "why": "buckling state strings: before v1.5 every island is not-eligible / disabled on the tectonic arm, and the fifth state solver-failed is new.", "green_phase": "4", "waits_on": "tectonic2 MC66a (v1.5); N18 fifth state registered"},
+    {"tag": "[M1]", "verify_line": 1247, "why": "brick_rect_230x350 fixture: brick is a monolith material under D-030, so the pier-and-post is a different structure on the tectonic arm (2 members + 2 monolith blocks, unstitched by design, MC61 F4).", "green_phase": "3", "waits_on": "fixture rewritten as Member-role timber/steel butt (line move registered)"},
+    {"tag": "[M2]", "verify_line": 1307, "why": "same fixture family as [M1].", "green_phase": "3", "waits_on": "same as [M1]"}
+  ]
+}

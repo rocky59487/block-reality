@@ -1,0 +1,10 @@
+{"case":"C8-sign-cantilever-top-tension","family":"C-8","grade":"hard",
+ "requires":["bsi.core","bsi.readback.members","bsi.readback.stations"],
+ "note":"Same world as C4-cantilever-selfweight. Physics pins the sign: a cantilever bent downward by its own weight has its TOP fibre in tension at the root. sigma[0] is TOP_Y (local +y = 'top' for a horizontal member with ref=+Y).",
+ "extends":"C4-cantilever-selfweight",
+ "assert":[
+   {"path":"stations[governing].sigma[0]","gt":0,"member":0},
+   {"path":"stations[governing].sigma[1]","lt":0,"member":0},
+   {"path":"stations[governing].s","le":0.05,"member":0,"note":"governing station is at (or within a block face of) the root"},
+   {"path":"stations[*].naY","exists_finite":true,"member":0,"note":"a bent section has a neutral axis"}
+ ]}

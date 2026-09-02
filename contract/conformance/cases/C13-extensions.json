@@ -1,0 +1,18 @@
+{"case":"C13-extensions","family":"C-13","grade":"hard",
+ "requires":["bsi.core","bsi.readback.members","bsi.section.custom"],
+ "note":"A custom section declared with the explicit properties of steel_rect_200x400 must solve bitwise-identically to the rect kind (same numbers in, same numbers out). x-vendor keys anywhere are ignored and counted.",
+ "vocab":{"version":1,
+   "materials":[
+     {"name":"steel","role":"member","model":"isotropic","E":2.0e11,"nu":0.3,"rho":7850,"allow":{"sigmaC":2.5e8,"sigmaT":2.5e8,"tau":1.45e8},"defaultSection":"rect","x-acme":{"colour":"blue"}},
+     {"name":"ground_rigid","role":"support","supportKind":"fixAll"}],
+   "sections":[
+     {"name":"rect","kind":"rect","p":[0.2,0.4]},
+     {"name":"custom","kind":"custom","A":0.08,"Iy":2.6666666666666668e-4,"Iz":1.0666666666666667e-3,"J":"7.324e-4 (Timoshenko exact series, to be pinned)","cy":0.1,"cz":0.2,"Asy":0.06666666666666667,"Asz":0.06666666666666667,"Zy":2.6666666666666668e-3,"Zz":5.333333333333334e-3,"principalAngle":0.0}]},
+ "world":"C4-cantilever-selfweight",
+ "variants":[
+   {"name":"rect","sect":"rect"},
+   {"name":"custom","sect":"custom"}],
+ "assert":[
+   {"equal":["rect","custom"],"path":"payload","bitwise":true,"note":"J for a 200x400 rectangle must be the engine's own value; the case pins the two declarations to the same numbers by reading rect's derived properties through vocab.query before comparing"},
+   {"path":"diag.ignoredExtensions","eq":1}
+ ]}

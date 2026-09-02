@@ -1,0 +1,26 @@
+{"case":"C4-fixedfixed-pointload","family":"C-4","grade":"hard",
+ "requires":["bsi.core","bsi.readback.members"],
+ "note":"11 steel blocks x=0..10 at y=0; ground_rigid below x=1 and x=9 -> main span between block 1 and block 9 centres, L=8 m, both ends fixed; P=1e5 N down at block 5 (s=0.5). Exact for EB and Timoshenko: |V|=P/2, |M|=PL/8 at both ends. selfWeight=false.",
+ "vocab":{"version":1,
+   "materials":[
+     {"name":"steel","role":"member","model":"isotropic","E":2.0e11,"nu":0.3,"rho":7850,"allow":{"sigmaC":2.5e8,"sigmaT":2.5e8,"tau":1.45e8},"defaultSection":"steel_rect_200x400"},
+     {"name":"ground_rigid","role":"support","supportKind":"fixAll"}],
+   "sections":[{"name":"steel_rect_200x400","kind":"rect","p":[0.2,0.4]}]},
+ "blocks":[[1,-1,0,"ground_rigid",null,0,0,0,1,1],[9,-1,0,"ground_rigid",null,0,0,0,1,1],
+   [0,0,0,"steel",null,0,0,0,1,1],[1,0,0,"steel",null,0,0,0,1,1],[2,0,0,"steel",null,0,0,0,1,1],[3,0,0,"steel",null,0,0,0,1,1],
+   [4,0,0,"steel",null,0,0,0,1,1],[5,0,0,"steel",null,0,0,0,1,1],[6,0,0,"steel",null,0,0,0,1,1],[7,0,0,"steel",null,0,0,0,1,1],
+   [8,0,0,"steel",null,0,0,0,1,1],[9,0,0,"steel",null,0,0,0,1,1],[10,0,0,"steel",null,0,0,0,1,1]],
+ "loads":[[5,0,0,0,-1.0e5,0]],
+ "solve":{"selfWeight":false,"gravity":[0,-9.81,0],"include":["members"],"precision":{"tier":"commit"}},
+ "derive":{"P":1.0e5,"L":8,"V":"P/2","M":"P*L/8"},
+ "assert":[
+   {"path":"status","eq":"ok"},
+   {"path":"equilibrium.reaction[1]","eq":"P","rel":1e-9},
+   {"path":"equilibrium.residual","le":1e-9},
+   {"path":"members[span].lengthM","eq":8,"rel":1e-12,"select":{"blocksContain":[5,0,0]}},
+   {"path":"members[span].endI[1]","abs_eq":"V","rel":1e-9,"select":{"blocksContain":[5,0,0]}},
+   {"path":"members[span].endJ[1]","abs_eq":"V","rel":1e-9,"select":{"blocksContain":[5,0,0]}},
+   {"path":"members[span].endI[5]","abs_eq":"M","rel":1e-9,"select":{"blocksContain":[5,0,0]}},
+   {"path":"members[span].endJ[5]","abs_eq":"M","rel":1e-9,"select":{"blocksContain":[5,0,0]}},
+   {"path":"members[span].governingS","eq":0.5,"abs":1e-12,"select":{"blocksContain":[5,0,0]},"note":"midspan |M| = PL/8 equals the end |M|; governing may legitimately be an end -> asserted as set","alt":{"in":[0,0.5,1]}}
+ ]}

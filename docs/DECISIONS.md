@@ -8,6 +8,149 @@
 
 ---
 
+## D-043 · BSI v1 通用介面：兩倉逐位相同的契約；Java 直接說 BSI；sidecar 退為傳輸轉接（取代 D-034(1)）
+
+**決定**（2026-09-02，operator 指示「設計一個通用完美的介面，可以強制讓兩邊使用，重新設計」）：
+引擎邊界改為 **BSI v1（Block Structural Interface，方塊結構介面）**——一份引擎中立、傳輸無關的契約，
+本倉與 tectonic2 各存一份**逐位相同**的 `contract/`（`BSI.md` 規格、`bsi.schema.json` 機器可讀、
+`bsi_engine.h` 引擎轉接 ABI、`conformance/` 一致性語料、`CONTRACT_SHA256` 釘死）。
+
+1. **Java 直接說 BSI**（`BsiCodec`）：不再有本倉自訂的 line-JSON 語意；protocol 3 = BSI v1；
+   單位一律 SI，mm/MPa 只在顯示層。
+2. **sidecar = 傳輸轉接**（stdio 門鈴 + 零複製 arena `BSIA` ↔ 引擎的 `bsi_engine.h` vtable），零力學、零語意翻譯；
+   同一顆 sidecar 靜態連結 tectonic2 原始碼（D-041）。FrameCore 對數臂也實作同一個 vtable。
+3. **強制機制**：(a) `bsi.hello` 交換 `contractSha256`，與本地 `CONTRACT_SHA256` 不符即 `BSI_VERSION` 拒絕；
+   (b) 兩倉 CI 各跑 `contract/conformance/run.py`（N23）；(c) 契約**只能在 `contract/` 改**，改了必須同時 bump 兩倉的雜湊，
+   否則對方 CI 紅。
+4. **任意引擎接入的最短路徑**：實作 `bsi_engine_vtable` 十個函式 → 跑語料 → 綠的家族寫進能力字串。不碰傳輸、JSON、shm、排序。
+5. **精度是請求的一部分**：`precision{tier, targetRel, storage f64|f32, warmStart, maxTimeMs}`，回覆帶 `quality`；判定旗標只在 `commit` 軌有效。
+6. **材料/斷面/方塊屬性可自訂**：`isotropic/orthotropic/composite_rc/rope/x-<vendor>`、`rect/circle/h/box/pipe/rcrect/custom`、
+   `attrs`（`shape/damage/temperatureK/x-*`）；引擎不支援的標準項**拒絕不降級**，`x-` 項忽略計數。
+
+**取代**：D-034(1)「對 Java 維持現行 wire、Java 一行不動、換引擎 = 換 DLL」——operator 的 BSI 指示取代它；
+D-019 的「stdio 門鈴 + 共用記憶體」形狀**保留**（BSI T-B 就是它的通用化）。
+
+**理由**：兩條 wire 完全不同且沒有任何 gate 跨過去（`docs/SWAP_PROGRAM.md` G1）；「翻譯層」會把兩邊的慣例差異埋進 sidecar，
+換第三顆引擎時要再翻一次。契約 + 語料 + 雜湊讓「介面」成為可驗收的東西，而不是兩份會漂的文件。
+
+**否證條件**：(1) 一致性語料需要任何引擎專屬斷言才能通過 → 契約洩漏了元素詞彙，該欄位退場；
+(2) 兩倉之外出現第三個實作者 → 契約搬到獨立倉；(3) 實測 Java `BsiCodec` + 傳輸轉接吃掉 > 10% 幀預算 → Java FFM 直連同一契約（T-A）；
+(4) 契約在一個發布週期內主版 bump 超過一次 → 凍結流程重議（加法優先原則失守的訊號）。
+
+## D-042 · 採用引擎慣例：板網格、Timoshenko 預設、載重不切段、D/C 定義、島定義；g 不動
+
+**決定**（2026-09-02）：換裝不得同時「換引擎」又「要引擎照舊引擎的樣子」。以下慣例採 tectonic2 的，登記線移動（`docs/GATES.md` 2026-09-02）：
+
+| 項 | v0.3c（FrameCore 臂） | v0.4（tectonic） |
+|---|---|---|
+| 板網格 | 2×2 方塊一片、角在方塊中心、邊緣少半格、面積 (n−1)² | **一方塊一片、角在中面格角、面積 n²** |
+| 樑理論 | Euler-Bernoulli | **Timoshenko 預設**（Rect `Asy=5/6A`）；`eulerBernoulli` 旗標只供對數臂與 FrameCore parity |
+| 受載方塊 | 切段成節點（N16 病因） | **不切**（站位載重 MC54）；端格 = 節點載重（MC64） |
+| D/C 定義 | 五比值 argmax + 殼 vM | **三元組纖維篩 + 殼 Mohr**（`bsi.dc.fibre3`）；差異帳歸 `convention` |
+| 島 | 連通分量含未接地（D-017） | **所有連通分量各自成島**；未接地 → `MECHANISM`；接地者合為一個塊對角模型求解；奇異者逐分量定位（D-017 dated） |
+| 承載耦合 | 無 | 板擱在樑上 = `NodeCoupling`；**樑被切逐格，`lengthMm`/member id 會變**（D-036 否證 (3) 兌現） |
+| 板支承 | 全固 | **只鎖平移**（MC58b-10 不改）；F76 夾支邊彎矩能力退場 |
+| 樓板合成 | — | **全合成**（MC60c v0 無遮罩），HUD 具名 indicative（假設 Q4(a)） |
+| 重力 | 9.81 | **9.81 不動**——請求送 `gravity`，兩後端同 g，零線移動 |
+| 座標 | y-up | y-up（兩邊原生一致） |
+
+**理由**：每一條「照舊」都是 sidecar 裡的一段翻譯，換第三顆引擎時要再翻一次；而 tectonic 的每一條慣例都有它自己的 gate 押著
+（MC2 板、MC54 載重、MC55b D/C、MC41/MC65a 島）。**代價照登**：v0.1a–v0.3c 的板數字、載重切段語意、單元素課本 λ 值於 v0.4 作廢；
+`verify.py` 有 14 條腿在換裝期會紅（`sidecar/expected_red.json`）。
+
+**假設**：Q4(a) 樓板全合成。
+
+**否證條件**：(1) 某慣例差異在差異帳（N22）上無法歸類為 `convention` 且兩邊都說自己對 → 開閉合式 oracle 裁決，輸的一方修；
+(2) Timoshenko 預設使某個玩家可見的靜定案與課本差 > 5% → 檢查 `Asy` 對該斷面的取值，不回退 EB；
+(3) 一格一片的板在 t/L > 1/4 的世界超過 indicative 界線 → §2.4 門檻擋，不改網格。
+
+## D-041 · 宿主 = 傳輸轉接；引擎原始碼靜態連結；逾時/重啟形狀；jar 只帶 tectonic 一顆/平台
+
+**決定**（2026-09-02）：
+1. `sidecar/` 拆三塊：`wire/`（BSI T-B 傳輸：stdio 門鈴 + arena，零語意）、`backend_tectonic/`（`bsi_engine.h` vtable，
+   `core/capi/*.cpp` 原始碼以 `TEC_CAPI_STATIC` 靜態連結）、`backend_framecore/`（今天的驅動，只做 vtable 對數臂）。
+   `BR_BACKEND=tectonic|framecore` 兩顆二進位 `br-sidecar` / `br-sidecar-fc`。**不換 DLL，換原始碼**（tectonic2 沒有可重現的 DLL 建置）。
+2. **逾時與重啟**：sidecar 對引擎呼叫設 `requestTimeoutMs`；逾時即**自行結束**（記憶體耗盡時回應可能永不到）；
+   Java 的 D-013 退避重啟接手；**同一 revision 連續三次被殺 → 該 revision 標 `ENGINE_FAILED`，不再重試**，HUD 說得出來。
+3. **判定 boolean 由引擎下發**（BSI `blocks.flags`、`buckling.state`）；Java 刪三處 `dc > 1.0`（N19）；
+   `alignToVerdict` 對齊引擎旗標。顯示軌形狀不變（D-023）：一次求解、server 裁決。
+4. **每 revision 全量 `bsi.world.declare` + `bsi.solve`**；不用 `bsi.world.edit`（D-008 之下全量 176 ms @ 51K 格夠用；
+   tectonic MC60c B6「帶耦合世界只能 `solveLinear`」對本倉因此不生效）。
+5. **jar 只帶 tectonic sidecar 一顆/平台**（靜態 OpenBLAS 20–40 MB/顆；兩後端 × 兩平台會觸發 D-027 否證 (2)）；
+   `br-sidecar-fc` 是 dev/CI 對數臂，不進 jar。manifest 加 `backend`，`check_bundle.py` 的 evidence 欄加 backend 維度，
+   `third_party/` 加 OpenBLAS/METIS 授權。Windows 二進位仍在 Linux 上以 MinGW 交叉建（tectonic2 D2-011）。
+6. **執行緒**：`numThreads` 走 BSI 請求（tectonic MC62 `body.numThreads`），預設 1（決定論形狀）；不在 sidecar 呼叫 `openblas_set_num_threads`（引擎內部自設，無效）。
+
+**理由**：D-013 程序隔離、D-027 單一二進位、D-037 不繞道——三條既有裁決在 BSI 之下的形狀。
+
+**否證條件**：(1) 傳輸轉接 > 10% 幀預算 → Java FFM（D-043 (3)）；(2) 靜態 MinGW 鏈兩週無解 → Windows 臂先動態 DLL 同捆（manifest 全列）；
+(3) 同進程出現除逾時外不可觀測的失敗 → 改直呼 `LiveState` 並補 ABI 等價 gate。
+
+## D-040 · 挫屈 = tectonic2 特徵值 lane；N16-c 修訂為「上界、方向具名」；`buckling.kind`；規模政策由宿主決定
+
+**決定**（2026-09-02）：
+1. 全域線性特徵值挫屈由 tectonic2 提供（**MC66a** 桿件、**MC66b** 殼；其 v1.5），`bucklingFactor` 語意不變；
+   回覆帶 **`buckling.kind ∈ {eigen, screen}`**，同名欄位不得靜默換義（tectonic 的 Euler 篩標 `screen`）。
+2. **N16-c 修訂**（`docs/GATES.md` 登記）：一致幾何剛度（沿桿線性 N，與元素相同的形函數）的 λ 是**同理論精確解的上界**
+   （Rayleigh-Ritz），從上單調收斂——原線「回報值不得高於精確解」與正解矛盾。新線：EB 臂單元素對 Greenhill ≤ 1%（[暫]，
+   tectonic 首跑釘）、對 Euler 頂載 ≤ 1%；細分單調從上收斂；Timoshenko 臂對 Engesser 各自具名。
+   下游「λ_cr 偏保守」敘述**撤回**。
+3. **第五態** `solver-failed`（N18 登記）+ `not-eligible-scale`；`stability` 旗標由引擎派生（MC64/MC66a）。
+4. **規模政策**（假設 Q3(a)）：宿主以每島 `nodes/dof`（回覆的 `buckling.islands[].dof`）決定是否請求特徵解；
+   超預算島 `not-eligible-scale`，HUD「未評估（規模）」；`bucklingBlockLimit` 對著 tectonic 的實測成本重選（MC66a-21 RECORDED）。
+5. `[C12]/[C13]/[C14]` 在 tectonic 臂於 v1.5 前 expected-red；不得以「殼不挫屈」宣稱。
+
+**理由（先量過）**：純 Python 重算（tectonic2 `gate/evidence/MC66/prefreeze_kg.txt`）：「元素內取最大軸力」的 Kg 對 Greenhill 給
+2.486/4.140/5.560/6.553/7.152（−68/−47/−29/−16/−9%），**逐項重現** FrameCore 實測序列；沿桿線性的一致 Kg 給 7.889/7.857/7.839
+（+0.66/+0.25/+0.02%），單元素頂載懸臂 +0.75%。病因是 Kg 的形狀，不是元素數；所以 N16-a「網格不由玩家動作決定」由「載重不切段」
+（MC54）達成，不由細分達成。
+
+**假設**：Q3(a)。
+
+**否證條件**：(1) tectonic 首跑 EB 臂單元素 > 1% 或非單調 → Kg 錯，引擎側修，不得改線；(2) 構架（2412 dof 類）耗時 > FrameCore 1005 ms
+一個數量級 → Lanczos/每島策略重議，正確性線不動；(3) 玩家世界的島普遍超過 `budgetDof` → 政策改 (b)/(c) 重議，
+不靠降 `tol` 換速度。
+
+## D-039 · 支承 = 宣告的地面類別；Java 送「面相鄰的地面格是什麼」，引擎決定固定度（取代 D-022）
+
+**決定**（2026-09-02）：
+1. 地面是**材料**：datapack 把「站得住」的原版方塊對映到 Support 角色材料（`ground_rigid` 等），帶 `supportKind ∈ {fixAll, translationOnly}`
+   （tectonic MC63；BSI B.3）。`formwork_prop`（模板撐）= `translationOnly` + 暫時。**沒有 `none`**。
+2. Java 把結構方塊**面相鄰**的非結構方塊當方塊記錄送出（去重、規範序），`mat` = 對映的地面類別；**不再送 `support:bool`**，
+   `isSupported()` 刪除。引擎規則（既有）：面相鄰 Support 格使該構件格成為切點、其節點依 `supportKind` 固定；貼板只鎖平移。
+3. **哪些鄰居算接觸是玩法裁決**（假設 Q1(a)：六面）；引擎不知道也不該知道（不變式 3 的正面說法）。
+4. `FULLY_SUPPORTED` 碼保留在 BSI 列舉；tectonic v0 對全支承的格回有結果的 member（內力零），差異帳歸 `convention`（D-026 dated）。
+
+**理由**：T2#15 要「裁決權在引擎」；地面記錄比在方塊記錄上加位元更貼近「送事實」、零記錄變更、與 D-030 bulk-ground 同構；
+tectonic `CONSUMER_NOTES` F-04 自己就建議宿主插 `ground_support`。D-022 自己寫明是「過渡規則」與「不變式 3 的已知偏離」。
+
+**代價照登**：六面規則下貼牆的柱、坑裡的橋墩每格都是切點且全固 → D/C 趨零；這是嵌固的物理，也是 Q1(a) 的玩法後果。
+探針 5（`docs/SWAP_PROGRAM.md` §6 Phase 0.5）量三個原型世界的地面記錄數與 D/C 分佈，作為 Q1 的量化依據。
+
+**假設**：Q1(a)。
+
+**否證條件**：(1) 出現無法以「相鄰方塊 + 類別」表達的支承（有向錨栓、彈簧地基）→ 加記錄欄位或 `x-` 屬性，不在 Java 猜；
+(2) 探針 5 量到地面記錄數 > 結構方塊數 × 2 → 改 offset-23 六位面遮罩（記錄不變長）；(3) 玩家回報「靠牆的柱子怎麼蓋都不會壞」
+成為主要抱怨 → Q1 改 (b) 只有下方，Java 列舉改、引擎不動。
+
+## D-038 · 顯示軌由引擎預求值；Java 零應力公式（D-021 作廢）
+
+**決定**（2026-09-02，T2#11 成立、#3 對應列 RETIRED）：
+1. 引擎交付**站位陣列**（每根構件：方塊邊界 ∪ 中心 ∪ 極值站；每站 `s, x, sigma[4], tau, naY, naZ, dc`）與**殼的四角 × 上下面**
+   （`s1, s2, theta, vm`）、`n/m/q`（tectonic MC65b；BSI `stations`/`facets`/`facetSurfaces`）。
+2. Java **刪光公式**：`StressFieldSpec.java:61-175`、`ShellFieldSpec.java:134-185`、`SectionDiagram.java:40-51` 的力學段；
+   渲染改讀站位與角點（`StressSurfaceRenderer`、`StressRibbonBuilder`）。「Java 零公式」以 grep 型測試押著（N20）。
+3. 斷面幾何純量（A、Iy、Iz、cy、cz、J）**仍可上 wire**（BSI `members` 帶 `material/section` 索引，詞彙表查得到），
+   但 Java 不用它們算應力——D-021 允許的「可求值場」由引擎求值，不由 client 重建。
+4. 精度：站位/角點以 f32 進封包（BSI `precision.storage:"f32"` 可直接要 f32 區段），N20 線 rel ≤ 1e-5 對 sidecar 的 f64。
+5. `#3` 的「場參數」（沿桿的 N/V/M 係數）**不交付**：RETIRED-by-#11；端力 `endI/endJ` 保留為診斷欄。
+
+**理由**：D-033「Java 零力學」與不變式 5/6；三處 Java 公式是三處會與引擎分歧的地方（MC57 已證：76 條比量值的腿讓翻號全過）。
+站位密度是引擎的凍結集合，不是「11 站」——client 要固定站數就在站位上內插（顯示，不是力學）。
+
+**否證條件**：(1) 站位 wire 比現行大一個數量級且 shm 持續 grow（tectonic MC65b-17 RECORDED）→ 密度改「每方塊一站 + 極值」，
+**不回退 Java 重生**；(2) 某渲染需要引擎沒給的量 → 開需求給引擎（D-037），不在 Java 補公式。
+
 ## D-037 · 引擎側能力一律由 tectonic2 提供；不新增 FrameCore patch，不在宿主或 adapter 繞道
 
 **決定**：v0.4 期間，任何住在引擎側的能力——力學、離散化決定、接合機制、幾何剛度——
@@ -40,6 +183,11 @@
 ---
 
 ## D-036 · member 與 shell 的接合由**引擎**補能力，不由擷取層搬節點
+
+> **2026-09-02 dated 追記**：引擎已交付（tectonic2 MC60a `RigidLink` / MC60b `NodeCoupling` / MC60c 承載接觸；板重 100.0000% 進反力，
+> N15-a/b/c/e 在其 in-process gate 全達成；wire 版 = MC60d，語料 = `contract/conformance/C6-slab-on-beam.json`）。
+> **否證條件 (3) 兌現**：承載板的樑被切逐格，`lengthMm`/member id 會變——採納為引擎慣例（D-042），hover/`/br members` 的「一根柱」
+> 由 sidecar 依構造物件合併逐格 member（Phase 3）。B6「帶耦合世界只能 `solveLinear`」對本倉不生效（每 revision 全量 declare，D-041）。
 
 **決定**：樑托樓板（run 的側面碰到 facet）的接合，等 **tectonic2 提供不共點的接合機制**
 ——零長度剛性連結、MPC／節點耦合、或構件端部剛性偏心，任一即可。需求已提出：
@@ -92,6 +240,11 @@ B2 與 D-034 的重裁，不是否證觸發**。
 （獨立回報 ≥ 3 件），tectonic 1d 規則 3 於引擎側重議（候選：面節點 + 雙固定）。
 
 ## D-034 · v0.4 換裝為主軸：br-sidecar 改薄宿主，聚合抽取寫進 tectonic
+
+> **2026-09-02 dated 追記**：(1)「對 Java 維持現行 wire、Java 一行不動、換 DLL」**由 D-043 取代**——operator 指示設計通用介面並強制兩邊使用；
+> Java 直接說 BSI，sidecar 退為傳輸轉接，引擎原始碼靜態連結（tectonic2 沒有可重現的 DLL 建置）。(2) 雙引擎對數維持，形狀改為
+> 差異帳 N22 + 一致性語料 N23（同一份 `contract/conformance/`）。(3) 已完成（tectonic v1.2 MC43–MC53）。(4) 引擎中立 gates = 語料。
+> 否證 (2)「桿系 MC32 級對數」線不變：靜定反力與內力 1e-9/1e-8（EB 臂）。
 
 **決定**（2026-08-25，產品裁決）：v0.4 的主軸是**引擎換裝**，不是在既定退場的抽取層上加蓋。
 
@@ -304,6 +457,10 @@ install.bat/install.sh，在 jar 經由啟動器的 mod 瀏覽器抵達時**根�
 
 ## D-026 · 「完全支承」是第三種結局，不是機構
 
+> **2026-09-02 dated 追記**：第三種結局維持；`FULLY_SUPPORTED` 碼保留在 BSI 的開放列舉。tectonic v0 對全支承的格回**有結果的 member**
+> （每節點固定、內力零），不進 `unassigned`——兩邊都不是機構，句子不同；差異帳歸 `convention`（N22）。
+> 若日後要求引擎也列報，走 `readback.unassigned` 的加法，不在 Java 判。
+
 **決定**：一座島若**每一個節點都是支承**，回報為**完全支承**，不是奇異、不是機構。
 它計入 `islands`、不計入 `singularIslands`、`singular` 不置位，diagnostic 明說原因，
 其方塊進 `unassigned` 讓遊戲側指得出來。
@@ -375,6 +532,10 @@ D/C 偏離超過 5%，改為在面上插入零長度剛性連結；(3) 若出現
 
 ## D-023 · 顯示軌的實作形狀：server 裁決、client 對齊、過期必標
 
+> **2026-09-02 dated 追記**：形狀不變（一次求解、server 裁決、client 對齊、過期必標）。變的是**裁決的來源**：`overCapacity`/`bucklingCritical`
+> 改由引擎在 double 上定案並以旗標下發（D-041、N19、tectonic MC64），`alignToVerdict` 對齊引擎旗標而不是 Java 自己的比較。
+> protocol 3 不宣稱 `display` 軌（tectonic 的 fresh 路徑忽略 `track`，MC62 使其可觀測）。
+
 **決定**：兩軌精度分離（不變式 5/6）的 v1 實作**不是兩次求解**,而是一次承諾軌
 求解加上一條受紀律約束的顯示投影：
 
@@ -403,6 +564,10 @@ per-result stale 標示的場景（如錄影回放）,STALE 歸屬收回 server�
 
 ## D-022 · 支承 = 「結構方塊坐在非結構實體上」，全固接——過渡規則
 
+> **2026-09-02 dated 追記（取代 → D-039）**：過渡規則結束。支承改為**宣告的地面類別**（Support 角色材料 + `supportKind`），
+> Java 送面相鄰的地面格、引擎決定固定度；`support:bool` 與 `isSupported()` 於 protocol 3（BSI）移除。
+> 本條「正下方」的啟發式由 Q1 假設 (a)（六面）取代；D-039 否證 (3) 保留回到「只有下方」的路。
+
 **決定**：擷取層以啟發式判定支承：一個結構方塊的正下方是非結構實體方塊（地形）時，
 該方塊成為支承節點，且固定全部 6 DOF。玩家目前**沒有**宣告支承的手段。
 
@@ -417,6 +582,10 @@ per-result stale 標示的場景（如錄影回放）,STALE 歸屬收回 server�
 D/C 判定方向；(3) 需要部分固定度（鉸支、彈簧）的玩法出現。任一成立即重新裁決。
 
 ## D-021 · 引擎邊界的「元素詞彙」禁令，止於身分，不及於可求值場
+
+> **2026-09-02 dated 追記（作廢 → D-038）**：「可求值的顯示場由 client 重建」這條路線作廢：顯示場改由**引擎預求值**（站位陣列、殼角點），
+> Java 零應力公式。斷面純量仍可上 wire（詞彙表查得到），但不再是 client 算應力的輸入。禁令的另一半（元素身分詞彙不上 wire）**不變**，
+> 且由 BSI v1 的契約與語料押著（D-043 否證 (1)）。
 
 **決定**：不變式 7 禁止的是**元素身分詞彙**——節點編號、剛度矩陣、元素拓撲這類
 「換一個引擎就沒有對應物」的概念。**斷面幾何純量**（A、Iy、Iz、cy、cz、J）與
@@ -485,6 +654,10 @@ hello 清單的索引傳輸,governing fibre 以枚舉序號傳輸。
 
 ## D-018 · 強度檢核不等於穩定檢核，兩個都要報
 
+> **2026-09-02 dated 追記（D-040）**：特徵值 lane 移到引擎（tectonic2 MC66a/b，v1.5）；`bucklingFactor` 語意不變，加 `buckling.kind`。
+> N16-c 修訂：一致 Kg 的 λ 是**上界**，「偏保守」撤回。本條的「殼膜元素改用 QM6」在 tectonic 無對應（MITC4 膜），差異帳歸 `convention`。
+> 換裝期 `[C12]/[C13]/[C14]` expected-red，直到 v1.5。
+
 **決定**：每一島在線性解之後再跑一次**線性挫屈**特徵值分析，回報全世界最小的 λ_cr
 （`bucklingFactor`）。預設開啟，可用請求上的 `"buckling": false` 關掉。
 同時把殼的膜元素改用 **QM6 incompatible modes**。
@@ -530,6 +703,11 @@ hello 清單的索引傳輸,governing fibre 以枚舉序號傳輸。
 ---
 
 ## D-017 · 一個世界有很多結構，各解各的
+
+> **2026-09-02 dated 追記（對位 tectonic2 MC65a）**：「島」的定義對齊引擎——**所有連通分量各自成島**（分量圖含 member、facet、
+> 剛性連結、耦合）；未接地分量不求解、以 `MECHANISM` 列報；接地分量合為**一個塊對角模型**求解（各解各的在數學上等價）；
+> 該模型奇異時降級為逐分量求解以定位機構（由因子判定，不變式 4）。`islands`/`singularIslands` 語意不變。
+> 差異：tectonic 今天（v1.2）把未接地分量當整包失敗（`island.h:81-84`），MC65a 清償；換裝期 `[N17]` expected-red。
 
 **決定**：擷取出來的元素先依**連通分量**分割，每一棟各自組一個 `FrameModel`、各自求解。
 `singular` 的語意隨之改成「**至少有一棟**是機構」，並附上 `islands` / `singularIslands`
@@ -612,6 +790,9 @@ facet，斷面 token（`steel_rect_200x400` 等）是樑。兩組不重疊，認
 ---
 
 ## D-013 · 力學引擎跑在獨立 process
+
+> **2026-09-02 dated 追記**：程序隔離維持；sidecar 退為**傳輸轉接**（D-041），引擎原始碼靜態連結進去。
+> 補上逾時形狀：sidecar 對引擎呼叫逾時即自行結束，Java 退避重啟；**同一 revision 連續三次 → `ENGINE_FAILED`**，不再重試。
 
 > **2026-08-20 實況修正（ABI-1）**：獨立 process、stdio、fail-safe 語意——全部成立
 > 且已實作。「走 frame_capi_v2 的 stdio 協定」一句不成立：實際協定是本倉庫自訂的
@@ -788,6 +969,10 @@ facet，斷面 token（`steel_rect_200x400` 等）是樑。兩組不重疊，認
 ---
 
 ## D-002 · 力學引擎 = FrameCore v4，透過 frame_capi_v2
+
+> **2026-09-02 dated 追記（換裝總綱）**：引擎選型已由 D-034/D-037 移到 tectonic2；換裝走 **BSI v1**（D-043），
+> 不走 frame_capi_v2（tectonic2 的 frame_v2 只是 sidecar 內部的 T-A 傳輸）。FrameCore 保留為 CI 對數臂一個發布週期，
+> 之後退場。本條的「對著哪條 ABI 開發」自此由 `contract/` 取代。
 
 > **2026-08-20 實況修正（ABI-1）**：「透過 frame_capi_v2」從未發生。實作是
 > br-sidecar 直接 `#include` FrameCore 的 C++ 標頭**靜態連結**，對 JVM 說的是
