@@ -8,6 +8,28 @@
 
 ---
 
+## D-041 · 宿主 = 傳輸轉接；引擎原始碼靜態連結；逾時/重啟形狀；jar 只帶 tectonic 一顆/平台
+
+**決定**（2026-09-02）：
+1. `sidecar/` 拆三塊：`wire/`（BSI T-B 傳輸：stdio 門鈴 + arena，零語意）、`backend_tectonic/`（`bsi_engine.h` vtable，
+   `core/capi/*.cpp` 原始碼以 `TEC_CAPI_STATIC` 靜態連結）、`backend_framecore/`（今天的驅動，只做 vtable 對數臂）。
+   `BR_BACKEND=tectonic|framecore` 兩顆二進位 `br-sidecar` / `br-sidecar-fc`。**不換 DLL，換原始碼**（tectonic2 沒有可重現的 DLL 建置）。
+2. **逾時與重啟**：sidecar 對引擎呼叫設 `requestTimeoutMs`；逾時即**自行結束**（記憶體耗盡時回應可能永不到）；
+   Java 的 D-013 退避重啟接手；**同一 revision 連續三次被殺 → 該 revision 標 `ENGINE_FAILED`，不再重試**，HUD 說得出來。
+3. **判定 boolean 由引擎下發**（BSI `blocks.flags`、`buckling.state`）；Java 刪三處 `dc > 1.0`（N19）；
+   `alignToVerdict` 對齊引擎旗標。顯示軌形狀不變（D-023）：一次求解、server 裁決。
+4. **每 revision 全量 `bsi.world.declare` + `bsi.solve`**；不用 `bsi.world.edit`（D-008 之下全量 176 ms @ 51K 格夠用；
+   tectonic MC60c B6「帶耦合世界只能 `solveLinear`」對本倉因此不生效）。
+5. **jar 只帶 tectonic sidecar 一顆/平台**（靜態 OpenBLAS 20–40 MB/顆；兩後端 × 兩平台會觸發 D-027 否證 (2)）；
+   `br-sidecar-fc` 是 dev/CI 對數臂，不進 jar。manifest 加 `backend`，`check_bundle.py` 的 evidence 欄加 backend 維度，
+   `third_party/` 加 OpenBLAS/METIS 授權。Windows 二進位仍在 Linux 上以 MinGW 交叉建（tectonic2 D2-011）。
+6. **執行緒**：`numThreads` 走 BSI 請求（tectonic MC62 `body.numThreads`），預設 1（決定論形狀）；不在 sidecar 呼叫 `openblas_set_num_threads`（引擎內部自設，無效）。
+
+**理由**：D-013 程序隔離、D-027 單一二進位、D-037 不繞道——三條既有裁決在 BSI 之下的形狀。
+
+**否證條件**：(1) 傳輸轉接 > 10% 幀預算 → Java FFM（D-043 (3)）；(2) 靜態 MinGW 鏈兩週無解 → Windows 臂先動態 DLL 同捆（manifest 全列）；
+(3) 同進程出現除逾時外不可觀測的失敗 → 改直呼 `LiveState` 並補 ABI 等價 gate。
+
 ## D-040 · 挫屈 = tectonic2 特徵值 lane；N16-c 修訂為「上界、方向具名」；`buckling.kind`；規模政策由宿主決定
 
 **決定**（2026-09-02）：
@@ -157,6 +179,11 @@ B2 與 D-034 的重裁，不是否證觸發**。
 （獨立回報 ≥ 3 件），tectonic 1d 規則 3 於引擎側重議（候選：面節點 + 雙固定）。
 
 ## D-034 · v0.4 換裝為主軸：br-sidecar 改薄宿主，聚合抽取寫進 tectonic
+
+> **2026-09-02 dated 追記**：(1)「對 Java 維持現行 wire、Java 一行不動、換 DLL」**由 D-043 取代**——operator 指示設計通用介面並強制兩邊使用；
+> Java 直接說 BSI，sidecar 退為傳輸轉接，引擎原始碼靜態連結（tectonic2 沒有可重現的 DLL 建置）。(2) 雙引擎對數維持，形狀改為
+> 差異帳 N22 + 一致性語料 N23（同一份 `contract/conformance/`）。(3) 已完成（tectonic v1.2 MC43–MC53）。(4) 引擎中立 gates = 語料。
+> 否證 (2)「桿系 MC32 級對數」線不變：靜定反力與內力 1e-9/1e-8（EB 臂）。
 
 **決定**（2026-08-25，產品裁決）：v0.4 的主軸是**引擎換裝**，不是在既定退場的抽取層上加蓋。
 
@@ -444,6 +471,10 @@ D/C 偏離超過 5%，改為在面上插入零長度剛性連結；(3) 若出現
 
 ## D-023 · 顯示軌的實作形狀：server 裁決、client 對齊、過期必標
 
+> **2026-09-02 dated 追記**：形狀不變（一次求解、server 裁決、client 對齊、過期必標）。變的是**裁決的來源**：`overCapacity`/`bucklingCritical`
+> 改由引擎在 double 上定案並以旗標下發（D-041、N19、tectonic MC64），`alignToVerdict` 對齊引擎旗標而不是 Java 自己的比較。
+> protocol 3 不宣稱 `display` 軌（tectonic 的 fresh 路徑忽略 `track`，MC62 使其可觀測）。
+
 **決定**：兩軌精度分離（不變式 5/6）的 v1 實作**不是兩次求解**,而是一次承諾軌
 求解加上一條受紀律約束的顯示投影：
 
@@ -693,6 +724,9 @@ facet，斷面 token（`steel_rect_200x400` 等）是樑。兩組不重疊，認
 ---
 
 ## D-013 · 力學引擎跑在獨立 process
+
+> **2026-09-02 dated 追記**：程序隔離維持；sidecar 退為**傳輸轉接**（D-041），引擎原始碼靜態連結進去。
+> 補上逾時形狀：sidecar 對引擎呼叫逾時即自行結束，Java 退避重啟；**同一 revision 連續三次 → `ENGINE_FAILED`**，不再重試。
 
 > **2026-08-20 實況修正（ABI-1）**：獨立 process、stdio、fail-safe 語意——全部成立
 > 且已實作。「走 frame_capi_v2 的 stdio 協定」一句不成立：實際協定是本倉庫自訂的

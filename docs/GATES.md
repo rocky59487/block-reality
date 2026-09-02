@@ -602,6 +602,16 @@ WSL/x86-64，對出貨引擎，取三次最小值）：
 > 出處：`docs/SWAP_PROGRAM.md`（權威）與 D-038..D-043。受測者標在每條上：**Java** = `mod`/`forge` gradle test；
 > **sidecar/CI** = `verify.py` / `diff_engines.py` / workflow。引擎側的對應判準凍在 tectonic2 `docs/specs/MC6*.md`，**本倉不重複它們**。
 
+#### N19 判定旗標轉發（Java）
+
+| 線 | 內容 |
+|---|---|
+| **N19-a** | Java 原始碼（`mod/`、`forge/`）**零** `dc > 1.0` / `>= 1.0` 型比較（grep 型測試，白名單只允許測試檔） |
+| **N19-b** | 封包 `overCapacity` == 引擎 `blocks.flags.overloaded`，逐格；`bucklingCritical` == 引擎 `stability == critical` |
+| **N19-c** | `alignToVerdict` 對齊**引擎旗標**：f32 降轉值被推到旗標同一側（≤ 1 ulp）；旗標為 true 的格 f32 dc 必 > 1.0f，false 必 ≤ 1.0f |
+| **N19-d** | 界線 fixture：引擎回 `dc = 1 + 5e-9, overloaded=true`（f32 讀成 1.0）→ HUD 判超載（用假 sidecar 注入，不靠真引擎湊數字） |
+| **N19-e** | `stability == not-evaluated` 的格 HUD 顯示「未評估」，不顯示「穩定」 |
+
 #### N20 顯示軌精度與 Java 零公式（Java）
 
 | 線 | 內容 |
@@ -621,6 +631,26 @@ WSL/x86-64，對出貨引擎，取三次最小值）：
 | **N21-d** | 記錄數照登：三個原型世界（地形上的房子、坑裡橋墩、貼地筏基 + 牆）的地面記錄數 / 結構方塊數比值進 evidence（D-039 否證 (2) 的量測；比值 > 2 觸發） |
 | **N21-e** | `support:bool` 與 `isSupported()` 於 protocol 3 不存在（grep 型） |
 | **N21-f** | N11 整合測試（#86 持久 registry）含地面鄰居列舉的**順序**穩定性：同一世界兩次列舉逐筆相同 |
+
+#### N22 差異帳：分類規則先凍，零 blocker 才發布（sidecar/CI）
+
+`sidecar/diff_engines.py` 對同一語料（`contract/conformance/` + `verify.py` fixture）驅動 `br-sidecar`（tectonic）與 `br-sidecar-fc`（FrameCore），逐欄比對，每筆差異歸入**恰一類**，寫 `evidence/differential.jsonl`：
+
+| 類 | 定義 | 預歸類（凍結；不得事後改類） |
+|---|---|---|
+| `convention` | 兩邊都對，慣例不同（D-042） | D/C 值（G18）；撓度（Timoshenko，G19）；端力號向（MC59）；facet 數與板數字（G9）；`PLATE_*` vs `PLATE_NO_FACET`（G23）；`FULLY_SUPPORTED` 的呈現（D-026）；殼 QM6 vs MITC4 膜；端格節點載重的格內內力分佈（MC64 B3） |
+| `old-defect` | FrameCore 臂錯、引擎臂對（有 oracle 證明） | 挫屈 −68% 序列（N16）；受載切段（C11）；浮空樑整包失敗以外的 D-017 差異 |
+| `new-defect` | 引擎臂錯（有 oracle 證明）→ **回引擎修，不得帶病換裝**（D-034 否證 (2)） | — |
+| `freedom` | 規格未定、兩邊皆可（例：tie-break） | `governingFibre` 對稱純彎 tie → TENSION（引擎定，本倉採） |
+| `blocker` | 未歸類、或消費者需要而引擎沒有 | 任何未預歸類的差異**預設 blocker** |
+
+| 線 | 內容 |
+|---|---|
+| **N22-a** | 靜定案反力與內力：EB 臂（`eulerBernoulli` 旗標）對 FrameCore rel ≤ **1e-9**（反力、位移）、端力 ≤ **1e-8**（tectonic MC32 凍結線；實測 1e-12 級但 1e-12 不是線） |
+| **N22-b** | 殼帶級：合力 5e-4、應力 1e-2（MC32 殼帶級；drilling 實作自由度） |
+| **N22-c** | 發布條件：`evidence/differential.jsonl` 零 `blocker`；`new-defect` 零（修完才發） |
+| **N22-d** | 記名排除 ≤ 3 類（D-035 釘住共線對接 + 至多兩類），清單在 `diff_engines.py` 檔頭，超過重議 |
+| **N22-e** | 分類規則改動 = 本表 dated 追記 + 下游結論降一級（鐵則 1） |
 
 **expected-red 帳**：見下一節。
 
