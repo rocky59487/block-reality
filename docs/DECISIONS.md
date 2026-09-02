@@ -8,6 +8,24 @@
 
 ---
 
+## D-038 · 顯示軌由引擎預求值；Java 零應力公式（D-021 作廢）
+
+**決定**（2026-09-02，T2#11 成立、#3 對應列 RETIRED）：
+1. 引擎交付**站位陣列**（每根構件：方塊邊界 ∪ 中心 ∪ 極值站；每站 `s, x, sigma[4], tau, naY, naZ, dc`）與**殼的四角 × 上下面**
+   （`s1, s2, theta, vm`）、`n/m/q`（tectonic MC65b；BSI `stations`/`facets`/`facetSurfaces`）。
+2. Java **刪光公式**：`StressFieldSpec.java:61-175`、`ShellFieldSpec.java:134-185`、`SectionDiagram.java:40-51` 的力學段；
+   渲染改讀站位與角點（`StressSurfaceRenderer`、`StressRibbonBuilder`）。「Java 零公式」以 grep 型測試押著（N20）。
+3. 斷面幾何純量（A、Iy、Iz、cy、cz、J）**仍可上 wire**（BSI `members` 帶 `material/section` 索引，詞彙表查得到），
+   但 Java 不用它們算應力——D-021 允許的「可求值場」由引擎求值，不由 client 重建。
+4. 精度：站位/角點以 f32 進封包（BSI `precision.storage:"f32"` 可直接要 f32 區段），N20 線 rel ≤ 1e-5 對 sidecar 的 f64。
+5. `#3` 的「場參數」（沿桿的 N/V/M 係數）**不交付**：RETIRED-by-#11；端力 `endI/endJ` 保留為診斷欄。
+
+**理由**：D-033「Java 零力學」與不變式 5/6；三處 Java 公式是三處會與引擎分歧的地方（MC57 已證：76 條比量值的腿讓翻號全過）。
+站位密度是引擎的凍結集合，不是「11 站」——client 要固定站數就在站位上內插（顯示，不是力學）。
+
+**否證條件**：(1) 站位 wire 比現行大一個數量級且 shm 持續 grow（tectonic MC65b-17 RECORDED）→ 密度改「每方塊一站 + 極值」，
+**不回退 Java 重生**；(2) 某渲染需要引擎沒給的量 → 開需求給引擎（D-037），不在 Java 補公式。
+
 ## D-037 · 引擎側能力一律由 tectonic2 提供；不新增 FrameCore patch，不在宿主或 adapter 繞道
 
 **決定**：v0.4 期間，任何住在引擎側的能力——力學、離散化決定、接合機制、幾何剛度——
@@ -417,6 +435,10 @@ per-result stale 標示的場景（如錄影回放）,STALE 歸屬收回 server�
 D/C 判定方向；(3) 需要部分固定度（鉸支、彈簧）的玩法出現。任一成立即重新裁決。
 
 ## D-021 · 引擎邊界的「元素詞彙」禁令，止於身分，不及於可求值場
+
+> **2026-09-02 dated 追記（作廢 → D-038）**：「可求值的顯示場由 client 重建」這條路線作廢：顯示場改由**引擎預求值**（站位陣列、殼角點），
+> Java 零應力公式。斷面純量仍可上 wire（詞彙表查得到），但不再是 client 算應力的輸入。禁令的另一半（元素身分詞彙不上 wire）**不變**，
+> 且由 BSI v1 的契約與語料押著（D-043 否證 (1)）。
 
 **決定**：不變式 7 禁止的是**元素身分詞彙**——節點編號、剛度矩陣、元素拓撲這類
 「換一個引擎就沒有對應物」的概念。**斷面幾何純量**（A、Iy、Iz、cy、cz、J）與

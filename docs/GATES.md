@@ -594,6 +594,22 @@ WSL/x86-64，對出貨引擎，取三次最小值）：
 下一步（不在本輪）：Windows 上改成「先試 move，`AccessDeniedException` 就退回檢查目標
 是否已經是正確的位元組」，因為輸掉競賽的那一方要的答案本來就已經在磁碟上了。
 
+### 2026-09-02 凍結：N19–N23（換裝總綱；Phase 0，先於任何程式碼）
+
+> 出處：`docs/SWAP_PROGRAM.md`（權威）與 D-038..D-043。受測者標在每條上：**Java** = `mod`/`forge` gradle test；
+> **sidecar/CI** = `verify.py` / `diff_engines.py` / workflow。引擎側的對應判準凍在 tectonic2 `docs/specs/MC6*.md`，**本倉不重複它們**。
+
+#### N20 顯示軌精度與 Java 零公式（Java）
+
+| 線 | 內容 |
+|---|---|
+| **N20-a** | `DisplayTrackPrecisionTest` 延伸到站位（`s, x, sigma[4], tau, na, dc`）與殼角點（`s1, s2, theta, vm` × 上下面）：封包 f32 對 sidecar f64 rel ≤ **1e-5**（分母下限 = 該欄位量級的 1e-6 倍；零參考走絕對比較，沿 2026-08-20 TEST-8 慣例） |
+| **N20-b** | Java 零應力公式：`StressFieldSpec`/`ShellFieldSpec`/`SectionDiagram` 的力學段刪除後，grep 型測試斷言 `mod/`、`forge/` 內**不存在** `Iy`、`Iz`、`/ A`、`vonMises`、`principal` 等力學識別字於非測試檔（白名單明列）；wire == in-process 逐位屬 tectonic MC65b，本倉不重複 |
+| **N20-c** | client 對站位的內插只做**顯示**：兩站之間畫線，不重算任何應力；渲染測試以站位為輸入、以像素/頂點為輸出 |
+| **N20-d** | `precision.storage:"f32"` 請求下，sidecar 直接轉發引擎的 f32 區段（不再自己降轉）；與 f64 路徑的差 rel ≤ 1e-5（同 a） |
+
+**expected-red 帳**：見下一節。
+
 ## Evidence
 
 每次 gate 執行產生的紀錄（`evidence/verification.json` 的 `identity` 節）至少包含：
