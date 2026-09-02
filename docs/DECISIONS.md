@@ -8,6 +8,31 @@
 
 ---
 
+## D-040 · 挫屈 = tectonic2 特徵值 lane；N16-c 修訂為「上界、方向具名」；`buckling.kind`；規模政策由宿主決定
+
+**決定**（2026-09-02）：
+1. 全域線性特徵值挫屈由 tectonic2 提供（**MC66a** 桿件、**MC66b** 殼；其 v1.5），`bucklingFactor` 語意不變；
+   回覆帶 **`buckling.kind ∈ {eigen, screen}`**，同名欄位不得靜默換義（tectonic 的 Euler 篩標 `screen`）。
+2. **N16-c 修訂**（`docs/GATES.md` 登記）：一致幾何剛度（沿桿線性 N，與元素相同的形函數）的 λ 是**同理論精確解的上界**
+   （Rayleigh-Ritz），從上單調收斂——原線「回報值不得高於精確解」與正解矛盾。新線：EB 臂單元素對 Greenhill ≤ 1%（[暫]，
+   tectonic 首跑釘）、對 Euler 頂載 ≤ 1%；細分單調從上收斂；Timoshenko 臂對 Engesser 各自具名。
+   下游「λ_cr 偏保守」敘述**撤回**。
+3. **第五態** `solver-failed`（N18 登記）+ `not-eligible-scale`；`stability` 旗標由引擎派生（MC64/MC66a）。
+4. **規模政策**（假設 Q3(a)）：宿主以每島 `nodes/dof`（回覆的 `buckling.islands[].dof`）決定是否請求特徵解；
+   超預算島 `not-eligible-scale`，HUD「未評估（規模）」；`bucklingBlockLimit` 對著 tectonic 的實測成本重選（MC66a-21 RECORDED）。
+5. `[C12]/[C13]/[C14]` 在 tectonic 臂於 v1.5 前 expected-red；不得以「殼不挫屈」宣稱。
+
+**理由（先量過）**：純 Python 重算（tectonic2 `gate/evidence/MC66/prefreeze_kg.txt`）：「元素內取最大軸力」的 Kg 對 Greenhill 給
+2.486/4.140/5.560/6.553/7.152（−68/−47/−29/−16/−9%），**逐項重現** FrameCore 實測序列；沿桿線性的一致 Kg 給 7.889/7.857/7.839
+（+0.66/+0.25/+0.02%），單元素頂載懸臂 +0.75%。病因是 Kg 的形狀，不是元素數；所以 N16-a「網格不由玩家動作決定」由「載重不切段」
+（MC54）達成，不由細分達成。
+
+**假設**：Q3(a)。
+
+**否證條件**：(1) tectonic 首跑 EB 臂單元素 > 1% 或非單調 → Kg 錯，引擎側修，不得改線；(2) 構架（2412 dof 類）耗時 > FrameCore 1005 ms
+一個數量級 → Lanczos/每島策略重議，正確性線不動；(3) 玩家世界的島普遍超過 `budgetDof` → 政策改 (b)/(c) 重議，
+不靠降 `tol` 換速度。
+
 ## D-039 · 支承 = 宣告的地面類別；Java 送「面相鄰的地面格是什麼」，引擎決定固定度（取代 D-022）
 
 **決定**（2026-09-02）：
@@ -536,6 +561,10 @@ hello 清單的索引傳輸,governing fibre 以枚舉序號傳輸。
 並補上對應的 T gate。
 
 ## D-018 · 強度檢核不等於穩定檢核，兩個都要報
+
+> **2026-09-02 dated 追記（D-040）**：特徵值 lane 移到引擎（tectonic2 MC66a/b，v1.5）；`bucklingFactor` 語意不變，加 `buckling.kind`。
+> N16-c 修訂：一致 Kg 的 λ 是**上界**，「偏保守」撤回。本條的「殼膜元素改用 QM6」在 tectonic 無對應（MITC4 膜），差異帳歸 `convention`。
+> 換裝期 `[C12]/[C13]/[C14]` expected-red，直到 v1.5。
 
 **決定**：每一島在線性解之後再跑一次**線性挫屈**特徵值分析，回報全世界最小的 λ_cr
 （`bucklingFactor`）。預設開啟，可用請求上的 `"buckling": false` 關掉。
