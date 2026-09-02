@@ -660,6 +660,17 @@ WSL/x86-64，對出貨引擎，取三次最小值）：
 | **N22-d** | 記名排除 ≤ 3 類（D-035 釘住共線對接 + 至多兩類），清單在 `diff_engines.py` 檔頭，超過重議 |
 | **N22-e** | 分類規則改動 = 本表 dated 追記 + 下游結論降一級（鐵則 1） |
 
+#### N23 契約一致性（CI）
+
+| 線 | 內容 |
+|---|---|
+| **N23-a** | `python3 contract/check_contract.py` 綠：`contract/CONTRACT_SHA256` == 重算 |
+| **N23-b** | 與 tectonic2 釘住 tag 的 `contract/CONTRACT_SHA256` **逐字相同**（CI 從該 tag 取檔比對；不同即紅——這就是「強制兩邊使用」的機制） |
+| **N23-c** | `python3 contract/conformance/run.py --selfcheck` 綠（每條斷言路徑存在於 schema） |
+| **N23-d** | Java `BsiCodec` 對 `hello.contractSha256` 不符回 `BSI_VERSION` 並拒絕啟用引擎（假 sidecar 注入） |
+| **N23-e** | 契約檔的任何改動必須與 `CONTRACT_SHA256` 同 commit（CI 比對 diff 範圍） |
+| **N23-f** | 語料對真引擎：`run.py --adapter tectonic` 與 `--adapter framecore` 各 exit 0（Phase 3 起；未實作前 CI 標 `not-run`，**不得標綠**） |
+
 **expected-red 帳**：見下一節。
 
 ### 2026-09-02 新登記：換裝期的 expected-red 帳（鐵則 2 的照登，先於程式碼）

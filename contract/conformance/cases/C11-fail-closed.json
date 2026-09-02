@@ -1,0 +1,12 @@
+{"case":"C11-fail-closed","family":"C-11","grade":"hard",
+ "requires":["bsi.core"],
+ "steps":[
+   {"name":"solve-before-world","do":"bsi.solve","expectError":"NO_WORLD"},
+   {"name":"axis-out-of-range","do":"bsi.world.declare","blocks":[[0,0,0,"steel",null,3,0,0,1,1]],"expectError":"PROTOCOL_ERROR","expectAt":[0,0,0]},
+   {"name":"unknown-non-x-key","do":"bsi.solve","solve":{"selfWeight":true,"gravityy":[0,-9.81,0]},"expectError":"PROTOCOL_ERROR"},
+   {"name":"x-key-ignored","do":"bsi.solve","solve":{"selfWeight":true,"x-acme":{"foo":1}},"expect":{"status":"ok","diag.ignoredExtensions":1}},
+   {"name":"load-on-ground","do":"bsi.solve","loads":[[-1,0,0,0,-1000,0]],"expectError":"LOAD_TARGET","expectAt":[-1,0,0]},
+   {"name":"load-at-end-block-is-nodal","do":"bsi.solve","loads":[[4,0,0,0,-1000,0]],"expect":{"status":"ok"},"assert":[{"path":"equilibrium.applied[1]","eq":"-(wL+1000)","rel":1e-9}]},
+   {"name":"hello-contract-mismatch","do":"bsi.hello","contractSha256":"0000000000000000000000000000000000000000000000000000000000000000","expectError":"BSI_VERSION"}
+ ],
+ "world":"C4-cantilever-selfweight"}

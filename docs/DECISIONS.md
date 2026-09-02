@@ -8,6 +8,35 @@
 
 ---
 
+## D-043 · BSI v1 通用介面：兩倉逐位相同的契約；Java 直接說 BSI；sidecar 退為傳輸轉接（取代 D-034(1)）
+
+**決定**（2026-09-02，operator 指示「設計一個通用完美的介面，可以強制讓兩邊使用，重新設計」）：
+引擎邊界改為 **BSI v1（Block Structural Interface，方塊結構介面）**——一份引擎中立、傳輸無關的契約，
+本倉與 tectonic2 各存一份**逐位相同**的 `contract/`（`BSI.md` 規格、`bsi.schema.json` 機器可讀、
+`bsi_engine.h` 引擎轉接 ABI、`conformance/` 一致性語料、`CONTRACT_SHA256` 釘死）。
+
+1. **Java 直接說 BSI**（`BsiCodec`）：不再有本倉自訂的 line-JSON 語意；protocol 3 = BSI v1；
+   單位一律 SI，mm/MPa 只在顯示層。
+2. **sidecar = 傳輸轉接**（stdio 門鈴 + 零複製 arena `BSIA` ↔ 引擎的 `bsi_engine.h` vtable），零力學、零語意翻譯；
+   同一顆 sidecar 靜態連結 tectonic2 原始碼（D-041）。FrameCore 對數臂也實作同一個 vtable。
+3. **強制機制**：(a) `bsi.hello` 交換 `contractSha256`，與本地 `CONTRACT_SHA256` 不符即 `BSI_VERSION` 拒絕；
+   (b) 兩倉 CI 各跑 `contract/conformance/run.py`（N23）；(c) 契約**只能在 `contract/` 改**，改了必須同時 bump 兩倉的雜湊，
+   否則對方 CI 紅。
+4. **任意引擎接入的最短路徑**：實作 `bsi_engine_vtable` 十個函式 → 跑語料 → 綠的家族寫進能力字串。不碰傳輸、JSON、shm、排序。
+5. **精度是請求的一部分**：`precision{tier, targetRel, storage f64|f32, warmStart, maxTimeMs}`，回覆帶 `quality`；判定旗標只在 `commit` 軌有效。
+6. **材料/斷面/方塊屬性可自訂**：`isotropic/orthotropic/composite_rc/rope/x-<vendor>`、`rect/circle/h/box/pipe/rcrect/custom`、
+   `attrs`（`shape/damage/temperatureK/x-*`）；引擎不支援的標準項**拒絕不降級**，`x-` 項忽略計數。
+
+**取代**：D-034(1)「對 Java 維持現行 wire、Java 一行不動、換引擎 = 換 DLL」——operator 的 BSI 指示取代它；
+D-019 的「stdio 門鈴 + 共用記憶體」形狀**保留**（BSI T-B 就是它的通用化）。
+
+**理由**：兩條 wire 完全不同且沒有任何 gate 跨過去（`docs/SWAP_PROGRAM.md` G1）；「翻譯層」會把兩邊的慣例差異埋進 sidecar，
+換第三顆引擎時要再翻一次。契約 + 語料 + 雜湊讓「介面」成為可驗收的東西，而不是兩份會漂的文件。
+
+**否證條件**：(1) 一致性語料需要任何引擎專屬斷言才能通過 → 契約洩漏了元素詞彙，該欄位退場；
+(2) 兩倉之外出現第三個實作者 → 契約搬到獨立倉；(3) 實測 Java `BsiCodec` + 傳輸轉接吃掉 > 10% 幀預算 → Java FFM 直連同一契約（T-A）；
+(4) 契約在一個發布週期內主版 bump 超過一次 → 凍結流程重議（加法優先原則失守的訊號）。
+
 ## D-042 · 採用引擎慣例：板網格、Timoshenko 預設、載重不切段、D/C 定義、島定義；g 不動
 
 **決定**（2026-09-02）：換裝不得同時「換引擎」又「要引擎照舊引擎的樣子」。以下慣例採 tectonic2 的，登記線移動（`docs/GATES.md` 2026-09-02）：
@@ -940,6 +969,10 @@ facet，斷面 token（`steel_rect_200x400` 等）是樑。兩組不重疊，認
 ---
 
 ## D-002 · 力學引擎 = FrameCore v4，透過 frame_capi_v2
+
+> **2026-09-02 dated 追記（換裝總綱）**：引擎選型已由 D-034/D-037 移到 tectonic2；換裝走 **BSI v1**（D-043），
+> 不走 frame_capi_v2（tectonic2 的 frame_v2 只是 sidecar 內部的 T-A 傳輸）。FrameCore 保留為 CI 對數臂一個發布週期，
+> 之後退場。本條的「對著哪條 ABI 開發」自此由 `contract/` 取代。
 
 > **2026-08-20 實況修正（ABI-1）**：「透過 frame_capi_v2」從未發生。實作是
 > br-sidecar 直接 `#include` FrameCore 的 C++ 標頭**靜態連結**，對 JVM 說的是

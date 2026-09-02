@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bsi.schema.json",
+  "title": "BSI v1 - Block Structural Interface (machine-readable contract)",
+  "bsi": 1,
+  "description": "Headers are JSON validated by the definitions below; payload sections are binary records described under x-records. Field order in headers is the order listed. Units are SI. Any key starting with x- is a vendor extension and is ignored-with-count by engines that do not understand it; any other unknown key is PROTOCOL_ERROR.",
+
+  "x-verbs": ["bsi.hello", "bsi.vocab.declare", "bsi.vocab.query", "bsi.world.declare", "bsi.world.edit", "bsi.solve", "bsi.cancel"],
+
+  "x-capabilities": [
+    "bsi.core", "bsi.world.edit",
+    "bsi.readback.members", "bsi.readback.stations", "bsi.readback.shells",
+    "bsi.buckling.eigen", "bsi.buckling.eigen.shells", "bsi.buckling.screen",
+    "bsi.precision.display", "bsi.precision.f32", "bsi.precision.warmstart",
+    "bsi.material.orthotropic", "bsi.material.composite", "bsi.material.rope",
+    "bsi.section.custom", "bsi.block.shape", "bsi.block.attrs",
+    "bsi.fracture"
+  ],
+
+  "x-errors": ["BSI_VERSION", "EXPECTED_HELLO", "UNKNOWN_METHOD", "UNSUPPORTED", "UNSUPPORTED_ATTR",
+    "PROTOCOL_ERROR", "VOCAB_AFTER_WORLD", "VOCAB_ALREADY_DECLARED", "VOCAB_INVALID",
+    "NO_WORLD", "EMPTY_WORLD", "EXTRACT_FAILED", "LOAD_TARGET", "LOAD_UNSUPPORTED",
+    "SOLVE_FAILED", "OUT_OF_MEMORY", "CANCELLED", "INTERNAL", "BUDGET_EXCEEDED",
+    "ARENA_NEED_BIGGER", "ARENA_CORRUPT"],
+
+  "x-enums": {
+    "role": ["nonstructural", "member", "panel", "support", "monolith"],
+    "model": ["isotropic", "orthotropic", "composite_rc", "rope"],
+    "supportKind": ["fixAll", "translationOnly"],
+    "sectionKind": ["rect", "circle", "h", "box", "pipe", "rcrect", "custom"],
+    "mode": ["none", "axial", "bending", "shear", "torsion", "combined", "shell"],
+    "governingFibre": ["none", "crush", "tension", "shear", "bending", "torsion", "shell_vm"],
+    "ownerKind": ["none", "member", "facet", "unassigned"],
+    "unassignedWhy": ["MECHANISM", "FULLY_SUPPORTED", "RUN_TOO_SHORT", "PLATE_NO_FACET", "BULK_UNSUPPORTED", "BULK_GROUND", "NON_STRUCTURAL", "REFUSED"],
+    "bucklingMode": ["none", "eigen", "screen"],
+    "bucklingState": ["computed", "no-positive-eigenvalue", "not-eligible", "not-eligible-scale", "disabled-by-request", "solver-failed"],
+    "tier": ["commit", "display"],
+    "storage": ["f64", "f32"],
+    "editClass": ["A", "B", "C"],
+    "warningCode": ["BEARING_SKIPPED_FIXED", "BEARING_SKIPPED_NO_NODE", "BEARING_SKIPPED_NO_FACET", "BUTT_UNSTITCHED", "SHAPE_APPROXIMATED", "SEAM_UNJOINED", "INDICATIVE_THICK_SHELL"],
+    "include": ["members", "stations", "shells", "attrsEcho"],
+    "attrType": ["f64", "i64", "u64mask"],
+    "standardAttrKeys": ["shape", "damage", "temperatureK"]
+  },
+
+  "$defs": {
+    "xyz": {"type": "array", "items": {"type": "integer"}, "minItems": 3, "maxItems": 3},
+    "vec3": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "extensions": {"patternProperties": {"^x-": {}}},
+
+    "requestBase": {
+      "type": "object",
+      "required": ["bsi", "kind", "id", "method", "revision"],
+      "properties": {
+        "bsi": {"const": 1}, "kind": {"const": "request"}, "id": {"type": "string", "maxLength": 128},
+        "method": {"enum": ["bsi.hello", "bsi.vocab.declare", "bsi.vocab.query", "bsi.world.declare", "bsi.world.edit", "bsi.solve", "bsi.cancel"]},
+        "revision": {"type": "integer"},
+        "body": {"type": "object"},
+        "payloadBytes": {"type": "integer", "minimum": 0},
+        "payloadSha256": {"$ref": "#/$defs/sha256"},
+        "payloadB64": {"type": "string"}
+      }
+    },
+
+    "hello.request.body": {
+      "type": "object", "required": ["bsi", "client", "contractSha256"],
+      "properties": {
+        "bsi": {"const": 1}, "client": {"type": "string"}, "contractSha256": {"$ref": "#/$defs/sha256"},
+        "arena": {"type": "object", "properties": {"supported": {"type": "boolean"}, "maxBytes": {"type": "integer"}}}
+      }
+    },
+    "hello.response": {
+      "type": "object",
+      "required": ["bsi", "kind", "id", "method", "revision", "status", "engine", "version", "buildSha", "contractSha256", "capabilities", "threads"],
+      "properties": {
+        "bsi": {"const": 1}, "kind": {"const": "response"}, "id": {"type": "string"}, "method": {"const": "bsi.hello"},
+        "revision": {"type": "integer"}, "status": {"const": "ok"},
+        "engine": {"type": "string"}, "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "buildSha": {"type": "string"}, "contractSha256": {"$ref": "#/$defs/sha256"},
+        "capabilities": {"type": "array", "items": {"type": "string"}},
+        "threads": {"type": "integer", "minimum": 1},
+        "arena": {"type": "object", "properties": {"required": {"type": "boolean"}, "minReplyBytes": {"type": "integer"}}},
+        "precision": {"type": "object", "properties": {"tiers": {"type": "array"}, "storage": {"type": "array"}, "warmStart": {"type": "boolean"}}},
+        "transports": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+
+    "material": {
+      "type": "object", "required": ["name", "role"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1, "maxLength": 64},
+        "role": {"$ref": "#/x-enums/role"},
+        "model": {"type": "string"},
+        "E": {"oneOf": [{"type": "number", "exclusiveMinimum": 0}, {"$ref": "#/$defs/vec3"}]},
+        "G": {"oneOf": [{"type": "number", "exclusiveMinimum": 0}, {"$ref": "#/$defs/vec3"}]},
+        "nu": {"oneOf": [{"type": "number", "minimum": 0, "maximum": 0.5}, {"$ref": "#/$defs/vec3"}]},
+        "rho": {"type": "number", "exclusiveMinimum": 0},
+        "Ec": {"type": "number"}, "rhoC": {"type": "number"},
+        "allow": {"type": "object", "properties": {"sigma": {"type": "number"}, "sigmaC": {"type": "number"}, "sigmaT": {"type": "number"}, "tau": {"type": "number"}}},
+        "capacity": {"type": "object", "properties": {"fc": {"type": "number"}, "ft": {"type": "number"}, "tauS": {"type": "number"}}},
+        "shellThickness": {"type": "number", "exclusiveMinimum": 0},
+        "defaultSection": {"type": "string"},
+        "eulerBernoulli": {"type": "boolean", "default": false},
+        "tensionOnly": {"type": "boolean"},
+        "supportKind": {"$ref": "#/x-enums/supportKind"},
+        "temporary": {"type": "boolean"}
+      },
+      "patternProperties": {"^x-": {}},
+      "additionalProperties": false,
+      "x-rules": [
+        "role in {member,panel,monolith} requires E,rho and (nu or G)",
+        "role=panel requires shellThickness>0",
+        "role=support requires supportKind; mechanical fields ignored",
+        "allow.sigmaC,sigmaT,tau all > 0 => asymmetric fibre screen; else allow.sigma required",
+        "model starting with x- requires capability bsi.material.x-<vendor>, otherwise UNSUPPORTED"
+      ]
+    },
+    "section": {
+      "type": "object", "required": ["name", "kind"],
+      "properties": {
+        "name": {"type": "string"}, "kind": {"$ref": "#/x-enums/sectionKind"},
+        "p": {"type": "array", "items": {"type": "number"}, "maxItems": 4},
+        "A": {"type": "number"}, "Iy": {"type": "number"}, "Iz": {"type": "number"}, "J": {"type": "number"},
+        "cy": {"type": "number"}, "cz": {"type": "number"}, "Asy": {"type": "number"}, "Asz": {"type": "number"},
+        "Zy": {"type": "number"}, "Zz": {"type": "number"}, "principalAngle": {"type": "number"}
+      },
+      "patternProperties": {"^x-": {}},
+      "additionalProperties": false,
+      "x-kinds": {"rect": "p=[b,d]", "circle": "p=[d]", "h": "p=[h,bf,tw,tf]", "box": "p=[h,b,t]", "pipe": "p=[d,t]", "rcrect": "p=[b,d,As,lever]", "custom": "explicit A,Iy,Iz,J,cy,cz,Asy,Asz,Zy,Zz,principalAngle"}
+    },
+    "vocab.declare.body": {
+      "type": "object", "required": ["version", "materials"],
+      "properties": {
+        "version": {"type": "integer", "minimum": 1},
+        "materials": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/material"}},
+        "sections": {"type": "array", "items": {"$ref": "#/$defs/section"}},
+        "attrKeys": {"type": "array", "items": {"type": "string"}}
+      },
+      "patternProperties": {"^x-": {}},
+      "additionalProperties": false
+    },
+    "vocab.response": {
+      "type": "object", "required": ["status", "version", "materials", "sections"],
+      "properties": {
+        "status": {"const": "ok"}, "version": {"type": "integer"},
+        "materials": {"type": "array", "items": {"type": "object", "required": ["id", "name"], "properties": {"id": {"type": "integer"}, "name": {"type": "string"}}}},
+        "sections": {"type": "array", "items": {"type": "object", "required": ["id", "name"], "properties": {"id": {"type": "integer"}, "name": {"type": "string"}}}},
+        "attrKeys": {"type": "array", "items": {"type": "object", "required": ["id", "name"]}}
+      }
+    },
+
+    "diag": {
+      "type": "object",
+      "required": ["blocks", "nodes", "members", "facets", "islands", "singularIslands", "refusedBlocks", "ignoredExtensions", "warnings"],
+      "properties": {
+        "blocks": {"type": "integer"}, "nodes": {"type": "integer"}, "members": {"type": "integer"}, "facets": {"type": "integer"},
+        "islands": {"type": "integer"}, "singularIslands": {"type": "integer"}, "refusedBlocks": {"type": "integer"},
+        "ignoredExtensions": {"type": "integer"},
+        "warnings": {"type": "array", "items": {"type": "object", "required": ["code", "count"], "properties": {"code": {"type": "string"}, "count": {"type": "integer", "minimum": 1}}}}
+      }
+    },
+
+    "solve.request.body": {
+      "type": "object",
+      "properties": {
+        "selfWeight": {"type": "boolean", "default": true},
+        "gravity": {"$ref": "#/$defs/vec3", "default": [0, -9.80665, 0]},
+        "loads": {"type": "integer", "minimum": 0, "maximum": 1048576},
+        "buckling": {"type": "object", "properties": {"mode": {"$ref": "#/x-enums/bucklingMode"}, "budgetDof": {"type": "integer"}, "K": {"type": "number", "exclusiveMinimum": 0, "maximum": 100}}},
+        "precision": {"type": "object", "properties": {
+          "tier": {"$ref": "#/x-enums/tier"}, "targetRel": {"type": "number", "exclusiveMinimum": 0},
+          "storage": {"$ref": "#/x-enums/storage"}, "warmStart": {"type": "boolean"}, "maxTimeMs": {"type": "integer", "minimum": 0}}},
+        "numThreads": {"type": "integer", "minimum": 0},
+        "include": {"type": "array", "items": {"$ref": "#/x-enums/include"}, "uniqueItems": true}
+      },
+      "patternProperties": {"^x-": {}},
+      "additionalProperties": false
+    },
+    "solve.response": {
+      "type": "object",
+      "required": ["bsi", "kind", "id", "method", "revision", "status", "diag", "buckling", "unassigned", "sections"],
+      "properties": {
+        "bsi": {"const": 1}, "kind": {"const": "response"}, "id": {"type": "string"}, "method": {"const": "bsi.solve"},
+        "revision": {"type": "integer"}, "status": {"enum": ["ok", "partial"]},
+        "diag": {"$ref": "#/$defs/diag"},
+        "buckling": {"type": "object", "required": ["kind", "state"], "properties": {"kind": {"$ref": "#/x-enums/bucklingMode"}, "state": {"$ref": "#/x-enums/bucklingState"}}},
+        "unassigned": {"type": "array", "items": {"type": "object", "required": ["why", "island", "blocks"], "properties": {"why": {"type": "string"}, "island": {"type": "integer"}, "blocks": {"type": "array", "items": {"$ref": "#/$defs/xyz"}}}}},
+        "sections": {"type": "array", "items": {"type": "object", "required": ["name", "offset", "bytes", "count"], "properties": {"name": {"type": "string"}, "offset": {"type": "integer"}, "bytes": {"type": "integer"}, "count": {"type": "integer"}}}}
+      }
+    },
+    "world.response": {
+      "type": "object", "required": ["status", "diag"],
+      "properties": {"status": {"const": "ok"}, "diag": {"$ref": "#/$defs/diag"},
+        "edit": {"type": "object", "required": ["class"], "properties": {"class": {"$ref": "#/x-enums/editClass"}, "downgraded": {"type": "string"}}}}
+    },
+    "error": {
+      "type": "object", "required": ["bsi", "kind", "id", "method", "revision", "code", "message"],
+      "properties": {"bsi": {"const": 1}, "kind": {"const": "error"}, "id": {"type": "string"}, "method": {"type": "string"},
+        "revision": {"type": "integer"}, "code": {"type": "string"}, "message": {"type": "string"}, "at": {"$ref": "#/$defs/xyz"}, "required": {"type": "integer"}}
+    }
+  },
+
+  "x-records": {
+    "block":        {"bytes": 40,  "fields": [["x","i32"],["y","i32"],["z","i32"],["mat","i32"],["sect","i32"],["axis","u8"],["joint","u8"],["axisRot","u8"],["attr","u8"],["fill","f64"],["strength","f64"]]},
+    "attr":         {"bytes": 16,  "fields": [["blockIndex","u32"],["key","u32"],["type","u8"],["reserved","u8[3]"],["value","u8[8]"]]},
+    "edit":         {"bytes": 41,  "fields": [["op","u8"],["block","block"]]},
+    "load":         {"bytes": 64,  "fields": [["x","i32"],["y","i32"],["z","i32"],["flags","u32"],["fx","f64","N"],["fy","f64","N"],["fz","f64","N"],["mx","f64","N*m"],["my","f64","N*m"],["mz","f64","N*m"]]},
+    "blocks":       {"bytes": 24,  "fields": [["dc","f64"],["island","i32"],["owner","i32"],["mode","u8"],["ownerKind","u8"],["flags","u8"],["reserved","u8"],["reason","u32"]], "x-flags": {"bit0": "overloaded", "bit1": "indicative"}},
+    "equilibrium":  {"bytes": 56,  "fields": [["applied","f64[3]","N"],["reaction","f64[3]","N"],["residual","f64"]]},
+    "quality":      {"bytes": 16,  "fields": [["achievedRel","f64"],["iterations","i32"],["tierHonoured","u8"],["warmStartUsed","u8"],["storage","u8"],["timedOut","u8"]]},
+    "buckling":     {"bytes": 16,  "fields": [["island","i32"],["state","u8"],["kind","u8"],["reserved","u16"],["factor","f64"]]},
+    "members":      {"bytes": 160, "fields": [["id","i32"],["island","i32"],["blockFirst","u32"],["blockCount","u32"],["stationFirst","u32"],["stationCount","u32"],["material","i32"],["section","i32"],["lengthM","f64","m"],["endI","f64[6]","N,N,N,N*m,N*m,N*m"],["endJ","f64[6]","N,N,N,N*m,N*m,N*m"],["maxDC","f64"],["governingS","f64"],["mode","u8"],["governingFibre","u8"],["flags","u8"],["reserved","u8[5]"]]},
+    "memberBlocks": {"bytes": 12,  "fields": [["x","i32"],["y","i32"],["z","i32"]]},
+    "stations":     {"bytes": 88,  "fields": [["s","f64"],["x","f64","m"],["y","f64","m"],["z","f64","m"],["sigma","f64[4]","Pa"],["tau","f64","Pa"],["naY","f64","m"],["naZ","f64","m"]], "x-f32": 44},
+    "facets":       {"bytes": 280, "fields": [["id","i32"],["island","i32"],["blockFirst","u32"],["blockCount","u32"],["material","i32"],["reserved0","u32"],["thicknessM","f64","m"],["corners","f64[12]","m"],["ex","f64[3]"],["ey","f64[3]"],["n","f64[3]"],["N","f64[3]","N/m"],["M","f64[3]","N*m/m"],["Q","f64[2]","N/m"],["dc","f64"],["flags","u8"],["governingFibre","u8"],["reserved","u8[6]"]]},
+    "facetSurfaces":{"bytes": 256, "fields": [["top","f64[16]","Pa,Pa,rad,Pa x4"],["bottom","f64[16]","Pa,Pa,rad,Pa x4"]], "x-f32": 128},
+    "attrsEcho":    {"bytes": 16,  "fields": [["blockIndex","u32"],["key","u32"],["type","u8"],["reserved","u8[3]"],["value","u8[8]"]]}
+  },
+
+  "x-arena": {
+    "magic": "BSIA", "version": 1, "headerBytes": 128,
+    "fields": [["magic","u32"],["version","u32"],["capacity","u64"],["worldOff","u64"],["worldLen","u64"],["attrsOff","u64"],["attrsLen","u64"],["loadsOff","u64"],["loadsLen","u64"],["reqOff","u64"],["reqLen","u64"],["replyOff","u64"],["replyLen","u64"],["seq","u64"],["flags","u32"],["crc32","u32"]],
+    "doorbell": {"request": {"bsi": 1, "door": "solve|declare|edit|vocab|hello|cancel", "seq": "u64"}, "reply": {"bsi": 1, "door": "reply|error|needBigger", "seq": "u64", "replyLen": "u64", "required": "u64?"}}
+  },
+
+  "x-canonicalOrder": {
+    "blocks": "lexicographic (x, y, z) ascending on int32; duplicates refused",
+    "loads": "lexicographic (x, y, z) ascending, ties broken by memcmp of the raw 64-byte record",
+    "members|facets|stations": "id ascending; stations by s ascending within a member",
+    "unassigned": "by why enum order, then block order"
+  }
+}
