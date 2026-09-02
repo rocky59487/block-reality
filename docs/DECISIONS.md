@@ -8,6 +8,33 @@
 
 ---
 
+## D-042 · 採用引擎慣例：板網格、Timoshenko 預設、載重不切段、D/C 定義、島定義；g 不動
+
+**決定**（2026-09-02）：換裝不得同時「換引擎」又「要引擎照舊引擎的樣子」。以下慣例採 tectonic2 的，登記線移動（`docs/GATES.md` 2026-09-02）：
+
+| 項 | v0.3c（FrameCore 臂） | v0.4（tectonic） |
+|---|---|---|
+| 板網格 | 2×2 方塊一片、角在方塊中心、邊緣少半格、面積 (n−1)² | **一方塊一片、角在中面格角、面積 n²** |
+| 樑理論 | Euler-Bernoulli | **Timoshenko 預設**（Rect `Asy=5/6A`）；`eulerBernoulli` 旗標只供對數臂與 FrameCore parity |
+| 受載方塊 | 切段成節點（N16 病因） | **不切**（站位載重 MC54）；端格 = 節點載重（MC64） |
+| D/C 定義 | 五比值 argmax + 殼 vM | **三元組纖維篩 + 殼 Mohr**（`bsi.dc.fibre3`）；差異帳歸 `convention` |
+| 島 | 連通分量含未接地（D-017） | **所有連通分量各自成島**；未接地 → `MECHANISM`；接地者合為一個塊對角模型求解；奇異者逐分量定位（D-017 dated） |
+| 承載耦合 | 無 | 板擱在樑上 = `NodeCoupling`；**樑被切逐格，`lengthMm`/member id 會變**（D-036 否證 (3) 兌現） |
+| 板支承 | 全固 | **只鎖平移**（MC58b-10 不改）；F76 夾支邊彎矩能力退場 |
+| 樓板合成 | — | **全合成**（MC60c v0 無遮罩），HUD 具名 indicative（假設 Q4(a)） |
+| 重力 | 9.81 | **9.81 不動**——請求送 `gravity`，兩後端同 g，零線移動 |
+| 座標 | y-up | y-up（兩邊原生一致） |
+
+**理由**：每一條「照舊」都是 sidecar 裡的一段翻譯，換第三顆引擎時要再翻一次；而 tectonic 的每一條慣例都有它自己的 gate 押著
+（MC2 板、MC54 載重、MC55b D/C、MC41/MC65a 島）。**代價照登**：v0.1a–v0.3c 的板數字、載重切段語意、單元素課本 λ 值於 v0.4 作廢；
+`verify.py` 有 14 條腿在換裝期會紅（`sidecar/expected_red.json`）。
+
+**假設**：Q4(a) 樓板全合成。
+
+**否證條件**：(1) 某慣例差異在差異帳（N22）上無法歸類為 `convention` 且兩邊都說自己對 → 開閉合式 oracle 裁決，輸的一方修；
+(2) Timoshenko 預設使某個玩家可見的靜定案與課本差 > 5% → 檢查 `Asy` 對該斷面的取值，不回退 EB；
+(3) 一格一片的板在 t/L > 1/4 的世界超過 indicative 界線 → §2.4 門檻擋，不改網格。
+
 ## D-041 · 宿主 = 傳輸轉接；引擎原始碼靜態連結；逾時/重啟形狀；jar 只帶 tectonic 一顆/平台
 
 **決定**（2026-09-02）：
@@ -127,6 +154,11 @@ tectonic `CONSUMER_NOTES` F-04 自己就建議宿主插 `ground_support`。D-022
 ---
 
 ## D-036 · member 與 shell 的接合由**引擎**補能力，不由擷取層搬節點
+
+> **2026-09-02 dated 追記**：引擎已交付（tectonic2 MC60a `RigidLink` / MC60b `NodeCoupling` / MC60c 承載接觸；板重 100.0000% 進反力，
+> N15-a/b/c/e 在其 in-process gate 全達成；wire 版 = MC60d，語料 = `contract/conformance/C6-slab-on-beam.json`）。
+> **否證條件 (3) 兌現**：承載板的樑被切逐格，`lengthMm`/member id 會變——採納為引擎慣例（D-042），hover/`/br members` 的「一根柱」
+> 由 sidecar 依構造物件合併逐格 member（Phase 3）。B6「帶耦合世界只能 `solveLinear`」對本倉不生效（每 revision 全量 declare，D-041）。
 
 **決定**：樑托樓板（run 的側面碰到 facet）的接合，等 **tectonic2 提供不共點的接合機制**
 ——零長度剛性連結、MPC／節點耦合、或構件端部剛性偏心，任一即可。需求已提出：
@@ -642,6 +674,11 @@ hello 清單的索引傳輸,governing fibre 以枚舉序號傳輸。
 ---
 
 ## D-017 · 一個世界有很多結構，各解各的
+
+> **2026-09-02 dated 追記（對位 tectonic2 MC65a）**：「島」的定義對齊引擎——**所有連通分量各自成島**（分量圖含 member、facet、
+> 剛性連結、耦合）；未接地分量不求解、以 `MECHANISM` 列報；接地分量合為**一個塊對角模型**求解（各解各的在數學上等價）；
+> 該模型奇異時降級為逐分量求解以定位機構（由因子判定，不變式 4）。`islands`/`singularIslands` 語意不變。
+> 差異：tectonic 今天（v1.2）把未接地分量當整包失敗（`island.h:81-84`），MC65a 清償；換裝期 `[N17]` expected-red。
 
 **決定**：擷取出來的元素先依**連通分量**分割，每一棟各自組一個 `FrameModel`、各自求解。
 `singular` 的語意隨之改成「**至少有一棟**是機構」，並附上 `islands` / `singularIslands`
