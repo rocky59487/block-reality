@@ -272,6 +272,11 @@ disabled-by-scale）；在那之前 0 的語意以請求端自知為準，任何
 > 現在是**四態**，寫三態一樣是錯的。兩條 wire 都有矛盾檢查（有因子必為 computed、
 > 反之亦然），`verify.py [N18]` 五條、封包側六條。
 
+> **2026-09-02 追記（D-040）**：換裝後是**五態**：`computed / no-positive-eigenvalue / not-eligible / not-eligible-scale / disabled-by-request`
+> + **`solver-failed`**（Lanczos 未收斂；引擎不回未收斂的數）。`not-eligible-scale` 改由引擎回（`budgetDof`），宿主以每島 `nodes/dof` 決定預算
+> （Q3(a)）；`bucklingBlockLimit` 對著 tectonic 的實測成本（MC66a-21 RECORDED）重選。回覆帶 `buckling.kind ∈ {eigen, screen}`——
+> 寫「四態」自此也是錯的。N16-c 修訂（上界）見 GATES 2026-09-02。
+
 ### 2.7 協定變更
 
 blocks 條目新增 `axis`（frame 用；語意 = tectonic `McBlock.axis`，日後 joint /
@@ -291,6 +296,10 @@ JSON 與 shm 兩條 wire 同步改，協定版本號 bump，`verify.py` 的 shm 
 協定 1 → 2、shm layout 1 → 2、封包 `PROTOCOL` "4" → "5"，三者同一輪 bump。
 理由碼列舉在 wire 上是**開放**的（N17-c），所以 `BULK_UNSUPPORTED` 日後上線
 不必再動一次協定。
+
+> **2026-09-02 追記（D-043）**：協定 3 = **BSI v1**（`contract/`），不是 protocol 2 加欄位。本節的 `axis`（必填）、`bulk`/`bulkGround`
+> （→ `unassigned` 的 `BULK_*` 碼，開放列舉）、理由碼全部在 BSI 裡有位置；`support:bool` 移除（D-039）。JSON/shm 兩條 wire 改為
+> BSI 的 T-A/T-B/T-B′ 三種傳輸同一語意。對照表在 `docs/ENGINE_BOUNDARY.md` 與 `docs/SWAP_PROGRAM.md` §5。
 
 ### 2.8 邊界紀律（D-033，開發期檢查表）
 
@@ -400,6 +409,13 @@ Java 四件事之一——不碰力學、不碰抽取、換裝之後一行都不
 
 D-034 否證 (1) 的備援：若 T 軌拖過兩個發布窗，T2 凍結的同一套 gates 改在 br-sidecar 實作。
 
+> **2026-09-02 追記（`docs/SWAP_PROGRAM.md` §6）**：T 軌續接 tectonic2 **v1.3**（側枝合流 + MC61/MC62 + CMake）→ **v1.4**（MC63/64/65a/65b/60d）
+> → **v1.5**（MC66a/b）→ **v1.6**（MC68 BSI 實作、MC67）；判準 11 份已凍在其 `docs/specs/MC6*.md`。
+> B 軌改形：**B1** 薄宿主 → 傳輸轉接 + 原始碼靜態連結（D-041，不是載 DLL）；**B2** 雙引擎對數 → 差異帳 N22 + 一致性語料 N23；
+> **B3** 協定欄位 → **B8 BSI codec**（Java `BsiCodec` + sidecar T-B；D-043）；**B4** 挫屈門檻 → nodes/dof（Q3(a)）、bulk-ground 顯示 → `unassigned` 碼；
+> 新增 **B9** Java 公式刪除（D-038、N20）與 **B10** 地面列舉 + 持久 registry（D-039、N21、#86）。
+> 驗收：`verify.py` 除 `sidecar/expected_red.json` 帳上的腿外全綠；差異帳零 blocker。
+
 ---
 
 ## 5. v0.5 / v1：倒塌（裁決已定，設計待 v0.4 落地後細化）
@@ -456,6 +472,11 @@ D-034 否證 (1) 的備援：若 T 軌拖過兩個發布窗，T2 凍結的同一
 | R8 | **殼的雙引擎對數只有帶級**（MC32：drilling 實作自由度） | 桿系照 1e-12 釘；殼在 B2 依 tectonic 的帶級裁決記載，不冒稱逐位；聚合的殼 gates 用閉合解與不變量，不用跨引擎逐位 |
 | R9 | ~~tectonic 共線對接缺陷~~ **已關**（T1 落地，2026-08-25） | — |
 | R10 | **兩引擎的釘住共線對接慣例分歧**（二審 B）：v0.3b 連通（吞噬+名序）vs tectonic 1d（單側=被釘格中心；兩側=殘樁）。B2 對數在此類 fixture 必紅 | D-035 統一採 tectonic 三條、br-sidecar 以裁決退役不改碼、B2 記名排除；殘餘監控 = 排除清單 ≤ 3 類 |
+
+> **2026-09-02 更正（R6、R7；D-040/D-043）**：R6 對策裡「tectonic 的 Tier 2.5 細長篩……換裝後是更好的常開答案」**是錯的**——
+> 細長篩是 per-member Euler 篩（`buckling.h:5-6` 自承 "SCREEN, not eigenvalue buckling"），不是全域 λ_cr 的替代；換裝若只帶篩，
+> `bucklingFactor`/N16/N18/D-018 會無聲退役。正確處置：tectonic2 補特徵值 lane（MC66a/b，v1.5），回覆帶 `buckling.kind`，
+> 規模政策由宿主以 nodes/dof 決定（Q3(a)）。R7 的時程綁定改以 `docs/SWAP_PROGRAM.md` §6 的版本表為準（v1.3–v1.6）。
 
 **非目標（v0.4 明確不做）**：鋼筋混凝土複合斷面（工法軌）、模板/澆置/養護狀態機、
 frame 材料的「肉」（混凝土包鋼）、自由模式對**非結構**原版方塊的推導、任何實體元素求解。
