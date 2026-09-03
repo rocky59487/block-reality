@@ -851,3 +851,23 @@ release workflow 另外驗證「evidence 記錄的二進位 sha256 == dist/ 出�
 | `bsi_capi_open` 選項 | Java 送 `numThreads` 於 open 選項（`InProcessEngine.java:46`），host 只解析 `log/probe/assumeCaps`，未知鍵靜默忽略；契約無 open 選項 schema | #89 移除；契約提案 open 選項 schema + 非 `x-` 未知鍵拒絕（P6） |
 | `bsi.hello` 的 `arena.supported` | 進程內路徑送 `true`（`BsiHeaders.java:29`），Java 無 arena 實作 | #89 改 `false`（T-A） |
 | N24-a2 白名單 | 不變：`SidecarProcess.java` 一筆；`BundledEngine`（sidecar 形狀）的 #80 併發缺陷未修，只在 `BundledNatives` 修 | 隨 #89 一起退場；#80 加一則說明 |
+
+### 2026-09-03d 登記：契約加法批次 #1（BSI_ADD1；operator 裁決「1 做」；判準在 tectonic2 `docs/specs/BSI_ADD1.md`）
+
+> 契約是兩倉逐位鏡像，所以**判準只有一份**（引擎倉），本節是消費者側的**受影響清單**與**線的處置**。
+> 本節不移動任何一條線；`sidecar/expected_red.json` 不變。
+
+| 本倉的線 | 批次做了什麼 | 處置 |
+|---|---|---|
+| **N19-b** 挫屈半邊 | 契約加 `blocks.flags` bit2 `bucklingCritical`（引擎在 double 上定案「所屬島 `state==computed ∧ factor<1`」，只在 commit 軌）。**這是 2026-09-03c 記的 [暫] 的來源被補上** | 仍 **[暫]**，但理由改變：從「契約沒有欄位」變成「欄位有了、引擎的 MC66a 未落地」。bit2 在 tectonic 恆為 0 直到 v1.5；HUD 在那之前對挫屈只准顯示「未評估」（N19-e） |
+| **N20-d** `precision.storage:"f32"` | 語料補 `C12-f32-display`（C-12 家族**本來一個 case 都沒有**，所以 `bsi.precision.f32` 依 MC68-03 永遠不可宣告） | 仍 **[暫]**：case 在有 f32 能力的實作出現前恆 SKIP（tectonic MC65b）。**SKIP 不算綠** |
+| **N24-b5** 跨語言逐位 | `bsi_capi_open` 有了選項 schema：`log`/`numThreads`/`probe`/`assumeCaps`/`x-*`，**非 `x-` 未知鍵 → open 回 NULL**。本倉 `InProcessEngine.java:46` 送的 `{"log":0,"numThreads":N}` 在新 schema 下**合法**，而且 `numThreads` 從「被靜默忽略」變成「本 session 的預設執行緒數」 | 線不動。**#89 的驗收條件少一項**：不必再為了合法性移除 `numThreads`（`ALIGNMENT_LEDGER` A10 的處置隨之改為「保留並確認 N ≥ 1」，`Math.max(1, …)` 已保證） |
+| **N19/N20/N22** 的差異帳 | 無關 | — |
+
+**照登：這批有三條是行為變更，不是純加法。** `precision.maxTimeMs` 未宣告能力時、`numThreads` 越界時、`bsi_capi_open` 帶未知非 `x-` 鍵時，
+今天**成功**、之後**失敗**。三者都是量到的 fail-closed 洞（探針表在 `BSI_ADD1.md` §2），修正方向與 BSI 原則 P6 一致。
+對本倉的實際影響：**零**——`InProcessEngine` 不送 `maxTimeMs`，送的 `numThreads` 恆 ≥ 1，open 選項的兩個鍵都在新 schema 內。
+契約主版**不 bump**（Part E 的破壞性定義不含「把未定義行為收緊成 fail-closed」）；此判定照登於 `BSI_ADD1.md` §7 B1，供日後爭議時引用。
+
+**N23 的機械面**：`contract/CONTRACT_SHA256` 重釘、`.github/tectonic2-contract-ref` 兩行同步、兩倉 `diff -r contract` 空——
+三者是本批的 N23-a/b/e 驗收，與判準內容無關但缺一不可。
