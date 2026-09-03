@@ -880,3 +880,35 @@ release workflow 另外驗證「evidence 記錄的二進位 sha256 == dist/ 出�
 > 腿：`InProcessEngineTest.openOptionsStayInsideWhatTheContractAccepts`（不需引擎，故處處會跑）。
 > 另補 `BsiResponse.BlockResult.bucklingCritical()` 讀 bit2，腿走完三個位元的八種組合
 > （`BsiFrameAndResponseTest.theThreeBlockFlagsAreIndependentBits`）——**只設一個位元的 fixture 對任何錯遮罩都會過**。
+
+### 2026-09-03e 登記：N22 差異帳改形 + dated 降一級（裁決 D-045；operator：「2 不要 frame core」）
+
+> **這一節移線。** 鐵則 1：移線要登記，下游結論至少降一級。兩件事都在這裡，不在別處。
+
+**移動的是什麼**：N22 原文的機構是「`sidecar/diff_engines.py` 驅動 `br-sidecar`（tectonic）與 `br-sidecar-fc`（FrameCore），
+逐欄比對、每筆差異歸恰一類，寫 `evidence/differential.jsonl`，**零 `blocker` 才發布**」。
+FrameCore 臂由 D-045 裁決**不做**，所以這個機構**不會存在**。N22 改形如下：
+
+| 舊（2026-09-02 凍） | 新（2026-09-03e） | 級別 |
+|---|---|---|
+| **N22-a** EB 臂對 FrameCore rel ≤ 1e-9 / 端力 ≤ 1e-8 | **N22-a′** `sidecar/verify.py` 的封閉解與不變量對 tectonic 臂全綠（線照 `verify.py` 檔內既有的，不新訂） | **降一級**：對照組從「另一個求解器」變成「解析解 + 不變量」。超靜定內力分配無對照 |
+| **N22-b** 殼帶級 5e-4 / 1e-2 | **撤回**。殼的第二意見只有 FrameCore；沒有臂就沒有這條線。**不得**以 tectonic 自己的收斂梯子冒充第二意見 | **撤回** |
+| **N22-c** `differential.jsonl` 零 `blocker` 才發布 | **N22-c′** `contract/conformance/run.py --adapter capi --lib libbsi_tectonic.so` 對真引擎 **exit 0**；帳上紅逐條具名（鏡像 tectonic2 `gate/bsi_expected_red.json`），**SKIP 不算綠** | **降一級**：從「兩臂差異零阻擋」變成「單臂語料無紅」 |
+| **N22-d** 記名排除 ≤ 3 類 | **不適用**（沒有差異可排除） | 撤回 |
+| **N22-e** 分類規則改動 = dated + 降級 | **保留**，且本節就是它第一次生效 | 不變 |
+
+**預歸類表（`convention` / `old-defect` / `new-defect` / `freedom` / `blocker`）改變身分**：
+從「發布 gate 的分類規則」降為 **v0.3c → v0.4 的遷移說明**——它描述玩家會看到什麼變化（D-042 那張對照表就是它的內容），
+**不再宣稱有機器在檢查**。`blocker`（未歸類即預設阻擋）**失去執行機構**，這句照登，不用「改形」兩字帶過。
+
+**照登：改形之後沒有替代機構的那一塊。** 封閉解涵蓋靜定案、平衡不變量、等變性；
+**不涵蓋**超靜定內力分配、殼的實際數值、多構件互動。這正是第二意見本來要看的地方。
+v0.4 出貨時，「引擎算得對」這句話的證據強度**比 N22 原文低一級**，來源是封閉解與語料，不是交叉驗證。
+要補回來的正確形狀是**獨立 oracle**（OpenSees / 解析解族），不是把已知較差的舊引擎接回來（D-045 否證條件 (1)）。
+
+**N23-f 同步改形**：原文「`--adapter tectonic` 與 `--adapter framecore` 各 exit 0」——旗標名 2026-09-03c 已更正，
+臂數由本節減為一：**`--adapter capi --lib libbsi_tectonic.so` 一臂 exit 0**。
+（`--adapter engine --hostd` 走同一份 host 的另一種傳輸，是 C-2 的逐位腿，不是第二個引擎。）
+
+**無主項結清**：對位帳 C1（N22 沒有 owner）由本節結清——**不是找到 owner，是取消工作**。
+A14（FrameCore BSI 臂不存在）同上。C2 的「兩臂各 exit 0」隨 N23-f 減為一臂。
