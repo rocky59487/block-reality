@@ -871,3 +871,12 @@ release workflow 另外驗證「evidence 記錄的二進位 sha256 == dist/ 出�
 
 **N23 的機械面**：`contract/CONTRACT_SHA256` 重釘、`.github/tectonic2-contract-ref` 兩行同步、兩倉 `diff -r contract` 空——
 三者是本批的 N23-a/b/e 驗收，與判準內容無關但缺一不可。
+
+> **2026-09-03 dated 追記（2026-09-03d 節；上方原文一字不改）**：上表 N24-b5 那格說本倉影響「**零**」，
+> 理由是 `Math.max(1, …)` 已保證 `numThreads ≥ 1`。**這條寫錯了一半**——`Math.max` 保證的是下界，
+> 契約新增的是**雙邊**界線 `1 ≤ n ≤ 256`；`numThreads > 256` 的設定值會讓 `bsi_capi_open` 回 `NULL`，
+> **引擎整個載不起來**。落地時改為 `InProcessEngine.openOptions(int)`：`n ≤ 0` → **省略該鍵**（契約的「引擎自選」寫法，
+> 而 `Math.max(1, n)` 是把「沒意見」翻成「就要一條」，兩者不同請求）、`n > 256` → 送 256。
+> 腿：`InProcessEngineTest.openOptionsStayInsideWhatTheContractAccepts`（不需引擎，故處處會跑）。
+> 另補 `BsiResponse.BlockResult.bucklingCritical()` 讀 bit2，腿走完三個位元的八種組合
+> （`BsiFrameAndResponseTest.theThreeBlockFlagsAreIndependentBits`）——**只設一個位元的 fixture 對任何錯遮罩都會過**。
