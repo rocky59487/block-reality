@@ -3,6 +3,7 @@
  "steps":[
    {"name":"solve-before-world","do":"bsi.solve","expectError":"NO_WORLD"},
    {"name":"axis-out-of-range","do":"bsi.world.declare","blocks":[[0,0,0,"steel",null,3,0,0,1,1]],"expectError":"PROTOCOL_ERROR","expectAt":[0,0,0]},
+   {"name":"declare-world","do":"bsi.world.declare","world":"C4-cantilever-selfweight","expect":{"status":"ok"}},
    {"name":"unknown-non-x-key","do":"bsi.solve","solve":{"selfWeight":true,"gravityy":[0,-9.81,0]},"expectError":"PROTOCOL_ERROR"},
    {"name":"x-key-ignored","do":"bsi.solve","solve":{"selfWeight":true,"x-acme":{"foo":1}},"expect":{"status":"ok","diag.ignoredExtensions":1}},
    {"name":"load-on-ground","do":"bsi.solve","loads":[[-1,0,0,0,-1000,0]],"expectError":"LOAD_TARGET","expectAt":[-1,0,0]},

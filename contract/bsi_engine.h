@@ -25,6 +25,12 @@ extern "C" {
 #  else
 #    define BSI_EXPORT __declspec(dllimport)
 #  endif
+#elif defined(__GNUC__) && defined(BSI_ENGINE_BUILD)
+/* Part G 2026-09-03 item 13: an engine library built with hidden visibility (the
+ * shipping shape: nothing but the contract's own symbols leaves the .so) would
+ * otherwise hide bsi_engine_entry itself, and a version script cannot un-hide
+ * what the compiler marked hidden. Same branch bsi_capi.h already carries. */
+#  define BSI_EXPORT __attribute__((visibility("default")))
 #else
 #  define BSI_EXPORT
 #endif
@@ -76,11 +82,12 @@ typedef struct bsi_block {          /* 40 B */
   double  strength;                 /* [0,1] curing */
 } bsi_block;
 
-typedef struct bsi_attr {           /* 16 B */
+typedef struct bsi_attr {           /* 16 B (Part G 2026-09-02 item 12: key is u16; the
+                                       original u32 key + reserved[3] summed to 20 B) */
   uint32_t blockIndex;              /* index into canonical block order */
-  uint32_t key;                     /* index into vocab.attrKeys */
+  uint16_t key;                     /* index into vocab.attrKeys */
   uint8_t  type;                    /* 0 f64, 1 i64, 2 u64 bitmask */
-  uint8_t  reserved[3];
+  uint8_t  reserved;
   uint8_t  value[8];
 } bsi_attr;
 

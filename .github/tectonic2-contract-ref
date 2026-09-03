@@ -1,0 +1,5 @@
+# The tectonic2 commit whose contract/ this repository mirrors byte for byte.
+# CI (N23-b) clones this ref and diffs the whole directory: if either side moves
+# without the other, the build goes red instead of the two drifting apart.
+# Update it in the SAME commit that copies a new contract/ across.
+c9628bc717da0a33655e93ad14db6f957b9d092a

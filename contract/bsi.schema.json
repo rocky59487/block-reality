@@ -40,7 +40,8 @@
     "warningCode": ["BEARING_SKIPPED_FIXED", "BEARING_SKIPPED_NO_NODE", "BEARING_SKIPPED_NO_FACET", "BUTT_UNSTITCHED", "SHAPE_APPROXIMATED", "SEAM_UNJOINED", "INDICATIVE_THICK_SHELL"],
     "include": ["members", "stations", "shells", "attrsEcho"],
     "attrType": ["f64", "i64", "u64mask"],
-    "standardAttrKeys": ["shape", "damage", "temperatureK"]
+    "standardAttrKeys": ["shape", "damage", "temperatureK"],
+    "transport": ["frame", "arena", "stdio-b64"]
   },
 
   "$defs": {
@@ -63,6 +64,40 @@
       }
     },
 
+    "responseBase": {
+      "type": "object",
+      "required": ["bsi", "kind", "id", "method", "revision"],
+      "properties": {
+        "bsi": {"const": 1}, "kind": {"enum": ["response", "error"]}, "id": {"type": "string"},
+        "method": {"type": "string"}, "revision": {"type": "integer"},
+        "payloadBytes": {"type": "integer", "minimum": 0},
+        "payloadB64": {"type": "string"}
+      },
+      "x-note": "payloadBytes/payloadB64 appear only on the stdio-b64 transport (Part G 2026-09-02 item 3); the conformance runner strips them before C-1/C-2 comparison."
+    },
+    "world.declare.body": {
+      "type": "object", "required": ["blocks"],
+      "properties": {"blocks": {"type": "integer", "minimum": 0, "maximum": 16777216}, "attrs": {"type": "integer", "minimum": 0, "maximum": 16777216}},
+      "patternProperties": {"^x-": {}},
+      "additionalProperties": false
+    },
+    "world.edit.body": {
+      "type": "object", "required": ["edits"],
+      "properties": {"edits": {"type": "integer", "minimum": 1, "maximum": 16777216}},
+      "patternProperties": {"^x-": {}},
+      "additionalProperties": false
+    },
+    "cancel.body": {
+      "type": "object", "required": ["targetId"],
+      "properties": {"targetId": {"type": "string", "maxLength": 128}},
+      "patternProperties": {"^x-": {}},
+      "additionalProperties": false
+    },
+    "cancel.response": {
+      "type": "object", "required": ["status", "targetId"],
+      "properties": {"status": {"const": "ok"}, "targetId": {"type": "string"}}
+    },
+
     "hello.request.body": {
       "type": "object", "required": ["bsi", "client", "contractSha256"],
       "properties": {
@@ -82,7 +117,7 @@
         "threads": {"type": "integer", "minimum": 1},
         "arena": {"type": "object", "properties": {"required": {"type": "boolean"}, "minReplyBytes": {"type": "integer"}}},
         "precision": {"type": "object", "properties": {"tiers": {"type": "array"}, "storage": {"type": "array"}, "warmStart": {"type": "boolean"}}},
-        "transports": {"type": "array", "items": {"type": "string"}}
+        "transports": {"type": "array", "items": {"enum": ["frame", "arena", "stdio-b64"]}}
       }
     },
 
@@ -127,7 +162,7 @@
       },
       "patternProperties": {"^x-": {}},
       "additionalProperties": false,
-      "x-kinds": {"rect": "p=[b,d]", "circle": "p=[d]", "h": "p=[h,bf,tw,tf]", "box": "p=[h,b,t]", "pipe": "p=[d,t]", "rcrect": "p=[b,d,As,lever]", "custom": "explicit A,Iy,Iz,J,cy,cz,Asy,Asz,Zy,Zz,principalAngle"}
+      "x-kinds": {"rect": "p=[b,d]", "circle": "p=[d]", "h": "p=[h,bf,tw,tf]", "box": "p=[h,b,t]", "pipe": "p=[d,t]", "rcrect": "p=[b,d,As,lever]", "custom": "explicit A,Iy,Iz,J,cy,cz,Asy,Asz,Zy,Zz,principalAngle; Zy/Zz are PLASTIC section moduli (Part G 2026-09-02 item 7)"}
     },
     "vocab.declare.body": {
       "type": "object", "required": ["version", "materials"],
@@ -203,7 +238,7 @@
 
   "x-records": {
     "block":        {"bytes": 40,  "fields": [["x","i32"],["y","i32"],["z","i32"],["mat","i32"],["sect","i32"],["axis","u8"],["joint","u8"],["axisRot","u8"],["attr","u8"],["fill","f64"],["strength","f64"]]},
-    "attr":         {"bytes": 16,  "fields": [["blockIndex","u32"],["key","u32"],["type","u8"],["reserved","u8[3]"],["value","u8[8]"]]},
+    "attr":         {"bytes": 16,  "fields": [["blockIndex","u32"],["key","u16"],["type","u8"],["reserved","u8"],["value","u8[8]"]]},
     "edit":         {"bytes": 41,  "fields": [["op","u8"],["block","block"]]},
     "load":         {"bytes": 64,  "fields": [["x","i32"],["y","i32"],["z","i32"],["flags","u32"],["fx","f64","N"],["fy","f64","N"],["fz","f64","N"],["mx","f64","N*m"],["my","f64","N*m"],["mz","f64","N*m"]]},
     "blocks":       {"bytes": 24,  "fields": [["dc","f64"],["island","i32"],["owner","i32"],["mode","u8"],["ownerKind","u8"],["flags","u8"],["reserved","u8"],["reason","u32"]], "x-flags": {"bit0": "overloaded", "bit1": "indicative"}},
@@ -215,19 +250,27 @@
     "stations":     {"bytes": 88,  "fields": [["s","f64"],["x","f64","m"],["y","f64","m"],["z","f64","m"],["sigma","f64[4]","Pa"],["tau","f64","Pa"],["naY","f64","m"],["naZ","f64","m"]], "x-f32": 44},
     "facets":       {"bytes": 280, "fields": [["id","i32"],["island","i32"],["blockFirst","u32"],["blockCount","u32"],["material","i32"],["reserved0","u32"],["thicknessM","f64","m"],["corners","f64[12]","m"],["ex","f64[3]"],["ey","f64[3]"],["n","f64[3]"],["N","f64[3]","N/m"],["M","f64[3]","N*m/m"],["Q","f64[2]","N/m"],["dc","f64"],["flags","u8"],["governingFibre","u8"],["reserved","u8[6]"]]},
     "facetSurfaces":{"bytes": 256, "fields": [["top","f64[16]","Pa,Pa,rad,Pa x4"],["bottom","f64[16]","Pa,Pa,rad,Pa x4"]], "x-f32": 128},
-    "attrsEcho":    {"bytes": 16,  "fields": [["blockIndex","u32"],["key","u32"],["type","u8"],["reserved","u8[3]"],["value","u8[8]"]]}
+    "attrsEcho":    {"bytes": 16,  "fields": [["blockIndex","u32"],["key","u16"],["type","u8"],["reserved","u8"],["value","u8[8]"]]}
   },
 
   "x-arena": {
     "magic": "BSIA", "version": 1, "headerBytes": 128,
     "fields": [["magic","u32"],["version","u32"],["capacity","u64"],["worldOff","u64"],["worldLen","u64"],["attrsOff","u64"],["attrsLen","u64"],["loadsOff","u64"],["loadsLen","u64"],["reqOff","u64"],["reqLen","u64"],["replyOff","u64"],["replyLen","u64"],["seq","u64"],["flags","u32"],["crc32","u32"]],
+    "reply": "one T-A frame (12-byte prefix + header + payload); sections[].offset relative to payload start; doorbell replyLen = frame bytes",
     "doorbell": {"request": {"bsi": 1, "door": "solve|declare|edit|vocab|hello|cancel", "seq": "u64"}, "reply": {"bsi": 1, "door": "reply|error|needBigger", "seq": "u64", "replyLen": "u64", "required": "u64?"}}
+  },
+
+  "x-capi": {
+    "header": "bsi_capi.h", "abi": 1,
+    "symbols": ["bsi_capi_abi_version", "bsi_capi_open", "bsi_capi_call", "bsi_capi_close", "bsi_capi_last_error"],
+    "frame": "'F' 'C' | flags u16 | headerLen u32 | payloadLen u32 | header | payload (LE); one call = one frame in, one frame out"
   },
 
   "x-canonicalOrder": {
     "blocks": "lexicographic (x, y, z) ascending on int32; duplicates refused",
     "loads": "lexicographic (x, y, z) ascending, ties broken by memcmp of the raw 64-byte record",
     "members|facets|stations": "id ascending; stations by s ascending within a member",
-    "unassigned": "by why enum order, then block order"
+    "unassigned": "by why enum order, then block order",
+    "warnings": "diag.warnings by code ascending (bytewise), counts merged"
   }
 }
