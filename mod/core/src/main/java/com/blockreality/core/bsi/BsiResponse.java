@@ -29,6 +29,13 @@ public final class BsiResponse {
     public record BlockResult(double dc, int island, int owner, int mode, int ownerKind, int flags, long reason) {
         public boolean overloaded() { return (flags & 1) != 0; }
         public boolean indicative() { return (flags & 2) != 0; }
+        /**
+         * The island this cell belongs to buckles below its applied load (BSI_ADD1 G-A).
+         * Only cells that own an element carry it; the island's own factor is in
+         * {@link Buckling}. An engine without a buckling lane leaves it clear, so a
+         * {@code false} here means "not critical or not asked", never "safe".
+         */
+        public boolean bucklingCritical() { return (flags & 4) != 0; }
         public boolean unassigned() { return ownerKind == 3; }
     }
 

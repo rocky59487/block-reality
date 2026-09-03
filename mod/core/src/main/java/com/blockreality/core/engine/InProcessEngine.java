@@ -43,7 +43,7 @@ public final class InProcessEngine implements AutoCloseable {
     public static InProcessEngine open(Path library, int numThreads) {
         BsiNative n;
         try {
-            n = BsiNative.open(library, "{\"log\":0,\"numThreads\":" + Math.max(1, numThreads) + "}");
+            n = BsiNative.open(library, openOptions(numThreads));
         } catch (BsiNative.EngineRefused e) {
             InProcessEngine dead = new InProcessEngine(null);
             dead.disable("ENGINE_LOAD", e.getMessage());
@@ -52,6 +52,20 @@ public final class InProcessEngine implements AutoCloseable {
         InProcessEngine eng = new InProcessEngine(n);
         eng.hello();
         return eng;
+    }
+
+    /**
+     * The open options this mod sends. The contract bounds {@code numThreads} to 1..256 and
+     * an out-of-range or unknown key now fails the open outright (BSI_ADD1 G-D/G-E) — before
+     * that batch every key here was accepted and none of them did anything.
+     *
+     * <p>"Let the engine decide" is spelled by leaving the key out, not by sending 0: the old
+     * {@code Math.max(1, n)} turned "no preference" into "exactly one thread", which is a
+     * different request.
+     */
+    static String openOptions(int numThreads) {
+        if (numThreads <= 0) return "{\"log\":0}";
+        return "{\"log\":0,\"numThreads\":" + Math.min(256, numThreads) + "}";
     }
 
     private void hello() {
