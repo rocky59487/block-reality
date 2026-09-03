@@ -195,3 +195,19 @@
   7. 契約 ↔ 判準的不一致（每格挫屈旗標、`GROUND`/`FULLY_SUPPORTED`、警告碼）、語料缺口、跨倉 CI 漂移偵測的不對稱，全部在 `docs/ALIGNMENT_LEDGER.md` §2（A1–A19）、§4（C1–C8）；
      處置以「契約加法批次 #1」一次完成（先凍再做，兩倉同步 hash bump）。
   8. §5 的回覆草稿與 tectonic2 鏡像 §5 的十二則**皆未張貼**；新增三則在對位帳 §5。
+- **2026-09-03b（契約加法批次 #1 落地 + D-045；原文不改）**：
+  1. **第 6 點的「在此裁決前不能開跑」已裁決：不做。** operator「2 不要 frame core」→ **D-045**。
+     `diff_engines.py`、`br-sidecar-fc`、FrameCore 的 `bsi_engine_vtable`、`--adapter framecore`、`evidence/differential.jsonl` **五樣都不做**。
+     §3 R10（差異帳）與 §4 N22 隨之改形為「**單臂語料 + 封閉解**」並 **dated 降一級**（`docs/GATES.md` 2026-09-03e）；
+     §2 G18 的「差異帳歸 `convention`」改讀為**遷移說明的一列**，不再是 gate 分類。
+     §6 **Phase 3 的 `diff_engines.py` 一項刪除**；**Phase 5 的「差異語料零未解 blocker」改為「語料對真引擎 exit 0 + `verify.py` 封閉解全綠」**，
+     「FrameCore 臂保留為 CI 對數一個發布週期」**作廢**。引擎倉的對位裁決是 **D2-015**（舉證責任提高一級）。
+     **代價照登**：封閉解不涵蓋超靜定內力分配、殼的實際數值、多構件互動——那一塊沒有替代機構。
+  2. **第 7 點的「契約加法批次 #1」已完成**：判準 tectonic2 `docs/specs/BSI_ADD1.md`（先凍，獨立 commit）；
+     雜湊 `c45f51fe7fca…` → **`717aacedcd70…`**（44 檔），兩倉同一份、`.github/tectonic2-contract-ref` 兩行同步。
+     六件事裡**三件是行為變更不是加法**（`precision.maxTimeMs` 上能力閘、`numThreads` 界線 `1 ≤ n ≤ 256`、`bsi_capi_open` 未知鍵拒絕），
+     三者都是**探針量到**的 fail-closed 洞。契約主版**不 bump**。
+  3. **跨倉漂移偵測兩個方向都補上**：tectonic2 CI 讀本倉 `Main` 的雜湊（本倉公開，**不需 token**，永遠會跑）；
+     本倉有 token 時讀 tectonic2 `main`。嚴重度：預設分支之間 = 紅，PR 上 = 警告，**fetch 失敗永不綠**（`GATES.md` 2026-09-03f）。
+  4. **第 8 點的草稿**：對位帳 §5 的三則已張貼（BR #69 / #85 結案、tectonic2 #5 阻擋改形）；
+     tectonic2 鏡像 §5 的十二則**仍未張貼**，但其中五個 issue（T2 #3/#9/#10/#13/#15）已直接以留言結案。
