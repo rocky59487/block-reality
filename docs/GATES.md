@@ -745,3 +745,55 @@ release workflow 另外驗證「evidence 記錄的二進位 sha256 == dist/ 出�
 - **Windows natives 本輪不存在**（tectonic2 LINUX_BUILD §5 B1）。N24-a 的 PE 分支與 N24-b 的 Windows 路徑
   **今天沒有 fixture**；有了 Windows 建置才算跑過。在那之前這兩條的 Windows 半邊是 [暫]。
 - N24-b5 需要一顆真引擎；CI 有（`engine-linux` job 現建），開發機不一定有。
+
+#### 2026-09-03 落地追記（N24-a 的實作與首跑；原文一字不改，本段為 dated 追記）
+
+實作者：`scripts/check_bundle.py`（兩形狀分流）、`scripts/stage_natives.py`（provenance）、
+`forge/build.gradle` 的 `bundleEngines`（一支任務兩形狀）、`scripts/package_natives.sh`、
+`mod/core` 的 `BundledNatives` + `NoSubprocessTest`。
+
+| 線 | 落地 | 首跑 |
+|---|---|---|
+| **N24-a1** | `check_bundle.py` `executables_in()`：副檔名（`.exe/.bat/.cmd/.com/.sh/.ps1/.msi/.app`）**或**魔數（ELF / PE / Mach-O）而名稱不說 library。natives 形狀硬 FAIL，sidecar 形狀**清點後照登**（那正是 D-044 要退掉的東西，數字每次都要看得見） | sidecar jar 清點 = **2 個**（`br-sidecar`、`br-sidecar.exe`），符合預期 |
+| **N24-a2** | `NoSubprocessTest`：掃 `mod/api`、`mod/core`、`forge` 的 main 原始碼。白名單**只有一筆**：`SidecarProcess.java`（D-013/D-027 的出貨形狀，隨 SWAP_PROGRAM phase 3 一起退場）。**反向也查**：白名單上已不 spawn 的類別必須移除，否則測試紅 | PASS，掃到 >20 檔，非白名單 spawn = 0 |
+| **N24-a3** | natives manifest 七欄 `os arch file sha256 size engineVersion contractSha256`；`stage_natives.py` **載入函式庫問 `bsi.hello`** 取得後兩欄，gradle 再對 jar 內位元組與 `contract/CONTRACT_SHA256` 重算比對 | 首跑：`tectonic-1.2.0+1605437-dirty`、contract `c45f51fe7fca…`、sha256 `67ce0d0d2db0…` |
+| **N24-a4** | `BundledNatives.ensure()` **不呼叫任何 chmod**；`BundledNativesTest.theUnpackedLibraryIsNotExecutable` 直接查 POSIX 權限位元；`stage_natives.py` 也把暫存副本設成 `0644` | PASS |
+| **N24-a5** | `third_party/` 新增 OpenBLAS(BSD-3)、LAPACK/LAPACKE(BSD-3 + Intel 變體)、METIS(Apache-2.0)、tectonic2(Apache-2.0)、GCC Runtime Library Exception 3.1；`check_bundle.py` 在 natives 形狀下要求 jar 內 `META-INF/third_party/` 具名含 OpenBLAS / METIS / tectonic2 | 五份文本已入庫 |
+
+**照登的缺口與量測（不是待辦，是現況）**：
+
+1. **N24-a3 今天只有兩條腿，不是三條。** sidecar 形狀的第三條腿是 `evidence/verification.json`，
+   而 `scripts/evidence.py` 驅動的是 sidecar 協定、對 BSI 一無所知。natives 形狀的鏈是
+   **jar 位元組 == manifest == 引擎自己講的話**（`bsi.hello` 的回覆）。後者確實獨立於建置腳本的變數，
+   但它不是「跑過驗收套件」的意思。evidence 的 BSI 臂具名為 SWAP_PROGRAM phase 3 的工作。
+2. **`check_bundle.py` 的 CAFEBABE 教訓（照登）。** N24-a1 第一版讀四個位元組就判定，
+   於是把 jar 內**全部 97 個 `.class`** 判成可執行檔——Java class 的魔數與 Mach-O universal binary
+   **完全相同**。一條每次都喊狼來了的 gate 等於沒有這條 gate。修法是再讀四個位元組：
+   class 檔接的是主版本號（45 起跳），fat binary 接的是架構數（個位數）。**這是「只看自己預期之處」
+   的反面版本：看得太寬也會失去牙齒。**
+3. **函式庫 28.8 MB**（`strip --strip-unneeded` 後 28.0 MB，只省 2.8%）。體積幾乎全部來自
+   靜態 OpenBLAS 的多架構 kernel。這對「一個 jar 丟進 mods/」是實質成本，**照登不粉飾**；
+   縮減手段（`DYNAMIC_ARCH=0` + 指定 TARGET、或裁 kernel 集合）未實作、未量測，不列入能力。
+4. **`-dirty` 的引擎不得進發行版**：`stage_natives.py --require-clean`（`package_natives.sh` 預設帶）。
+   本輪首跑的引擎正是 `1605437-dirty`，所以**首跑是開發流程的量測，不是發行**。
+5. **`dist/` 本輪不動**。natives 形狀寫進 `dist-natives/`，`package_natives.sh` 從不碰 `dist/`——
+   `package.sh` 結尾是 `rm -rf dist`，而 `dist/` 是**追蹤中的**、已驗證的 sidecar 發行物。
+
+##### N24-a 的牙齒（2026-09-03 首跑，`scripts/check_bundle_selftest.py`）
+
+`check_bundle.py` 已被加嚴**三次**，每次都是因為某個注入帶著全綠走過去（本檔 2026-08-23b）。
+所以這次不是讀出來的，是**試出來的**：七個注入打在 `package_natives.sh` 剛做好、且已經綠的 stage 上，
+每一個都必須把 gate 打紅。`package_natives.sh` 與 CI 各跑一次。
+
+| 注入 | 結果 |
+|---|---|
+| 函式庫改名成 `.exe` | CAUGHT（副檔名分支） |
+| ELF 換成無辜檔名 `assets/blockreality/helper` | CAUGHT（魔數分支） |
+| 塞一支 `#!/bin/sh` 腳本 | CAUGHT（shebang 分支） |
+| 函式庫翻一個位元 | CAUGHT（jar ≠ manifest） |
+| manifest 宣稱另一個契約雜湊 | CAUGHT（引擎與模組不同介面） |
+| 抽掉 OpenBLAS 與 METIS 授權文本 | CAUGHT（N24-a5） |
+| 同一個 jar 放兩種引擎形狀 | CAUGHT |
+
+**`SELFTEST ALL PASS (7 injections, 0 slipped)`**。
+每個 case 前都重算 `SHA256SUMS.txt`，否則七條全部會被「多餘檔案」規則攔下、**證明不了它們各自具名的那條**。

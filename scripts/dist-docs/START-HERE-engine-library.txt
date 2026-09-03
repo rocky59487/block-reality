@@ -1,0 +1,62 @@
+BLOCK REALITY — install
+=======================
+
+One file. Drop the jar into your Minecraft instance's mods/ folder.
+
+    blockreality-<version>.jar   ->   .minecraft/mods/
+
+That is the whole installation. There is nothing to unzip, nothing to run, and nothing
+to put on your PATH.
+
+
+WHAT IS IN THE JAR
+------------------
+
+Structural analysis does not run in Java, so the mod carries a native ANALYSIS LIBRARY
+inside the jar and unpacks it on first launch, into
+
+    <game directory>/blockreality/engine/lib/<hash>/
+
+The library is loaded by the game. It is not a program: it is never started as a process,
+and it is unpacked without an execute bit. Its SHA-256 is recorded in the jar beside it and
+checked before it is used, so a corrupted download refuses rather than misbehaves.
+
+Nothing is downloaded, at install time or while you play. The library is bytes that were
+already inside the jar you chose to install. The mod does not open network connections.
+
+
+IF YOUR PLATFORM IS NOT SUPPORTED YET
+-------------------------------------
+
+The jar names which platforms it ships an engine for; engine-provenance.json in this
+archive lists them, with the version and interface revision of each. On a platform with no
+engine the mod still loads and you can still build — analysis is simply off, and the game
+log says so in one line.
+
+You can supply your own engine without waiting for a mod update. Build it from
+<https://github.com/rocky59487/tectonic2>, then put the library in
+
+    <game directory>/blockreality/engine/<os>-<arch>/
+
+for example blockreality/engine/linux-x86_64/libbsi_tectonic.so. That directory is
+searched BEFORE the copy inside the jar, so it also lets you run a newer engine against an
+older mod. The two are held together by a versioned interface rather than by being built
+together, and the mod refuses an engine that speaks a different one rather than guessing.
+
+
+VERIFYING WHAT YOU DOWNLOADED
+-----------------------------
+
+    sha256sum -c SHA256SUMS.txt
+
+engine-provenance.json records, for every library in the jar, its hash, the engine version
+and the interface revision — read out of the engine itself at build time, not asserted by
+the build.
+
+
+LICENCES
+--------
+
+LICENSE and NOTICE are in this archive and inside the jar. third_party/ carries the terms
+of everything statically linked into the engine library. NOTICE says which component is in
+which binary, and where to get its source.

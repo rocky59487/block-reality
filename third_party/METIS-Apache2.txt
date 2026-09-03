@@ -1,0 +1,29 @@
+METIS
+Apache License, Version 2.0
+
+Statically linked into the engine library that this mod carries. METIS supplies the
+fill-reducing ordering the sparse factorisation depends on. Not used by the sidecar
+executable of the earlier shipping shape.
+
+Source: https://github.com/KarypisLab/METIS
+
+Copyright 1995-2013, Regents of the University of Minnesota
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+except in compliance with the License. You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the
+License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+either express or implied. See the License for the specific language governing permissions
+and limitations under the License.
+
+The full text of the Apache License, Version 2.0 is the same text this project is licensed
+under, and travels with this artefact as META-INF/LICENSE (LICENSE at the repository root).
+
+Two files in METIS's bundled GKlib are third-party and carry their own three-clause BSD
+terms, whose text is the same as the one in OpenBLAS-BSD3.txt in this directory:
+
+    GKlib/ms_inttypes.h   Copyright (c) 2006 Alexander Chemeris
+    GKlib/ms_stdint.h     Copyright (c) 2006 Alexander Chemeris

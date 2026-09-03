@@ -1,0 +1,24 @@
+GCC runtime libraries (libstdc++, libgcc, libgfortran)
+GPL-3.0-or-later WITH GCC-exception-3.1
+
+The engine library is linked with -static-libstdc++ -static-libgcc, and OpenBLAS's LAPACK
+routines are Fortran, so libgfortran's archive is linked in as well. Parts of those three
+runtime libraries therefore end up inside the shipped library.
+
+This is permitted, and the permission is the GCC Runtime Library Exception version 3.1:
+code compiled by GCC through an Eligible Compilation Process may be combined with the
+runtime libraries and distributed under the terms of the combined work, without the GPL
+propagating to it. The engine is compiled by unmodified GCC with no plugins, which is an
+Eligible Compilation Process.
+
+Full text of the exception:
+
+    https://www.gnu.org/licenses/gcc-exception-3.1.html
+
+Full text of GPL-3.0:
+
+    https://www.gnu.org/licenses/gpl-3.0.html
+
+RECORDED HONESTLY: this paragraph states the licence position for the Linux library built
+by this project's CI with system GCC. A library built by a different toolchain (MSVC, or a
+GCC that is not stock) has a different position and this file would need revisiting.

@@ -13,7 +13,7 @@
 
 ![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A)
 ![Release v0.3c](https://img.shields.io/badge/release-v0.3c-3B82F6)
-![Verification](https://img.shields.io/badge/verification-330_engine_%2B_270_Java_checks-passing)
+![Verification](https://img.shields.io/badge/verification-330_engine_%2B_309_Java_checks-passing)
 [![License](https://img.shields.io/github/license/rocky59487/block-reality)](LICENSE)
 
 Block Reality is a structural analysis mod for Minecraft 1.20.1. Blocks placed in the
@@ -35,8 +35,10 @@ unrestrained and therefore reported as mechanisms rather than given stresses.
   of being assigned plausible-looking stresses.
 - **Reproducible evidence:** the release records closed-form comparisons, convergence,
   equilibrium, determinism and end-to-end timing.
-- **Game-safe isolation:** the C++ mechanics backend runs as a sidecar process, so a solver
-  fault cannot take the Minecraft server or world save down with it.
+- **Game-safe isolation:** in the released version the C++ mechanics backend runs as a
+  sidecar process, so a solver fault cannot take the Minecraft server or world save down
+  with it. **This changes in v0.4** — see *How the engine ships* below, which says what is
+  given up and what replaces it.
 
 Block Reality is experimental research and education software. It is **not** a building-code
 checker and must not be used for real-world structural design or safety decisions.
@@ -110,6 +112,34 @@ a fault in the C++ costs one analysis rather than the server and the save. The m
 for the engine in this order: the config file, `-Dbr.sidecar`, `BR_SIDECAR`, the copy
 bundled in the jar, the game directory, then `PATH` — explicit settings first, so a path
 you chose is never quietly overridden.
+
+### How the engine ships, and how that is changing (v0.4)
+
+A jar that carries a program and starts it as a child process does not pass distribution
+review. So in v0.4 the engine stops being a program. It becomes a shared **library** that
+the game loads: `libbsi_tectonic.so` on Linux, `bsi_tectonic.dll` on Windows, reached
+through five C functions across a frozen interface and bound with JNA. There is no custom
+JNI code to maintain, and the jar contains no executable of any kind — a rule with a gate
+behind it, which is tested by trying to smuggle one past it on every build.
+
+**What this gives up, stated plainly: the isolation above.** A crash inside the native
+code now takes the JVM with it, because it is the same process. That is the price, and it
+is not paid for nothing — a sidecar cannot be shipped at all under the review rules, so
+the choice was between this and no bundled engine. What replaces isolation is narrower and
+weaker, and worth naming exactly: the interface refuses to load an engine whose ABI it does
+not know or whose interface revision disagrees with the mod's; the native side has a
+no-throw boundary that turns an internal fault into an error reply; world size is capped;
+and the whole thing can be switched off in the config. Those are guards against the
+failures that were actually seen, not a claim that a native crash is survivable. It is not.
+The reasoning, and the conditions under which this decision gets reversed, are in
+`docs/DECISIONS.md` D-044.
+
+**The mod and the engine update independently.** They are held together by a versioned
+interface and a hash of the interface specification, not by being built together. A newer
+engine can be dropped into `<game directory>/blockreality/engine/<os>-<arch>/`, which is
+searched before the copy inside the jar; a mod update does not require rebuilding the
+engine. When the two do not agree, the mod says so in one line naming both revisions,
+rather than failing somewhere further along.
 
 ### Running from source
 
@@ -237,7 +267,7 @@ a gate that has run — is why this paragraph exists rather than a quieter omiss
 | | |
 |---|---|
 | Engine | `sidecar/verify.py`, 330 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
-| Java | 270 tests, all passing (217 pure-Java, 53 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real |
+| Java | 309 tests, all passing (256 pure-Java, 53 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real, and 4 more load the v0.4 engine library in-process |
 | Closed form | 31 non-zero references, worst relative error 1.2e-14; 10 zero references, worst absolute residual 1.5e-08. (Two earlier releases quoted 1.6e-10 here — that floor turned out to be the old wire's 10-digit truncation, not the engine) |
 | Transport | numbers cross as raw little-endian doubles in shared memory, never textualised; the JSON fallback prints 17 significant digits. Gate: three representative solves bit-identical across both transports |
 | Shell convergence | clamped square plate: span moment 1.75% at 8 elements down to 0.28% at 20, observed convergence order 2.06; recovered support moment 2.7% at 20 |
@@ -305,7 +335,8 @@ Block Reality 是 Minecraft 1.20.1 的結構分析模組。放置的方塊會被
 - **力學過程可稽核：** 結構方塊會成為明確的樑構件或板殼 facet；模型、結果欄位與限制都有文件。
 - **不偽造合理結果：** 未獲拘束的結構會回報為機構，不會硬塞一組看起來合理的應力。
 - **證據可重現：** 發行版保留閉合解、收斂、平衡、跨平台決定性與完整往返時間的紀錄。
-- **不拖垮遊戲：** C++ 力學後端以 sidecar 子程序執行；求解器故障不會一起帶走伺服器或世界存檔。
+- **不拖垮遊戲：** 在**已發行**的版本裡，C++ 力學後端以 sidecar 子程序執行，求解器故障不會一起
+  帶走伺服器或世界存檔。**v0.4 會改掉這一點** —— 下面〈引擎怎麼出貨〉寫了放棄了什麼、換來什麼。
 
 Block Reality 是實驗性的研究與教育軟體，**不是**建築法規檢核器，也不能用於真實結構設計或安全判斷。
 
@@ -367,6 +398,25 @@ FrameCore 已靜態連結進 `br-sidecar`，沒有另外要安裝的函式庫。
 載入（D-013），因此 C++ 端的錯誤只影響一次分析，不影響伺服器與存檔。模組尋找引擎的順序為：
 設定檔、`-Dbr.sidecar`、`BR_SIDECAR`、**jar 內附的那顆**、遊戲目錄、`PATH`——明確設定排在
 最前面，所以你指定的路徑永遠不會被安靜地覆蓋。
+
+### 引擎怎麼出貨，以及 v0.4 為什麼要改
+
+**jar 裡放一支程式、再由模組把它啟動起來，過不了平台審核。** 所以 v0.4 的引擎不再是程式，
+而是遊戲**載入**的共享函式庫：Linux 上是 `libbsi_tectonic.so`，Windows 上是 `bsi_tectonic.dll`，
+透過一個凍結介面上的五個 C 函式呼叫，用 JNA 綁定。沒有自寫的 JNI 膠碼要維護；jar 裡**沒有任何
+可執行檔**——這條有 gate，而且每次建置都會實際試著把一支偷渡進去，確認它擋得住。
+
+**放棄的東西講清楚：就是上面那條隔離。** 原生碼崩潰現在會一起帶走 JVM，因為它們是同一個程序。
+這是代價，而它換到的不是零——審核規則下 sidecar 根本出不了貨，所以選擇是「這樣」或「不附引擎」。
+替代品比隔離窄、也比隔離弱，值得逐條具名：ABI 版本不認得就拒載；介面修訂與模組不符就拒用；
+原生側有 no-throw 邊界，內部錯誤轉成錯誤回覆；世界規模有上限；整條路徑可以在設定裡關掉。
+這些是針對**實際看過的失效**設的防線，**不是**「原生崩潰活得下來」的宣稱。它活不下來。
+理由與這條裁決在什麼條件下會被推翻，寫在 `docs/DECISIONS.md` D-044。
+
+**模組與引擎各自更新。** 綁住兩者的是有版號的介面與介面規格的雜湊，不是「一起建置」。
+新引擎可以直接放進 `<遊戲目錄>/blockreality/engine/<os>-<arch>/`，那裡的搜尋順序**排在
+jar 內附的前面**；模組更新則不需要重建引擎。兩者對不上時，模組會用一行話同時指出兩邊的修訂，
+而不是拖到更後面才失敗。
 
 ### 從原始碼執行
 
@@ -467,7 +517,7 @@ Greenhill 的精確解是 9.89，**低 68%**；逼出 2、4、10、19 個元素�
 | | |
 |---|---|
 | 引擎 | `sidecar/verify.py` 330 項全過，每一項都對閉合解、不依賴求解器的不變量,或傳輸等價 oracle |
-| Java | 270 項測試全過（純 Java 217、Forge 側 53），其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore |
+| Java | 309 項測試全過（純 Java 256、Forge 側 53），其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore，另有 4 項在同一個程序內載入 v0.4 的引擎函式庫 |
 | 對閉合解 | 31 項非零參考，最差相對誤差 1.2e-14；10 項零參考，最差絕對殘差 1.5e-08。（前兩版在這裡引用的 1.6e-10,後來查明是舊 wire 的 10 位截斷,不是引擎） |
 | 傳輸 | 數值以 raw little-endian double 走共用記憶體,從不文字化;JSON fallback 印 17 位有效數字。gate:三個代表案兩種傳輸逐位元相同 |
 | 板元素收斂 | 固端方形板：跨中彎矩 8 元素 1.75%、20 元素 0.28%，實測收斂階 2.06；還原後的支承彎矩 20 元素 2.7% |

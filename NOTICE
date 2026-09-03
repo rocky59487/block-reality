@@ -5,37 +5,86 @@ Licensed under the Apache License, Version 2.0. The full text is in LICENSE, and
 in META-INF/LICENSE inside the mod jar.
 
 
+THE ANALYSIS ENGINE
+===================
+
+Structural analysis does not run in Java. It runs in native code that this mod carries
+inside its jar, and there are two shapes of that, one replacing the other:
+
+  * The ENGINE LIBRARY (`libbsi_tectonic.so`, `bsi_tectonic.dll`) — the current shape.
+    A shared library the game LOADS. It is not a program, is not started as a process, and
+    is unpacked without an execute bit. The mod calls five C functions across a frozen
+    interface (`contract/bsi_capi.h`), bound with JNA; there is no custom JNI code. Which
+    engine a given jar carries, its version and the interface revision it speaks are all
+    recorded in `blockreality-engine/natives.manifest`, filled in by asking the library
+    itself rather than by asserting it.
+
+  * The SIDECAR EXECUTABLE (`br-sidecar`, `br-sidecar.exe`) — the earlier shape, being
+    retired. A separate program unpacked from the jar and started as a child process.
+
+Nothing is downloaded, at build time or at run time. Both shapes are bytes already inside
+the jar the player chose to install, with their SHA-256 recorded beside them, and the
+runtime refuses anything whose hash does not match.
+
+
 THIRD-PARTY SOFTWARE
 ====================
 
-The analysis engine (`br-sidecar`) is a separate native executable, shipped
-inside the mod jar and unpacked on first use. It statically links the two
-components below, so their terms travel with every copy of that binary.
+The components below are statically linked into one or other of those binaries, so their
+terms travel with every copy of it. Full texts are in `third_party/` in the repository and
+in `META-INF/third_party/` inside the jar.
 
+In the ENGINE LIBRARY
+---------------------
+tectonic2 — Apache License 2.0
+    The structural analysis engine. <https://github.com/rocky59487/tectonic2>
+    `third_party/tectonic2-Apache2.txt`
+
+OpenBLAS — BSD 3-Clause
+    Dense linear algebra kernels. <https://github.com/OpenMathLib/OpenBLAS>
+    `third_party/OpenBLAS-BSD3.txt`
+
+LAPACK and LAPACKE — BSD 3-Clause (LAPACKE: Intel variant)
+    Factorisation routines, reached through the LAPACKE C interface.
+    <http://www.netlib.org/lapack/> — `third_party/LAPACK-BSD3.txt`
+
+METIS — Apache License 2.0
+    Fill-reducing ordering for the sparse factorisation.
+    <https://github.com/KarypisLab/METIS> — `third_party/METIS-Apache2.txt`
+
+GCC runtime libraries — GPL-3.0-or-later WITH GCC-exception-3.1
+    libstdc++, libgcc and libgfortran, linked statically so the shipped library depends on
+    nothing but the C runtime. Permitted by the GCC Runtime Library Exception 3.1.
+    `third_party/GCC-Runtime-Library-Exception.txt`
+
+In the SIDECAR EXECUTABLE
+-------------------------
 FrameCore — MIT License
------------------------
-The finite element solver. Consumed as an external source dependency that this
-repository does not carry; the three patches this project applies to it are in
-`sidecar/patches/`. Copyright and permission notice: `third_party/FrameCore-MIT.txt`.
+    The finite element solver. Consumed as an external source dependency that this
+    repository does not carry; the three patches this project applies to it are in
+    `sidecar/patches/`. `third_party/FrameCore-MIT.txt`
 
 Eigen — Mozilla Public License 2.0
-----------------------------------
-Linear algebra, used by FrameCore. `br-sidecar` is built with `EIGEN_MPL2_ONLY`,
-so only MPL-2.0 parts of Eigen are compiled in — no LGPL-licensed components.
-Full text: `third_party/Eigen-MPL2.txt`.
+    Linear algebra, used by FrameCore. `br-sidecar` is built with `EIGEN_MPL2_ONLY`, so
+    only MPL-2.0 parts of Eigen are compiled in — no LGPL-licensed components.
+    `third_party/Eigen-MPL2.txt`
 
-MPL-2.0 section 3.2 requires that recipients of the binary be told how to obtain
-the source of the covered code. Eigen's source is at
-<https://gitlab.com/libeigen/eigen>, and the exact version this build uses is
-whatever the building machine's `libeigen3-dev` provides — recorded, with the
-host and every source hash, in `evidence/verification.json`. `br-sidecar` itself
-is built from `sidecar/` in this repository and its build is byte-reproducible
-on a matching toolchain.
+    MPL-2.0 section 3.2 requires that recipients of the binary be told how to obtain the
+    source of the covered code. Eigen's source is at <https://gitlab.com/libeigen/eigen>,
+    and the exact version a build uses is whatever the building machine's `libeigen3-dev`
+    provides — recorded, with the host and every source hash, in
+    `evidence/verification.json`. `br-sidecar` itself is built from `sidecar/` in this
+    repository and its build is byte-reproducible on a matching toolchain.
+
+NOT STATICALLY LINKED, AND NOT REDISTRIBUTED
+--------------------------------------------
+JNA (Java Native Access) — Apache License 2.0 or LGPL 2.1, at the recipient's option.
+    Used to call the engine library's five C functions. Minecraft already ships JNA, so
+    this mod declares it as a compile-time dependency and does NOT carry a copy.
 
 
 NOT INCLUDED
 ============
 
-Minecraft and Minecraft Forge are neither included nor redistributed here. This
-is an unofficial mod: it is not approved by or associated with Mojang or
-Microsoft.
+Minecraft and Minecraft Forge are neither included nor redistributed here. This is an
+unofficial mod: it is not approved by or associated with Mojang or Microsoft.
