@@ -13,7 +13,7 @@
 
 ![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A)
 ![Release v0.3c](https://img.shields.io/badge/release-v0.3c-3B82F6)
-![Verification](https://img.shields.io/badge/verification-330_engine_%2B_309_Java_checks-passing)
+![Verification](https://img.shields.io/badge/verification-330_engine_%2B_311_Java_checks-passing)
 [![License](https://img.shields.io/github/license/rocky59487/block-reality)](LICENSE)
 
 Block Reality is a structural analysis mod for Minecraft 1.20.1. Blocks placed in the
@@ -267,7 +267,7 @@ a gate that has run — is why this paragraph exists rather than a quieter omiss
 | | |
 |---|---|
 | Engine | `sidecar/verify.py`, 330 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
-| Java | 309 tests, all passing (256 pure-Java, 53 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real, and 4 more load the v0.4 engine library in-process |
+| Java | 311 tests, all passing (258 pure-Java, 53 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real, and 4 more load the v0.4 engine library in-process |
 | Closed form | 31 non-zero references, worst relative error 1.2e-14; 10 zero references, worst absolute residual 1.5e-08. (Two earlier releases quoted 1.6e-10 here — that floor turned out to be the old wire's 10-digit truncation, not the engine) |
 | Transport | numbers cross as raw little-endian doubles in shared memory, never textualised; the JSON fallback prints 17 significant digits. Gate: three representative solves bit-identical across both transports |
 | Shell convergence | clamped square plate: span moment 1.75% at 8 elements down to 0.28% at 20, observed convergence order 2.06; recovered support moment 2.7% at 20 |
@@ -517,7 +517,7 @@ Greenhill 的精確解是 9.89，**低 68%**；逼出 2、4、10、19 個元素�
 | | |
 |---|---|
 | 引擎 | `sidecar/verify.py` 330 項全過，每一項都對閉合解、不依賴求解器的不變量,或傳輸等價 oracle |
-| Java | 309 項測試全過（純 Java 256、Forge 側 53），其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore，另有 4 項在同一個程序內載入 v0.4 的引擎函式庫 |
+| Java | 311 項測試全過（純 Java 258、Forge 側 53），其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore，另有 4 項在同一個程序內載入 v0.4 的引擎函式庫 |
 | 對閉合解 | 31 項非零參考，最差相對誤差 1.2e-14；10 項零參考，最差絕對殘差 1.5e-08。（前兩版在這裡引用的 1.6e-10,後來查明是舊 wire 的 10 位截斷,不是引擎） |
 | 傳輸 | 數值以 raw little-endian double 走共用記憶體,從不文字化;JSON fallback 印 17 位有效數字。gate:三個代表案兩種傳輸逐位元相同 |
 | 板元素收斂 | 固端方形板：跨中彎矩 8 元素 1.75%、20 元素 0.28%，實測收斂階 2.06；還原後的支承彎矩 20 元素 2.7% |
