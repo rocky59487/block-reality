@@ -837,3 +837,101 @@ release workflow 另外驗證「evidence 記錄的二進位 sha256 == dist/ 出�
 沒 token 時發 `::warning::` 並寫 `$GITHUB_STEP_SUMMARY`，逐條列出「這次沒量到什麼」。
 **登記為 [暫]，直到 `TECTONIC2_TOKEN` 存在為止。** 在那之前**不得**把
 「引擎建得起來」或 N24-b5 當成 CI 驗過的事。
+
+### 2026-09-03c 登記：對位帳（`docs/ALIGNMENT_LEDGER.md`）發現的判準缺口與更正（先於程式碼；沒有任何一條線因本節移動）
+
+| 判準 | 發現 | 處置 |
+|---|---|---|
+| **N19-b** 挫屈半邊（`bucklingCritical == 引擎 stability == critical`） | BSI v1 **沒有每格挫屈判定欄位**（`blocks.flags` 只有 overloaded/indicative；`buckling` 是每島 `state/factor`）；tectonic2 MC64 的 `stability` u8 只在 v2 wire。消費者自己比 `factor < 1` 違反契約 P2 | 挫屈半邊 **[暫]**，直到契約加法批次 #1 落地 `blocks.flags` bit2 `bucklingCritical`（引擎 double 定案、只在 commit 軌）。在此之前 HUD 對挫屈只准顯示「未評估」（N19-e 的情形延長） |
+| **N23-f** 旗標名 | `run.py` 沒有 `--adapter tectonic` / `--adapter framecore`；實際是 `capi` / `engine` / `sidecar` / `frame_v2` | 更正：tectonic 臂 = `--adapter capi --lib libbsi_tectonic.so`；FrameCore 臂見下 |
+| **N22 / N23-f** FrameCore 臂 | `diff_engines.py`、`br-sidecar-fc`、FrameCore 的 `bsi_engine_vtable` **皆無實作、無 issue**；N22-c「零 blocker 才發布」今天無法產生差異帳 | 登記為無主項（對位帳 C1）；裁決「保留 vtable 對數臂」或「降級為語料 + `verify.py` 對 tectonic 臂」後開 issue；降級則 N22 dated 降一級 |
+| **N23-b** 跨倉漂移 | 現行實作比的是「本倉 pin == `.github/tectonic2-contract-ref` 記的雜湊」，ref 釘 tectonic2 固定 commit；tectonic2 `main` 單邊改契約時**本倉 CI 仍綠**（有 token 的 `diff -r` 也是對 pinned commit）；tectonic2 CI 對本倉零檢查 | 登記為 **[暫]**：正確形狀 = tectonic2 CI 抓本倉 `Main` 的 `contract/CONTRACT_SHA256`（本倉公開，無需 token）+ 本倉有 token 時對 tectonic2 `main` 比。執行期握手（N23-d `BSI_VERSION`）仍是最後一道 |
+| **N24-b5** 決定論前提 | Java 與 runner 逐位的前提是兩邊都 `numThreads:1`（runner 預設注入；Java 由呼叫者傳） | #89 接線的驗收條件：預設 1（D-041 §6），`hello.threads` 只回報不採用 |
+| 語料缺口 | 無 `dc > 1`、無 `partial`、無 `numThreads` 越界、無 `bsi.cancel`、**無 C-12（f32）case**（`conformance/README.md` 表列的檔名不存在）⇒ N20-d 的 `precision.storage:"f32"` 在引擎側永遠不可宣告 | 契約加法批次 #1 一次補齊（tectonic2 主導判準，兩倉同步 hash bump） |
+| `bsi_capi_open` 選項 | Java 送 `numThreads` 於 open 選項（`InProcessEngine.java:46`），host 只解析 `log/probe/assumeCaps`，未知鍵靜默忽略；契約無 open 選項 schema | #89 移除；契約提案 open 選項 schema + 非 `x-` 未知鍵拒絕（P6） |
+| `bsi.hello` 的 `arena.supported` | 進程內路徑送 `true`（`BsiHeaders.java:29`），Java 無 arena 實作 | #89 改 `false`（T-A） |
+| N24-a2 白名單 | 不變：`SidecarProcess.java` 一筆；`BundledEngine`（sidecar 形狀）的 #80 併發缺陷未修，只在 `BundledNatives` 修 | 隨 #89 一起退場；#80 加一則說明 |
+
+### 2026-09-03d 登記：契約加法批次 #1（BSI_ADD1；operator 裁決「1 做」；判準在 tectonic2 `docs/specs/BSI_ADD1.md`）
+
+> 契約是兩倉逐位鏡像，所以**判準只有一份**（引擎倉），本節是消費者側的**受影響清單**與**線的處置**。
+> 本節不移動任何一條線；`sidecar/expected_red.json` 不變。
+
+| 本倉的線 | 批次做了什麼 | 處置 |
+|---|---|---|
+| **N19-b** 挫屈半邊 | 契約加 `blocks.flags` bit2 `bucklingCritical`（引擎在 double 上定案「所屬島 `state==computed ∧ factor<1`」，只在 commit 軌）。**這是 2026-09-03c 記的 [暫] 的來源被補上** | 仍 **[暫]**，但理由改變：從「契約沒有欄位」變成「欄位有了、引擎的 MC66a 未落地」。bit2 在 tectonic 恆為 0 直到 v1.5；HUD 在那之前對挫屈只准顯示「未評估」（N19-e） |
+| **N20-d** `precision.storage:"f32"` | 語料補 `C12-f32-display`（C-12 家族**本來一個 case 都沒有**，所以 `bsi.precision.f32` 依 MC68-03 永遠不可宣告） | 仍 **[暫]**：case 在有 f32 能力的實作出現前恆 SKIP（tectonic MC65b）。**SKIP 不算綠** |
+| **N24-b5** 跨語言逐位 | `bsi_capi_open` 有了選項 schema：`log`/`numThreads`/`probe`/`assumeCaps`/`x-*`，**非 `x-` 未知鍵 → open 回 NULL**。本倉 `InProcessEngine.java:46` 送的 `{"log":0,"numThreads":N}` 在新 schema 下**合法**，而且 `numThreads` 從「被靜默忽略」變成「本 session 的預設執行緒數」 | 線不動。**#89 的驗收條件少一項**：不必再為了合法性移除 `numThreads`（`ALIGNMENT_LEDGER` A10 的處置隨之改為「保留並確認 N ≥ 1」，`Math.max(1, …)` 已保證） |
+| **N19/N20/N22** 的差異帳 | 無關 | — |
+
+**照登：這批有三條是行為變更，不是純加法。** `precision.maxTimeMs` 未宣告能力時、`numThreads` 越界時、`bsi_capi_open` 帶未知非 `x-` 鍵時，
+今天**成功**、之後**失敗**。三者都是量到的 fail-closed 洞（探針表在 `BSI_ADD1.md` §2），修正方向與 BSI 原則 P6 一致。
+對本倉的實際影響：**零**——`InProcessEngine` 不送 `maxTimeMs`，送的 `numThreads` 恆 ≥ 1，open 選項的兩個鍵都在新 schema 內。
+契約主版**不 bump**（Part E 的破壞性定義不含「把未定義行為收緊成 fail-closed」）；此判定照登於 `BSI_ADD1.md` §7 B1，供日後爭議時引用。
+
+**N23 的機械面**：`contract/CONTRACT_SHA256` 重釘、`.github/tectonic2-contract-ref` 兩行同步、兩倉 `diff -r contract` 空——
+三者是本批的 N23-a/b/e 驗收，與判準內容無關但缺一不可。
+
+> **2026-09-03 dated 追記（2026-09-03d 節；上方原文一字不改）**：上表 N24-b5 那格說本倉影響「**零**」，
+> 理由是 `Math.max(1, …)` 已保證 `numThreads ≥ 1`。**這條寫錯了一半**——`Math.max` 保證的是下界，
+> 契約新增的是**雙邊**界線 `1 ≤ n ≤ 256`；`numThreads > 256` 的設定值會讓 `bsi_capi_open` 回 `NULL`，
+> **引擎整個載不起來**。落地時改為 `InProcessEngine.openOptions(int)`：`n ≤ 0` → **省略該鍵**（契約的「引擎自選」寫法，
+> 而 `Math.max(1, n)` 是把「沒意見」翻成「就要一條」，兩者不同請求）、`n > 256` → 送 256。
+> 腿：`InProcessEngineTest.openOptionsStayInsideWhatTheContractAccepts`（不需引擎，故處處會跑）。
+> 另補 `BsiResponse.BlockResult.bucklingCritical()` 讀 bit2，腿走完三個位元的八種組合
+> （`BsiFrameAndResponseTest.theThreeBlockFlagsAreIndependentBits`）——**只設一個位元的 fixture 對任何錯遮罩都會過**。
+
+### 2026-09-03e 登記：N22 差異帳改形 + dated 降一級（裁決 D-045；operator：「2 不要 frame core」）
+
+> **這一節移線。** 鐵則 1：移線要登記，下游結論至少降一級。兩件事都在這裡，不在別處。
+
+**移動的是什麼**：N22 原文的機構是「`sidecar/diff_engines.py` 驅動 `br-sidecar`（tectonic）與 `br-sidecar-fc`（FrameCore），
+逐欄比對、每筆差異歸恰一類，寫 `evidence/differential.jsonl`，**零 `blocker` 才發布**」。
+FrameCore 臂由 D-045 裁決**不做**，所以這個機構**不會存在**。N22 改形如下：
+
+| 舊（2026-09-02 凍） | 新（2026-09-03e） | 級別 |
+|---|---|---|
+| **N22-a** EB 臂對 FrameCore rel ≤ 1e-9 / 端力 ≤ 1e-8 | **N22-a′** `sidecar/verify.py` 的封閉解與不變量對 tectonic 臂全綠（線照 `verify.py` 檔內既有的，不新訂） | **降一級**：對照組從「另一個求解器」變成「解析解 + 不變量」。超靜定內力分配無對照 |
+| **N22-b** 殼帶級 5e-4 / 1e-2 | **撤回**。殼的第二意見只有 FrameCore；沒有臂就沒有這條線。**不得**以 tectonic 自己的收斂梯子冒充第二意見 | **撤回** |
+| **N22-c** `differential.jsonl` 零 `blocker` 才發布 | **N22-c′** `contract/conformance/run.py --adapter capi --lib libbsi_tectonic.so` 對真引擎 **exit 0**；帳上紅逐條具名（鏡像 tectonic2 `gate/bsi_expected_red.json`），**SKIP 不算綠** | **降一級**：從「兩臂差異零阻擋」變成「單臂語料無紅」 |
+| **N22-d** 記名排除 ≤ 3 類 | **不適用**（沒有差異可排除） | 撤回 |
+| **N22-e** 分類規則改動 = dated + 降級 | **保留**，且本節就是它第一次生效 | 不變 |
+
+**預歸類表（`convention` / `old-defect` / `new-defect` / `freedom` / `blocker`）改變身分**：
+從「發布 gate 的分類規則」降為 **v0.3c → v0.4 的遷移說明**——它描述玩家會看到什麼變化（D-042 那張對照表就是它的內容），
+**不再宣稱有機器在檢查**。`blocker`（未歸類即預設阻擋）**失去執行機構**，這句照登，不用「改形」兩字帶過。
+
+**照登：改形之後沒有替代機構的那一塊。** 封閉解涵蓋靜定案、平衡不變量、等變性；
+**不涵蓋**超靜定內力分配、殼的實際數值、多構件互動。這正是第二意見本來要看的地方。
+v0.4 出貨時，「引擎算得對」這句話的證據強度**比 N22 原文低一級**，來源是封閉解與語料，不是交叉驗證。
+要補回來的正確形狀是**獨立 oracle**（OpenSees / 解析解族），不是把已知較差的舊引擎接回來（D-045 否證條件 (1)）。
+
+**N23-f 同步改形**：原文「`--adapter tectonic` 與 `--adapter framecore` 各 exit 0」——旗標名 2026-09-03c 已更正，
+臂數由本節減為一：**`--adapter capi --lib libbsi_tectonic.so` 一臂 exit 0**。
+（`--adapter engine --hostd` 走同一份 host 的另一種傳輸，是 C-2 的逐位腿，不是第二個引擎。）
+
+**無主項結清**：對位帳 C1（N22 沒有 owner）由本節結清——**不是找到 owner，是取消工作**。
+A14（FrameCore BSI 臂不存在）同上。C2 的「兩臂各 exit 0」隨 N23-f 減為一臂。
+
+### 2026-09-03f 登記：N23-b 的兩個方向都補上（[暫] 解除一半）
+
+2026-09-03c 把 N23-b 登記為 **[暫]**：現行實作只比「本倉 pin == `.github/tectonic2-contract-ref` 記的雜湊」，
+而那個 ref 釘的是 tectonic2 的**固定 commit**——**tectonic2 單邊改 `main`，本倉 CI 仍綠**（有 token 的 `diff -r` 也是對 pinned commit）；
+反方向 tectonic2 CI 對本倉零檢查。兩個方向現在都有腿：
+
+| 方向 | 誰跑 | 要 token 嗎 | 級 |
+|---|---|---|---|
+| tectonic2 的契約 vs **本倉 `Main`** | tectonic2 CI（新增步驟） | **不要**——本倉公開，`raw.githubusercontent.com` 一次 fetch 即得（**實測 200**；tectonic2 同一 URL 是 **404**，它是私有的） | **[硬]**，這條**不可能因為缺 secret 而跳過** |
+| 本倉的契約 vs **tectonic2 `main`** | 本倉 `engine-linux`（新增步驟） | **要**（tectonic2 私有） | **[暫]**，隨 `TECTONIC2_TOKEN`（無主項 C3）；沒跑時列入 job 末的「這次沒量到什麼」 |
+| 本倉的 pin 自洽（既有） | 本倉 `contract` job | 不要 | [硬]，不變 |
+
+**嚴重度依「不符代表什麼」定**，兩邊同一條規則：
+
+- **兩個預設分支之間**不符 = **真漂移**（出貨的引擎與出貨的模組對介面的認知不同）→ **紅**。
+- **PR 上**不符 = 契約變更**在途中**，配對 PR 還沒併——那正是協調變更應有的樣子 → **警告 + step summary，不紅**。
+  這條不是放軟：把它訂成紅，等於每一次合法的契約變更都從紅開始，然後所有人學會忽略這個檢查。
+- **fetch 失敗**照同一條規則，**永不綠**。「量不到」與「量到且相符」是本檔一路在記的那種混淆。
+
+**照登**：本批（BSI_ADD1）自己就是這條規則的第一個案例——寫下本節時，
+tectonic2 分支的契約雜湊是 `717aacedcd70…`、本倉 `Main` 還是 `c45f51fe7fca…`，
+兩邊 PR 都還沒併。**若新步驟在 PR 上是紅的，它會擋住自己**。

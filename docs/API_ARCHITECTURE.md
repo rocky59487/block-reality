@@ -249,3 +249,7 @@ member 建立與身分（D-011）· 斷面解耦（D-004）· 引擎邊界（D-0
 
 `DECISIONS.md` D-013（sidecar）、D-014（第三方只能做特效）。
 其餘全部是既有決策的推論，未新增前提。
+
+> **2026-09-03 dated 追記**：本檔的「sidecar 程序（獨立 process）」「sidecar 殺掉 → 遊戲照常跑」「sidecar 是 lazy 的」是 **v0.3c 出貨形狀**的事實。
+> v0.4 起引擎是進程內原生共享庫（D-044；`mod/core/.../engine/InProcessEngine`），沒有子行程可殺，「引擎關閉」的語意改由 `BsiNative.EngineRefused` / `BSI_VERSION`
+> 拒載與 `engine.mode` 開關承擔；崩潰隔離不再成立。接線於 #89；對位帳 `docs/ALIGNMENT_LEDGER.md`。

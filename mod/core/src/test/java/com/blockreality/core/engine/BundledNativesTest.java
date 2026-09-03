@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -77,6 +79,34 @@ class BundledNativesTest {
     }
 
     // ------------------------------------------------------------------ manifest
+
+    /**
+     * #80: the loser of a two-process race must adopt the winner's file, not report no engine.
+     *
+     * <p>Windows refuses to replace a file another handle has open, and the refusal is an
+     * AccessDeniedException -- an IOException, not AtomicMoveNotSupportedException -- so it used
+     * to fall past the fallback and out to the caller as "could not unpack". The bytes the loser
+     * wanted were already on disk the whole time.
+     *
+     * <p>Driven through the Replace seam rather than a real Windows box, because the point is the
+     * rule and a leg that only runs on one platform is a leg that does not run.
+     */
+    @Test
+    void aReplaceRefusedByAnOpenHandleAdoptsWhatIsAlreadyThere(@TempDir Path dir) throws Exception {
+        BundledNatives.Entry e = BundledNatives.parse(manifest()).get(0);
+        Path target = dir.resolve("libbsi_tectonic.so");
+        Path tmp = Files.createFile(dir.resolve("x.part"));
+
+        Files.write(target, LIB);                       // the winner already finished
+        BundledNatives.Replace refuse = (a, b) -> { throw new AccessDeniedException(b.toString()); };
+        assertDoesNotThrow(() -> BundledNatives.move(tmp, target, e, refuse),
+                "the loser's answer was on disk; refusing to overwrite it is not a failure");
+        assertArrayEqualsBytes(LIB, Files.readAllBytes(target));   // and nothing was overwritten
+
+        Files.write(target, "not the library".getBytes(StandardCharsets.UTF_8));
+        assertThrows(AccessDeniedException.class, () -> BundledNatives.move(tmp, target, e, refuse),
+                "a refusal over the WRONG bytes is still a failure and must not be swallowed");
+    }
 
     @Test
     void sevenFieldsCarryTheEngineVersionAndTheContractItWasBuiltAgainst() {

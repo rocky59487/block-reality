@@ -200,6 +200,12 @@ OpenBLAS 執行緒數 process-global 的序列化要求。
 > `solve` / `solve.shm` 兩個 verb 隨 protocol 3 退場；「兩傳輸逐位相同」的性質由 BSI C-2（T-A/T-B/T-B′ 等價）承接。
 > 引擎（tectonic2 原始碼）靜態連結在 sidecar 內；逾時 → sidecar 自行結束 → Java 退避重啟；同 revision 三次 → `ENGINE_FAILED`。
 
+> **2026-09-03 dated 追記（D-044；上段作廢的部分具名）**：sidecar **不再是出貨路徑**。引擎以原生共享庫進程內載入（JNA 綁 `contract/bsi_capi.h`：
+> `abi_version / open / call / close / last_error`；一次 `call` = 一個 BSI frame），「逾時 → sidecar 自行結束 → 退避重啟 → 三次 `ENGINE_FAILED`」的形狀隨之作廢
+> （進程內沒有可殺的子行程；直接法不可中斷，逾時只能記錄）。T-B（門鈴 + arena）降為 dev/CI 臂（`bsi-hostd`），C-2 押著它與進程內逐位相同。
+> **「不變的東西」清單裡的「程序隔離（D-013）」自此不成立**——原生崩潰帶掉 JVM，替代防線見 D-044（no-throw 邊界、host `catch(...)`、`maxBlocks`、`engine.mode` 開關）。
+> 今天的遊戲流程仍走 `SidecarClient`（#89 接線前）。
+
 ## 已知限制
 
 **`frame_capi_v2` 的 dispatcher 沒有暴露 LiveSession**，只有 `analysis.reanalysis_solve`（同拓撲 `ReSolveSession`）。也就是加節點無法增量，要全量重分解。

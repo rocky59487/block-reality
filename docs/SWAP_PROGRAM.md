@@ -176,3 +176,38 @@
 ---
 
 ## 8. 修訂（dated 追記；上方原文一字不改）
+
+- **2026-09-02**：本檔與 D-038..D-043、N19–N23 隨 PR #87 併入 `Main` = `4cfa551`；tectonic2 鏡像隨其 PR #16 併入 `main` = `7b61cbd`。
+- **2026-09-03（D-044 改形 + PR #88/#19 落地；原文不改）**：
+  1. **出貨形狀**：D-044 取代 §3 R1「宿主 = 傳輸轉接（stdio 門鈴 + arena）」——引擎是進程內共享庫（tectonic2 D2-013），Java 以 JNA 綁 `contract/bsi_capi.h`；
+     §5 傳輸列的目標改為 **T-A（`bsi_capi`，進程內）**，T-B/T-B′ 是 dev/CI 臂；R1 的逾時/重啟形狀作廢（D-041 dated）。
+  2. **§6 Phase 3 改形**：不再有「sidecar 重構 `wire/`、`backend_tectonic/`、`backend_framecore/`」；Phase 3 = `InProcessEngine` 接線（#89）+ Java 公式刪除（D-038）
+     + `StructureManager`（地面列舉、axis、registry）+ `BucklingPolicy`（nodes/dof）+ `evidence.py` BSI 臂（#91）+ `verify.py`（axis、expected-red）+ Windows/macOS natives（#90）。
+     **B8 的 Java codec 已落地**（PR #88：`core/bsi/`、`core/engine/`、N24-a/b）。
+  3. **單元順序反轉照登**：tectonic2 的 MC68 轉接器（§6 綁 v1.6）已**先於** v1.3/v1.4 落地（`core/capi/bsi_adapter.cpp`，PR #19），能力宣告空集合，
+     語料 C-5/C-6/C-11 端格在其 `gate/bsi_expected_red.json` 帳上（MC65a/MC64）；§6 的版本綁定表 v1.6 列改讀為「MC68 能力宣告非空 + 語料全綠」。
+     LINUX_BUILD（CMake 臂、`libbsi_tectonic.so`、L1–L8）亦已落地，**不是**側枝合流（側枝 `03de26c` 仍在 origin，MC61/MC62 合流未做）。
+  4. **§1 事實地圖更正**：tectonic2「無 Linux/MinGW 建置、不可重現」→ Linux CMake 臂存在、L7 自足實測；「側枝未合流」仍成立。
+     本倉 CI 新增 `contract`（host + stub + N24-a 打包）與 `engine-linux`（**需 `TECTONIC2_TOKEN`，未設前量不到東西**）兩個 job。
+  5. **§5 用詞更正**：BSI 求解的區段選單是 `include`（契約 `x-enums.include`），不是 `readback[]`（那是 tectonic2 v2 wire MC60d 的欄位）。
+  6. **FrameCore 對數臂**：R0/D-043 §2「FrameCore 對數臂也實作 `bsi.*`」與 N22 的 `diff_engines.py`/`br-sidecar-fc` **尚無實作、無 issue**（對位帳 A14/C1）；
+     Phase 5 的差異戰役在此裁決前不能開跑。
+  7. 契約 ↔ 判準的不一致（每格挫屈旗標、`GROUND`/`FULLY_SUPPORTED`、警告碼）、語料缺口、跨倉 CI 漂移偵測的不對稱，全部在 `docs/ALIGNMENT_LEDGER.md` §2（A1–A19）、§4（C1–C8）；
+     處置以「契約加法批次 #1」一次完成（先凍再做，兩倉同步 hash bump）。
+  8. §5 的回覆草稿與 tectonic2 鏡像 §5 的十二則**皆未張貼**；新增三則在對位帳 §5。
+- **2026-09-03b（契約加法批次 #1 落地 + D-045；原文不改）**：
+  1. **第 6 點的「在此裁決前不能開跑」已裁決：不做。** operator「2 不要 frame core」→ **D-045**。
+     `diff_engines.py`、`br-sidecar-fc`、FrameCore 的 `bsi_engine_vtable`、`--adapter framecore`、`evidence/differential.jsonl` **五樣都不做**。
+     §3 R10（差異帳）與 §4 N22 隨之改形為「**單臂語料 + 封閉解**」並 **dated 降一級**（`docs/GATES.md` 2026-09-03e）；
+     §2 G18 的「差異帳歸 `convention`」改讀為**遷移說明的一列**，不再是 gate 分類。
+     §6 **Phase 3 的 `diff_engines.py` 一項刪除**；**Phase 5 的「差異語料零未解 blocker」改為「語料對真引擎 exit 0 + `verify.py` 封閉解全綠」**，
+     「FrameCore 臂保留為 CI 對數一個發布週期」**作廢**。引擎倉的對位裁決是 **D2-015**（舉證責任提高一級）。
+     **代價照登**：封閉解不涵蓋超靜定內力分配、殼的實際數值、多構件互動——那一塊沒有替代機構。
+  2. **第 7 點的「契約加法批次 #1」已完成**：判準 tectonic2 `docs/specs/BSI_ADD1.md`（先凍，獨立 commit）；
+     雜湊 `c45f51fe7fca…` → **`717aacedcd70…`**（44 檔），兩倉同一份、`.github/tectonic2-contract-ref` 兩行同步。
+     六件事裡**三件是行為變更不是加法**（`precision.maxTimeMs` 上能力閘、`numThreads` 界線 `1 ≤ n ≤ 256`、`bsi_capi_open` 未知鍵拒絕），
+     三者都是**探針量到**的 fail-closed 洞。契約主版**不 bump**。
+  3. **跨倉漂移偵測兩個方向都補上**：tectonic2 CI 讀本倉 `Main` 的雜湊（本倉公開，**不需 token**，永遠會跑）；
+     本倉有 token 時讀 tectonic2 `main`。嚴重度：預設分支之間 = 紅，PR 上 = 警告，**fetch 失敗永不綠**（`GATES.md` 2026-09-03f）。
+  4. **第 8 點的草稿**：對位帳 §5 的三則已張貼（BR #69 / #85 結案、tectonic2 #5 阻擋改形）；
+     tectonic2 鏡像 §5 的十二則**仍未張貼**，但其中五個 issue（T2 #3/#9/#10/#13/#15）已直接以留言結案。

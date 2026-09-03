@@ -76,6 +76,27 @@ class BsiFrameAndResponseTest {
         assertArrayEquals(new int[]{9, 0, 0}, r.unassigned().get(0).blocks().get(0));
     }
 
+    /**
+     * blocks.flags is three independent bits, and reading one of them with another one's mask is
+     * the kind of defect that shows up as "everything overloaded is also buckling". All eight
+     * combinations, so a wrong mask cannot hide behind a fixture that only ever sets one bit.
+     */
+    @Test
+    void theThreeBlockFlagsAreIndependentBits() {
+        for (int f = 0; f < 8; f++) {
+            ByteBuffer p = ByteBuffer.allocate(24).order(ByteOrder.LITTLE_ENDIAN);
+            p.putDouble(0.5).putInt(1).putInt(0).put((byte) 0).put((byte) 1).put((byte) f).put((byte) 0).putInt(0);
+            String header = "{\"bsi\":1,\"kind\":\"response\",\"id\":\"r1\",\"method\":\"bsi.solve\",\"revision\":1,"
+                    + "\"status\":\"ok\",\"sections\":[{\"name\":\"blocks\",\"offset\":0,\"bytes\":24,\"count\":1}]}";
+            BsiResponse r = BsiResponse.of(new BsiFrame.Decoded(7, header, p.array()));
+            assertNotNull(r);
+            BsiResponse.BlockResult b = r.blocks().get(0);
+            assertEquals((f & 1) != 0, b.overloaded(), "bit0 at flags=" + f);
+            assertEquals((f & 2) != 0, b.indicative(), "bit1 at flags=" + f);
+            assertEquals((f & 4) != 0, b.bucklingCritical(), "bit2 at flags=" + f);
+        }
+    }
+
     @Test
     void anErrorFrameCarriesItsTokenNotItsProse() {
         String header = "{\"bsi\":1,\"kind\":\"error\",\"id\":\"r1\",\"method\":\"bsi.solve\",\"revision\":1,"

@@ -118,6 +118,29 @@ class InProcessEngineTest {
         assertEquals(1, BsiContract.CAPI_ABI);
     }
 
+    /**
+     * BSI_ADD1 G-D/G-E: the contract now bounds numThreads to 1..256 and fails the open on any
+     * unknown non-{@code x-} key. Needs no engine — what is under test is the string this side
+     * builds, and building an out-of-range one would take the mod down at load time.
+     */
+    @Test
+    void openOptionsStayInsideWhatTheContractAccepts() {
+        assertEquals("{\"log\":0,\"numThreads\":4}", InProcessEngine.openOptions(4));
+        assertEquals("{\"log\":0}", InProcessEngine.openOptions(0),
+                "no preference is spelled by omitting the key, not by sending 0 or 1");
+        assertEquals("{\"log\":0}", InProcessEngine.openOptions(-1));
+        assertEquals("{\"log\":0,\"numThreads\":256}", InProcessEngine.openOptions(9999),
+                "a machine with more cores than the contract allows still has to ask for 256");
+        for (int n : new int[]{-1, 0, 1, 2, 255, 256, 257, 1 << 20}) {
+            String o = InProcessEngine.openOptions(n);
+            assertFalse(o.contains("numThreads\":0"), o);
+            int i = o.indexOf("\"numThreads\":");
+            if (i < 0) continue;
+            int v = Integer.parseInt(o.substring(i + 13, o.length() - 1));
+            assertTrue(v >= 1 && v <= 256, "numThreads=" + v + " is outside the contract's 1..256");
+        }
+    }
+
     @Test
     void anEngineThatIsNotOneIsRefusedWithAReason() throws Exception {
         Path notAnEngine = Files.createTempFile("not-an-engine", ".so");

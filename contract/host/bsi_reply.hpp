@@ -53,6 +53,12 @@ public:
     const std::vector<SectionInfo>& sections() const { return sections_; }
     const std::vector<UnassignedGroup>& unassignedGroups() const { return unassigned_; }
     const std::vector<WarningCount>& warnings() const { return warnings_; }
+    // What blocks.flags bit2 (bucklingCritical) is allowed to mean, answered in one
+    // place so the rule cannot drift between the writer and the checker: the
+    // island's own record says computed, and its factor is finite and below 1.
+    // hasRecord distinguishes "this island is safe" from "this island was never
+    // evaluated", which are different answers and must not share a bit.
+    bool islandBucklingCritical(int32_t island, bool& hasRecord) const;
     bool haveDiag() const { return haveDiag_; }
     uint32_t nodes() const { return nodes_; }
     uint32_t members() const { return members_; }

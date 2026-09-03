@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -216,7 +217,7 @@ public final class BundledNatives {
             Path tmp = Files.createTempFile(target.getParent(), target.getFileName().toString(), ".part");
             try {
                 copyVerified(loader, e, tmp);
-                move(tmp, target);
+                move(tmp, target, e);
             } finally {
                 Files.deleteIfExists(tmp);
             }
@@ -276,12 +277,45 @@ public final class BundledNatives {
         }
     }
 
-    private static void move(Path tmp, Path target) throws IOException {
+    /** How the finished temporary file takes the target's place. A seam so the loser of the
+     *  race below can be reproduced on a filesystem that does not lose it. */
+    @FunctionalInterface
+    interface Replace { void run(Path tmp, Path target) throws IOException; }
+
+    static void atomicReplace(Path tmp, Path target) throws IOException {
         try {
             Files.move(tmp, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
         } catch (AtomicMoveNotSupportedException notAtomic) {
             Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
         }
+    }
+
+    /**
+     * Puts the verified temporary file in place, and treats "somebody else got there first" as an
+     * answer rather than a failure.
+     *
+     * <p>Windows will not let one process replace a file another has open. The refusal is an
+     * {@link java.nio.file.AccessDeniedException} -- an {@code IOException}, NOT an
+     * {@link AtomicMoveNotSupportedException} -- so the fallback inside {@link #atomicReplace}
+     * never sees it, and the losing thread used to fall all the way out to the caller's catch and
+     * return no engine at all with one line of log (#80). Two JVMs sharing a game directory (a
+     * client next to a dedicated server) is the case that meets this, and what the player sees is
+     * the stress glasses doing nothing, with no error.
+     *
+     * <p>The loser does not need to write anything: the bytes it wanted are already on disk. So
+     * verify the target and adopt it. If the target is NOT what the manifest describes, the
+     * exception is the right answer and it is rethrown unchanged.
+     */
+    static void move(Path tmp, Path target, Entry e, Replace replace) throws IOException {
+        try {
+            replace.run(tmp, target);
+        } catch (FileSystemException busy) {
+            if (!isGood(target, e)) throw busy;
+        }
+    }
+
+    private static void move(Path tmp, Path target, Entry e) throws IOException {
+        move(tmp, target, e, BundledNatives::atomicReplace);
     }
 
     /**

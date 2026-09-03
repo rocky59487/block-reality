@@ -415,6 +415,10 @@ D-034 否證 (1) 的備援：若 T 軌拖過兩個發布窗，T2 凍結的同一
 > **B3** 協定欄位 → **B8 BSI codec**（Java `BsiCodec` + sidecar T-B；D-043）；**B4** 挫屈門檻 → nodes/dof（Q3(a)）、bulk-ground 顯示 → `unassigned` 碼；
 > 新增 **B9** Java 公式刪除（D-038、N20）與 **B10** 地面列舉 + 持久 registry（D-039、N21、#86）。
 > 驗收：`verify.py` 除 `sidecar/expected_red.json` 帳上的腿外全綠；差異帳零 blocker。
+>
+> **2026-09-03 追記（D-044）**：B1「傳輸轉接 + 原始碼靜態連結」改為 **`InProcessEngine` 接線**（#89；引擎 = jar 內原生共享庫）；**B8 的 Java codec 已落地**（PR #88，N24-a/b 首跑）；
+> B2 的雙引擎對數（N22）**無實作、無 issue**——FrameCore 的 BSI 臂要先裁決保留或降級（`docs/ALIGNMENT_LEDGER.md` A14/C1）；B5 發布多一項前提：Windows natives（#90）。
+> T 軌：tectonic2 的 MC68 轉接器先於 v1.3 落地（能力空集合，其 #20），LINUX_BUILD 落地。
 
 ---
 

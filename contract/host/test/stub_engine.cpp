@@ -100,6 +100,15 @@ int s_solve(bsi_engine* e, const bsi_solve_options* o, const bsi_load* loads, ui
     }
     if (m == "bad_owner" && !res.empty()) res[0].ownerKind = BSI_OWNER_UNASSIGNED;     // listed nowhere => INTERNAL
     if (m == "short_blocks") { if (!res.empty()) res.pop_back(); }
+    // blocks.flags bit2 escapes (BSI_ADD1 ADD1-02). Three ways to lie about
+    // stability, one per direction the host has to watch:
+    //   bit2_orphan  set the bit with no buckling record behind it
+    //   bit2_lie     set the bit while the record says the lane was disabled
+    //   bit2_missing the island IS critical and the blocks stay unflagged
+    //   bit2_ground  set the bit on a cell that owns no element
+    for (auto& r : res)
+        if ((m == "bit2_orphan" || m == "bit2_lie") && r.ownerKind == BSI_OWNER_MEMBER) r.flags |= 4u;
+    if (m == "bit2_ground") for (auto& r : res) if (r.ownerKind != BSI_OWNER_MEMBER) r.flags |= 4u;
     bsi_writer_blocks(w, res.data(), (uint32_t)res.size());
     if (!nonstructXyz.empty()) bsi_writer_unassigned(w, "NON_STRUCTURAL", -1, nonstructXyz.data(), (uint32_t)(nonstructXyz.size() / 3));
     if ((o->includeMask & 1u) && !memberXyz.empty()) {
@@ -112,7 +121,8 @@ int s_solve(bsi_engine* e, const bsi_solve_options* o, const bsi_load* loads, ui
     const double z[3] = {0, 0, 0};
     if (m != "no_equilibrium") bsi_writer_equilibrium(w, z, z, 0.0);
     bsi_writer_quality(w, 0.0, 0, 1, 0, 0);
-    bsi_writer_buckling(w, 0, BSI_BSTATE_DISABLED, BSI_BUCK_NONE, std::nan(""));
+    if (m == "bit2_missing") bsi_writer_buckling(w, 0, BSI_BSTATE_COMPUTED, BSI_BUCK_EIGEN, 0.5);
+    else if (m != "bit2_orphan") bsi_writer_buckling(w, 0, BSI_BSTATE_DISABLED, BSI_BUCK_NONE, std::nan(""));
     bsi_writer_diag(w, memberXyz.empty() ? 0 : 2, memberXyz.empty() ? 0 : 1, 0, memberXyz.empty() ? 0 : 1, 0, 0);
     return BSI_OK;
 }

@@ -54,8 +54,14 @@ enum bsi_capi_status {
 BSI_CAPI uint32_t bsi_capi_abi_version(void);
 
 /* One session (one BSI state machine: hello -> vocab -> world -> solve...).
- * optionsJson may be NULL or "{}"; recognised keys: "log" (0..3). Unknown keys
- * are ignored here (this is host configuration, not the wire). NULL on failure. */
+ * optionsJson may be NULL or "{}". The accepted keys are the schema's
+ * x-capi.openOptions: "log" (0..3), "numThreads" (1..256, this session's default
+ * thread count; a solve's body.numThreads overrides it), "probe" (bool) and
+ * "assumeCaps" (array of strings) for harvest mode, and any "x-<vendor>" key,
+ * which is ignored. An unknown non-x- key, or one whose type or range is wrong,
+ * returns NULL: host configuration fails closed for the same reason the wire
+ * does (P6). NULL is also returned when the engine will not open.
+ * On failure call bsi_capi_last_error(NULL) for the reason. */
 BSI_CAPI void* bsi_capi_open(const char* optionsJson);
 
 /* Send one request frame, receive one reply frame. Calls on one handle must be

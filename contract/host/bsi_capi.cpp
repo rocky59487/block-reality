@@ -31,6 +31,52 @@ bsi::Engine* sharedEngine(std::string& err) {
     return &eng;
 }
 
+// bsi_capi_open has no handle to hang a message on when it refuses, so the
+// reason lives here and bsi_capi_last_error(NULL) reads it. Thread-local: two
+// threads opening at once must not overwrite each other's reason.
+std::string& openError() {
+    static thread_local std::string e;
+    return e;
+}
+
+// x-capi.openOptions, enforced rather than assumed. Host configuration fails
+// closed for the same reason the wire does (P6): a key the host has never heard
+// of is a caller who believes something that is not true, and silently dropping
+// it is how "numThreads had no effect" survived unnoticed on the consumer side.
+bool parseOpenOptions(const char* optionsJson, bsi::HostOptions& opts, std::string& err) {
+    if (!optionsJson || !*optionsJson) return true;
+    bsi::json::Value v;
+    if (!bsi::json::parse(optionsJson, std::strlen(optionsJson), v) || !v.isObj()) {
+        err = "open options are not a JSON object";
+        return false;
+    }
+    for (const auto& kv : v.obj) {
+        const std::string& k = kv.first;
+        const bsi::json::Value& val = kv.second;
+        if (k.rfind("x-", 0) == 0) continue;                       // vendor extension: ignored
+        if (k == "log") {
+            if (!val.isInt || val.i64 < 0 || val.i64 > 3) { err = "open option 'log' must be an integer 0..3"; return false; }
+            opts.logLevel = (int)val.i64;
+        } else if (k == "numThreads") {
+            if (!val.isInt || val.i64 < 1 || val.i64 > 256) { err = "open option 'numThreads' must be an integer 1..256"; return false; }
+            opts.numThreads = (uint32_t)val.i64;
+        } else if (k == "probe") {
+            if (!val.isBool()) { err = "open option 'probe' must be a boolean"; return false; }
+            opts.probe = val.b;
+        } else if (k == "assumeCaps") {
+            if (!val.isArr()) { err = "open option 'assumeCaps' must be an array of strings"; return false; }
+            for (const auto& c : val.arr) {
+                if (!c.isStr()) { err = "open option 'assumeCaps' must be an array of strings"; return false; }
+                opts.assumedCaps.push_back(c.str);
+            }
+        } else {
+            err = "unknown open option '" + k + "' (x-<vendor> keys are ignored; everything else is refused)";
+            return false;
+        }
+    }
+    return true;
+}
+
 }  // namespace
 
 extern "C" {
@@ -38,23 +84,17 @@ extern "C" {
 BSI_CAPI uint32_t bsi_capi_abi_version(void) { return BSI_CAPI_ABI; }
 
 BSI_CAPI void* bsi_capi_open(const char* optionsJson) {
+    openError().clear();
     std::string err;
     bsi::Engine* eng = sharedEngine(err);
-    if (!eng) return nullptr;
+    if (!eng) { openError() = err; return nullptr; }
     bsi::HostOptions opts;
     opts.clientName = "bsi_capi";
-    if (optionsJson && *optionsJson) {
-        bsi::json::Value v;
-        if (bsi::json::parse(optionsJson, std::strlen(optionsJson), v) && v.isObj()) {
-            if (const bsi::json::Value* l = v.find("log")) if (l->isInt) opts.logLevel = (int)l->i64;
-            if (const bsi::json::Value* p = v.find("probe")) if (p->isBool()) opts.probe = p->b;
-            if (const bsi::json::Value* a = v.find("assumeCaps")) if (a->isArr()) for (const auto& c : a->arr) if (c.isStr()) opts.assumedCaps.push_back(c.str);
-        }
-    }
+    if (!parseOpenOptions(optionsJson, opts, openError())) return nullptr;
     Handle* h = new (std::nothrow) Handle();
-    if (!h) return nullptr;
+    if (!h) { openError() = "out of memory"; return nullptr; }
     h->session.reset(new (std::nothrow) bsi::Session(*eng, opts));
-    if (!h->session) { delete h; return nullptr; }
+    if (!h->session) { delete h; openError() = "out of memory"; return nullptr; }
     return h;
 }
 
@@ -81,7 +121,8 @@ BSI_CAPI void bsi_capi_close(void* hv) { delete (Handle*)hv; }
 
 BSI_CAPI const char* bsi_capi_last_error(void* hv) {
     Handle* h = (Handle*)hv;
-    if (!h || h->lastError.empty()) return nullptr;
+    if (!h) return openError().empty() ? nullptr : openError().c_str();
+    if (h->lastError.empty()) return nullptr;
     return h->lastError.c_str();
 }
 
