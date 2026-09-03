@@ -198,4 +198,52 @@ PE-1（遙測，可與 MC62 `explain` 合併）→ PE-3（島生命週期，建�
 
 ## 8. 修訂（dated 追記；上方原文一字不改）
 
-（無）
+### 2026-09-03 — 同一輪把 §7 的第 2、5 步做完，並裁決了 A14/C1
+
+> 本節是**結清單**。上方 §2–§7 的原文一字不改；哪幾條已經不再成立，看這裡。
+> 兩倉逐位鏡像，本節也是。
+
+#### 已結清（不必再看上方那一條）
+
+| 條 | 上方說 | 現在 | 落點 |
+|---|---|---|---|
+| **A1** | BSI 沒有每格挫屈判定欄位 | **契約已有** `blocks.flags` bit2 `bucklingCritical`，host 雙向一致性檢查（漏設與亂設同罪），只對 `ownerKind ∈ {member, facet}` 適用 | T2 `8d31914`；BR `c45918e`、`1dd130e`（Java `BlockResult.bucklingCritical()`） |
+| **A4** | 警告碼無「未分類」出口 | `warningCode` += `UNCLASSIFIED`（**出口，不是預設**） | 同上 |
+| **A5** | `members.section` 回宣告值 | **已修**：解析材料的 `defaultSection`。新加的 C-4 斷言**首跑就抓到它** | T2 `b700731` |
+| **A7** | `precision.maxTimeMs` 被靜默接受 | 上能力閘 `bsi.precision.timeout`；本引擎**不宣告**（直接法不可中斷）⇒ `UNSUPPORTED` | T2 `8d31914` |
+| **A8** | `numThreads` 無界；契約與 MC62 判準不一致 | schema `1 ≤ n ≤ 256`，越界 `PROTOCOL_ERROR`、**不夾擠**；與 `MC62_GUARDS` §1.6 逐字一致 | 同上 |
+| **A10** | `bsi_capi_open` 選項無 schema、未知鍵靜默忽略 | 有 schema（`log`/`numThreads`/`probe`/`assumeCaps`/`x-*`）；非 `x-` 未知鍵 → `NULL` 並指名該鍵 | 同上；BR 側 `InProcessEngine.openOptions()`（**上方 A10 的處置寫錯一半**：`Math.max(1, n)` 只保證下界，`n > 256` 會讓 open 回 NULL；見 BR `GATES.md` 2026-09-03d 的 dated 追記） |
+| **A12** | 跨倉漂移：T2 CI 對 BR 零檢查；BR 只比 pinned commit | **兩個方向都有腿**。T2 CI 讀 BR `Main` 的雜湊（**實測公開，HTTP 200，不需 token**）；BR 有 token 時比 T2 `main`。嚴重度依「不符代表什麼」定：預設分支之間 = 紅，PR 上 = 警告；**fetch 失敗永不綠** | T2 `f6f98b1`；BR `f212dfe` |
+| **A13** | 判準寫 `--adapter tectonic` / `--adapter framecore` | 更正為 `--adapter capi --lib libbsi_tectonic.so`；**FrameCore 臂不存在也不會存在**（A14） | 兩倉文件 dated |
+| **A14 / C1** | FrameCore 的 BSI 臂無實作、無 issue；N22 無法產生差異帳 | **裁決：不做**（operator「2 不要 frame core」）。BR **D-045**：N22 改形為單臂語料 + 封閉解，**dated 降一級**，`blocker` 類失去執行機構、預歸類表降為遷移說明；T2 **D2-015**：舉證責任提高一級，「FrameCore 也是這個數」不再是 oracle | BR `0188014`；T2 `db07061` |
+| **C5** | 契約加法批次 #1（八條發現的契約面） | **做完**。判準 `docs/specs/BSI_ADD1.md`（`155b422`，先於任何 `contract/` 改動）；語料 8 → 10 案；`host_tests` 77 → 90；真引擎收割 `hard_red=0`、帳未變長也未過期 | 兩倉 |
+| **§7 第 2 步** | 契約批次 #1 + 兩倉 hash bump + BR 更新 ref | 完成。雜湊 `c45f51fe…` → **`717aacedcd70…`**（44 檔）；`.github/tectonic2-contract-ref` 兩行同步到 T2 `b700731`；`diff -r` 空 | — |
+| **§7 第 5 步** | 兩倉 CI 各補一步 | 完成（見 A12）。`TECTONIC2_TOKEN`（C3）**仍未設**，BR 那一腿仍 [暫] | — |
+| **#18** | perfect engine 的路線待核 | **D2-014**：增量演進、量測先於架構、不重寫 `Session`；PE-1 → PE-3 → PE-4 → PE-5 → PE-2；**PCG 而非 MINRES**（fail-closed 紀律把不定矩陣定義成機構）；**不授權任何實作**，#18 在 PE-1 判準進 repo 之前不得關閉 | T2 `db07061` |
+
+#### 仍然成立（沒動）
+
+- **A2/A3**（`unassigned.why` 三方不一致、未解釋格預設 `RUN_TOO_SHORT`）、**A6**（警告全記 `BEARING_SKIPPED_FIXED`）——三者都等 **MC65a** 的 `blockWhy`。
+- **A9/A11/A15/A16/A17/A18/A19** 未處理；**A11**（`arena.supported` 送 `true`）與 **A17**（`numThreads` 預設 1）仍是 **#89** 的驗收條件。
+- **C2**（語料對真引擎 exit 0）：臂數由兩臂減為一臂（N23-f 隨 D-045 改形）；tectonic 臂仍是收割模式，**永不 exit 0**。
+- **C3**（`TECTONIC2_TOKEN` 未設）、**C4**（T2 #21 的 L6 四套短少）、**C6/C7/C8** 照舊。
+- **B 系列**在上一輪已清；本輪兩倉的 `CLAUDE.md` 進一步**改寫成現況**（不再疊追記層），歷史留在 `DECISIONS.md`（兩倉都加了索引）與 `GATE_LINE_REGISTRY.md` / `GATES.md`。
+
+#### 本輪新增的照登（不在上方任何一條裡）
+
+1. **這批有三條是行為變更，不是純加法**（A7/A8/A10）：今天成功、之後失敗。三者都是**探針量到**的 fail-closed 洞，不是讀出來的。
+   契約主版**不 bump**——Part E 的破壞性定義不含「把未定義行為收緊成 fail-closed」；此判定照登在 `BSI_ADD1.md` §7 B1 供日後爭議引用。
+2. **bit2 的規則在實作期被收緊**：原文只說「該格所屬島」，而地面格與未入模格也有 `island` 欄位 ⇒ 照原文寫出來的檢查會要求地面格帶旗標。
+   收緊為 `ownerKind ∈ {member, facet}`，**這是加嚴不是放軟**，dated 在 `BSI_ADD1.md` §10 修訂 1。
+3. **MC68-M2b 落地**：語料有了站在線上的 `dc > 1` 格（`C7-overloaded-flag`）之後，「不設旗標」才咬得到；
+   MC68 變異腿 3 → 4 開關，四條全咬。**正確的修法是補 fixture，不是把斷言喊大聲。**
+4. **D-045 的代價照登**：對數臂是唯一會抓到「新引擎錯在封閉解看不到的地方」的機構。
+   封閉解涵蓋靜定案、平衡不變量、等變性；**不涵蓋**超靜定內力分配、殼的實際數值、多構件互動。**這一塊沒有替代機構。**
+
+#### §7 之後的順序（更新）
+
+1. **T2**：MC65a + MC64（#20）→ `bsi.core` 可宣告；`bsi_expected_red.json` 清空；順帶清 A2/A3/A6。
+2. **BR**：#89 接線（驗收含 A11/A17；A10 已不再是驗收項，`openOptions` 已合規）。
+3. **operator**：加 `TECTONIC2_TOKEN`（C3）——它是 BR 那一腿與 `engine-linux` 整個 job 的前提。
+4. **T2**：PE-1 判準凍結（**#18 關閉的前提**）；MC61/MC62 側枝合流 → v1.3。
+5. **BR**：#90 Windows/macOS natives；#91 evidence BSI 臂。
