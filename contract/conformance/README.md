@@ -53,21 +53,29 @@ exit：0 全綠且 ≥1 案執行；1 硬紅或帳過期；2 契約/用法；3 a
 
 ## 家族與 case 清單
 
-| 家族 | case | 級 |
-|---|---|---|
-| C-1 | `C1-schema-every-response`（隱含於 runner） | 硬 |
-| C-2 | `C2-transport-equivalence`（runner 對每個 case 走全部可用傳輸） | 硬 |
-| C-3 | `C3-hello-contract-mismatch` | 硬 |
-| C-4 | `C4-cantilever-selfweight`、`C4-fixedfixed-pointload` | 硬 |
-| C-5 | `C5-floating-beam-mechanism` | 硬 |
-| C-6 | `C6-slab-on-beam` | 硬 |
-| C-7 | `C7-overloaded-flag`（隱含：每個 case 檢查 `flags.overloaded ⇔ dc>1`） | 硬 |
-| C-8 | `C8-sign-cantilever-top-tension` | 硬 |
-| C-9 | `--repeat 3` 對每個 case | 硬 |
-| C-10 | `C10-euler-tip`、`C10-greenhill`（`requires: bsi.buckling.eigen`） | 暫 |
-| C-11 | `C11-axis-out-of-range`、`C11-load-on-ground`、`C11-solve-before-world` | 硬 |
-| C-12 | `C12-f32-display`（`requires: bsi.precision.f32`） | 硬 |
-| C-13 | `C13-x-extension-ignored`、`C13-custom-section-equals-rect` | 硬 |
+**這張表的每個檔名都對得上 `cases/` 裡真的存在的檔。** 上一版列了七個不存在的檔名（`C1-…`、`C3-…`、`C10-euler-tip`、
+`C11-axis-out-of-range` 等），把「runner 隱含執行的家族」與「有自己的檔的家族」混在一欄；讀的人會以為 C-12 有腿而其實整個家族是空的
+（`docs/ALIGNMENT_LEDGER.md` A8，2026-09-03 更正）。
+
+| 家族 | 怎麼跑 | 檔（`cases/`） | 級 |
+|---|---|---|---|
+| C-1 | **runner 對每一則回覆隱含執行**（schema、鍵序、`sections` 連續且大小正確、規範序、`blocks.count == B`） | 無（無檔是對的） | 硬 |
+| C-2 | **runner 對每個 case 走全部可用傳輸**並比對逐位 | 無 | 硬 |
+| C-3 | `C11-fail-closed` 的 **step** `hello-contract-mismatch` | （在 C-11 檔內） | 硬 |
+| C-4 | 兩個檔 | `C4-cantilever-selfweight`、`C4-fixedfixed-pointload` | 硬 |
+| C-5 | 一個檔 | `C5-floating-beam-mechanism` | 硬 |
+| C-6 | 一個檔 | `C6-slab-on-beam` | 硬 |
+| C-7 | **runner 對每一則回覆隱含執行**（`flags` bit0 ⇔ `dc > 1.0`）**＋** 一個站在線上的 fixture | `C7-overloaded-flag` | 硬 |
+| C-8 | 一個檔 | `C8-sign-cantilever-top-tension` | 硬 |
+| C-9 | `--repeat N`（預設 3）對每個 case | 無 | 硬 |
+| C-10 | 一個檔，`variants` 展開成 Euler 與 Greenhill 兩個世界 | `C10-buckling-closed-forms` | 暫 |
+| C-11 | 一個檔，十個 **step** 依序跑在同一個 session 上 | `C11-fail-closed` | 硬 |
+| C-12 | 一個檔，`variants` 展開成 f64 與 f32 兩個世界 | `C12-f32-display` | 硬 |
+| C-13 | 一個檔，`variants` 展開成 rect 與 custom 兩個世界 | `C13-extensions` | 硬 |
+
+**C-7 的 fixture 是 2026-09-03 才有的**（`BSI_ADD1` G-F）。在它之前語料裡**沒有任何一格 `dc > 1`**，
+所以「永遠不設 overloaded 旗標」與正確行為在語料上不可區分——變異腿只能用**翻號**才咬得到（`MC68_BSI.md` §10 修訂 10 照登）。
+**C-12 在有實作宣告 `bsi.precision.f32` 之前恆 SKIP**；SKIP 會印出來，**不算綠**。
 
 閉合式的數字全部由 case 內的材料/幾何**算式**推得（runner 重算，不硬編）：
 `w = ρ·A·g`、`L` = 節點到節點（構件由 5 格接地一端 → 4 m）。

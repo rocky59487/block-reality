@@ -11,7 +11,7 @@
     "bsi.core", "bsi.world.edit",
     "bsi.readback.members", "bsi.readback.stations", "bsi.readback.shells",
     "bsi.buckling.eigen", "bsi.buckling.eigen.shells", "bsi.buckling.screen",
-    "bsi.precision.display", "bsi.precision.f32", "bsi.precision.warmstart",
+    "bsi.precision.display", "bsi.precision.f32", "bsi.precision.warmstart", "bsi.precision.timeout",
     "bsi.material.orthotropic", "bsi.material.composite", "bsi.material.rope",
     "bsi.section.custom", "bsi.block.shape", "bsi.block.attrs",
     "bsi.fracture"
@@ -37,7 +37,7 @@
     "tier": ["commit", "display"],
     "storage": ["f64", "f32"],
     "editClass": ["A", "B", "C"],
-    "warningCode": ["BEARING_SKIPPED_FIXED", "BEARING_SKIPPED_NO_NODE", "BEARING_SKIPPED_NO_FACET", "BUTT_UNSTITCHED", "SHAPE_APPROXIMATED", "SEAM_UNJOINED", "INDICATIVE_THICK_SHELL"],
+    "warningCode": ["BEARING_SKIPPED_FIXED", "BEARING_SKIPPED_NO_NODE", "BEARING_SKIPPED_NO_FACET", "BUTT_UNSTITCHED", "SHAPE_APPROXIMATED", "SEAM_UNJOINED", "INDICATIVE_THICK_SHELL", "UNCLASSIFIED"],
     "include": ["members", "stations", "shells", "attrsEcho"],
     "attrType": ["f64", "i64", "u64mask"],
     "standardAttrKeys": ["shape", "damage", "temperatureK"],
@@ -206,7 +206,7 @@
         "precision": {"type": "object", "properties": {
           "tier": {"$ref": "#/x-enums/tier"}, "targetRel": {"type": "number", "exclusiveMinimum": 0},
           "storage": {"$ref": "#/x-enums/storage"}, "warmStart": {"type": "boolean"}, "maxTimeMs": {"type": "integer", "minimum": 0}}},
-        "numThreads": {"type": "integer", "minimum": 0},
+        "numThreads": {"type": "integer", "minimum": 1, "maximum": 256},
         "include": {"type": "array", "items": {"$ref": "#/x-enums/include"}, "uniqueItems": true}
       },
       "patternProperties": {"^x-": {}},
@@ -241,7 +241,7 @@
     "attr":         {"bytes": 16,  "fields": [["blockIndex","u32"],["key","u16"],["type","u8"],["reserved","u8"],["value","u8[8]"]]},
     "edit":         {"bytes": 41,  "fields": [["op","u8"],["block","block"]]},
     "load":         {"bytes": 64,  "fields": [["x","i32"],["y","i32"],["z","i32"],["flags","u32"],["fx","f64","N"],["fy","f64","N"],["fz","f64","N"],["mx","f64","N*m"],["my","f64","N*m"],["mz","f64","N*m"]]},
-    "blocks":       {"bytes": 24,  "fields": [["dc","f64"],["island","i32"],["owner","i32"],["mode","u8"],["ownerKind","u8"],["flags","u8"],["reserved","u8"],["reason","u32"]], "x-flags": {"bit0": "overloaded", "bit1": "indicative"}},
+    "blocks":       {"bytes": 24,  "fields": [["dc","f64"],["island","i32"],["owner","i32"],["mode","u8"],["ownerKind","u8"],["flags","u8"],["reserved","u8"],["reason","u32"]], "x-flags": {"bit0": "overloaded", "bit1": "indicative", "bit2": "bucklingCritical"}},
     "equilibrium":  {"bytes": 56,  "fields": [["applied","f64[3]","N"],["reaction","f64[3]","N"],["residual","f64"]]},
     "quality":      {"bytes": 16,  "fields": [["achievedRel","f64"],["iterations","i32"],["tierHonoured","u8"],["warmStartUsed","u8"],["storage","u8"],["timedOut","u8"]]},
     "buckling":     {"bytes": 16,  "fields": [["island","i32"],["state","u8"],["kind","u8"],["reserved","u16"],["factor","f64"]]},
@@ -263,7 +263,17 @@
   "x-capi": {
     "header": "bsi_capi.h", "abi": 1,
     "symbols": ["bsi_capi_abi_version", "bsi_capi_open", "bsi_capi_call", "bsi_capi_close", "bsi_capi_last_error"],
-    "frame": "'F' 'C' | flags u16 | headerLen u32 | payloadLen u32 | header | payload (LE); one call = one frame in, one frame out"
+    "frame": "'F' 'C' | flags u16 | headerLen u32 | payloadLen u32 | header | payload (LE); one call = one frame in, one frame out",
+    "openOptions": {
+      "type": "object",
+      "properties": {
+        "log": {"type": "integer", "minimum": 0, "maximum": 3},
+        "numThreads": {"type": "integer", "minimum": 1, "maximum": 256},
+        "probe": {"type": "boolean"},
+        "assumeCaps": {"type": "array", "items": {"type": "string"}}},
+      "patternProperties": {"^x-": {}},
+      "additionalProperties": false
+    }
   },
 
   "x-canonicalOrder": {

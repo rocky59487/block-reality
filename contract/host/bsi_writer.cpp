@@ -2,6 +2,7 @@
 #include "bsi_schema.hpp"
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <map>
@@ -104,6 +105,16 @@ void ReplyBuilder::appendSection(const char* name, const void* data, uint64_t by
     const uint8_t* p = (const uint8_t*)data;
     payload_.insert(payload_.end(), p, p + bytes);
     sections_.push_back(s);
+}
+
+bool ReplyBuilder::islandBucklingCritical(int32_t island, bool& hasRecord) const {
+    hasRecord = false;
+    for (const auto& bk : buckling_) {
+        if (bk.island != island) continue;
+        hasRecord = true;
+        return bk.state == BSI_BSTATE_COMPUTED && std::isfinite(bk.factor) && bk.factor < 1.0;
+    }
+    return false;
 }
 
 std::string ReplyBuilder::bucklingState(uint8_t requestedMode) const {

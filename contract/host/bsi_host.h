@@ -19,6 +19,10 @@ struct HostOptions {
     bool probe = false;         // --assume-caps harvest mode: capability gate off. NEVER a claim.
     std::vector<std::string> assumedCaps;   // capabilities to act as if declared (probe only)
     std::string clientName = "bsi-host";
+    // This session's default thread count (schema x-capi.openOptions.numThreads,
+    // 1..256). A solve's body.numThreads overrides it; 0 means "engine's choice",
+    // which is what an omitted key gives.
+    uint32_t numThreads = 0;
 };
 
 // A loaded engine (shared library or statically linked entry point).

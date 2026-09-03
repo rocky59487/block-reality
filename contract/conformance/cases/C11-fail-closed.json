@@ -8,6 +8,11 @@
    {"name":"x-key-ignored","do":"bsi.solve","solve":{"selfWeight":true,"x-acme":{"foo":1}},"expect":{"status":"ok","diag.ignoredExtensions":1}},
    {"name":"load-on-ground","do":"bsi.solve","loads":[[-1,0,0,0,-1000,0]],"expectError":"LOAD_TARGET","expectAt":[-1,0,0]},
    {"name":"load-at-end-block-is-nodal","do":"bsi.solve","loads":[[4,0,0,0,-1000,0]],"expect":{"status":"ok"},"assert":[{"path":"equilibrium.applied[1]","eq":"-(wL+1000)","rel":1e-9}]},
+   {"name":"maxTimeMs-unsupported-is-refused","do":"bsi.solve","solve":{"selfWeight":true,"precision":{"maxTimeMs":1}},"expectError":"UNSUPPORTED",
+    "note":"BSI_ADD1 G-C, measured: before the batch this answered status:ok with quality.timedOut=0, so a caller's deadline was dropped in silence. An engine that can honour a deadline declares bsi.precision.timeout; one that cannot must refuse, not ignore (P6)."},
+   {"name":"numThreads-zero-is-refused","do":"bsi.solve","solve":{"selfWeight":true,"numThreads":0},"expectError":"PROTOCOL_ERROR",
+    "note":"BSI_ADD1 G-D, measured: 0 and 99999 were both accepted. 'let the engine choose' is expressed by OMITTING the key, never by sending 0 (MC62 section 1.6 froze 1..256 on 2026-09-02; the contract had not caught up)."},
+   {"name":"numThreads-too-many-is-refused","do":"bsi.solve","solve":{"selfWeight":true,"numThreads":99999},"expectError":"PROTOCOL_ERROR"},
    {"name":"hello-contract-mismatch","do":"bsi.hello","contractSha256":"0000000000000000000000000000000000000000000000000000000000000000","expectError":"BSI_VERSION"}
  ],
  "world":"C4-cantilever-selfweight"}

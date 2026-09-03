@@ -1,0 +1,27 @@
+{"case":"C7-overloaded-flag","family":"C-7","grade":"hard",
+ "requires":["bsi.core","bsi.readback.members"],
+ "note":"The corpus had no overloaded cell, so C-7's implicit check (flags bit0 <=> dc > 1.0) could not be escaped by DROPPING the flag -- only by inverting it, which is why MC68-M2 had to invert (MC68_BSI.md section 10 revision 10). This fixture stands on the line: same cantilever as C4-cantilever-selfweight, plus a 2 MN station load at block 2 (s = 0.5, NOT an end block, so it is a station load and needs no MC64). Root bending is then ~40x the self-weight moment and the screen must report dc > 1. The D/C VALUE is engine-defined (BSI B.6: capability-named, never compared across engines) so nothing here asserts a number for it -- only that it crossed 1 and that the flag agrees.",
+ "vocab":{"version":1,
+   "materials":[
+     {"name":"steel","role":"member","model":"isotropic","E":2.0e11,"nu":0.3,"rho":7850,"allow":{"sigmaC":2.5e8,"sigmaT":2.5e8,"tau":1.45e8},"defaultSection":"steel_rect_200x400"},
+     {"name":"ground_rigid","role":"support","supportKind":"fixAll"}],
+   "sections":[{"name":"steel_rect_200x400","kind":"rect","p":[0.2,0.4]}]},
+ "blocks":[[-1,0,0,"ground_rigid",null,0,0,0,1,1],
+           [0,0,0,"steel",null,0,0,0,1,1],[1,0,0,"steel",null,0,0,0,1,1],[2,0,0,"steel",null,0,0,0,1,1],
+           [3,0,0,"steel",null,0,0,0,1,1],[4,0,0,"steel",null,0,0,0,1,1]],
+ "loads":[[2,0,0,0,-2.0e6,0]],
+ "solve":{"selfWeight":true,"gravity":[0,-9.81,0],"include":["members"],"precision":{"tier":"commit"}},
+ "derive":{"w":"7850*0.08*9.81","L":4,"P":2.0e6,"wL":"w*L","total":"w*L+P"},
+ "assert":[
+   {"path":"status","eq":"ok"},
+   {"path":"equilibrium.reaction[1]","eq":"total","rel":1e-9,
+    "note":"independent of the D/C definition: statics says the reaction carries self-weight plus the applied load"},
+   {"path":"equilibrium.residual","le":1e-9},
+   {"path":"members","count":1},
+   {"path":"members[0].maxDC","gt":1,
+    "note":"THE point of this case. Every other corpus world sits far below 1, so 'never set the overloaded flag' was indistinguishable from correct behaviour."},
+   {"path":"members[0].flags","eq":1,"note":"bit0 overloaded; bit1 indicative is 0 for a frame member"},
+   {"path":"blocks[1].dc","gt":1,"note":"blocks are in canonical order, so index 1 is the root steel cell at (0,0,0); index 0 is the ground record"},
+   {"path":"blocks[1].flags","eq":1},
+   {"path":"unassigned","count":0}
+ ]}

@@ -363,6 +363,9 @@ private:
             if (const json::Value* v = pr->find("warmStart")) o.warmStart = v->b ? 1 : 0;
             if (const json::Value* v = pr->find("maxTimeMs")) o.maxTimeMs = (uint32_t)v->i64;
         }
+        // Session default (x-capi.openOptions.numThreads) unless this request says
+        // otherwise; 0 stays 0 and means "the engine chooses".
+        o.numThreads = opts_.numThreads;
         if (const json::Value* v = body.find("numThreads")) o.numThreads = (uint32_t)v->i64;
         if (const json::Value* inc = body.find("include")) for (const auto& e : inc->arr) {
             if (e.str == "members") o.includeMask |= kIncMembers;
@@ -376,6 +379,11 @@ private:
         if (o.tier == BSI_TIER_DISPLAY && !has("bsi.precision.display")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "precision.tier=display needs bsi.precision.display"); return; }
         if (o.storage == BSI_STORAGE_F32 && !has("bsi.precision.f32")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "precision.storage=f32 needs bsi.precision.f32"); return; }
         if (o.warmStart && !has("bsi.precision.warmstart")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "precision.warmStart needs bsi.precision.warmstart"); return; }
+        // maxTimeMs used to arrive here and go no further: an engine that cannot be
+        // interrupted answered "ok" and the caller had no way to tell that its
+        // deadline had been dropped. An ignored option is a lie told in the reply's
+        // own quality section (BSI_ADD1 G-C, measured against the stub).
+        if (o.maxTimeMs && !has("bsi.precision.timeout")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "precision.maxTimeMs needs bsi.precision.timeout"); return; }
         if ((o.includeMask & kIncMembers) && !has("bsi.readback.members")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "include members needs bsi.readback.members"); return; }
         if ((o.includeMask & kIncStations) && !has("bsi.readback.stations")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "include stations needs bsi.readback.stations"); return; }
         if ((o.includeMask & kIncShells) && !has("bsi.readback.shells")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "include shells needs bsi.readback.shells"); return; }
@@ -414,6 +422,24 @@ private:
                 }
                 bool over = br.flags & 1u;
                 if (over != (br.dc > 1.0)) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", "overloaded flag disagrees with dc on the double"); return; }
+                // bit2 must agree with the island's own buckling record, in BOTH
+                // directions: a flag set with nothing behind it and a critical
+                // island whose blocks stay unflagged are the same defect seen from
+                // two sides, and the consumer cannot tell either of them from a
+                // safe answer (BSI_ADD1 G-A).
+                const bool crit = (br.flags & 4u) != 0;
+                const bool owned = br.ownerKind == BSI_OWNER_MEMBER || br.ownerKind == BSI_OWNER_FACET;
+                if (!owned) {
+                    // A ground record or an unmodelled cell has no element and therefore no
+                    // stability verdict. Letting the bit through here would put a colour on
+                    // a cell the engine never analysed.
+                    if (crit) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", "bucklingCritical set on a block that owns no element"); return; }
+                } else {
+                    bool hasRecord = false;
+                    const bool shouldBeCrit = b.islandBucklingCritical(br.island, hasRecord);
+                    if (crit && !hasRecord) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", "bucklingCritical set on a block whose island has no buckling record"); return; }
+                    if (crit != shouldBeCrit) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", "bucklingCritical disagrees with the island's buckling state/factor"); return; }
+                }
             }
         }
         json::Writer jw;

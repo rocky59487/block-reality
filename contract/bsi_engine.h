@@ -109,7 +109,7 @@ typedef struct bsi_block_result {   /* 24 B */
   int32_t  owner;                   /* member/facet id or -1 */
   uint8_t  mode;                    /* bsi_mode */
   uint8_t  ownerKind;               /* bsi_owner */
-  uint8_t  flags;                   /* bit0 overloaded, bit1 indicative */
+  uint8_t  flags;                   /* bit0 overloaded, bit1 indicative, bit2 bucklingCritical */
   uint8_t  reserved;
   uint32_t reason;                  /* unassigned reason enum, 0 = none */
 } bsi_block_result;

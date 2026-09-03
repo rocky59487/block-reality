@@ -277,6 +277,86 @@ int main() {
         chk("H9-f", "NULL handle -> BSI_CAPI_INVALID", bsi_capi_call(nullptr, junk, 4, nullptr, 0, nullptr, nullptr) == BSI_CAPI_INVALID);
     }
 
+    // ---- H10 contract addition batch #1 (BSI_ADD1): the three holes a probe walked
+    //      through, and the two directions bit2 can lie in ----
+    {
+        // A session driven through the C ABI, so the open-options path is the one
+        // under test rather than a hand-built HostOptions.
+        auto session = [&](const char* opts, Reply& out, const char* solveBody) -> void {
+            void* h = bsi_capi_open(opts);
+            if (!h) { out.header = "<open refused>"; return; }
+            auto call = [&](const std::string& header, const std::vector<uint8_t>& payload) {
+                auto f = frame::encode(0, header, payload.data(), payload.size());
+                std::vector<uint8_t> buf(1 << 16);
+                size_t len = 0, need = 0;
+                int rc = bsi_capi_call(h, f.data(), f.size(), buf.data(), buf.size(), &len, &need);
+                if (rc == BSI_CAPI_NEED_BIGGER) { buf.resize(need); rc = bsi_capi_call(h, f.data(), f.size(), buf.data(), buf.size(), &len, &need); }
+                if (rc != BSI_CAPI_OK) { out.header = "<call failed>"; return; }
+                frame::View v; frame::decode(buf.data(), len, v);
+                out.header = v.headerStr();
+                out.payload.assign(v.payload, v.payload + v.payloadLen);
+            };
+            call(req("bsi.hello", helloBody().c_str()), {});
+            call(req("bsi.vocab.declare", kVocab), {});
+            std::vector<bsi_block> w = world5();
+            call(req("bsi.world.declare", "{\"blocks\":7}"), std::vector<uint8_t>((const uint8_t*)w.data(), (const uint8_t*)w.data() + sizeof(bsi_block) * 7));
+            call(req("bsi.solve", solveBody), {});
+            bsi_capi_close(h);
+        };
+        Reply r;
+
+        // G-E: open options are enforced, not assumed. Every one of these was
+        // accepted before the batch, including the key nobody has ever defined.
+        void* h1 = bsi_capi_open("{\"log\":0,\"numThreads\":4,\"probe\":false,\"x-acme\":{\"any\":1}}");
+        chk("H10-a", "open: every documented key plus an x- extension is accepted", h1 != nullptr);
+        if (h1) bsi_capi_close(h1);
+        void* h2 = bsi_capi_open("{\"totallyBogusKey\":123}");
+        const char* e2 = bsi_capi_last_error(nullptr);
+        chk("H10-b", "open: unknown non-x- key -> NULL, and last_error(NULL) names the key",
+            h2 == nullptr && e2 && std::strstr(e2, "totallyBogusKey") != nullptr);
+        if (h2) bsi_capi_close(h2);
+        void* h3 = bsi_capi_open("{\"numThreads\":0}");
+        chk("H10-c", "open: numThreads out of 1..256 -> NULL", h3 == nullptr);
+        if (h3) bsi_capi_close(h3);
+        void* h4 = bsi_capi_open("{\"log\":\"loud\"}");
+        chk("H10-d", "open: wrong type -> NULL", h4 == nullptr);
+        if (h4) bsi_capi_close(h4);
+
+        // G-C: an engine that cannot honour a deadline must refuse it. Before the
+        // batch this answered ok with quality.timedOut = 0.
+        session("{}", r, "{\"selfWeight\":true,\"precision\":{\"maxTimeMs\":1}}");
+        chk("H10-e", "solve: maxTimeMs without bsi.precision.timeout -> UNSUPPORTED",
+            field(r.header, "code") == "UNSUPPORTED");
+
+        // G-D: 0 and 99999 were both accepted; "let the engine choose" is an
+        // omitted key, never a zero.
+        session("{}", r, "{\"selfWeight\":true,\"numThreads\":0}");
+        chk("H10-f", "solve: numThreads 0 -> PROTOCOL_ERROR (not clamped)", field(r.header, "code") == "PROTOCOL_ERROR");
+        session("{}", r, "{\"selfWeight\":true,\"numThreads\":99999}");
+        chk("H10-g", "solve: numThreads 99999 -> PROTOCOL_ERROR (not clamped)", field(r.header, "code") == "PROTOCOL_ERROR");
+        session("{}", r, "{\"selfWeight\":true,\"numThreads\":4}");
+        chk("H10-h", "solve: numThreads 4 -> ok", field(r.header, "status") == "ok");
+
+        // G-A: bit2 has to agree with the island's own record in BOTH directions,
+        // and must not appear at all on a cell that owns no element.
+        struct Esc { const char* mut; const char* id; const char* what; };
+        const Esc escapes[] = {
+            {"bit2_orphan",  "H10-i", "bit2 set with no buckling record -> INTERNAL"},
+            {"bit2_lie",     "H10-j", "bit2 set while the record says disabled -> INTERNAL"},
+            {"bit2_missing", "H10-k", "island computed with factor 0.5 but blocks unflagged -> INTERNAL"},
+            {"bit2_ground",  "H10-l", "bit2 on a cell that owns no element -> INTERNAL"},
+        };
+        for (const Esc& esc : escapes) {
+            setenv("BSI_STUB_MUTATE", esc.mut, 1);
+            session("{}", r, "{\"selfWeight\":true,\"include\":[\"members\"]}");
+            chk(esc.id, esc.what, field(r.header, "code") == "INTERNAL");
+        }
+        unsetenv("BSI_STUB_MUTATE");
+        session("{}", r, "{\"selfWeight\":true,\"include\":[\"members\"]}");
+        chk("H10-m", "and with no escape the same solve is ok (the legs bite the defect, not the fixture)",
+            field(r.header, "status") == "ok");
+    }
+
     std::printf("checks=%d\n", gCount);
     if (gFail == 0) std::printf("HOST-SUITE ALL PASS (failures=0)\n");
     else std::printf("HOST-SUITE **FAIL** (failures=%d)\n", gFail);

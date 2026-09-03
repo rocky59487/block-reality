@@ -60,7 +60,7 @@
 | `bsi.world.edit` | 差分編輯 |
 | `bsi.readback.members` / `.stations` / `.shells` | 對應區段 |
 | `bsi.buckling.eigen` / `.eigen.shells` / `.screen` | 挫屈模式 |
-| `bsi.precision.display` / `.f32` / `.warmstart` | 精度控制 |
+| `bsi.precision.display` / `.f32` / `.warmstart` / `.timeout` | 精度控制（`.timeout` = 認得 `maxTimeMs`，見 Part G 第 16 條）|
 | `bsi.material.orthotropic` / `.composite` / `.rope` | 材料模型 |
 | `bsi.section.custom` / `bsi.block.shape` / `bsi.block.attrs` | 自訂斷面、體素形狀、方塊屬性 |
 | `bsi.fracture` | 容量面/斷裂 lane（v1 只保留字串，動詞後議） |
@@ -156,8 +156,8 @@
 | `precision.targetRel` | 目標相對殘差（預設 1e-9）；引擎回 `quality.achievedRel`。 |
 | `precision.storage` | `f64` / `f32`（能力 `bsi.precision.f32`）：`stations`、`facetSurfaces`、`blocks.dc` 以 f32 變體區段輸出（區段名加 `:f32`），頻寬減半；旗標/整數不受影響。 |
 | `precision.warmStart` | 允許重用上一 revision 的分解/狀態（能力 `bsi.precision.warmstart`）；`quality.warmStartUsed` 回報。 |
-| `precision.maxTimeMs` | 0 = 無限；超時 → `status:"partial"` + `quality.timedOut=1`，區段只含已完成島。 |
-| `numThreads` | 引擎內部執行緒上限；省略 = 引擎自選（`hello.threads`）。 |
+| `precision.maxTimeMs` | 0 = 無限；超時 → `status:"partial"` + `quality.timedOut=1`，區段只含已完成島。**非 0 需要能力 `bsi.precision.timeout`；未宣告 → `UNSUPPORTED`**（Part G 第 16 條）。|
+| `numThreads` | 引擎內部執行緒上限，**整數 1..256**；**省略** = 引擎自選（`hello.threads`）。**越界或 `0` → `PROTOCOL_ERROR`，不夾擠**——「讓引擎決定」的表達方式是省略這個鍵（Part G 第 17 條）。|
 | `include` | 區段選單；不列 = 不輸出且其他區段位元組不變。 |
 
 **回覆 header（鍵序固定）**
@@ -179,7 +179,7 @@
 
 | 區段 | 記錄 | 大小 | 說明 |
 |---|---|---|---|
-| `blocks` | `dc f64; island i32; owner i32; mode u8; ownerKind u8; flags u8; reserved u8; reason u32` | 24 B × B | 對齊規範方塊序。`mode`: `0 none 1 axial 2 bending 3 shear 4 torsion 5 combined 6 shell`；`ownerKind`: `0 none 1 member 2 facet 3 unassigned`；`flags` bit0 = overloaded（引擎在 double 上定案 `dc>1`），bit1 = indicative；`reason` = `why` 列舉序（0 無） |
+| `blocks` | `dc f64; island i32; owner i32; mode u8; ownerKind u8; flags u8; reserved u8; reason u32` | 24 B × B | 對齊規範方塊序。`mode`: `0 none 1 axial 2 bending 3 shear 4 torsion 5 combined 6 shell`；`ownerKind`: `0 none 1 member 2 facet 3 unassigned`；`flags` bit0 = overloaded（引擎在 double 上定案 `dc>1`），bit1 = indicative，**bit2 = bucklingCritical**（見 Part G 第 14 條）；`reason` = `why` 列舉序（0 無） |
 | `equilibrium` | `applied[3] f64; reaction[3] f64; residual f64` | 56 B | `residual = |applied+reaction| / max(|applied|,1)`；健全解 ≤ `targetRel` |
 | `quality` | `achievedRel f64; iterations i32; tierHonoured u8; warmStartUsed u8; storage u8; timedOut u8` | 16 B | P9 |
 | `buckling` | `island i32; state u8; kind u8; reserved u16; factor f64` | 16 B × islands | `factor` 乘在當前全部載重上；非 `computed` 為 NaN |
@@ -347,3 +347,37 @@ struct BsiArenaHeader {            /* 128 B, LE */
       改為與 `bsi_capi.h` 同一條規則：`__GNUC__` 且 `BSI_ENGINE_BUILD` 時 `__attribute__((visibility("default")))`。
       **純加法**：不定義 `BSI_ENGINE_BUILD` 的消費者、以及 Windows 分支，逐位不變。第 10 條記的 Windows `dllexport` 怪癖不受此影響、仍待下次主版前處理。
 
+
+- **2026-09-03b（契約加法批次 #1；判準 tectonic2 `docs/specs/BSI_ADD1.md`，先凍於 `155b422`；operator 裁決「1 做」）**
+  14. **`blocks.flags` bit2 = `bucklingCritical`**（加法）：該格**所屬島**的挫屈記錄 `state == computed` 且 `factor` 有限且 `< 1.0`。
+      與 bit0 一樣**由引擎在 double 上定案一次**，**只在 `commit` 軌有效**。沒有挫屈能力、或該島無 `buckling` 記錄 → 必為 0。
+      host 在 finalize **雙向**查它（設了卻沒有記錄、記錄非 `computed`/`factor ≥ 1`、或該島確實臨界卻沒設）→ `INTERNAL`。
+      **只適用於擁有元素的格**（`ownerKind ∈ {member, facet}`）；`none`/`unassigned` 的格（地面記錄、未入模格）**必為 0** ——
+      沒有元素就沒有穩定性判定，讓位元通過等於在一格從未被分析的方塊上塗顏色。此條在實作期收緊，見 `BSI_ADD1.md` §10 修訂 1。
+      **為什麼需要它**：`buckling` 區段是每島一筆，消費者要的是每格一個是非題以便上色；在此之前 BSI 上**沒有**任何每格挫屈判定，
+      消費者只能自己拿 `factor < 1` 去比，那違反 P2（判定下行、消費者永不重算）。`bsi.schema.json` `x-records.blocks.x-flags`、`bsi_engine.h` 註解同步。
+  15. **`warningCode` 追加 `UNCLASSIFIED`**（加法，開放列舉尾端）：引擎產生了一個它對不到本列舉的警告。
+      **這是出口不是預設**——具名碼存在時必須用具名碼。`diag.warnings` 依 code 字典序合併不變。
+  16. **`precision.maxTimeMs` 上能力閘**（**行為變更**）：非 0 需要新能力 `bsi.precision.timeout`，未宣告 → `UNSUPPORTED`。
+      **量到的**（`BSI_ADD1` §2，改動前對 stub）：`maxTimeMs:1` 回 `status:"ok"`、`quality.timedOut = 0` —— 呼叫者的期限被靜默丟掉。
+      一個被忽略的選項，是回覆自己的 `quality` 區段在說謊。
+  17. **`numThreads` 界線 `1..256`**（**行為變更**）：越界或 `0` → `PROTOCOL_ERROR`，**不夾擠**。
+      量到的：`0` 與 `99999` 改動前皆被接受（schema 只有 `minimum: 0`、無上界）。tectonic2 `MC62_GUARDS.md` §1.6 早在 2026-09-02 就凍了這條線，**契約當時漏寫**。
+  18. **`bsi_capi_open` 選項 schema**（**行為變更 + 加法**）：`x-capi.openOptions` = `log`(0..3)、`numThreads`(1..256，**本 session 預設**，
+      每次 `bsi.solve` 的 `body.numThreads` 覆寫之)、`probe`(bool)、`assumeCaps`(string[])、`x-<vendor>`(忽略)。
+      **非 `x-` 的未知鍵、型別錯、越界 → `open` 回 `NULL`**，理由由 `bsi_capi_last_error(NULL)` 取得（open 失敗時沒有 handle 可掛，故以 thread-local 承載）。
+      量到的：`{"totallyBogusKey":123}` 改動前開得起來。副作用是好的：消費者 block-reality 一直在送的 `numThreads` **從無效變成有效**。
+  19. **`members.section` 語意**：回**解析後的斷面 id**；`-1` 只在材料沒有 `defaultSection` 時出現。
+      `C4-cantilever-selfweight` 加一條 `section >= 0`（該世界宣告 `sect: null`，回 `-1` 的話消費者無從對映）。
+  20. **語料三補**：`C7-overloaded-flag`（C-7 第一次有 fixture **站在線上**；在它之前語料裡沒有任何格 `dc > 1`，
+      所以「永不設旗標」與正確行為不可區分）、`C12-f32-display`（C-12 家族**本來一個檔都沒有** ⇒ `bsi.precision.f32` 依 MC68-03 永遠不可宣告）、
+      `C11-fail-closed` 加三個 step（第 16、17 條各自的反向腿）。`conformance/README.md` 的家族表更正——上一版列了**七個不存在的檔名**。
+  21. **主版不 bump**，理由照登：Part E 對「破壞」的定義是「改排布、單位、號向、既有列舉值、動詞語意、ABI vtable 既有槽位」。
+      第 16–18 條把**未定義行為**收緊成 fail-closed，不在其中；三者都是 P6 本來就要求的行為。
+      **但它們確實會讓今天成功的請求開始失敗**，所以記在這裡而不是包裝成純加法。對兩個現有實作的實測影響為零
+      （tectonic 轉接器早就自己拒 `maxTimeMs`；沒有 fixture 送越界 `numThreads`；block-reality 送的兩個 open 鍵都在新 schema 內且 `numThreads ≥ 1`）。
+  22. **序言那句「只改一邊，另一邊的一致性 gate 會紅」在 CI 層不成立**（原文不改，此處具名）：
+      強制有三層——本倉自洽（`check_contract.py`）、跨倉比對（CI）、執行期握手（`bsi.hello`）。
+      **只有第三層是無條件的。** 跨倉那層取決於 CI 有沒有真的去抓**對面的主線**：比對一個釘死的舊 commit
+      會讓對面主線的單邊改動完全看不見。逐層的抓得到/抓不到見 `contract/README.md`；兩倉的實況與修法見
+      `docs/ALIGNMENT_LEDGER.md` A12。**這條不改任何欄位**，只是不讓序言被讀成比實際更強的保證。

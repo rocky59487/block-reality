@@ -20,6 +20,8 @@
    {"path":"equilibrium.residual","le":1e-9},
    {"path":"members","count":1},
    {"path":"members[0].lengthM","eq":4,"rel":1e-12},
+   {"path":"members[0].section","ge":0,
+    "note":"the RESOLVED section id, not the declared value: this world declares sect=null (use the material's default), and a consumer that gets -1 back cannot map it to anything (BSI B.5)"},
    {"path":"members[0].endI[1]","abs_eq":"wL","rel":1e-9},
    {"path":"members[0].endI[5]","abs_eq":"wL2h","rel":1e-9},
    {"path":"members[0].endJ[5]","abs_le":"1e-9*wL2h"},
