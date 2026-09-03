@@ -7,6 +7,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -15,6 +16,7 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -76,6 +78,35 @@ class BundledEngineTest {
     private final List<String> log = new ArrayList<>();
 
     // ------------------------------------------------------------------ manifest
+
+    /**
+     * #80, on this class too. `whatComesBackIsWhatIsONDISK` fails on Windows because the thread
+     * that loses the race gets an AccessDeniedException from Files.move -- an IOException, not
+     * AtomicMoveNotSupportedException, so the fallback never catches it -- and falls out to the
+     * caller as "could not unpack the bundled engine", leaving that JVM with no engine and one
+     * line of log. Two JVMs sharing a game directory is the real case.
+     *
+     * <p>Driven through the Replace seam so the rule is checked on every platform. A leg that
+     * only bites on the box nobody runs CI on is not a leg.
+     */
+    @Test
+    void aReplaceRefusedByAnOpenHandleAdoptsWhatIsAlreadyThere(@TempDir Path dir) throws Exception {
+        BundledEngine.Entry e = BundledEngine.parse(manifest()).stream()
+                .filter(x -> "linux".equals(x.os())).findFirst().orElseThrow();
+        Path target = dir.resolve("br-sidecar");
+        Path tmp = Files.createFile(dir.resolve("x.part"));
+
+        Files.write(target, LIN);                       // the winner already finished
+        BundledEngine.Replace refuse = (a, b) -> { throw new AccessDeniedException(b.toString()); };
+        assertDoesNotThrow(() -> BundledEngine.move(tmp, target, e, refuse),
+                "the loser's answer was on disk; refusing to overwrite it is not a failure");
+        assertEquals(new String(LIN, StandardCharsets.UTF_8),
+                Files.readString(target), "and nothing was overwritten");
+
+        Files.write(target, "not the engine".getBytes(StandardCharsets.UTF_8));
+        assertThrows(AccessDeniedException.class, () -> BundledEngine.move(tmp, target, e, refuse),
+                "a refusal over the WRONG bytes is still a failure and must not be swallowed");
+    }
 
     @Test
     void theManifestParsesAndCommentsAndBlanksAreSkipped() {

@@ -51,7 +51,7 @@ tokens are intentionally named by what the solver actually receives.
 | Evidence | v0.3c result |
 |---|---|
 | Engine checks | 330/330 passing; each uses a closed form or solver-independent invariant |
-| Java tests | 311/311 passing; 28 start the real sidecar and FrameCore, 4 load the v0.4 engine library in-process |
+| Java tests | 313/313 passing; 28 start the real sidecar and FrameCore, 4 load the v0.4 engine library in-process |
 | Closed-form, non-zero | 31 references; worst relative error 1.6e-10 |
 | Closed-form, zero | 10 references; worst absolute residual 1.5e-08 |
 | Clamped square plate | 0.57% span-moment error at 20 elements/side; 2.7% recovered support-moment error |
