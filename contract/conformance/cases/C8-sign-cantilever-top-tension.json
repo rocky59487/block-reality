@@ -2,6 +2,7 @@
  "requires":["bsi.core","bsi.readback.members","bsi.readback.stations"],
  "note":"Same world as C4-cantilever-selfweight. Physics pins the sign: a cantilever bent downward by its own weight has its TOP fibre in tension at the root. sigma[0] is TOP_Y (local +y = 'top' for a horizontal member with ref=+Y).",
  "extends":"C4-cantilever-selfweight",
+ "solve":{"selfWeight":true,"gravity":[0,-9.81,0],"include":["members","stations"],"precision":{"tier":"commit"}},
  "assert":[
    {"path":"stations[governing].sigma[0]","gt":0,"member":0},
    {"path":"stations[governing].sigma[1]","lt":0,"member":0},

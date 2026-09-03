@@ -712,3 +712,128 @@ release workflow 另外驗證「evidence 記錄的二進位 sha256 == dist/ 出�
 > 本節第一版寫「用 `frame_v2_abi_version()` 這三個符號,它們是免費的」——那是
 > frame_capi_v2 的符號,而 frame_capi_v2 從未接上（D-002 實況修正）。現行做法
 > 是上面的 git SHA + 檔案雜湊,提供同等的可追溯性。
+
+### 2026-09-03 凍結：N24 進程內引擎與打包合規（D-044；先於 Java 實作）
+
+> 出處：`docs/DECISIONS.md` D-044（進程內載入、JNA、jar 零可執行檔）與 tectonic2 `docs/specs/LINUX_BUILD.md` L4/L7/L8。
+> 受測者標在每條上：**Java** = `mod`/`forge` gradle test；**CI** = workflow；**引擎** = tectonic2 側（本倉不重複它的線）。
+
+#### N24-a 打包合規（CI + `scripts/check_bundle.py`）
+
+| 線 | 內容 |
+|---|---|
+| **N24-a1** | **jar 內零可執行檔**：任何 entry 名以 `.exe`/`.bat`/`.cmd`/`.sh` 結尾，或內容以 ELF（`7f 45 4c 46`）開頭而副檔名不是 `.so`，或以 PE（`MZ`）開頭而不是 `.dll` → FAIL。這條擋的是「換個名字就混進去」 |
+| **N24-a2** | **出貨路徑不 spawn 子行程**：grep 型測試，`mod/`、`forge/` 的非測試原始碼零 `ProcessBuilder`／`Runtime.exec`；白名單只允許明示的 dev/CI 臂類別，且白名單本身入本檔 |
+| **N24-a3** | natives 三方雜湊鏈不變（jar 位元組 == manifest == evidence），欄位加 `engineVersion`、`contractSha256` |
+| **N24-a4** | 解包**不設可執行位元**（POSIX 權限測試）：函式庫不是要執行的東西，設了就是把它當成執行檔 |
+| **N24-a5** | 授權：`META-INF/` 帶 OpenBLAS(BSD-3)、METIS(Apache-2.0)、tectonic2(Apache-2.0) 的授權文本；缺一即 FAIL |
+
+#### N24-b 進程內引擎（Java）
+
+| 線 | 內容 |
+|---|---|
+| **N24-b1** | `BsiNative.abiVersion() != 1` → 拒載並停用，**不嘗試呼叫任何其他函式** |
+| **N24-b2** | `bsi.hello` 的 `contractSha256` 與 jar 內 `contract/CONTRACT_SHA256` 不符 → `BSI_VERSION`、引擎停用、**其後零動詞**（= N23-d，改以進程內路徑實作） |
+| **N24-b3** | `NEED_BIGGER` 放大重試恰一次成功，且**同一請求**（不重送、不半途消費）；重試後仍不足 → 停用並說得出來 |
+| **N24-b4** | `EngineLocator` 順序：設定 → `-Dbr.engine` → `BR_ENGINE` → 覆蓋目錄 → jar 內附 → 無。**覆蓋目錄優先於 jar 內附**（引擎可獨立更新的機制本身） |
+| **N24-b5** | 跨語言：`-Dbr.engine=<libbsi_*.so>` 時走完 hello → vocab → declare → solve，回覆與 `run.py --adapter capi` **逐位相同**（C-2 的 Java 腿；沒有引擎時 `Assumptions` 跳過，**不假綠**） |
+
+#### 誠實邊界（照登）
+
+- **崩潰隔離沒有了**（D-044 的代價段）。本組**測不到**「原生崩潰不帶掉 JVM」——那不再成立。
+  能測的是它的替代品：ABI 版本、雜湊協商、規模上限、可關掉的開關。**不得**把 N24 說成崩潰安全的證據。
+- **Windows natives 本輪不存在**（tectonic2 LINUX_BUILD §5 B1）。N24-a 的 PE 分支與 N24-b 的 Windows 路徑
+  **今天沒有 fixture**；有了 Windows 建置才算跑過。在那之前這兩條的 Windows 半邊是 [暫]。
+- N24-b5 需要一顆真引擎；CI 有（`engine-linux` job 現建），開發機不一定有。
+
+#### 2026-09-03 落地追記（N24-a 的實作與首跑；原文一字不改，本段為 dated 追記）
+
+實作者：`scripts/check_bundle.py`（兩形狀分流）、`scripts/stage_natives.py`（provenance）、
+`forge/build.gradle` 的 `bundleEngines`（一支任務兩形狀）、`scripts/package_natives.sh`、
+`mod/core` 的 `BundledNatives` + `NoSubprocessTest`。
+
+| 線 | 落地 | 首跑 |
+|---|---|---|
+| **N24-a1** | `check_bundle.py` `executables_in()`：副檔名（`.exe/.bat/.cmd/.com/.sh/.ps1/.msi/.app`）**或**魔數（ELF / PE / Mach-O）而名稱不說 library。natives 形狀硬 FAIL，sidecar 形狀**清點後照登**（那正是 D-044 要退掉的東西，數字每次都要看得見） | sidecar jar 清點 = **2 個**（`br-sidecar`、`br-sidecar.exe`），符合預期 |
+| **N24-a2** | `NoSubprocessTest`：掃 `mod/api`、`mod/core`、`forge` 的 main 原始碼。白名單**只有一筆**：`SidecarProcess.java`（D-013/D-027 的出貨形狀，隨 SWAP_PROGRAM phase 3 一起退場）。**反向也查**：白名單上已不 spawn 的類別必須移除，否則測試紅 | PASS，掃到 >20 檔，非白名單 spawn = 0 |
+| **N24-a3** | natives manifest 七欄 `os arch file sha256 size engineVersion contractSha256`；`stage_natives.py` **載入函式庫問 `bsi.hello`** 取得後兩欄，gradle 再對 jar 內位元組與 `contract/CONTRACT_SHA256` 重算比對 | 首跑：`tectonic-1.2.0+1605437-dirty`、contract `c45f51fe7fca…`、sha256 `67ce0d0d2db0…` |
+| **N24-a4** | `BundledNatives.ensure()` **不呼叫任何 chmod**；`BundledNativesTest.theUnpackedLibraryIsNotExecutable` 直接查 POSIX 權限位元；`stage_natives.py` 也把暫存副本設成 `0644` | PASS |
+| **N24-a5** | `third_party/` 新增 OpenBLAS(BSD-3)、LAPACK/LAPACKE(BSD-3 + Intel 變體)、METIS(Apache-2.0)、tectonic2(Apache-2.0)、GCC Runtime Library Exception 3.1；`check_bundle.py` 在 natives 形狀下要求 jar 內 `META-INF/third_party/` 具名含 OpenBLAS / METIS / tectonic2 | 五份文本已入庫 |
+
+**照登的缺口與量測（不是待辦，是現況）**：
+
+1. **N24-a3 今天只有兩條腿，不是三條。** sidecar 形狀的第三條腿是 `evidence/verification.json`，
+   而 `scripts/evidence.py` 驅動的是 sidecar 協定、對 BSI 一無所知。natives 形狀的鏈是
+   **jar 位元組 == manifest == 引擎自己講的話**（`bsi.hello` 的回覆）。後者確實獨立於建置腳本的變數，
+   但它不是「跑過驗收套件」的意思。evidence 的 BSI 臂具名為 SWAP_PROGRAM phase 3 的工作。
+2. **`check_bundle.py` 的 CAFEBABE 教訓（照登）。** N24-a1 第一版讀四個位元組就判定，
+   於是把 jar 內**全部 97 個 `.class`** 判成可執行檔——Java class 的魔數與 Mach-O universal binary
+   **完全相同**。一條每次都喊狼來了的 gate 等於沒有這條 gate。修法是再讀四個位元組：
+   class 檔接的是主版本號（45 起跳），fat binary 接的是架構數（個位數）。**這是「只看自己預期之處」
+   的反面版本：看得太寬也會失去牙齒。**
+3. **函式庫 28.8 MB**（`strip --strip-unneeded` 後 28.0 MB，只省 2.8%）。體積幾乎全部來自
+   靜態 OpenBLAS 的多架構 kernel。這對「一個 jar 丟進 mods/」是實質成本，**照登不粉飾**；
+   縮減手段（`DYNAMIC_ARCH=0` + 指定 TARGET、或裁 kernel 集合）未實作、未量測，不列入能力。
+4. **`-dirty` 的引擎不得進發行版**：`stage_natives.py --require-clean`（`package_natives.sh` 預設帶）。
+   本輪首跑的引擎正是 `1605437-dirty`，所以**首跑是開發流程的量測，不是發行**。
+5. **`dist/` 本輪不動**。natives 形狀寫進 `dist-natives/`，`package_natives.sh` 從不碰 `dist/`——
+   `package.sh` 結尾是 `rm -rf dist`，而 `dist/` 是**追蹤中的**、已驗證的 sidecar 發行物。
+
+##### N24-a 的牙齒（2026-09-03 首跑，`scripts/check_bundle_selftest.py`）
+
+`check_bundle.py` 已被加嚴**三次**，每次都是因為某個注入帶著全綠走過去（本檔 2026-08-23b）。
+所以這次不是讀出來的，是**試出來的**：七個注入打在 `package_natives.sh` 剛做好、且已經綠的 stage 上，
+每一個都必須把 gate 打紅。`package_natives.sh` 與 CI 各跑一次。
+
+| 注入 | 結果 |
+|---|---|
+| 函式庫改名成 `.exe` | CAUGHT（副檔名分支） |
+| ELF 換成無辜檔名 `assets/blockreality/helper` | CAUGHT（魔數分支） |
+| 塞一支 `#!/bin/sh` 腳本 | CAUGHT（shebang 分支） |
+| 函式庫翻一個位元 | CAUGHT（jar ≠ manifest） |
+| manifest 宣稱另一個契約雜湊 | CAUGHT（引擎與模組不同介面） |
+| 抽掉 OpenBLAS 與 METIS 授權文本 | CAUGHT（N24-a5） |
+| 同一個 jar 放兩種引擎形狀 | CAUGHT |
+
+**`SELFTEST ALL PASS (7 injections, 0 slipped)`**。
+每個 case 前都重算 `SHA256SUMS.txt`，否則七條全部會被「多餘檔案」規則攔下、**證明不了它們各自具名的那條**。
+
+##### 2026-09-03b CI 首跑，兩個真紅（照登，原文一字不改）
+
+判準登記之後的**第一次 CI 實跑**抓到兩件事。兩件都不是判準寫錯，是判準在工作。
+
+**1. `LangKeysTest` 紅：`keys with no en_us string == [br.engine]`**
+
+`LangKeysTest` 把原始碼裡每一個 `"br.*"` 字面量都當成「遊戲可能會要的翻譯鍵」——**推導而非列舉**，
+這正是它的價值：新鍵不必有人記得登記就會被要求翻譯。代價是 `-D` 系統屬性名長得一模一樣。
+`br.sidecar` 早就在 `NOT_LANG_KEYS` 裡，且註解寫著「唯一長得像鍵的字面量」；`br.engine` 是第二個。
+
+處置：加進同一個集合，**並把「什麼情況才准加」寫進註解**——該字面量必須是傳給
+`System.getProperty` 或等價物、且從不進翻譯查詢，**grep 可驗**。因此是具名屬性，
+不是整段前綴豁免。**加進這個集合就是在弱化這道 gate，所以要有理由。**
+
+**2. `engine-linux` 紅：`remote: Repository not found`**
+
+**量到的事實**：tectonic2 對本帳號是私有的，`GITHUB_TOKEN` 讀不到另一個專案的私有倉庫。
+所以這個 job **在 `TECTONIC2_TOKEN` 存在之前根本跑不起來**。
+
+處置**不是**把它 skip 掉印綠字——那正是本檔一直在記的病。做的是**把規則搬到跑得起來的地方**：
+
+| | 現在在哪 | 要不要 token |
+|---|---|---|
+| N24-a1 jar 零可執行檔 | `contract` job | **不要** |
+| N24-a3 manifest 對位元組 + 契約一致 | `contract` job | **不要** |
+| N24-a5 授權 | `contract` job | **不要** |
+| 七個打包注入 | `contract` job | **不要** |
+| 引擎建得起來、L7 自足 | `engine-linux` | 要 |
+| N24-b5 跨語言逐位 | `engine-linux` | 要 |
+
+搬得動的理由：**N24-a 測的是 jar，不是力學。** stub engine 是一支真的實作 `bsi_capi.h`、
+會回 `bsi.hello` 的共享函式庫，`stage_natives.py` 與 `check_bundle.py` 看的東西它全都有。
+實測：stub 過 `stage_natives.py`（`bsi-stub-0.0.1+stub`，契約雜湊相符）、jar 建得出來、
+`check_bundle.py` 綠、`SELFTEST ALL PASS (7 injections, 0 slipped)`。
+
+`engine-linux` 的每一步都用 `steps.reach.outputs.ok` 擋住，**最後一步 `if: always()`**，
+沒 token 時發 `::warning::` 並寫 `$GITHUB_STEP_SUMMARY`，逐條列出「這次沒量到什麼」。
+**登記為 [暫]，直到 `TECTONIC2_TOKEN` 存在為止。** 在那之前**不得**把
+「引擎建得起來」或 N24-b5 當成 CI 驗過的事。

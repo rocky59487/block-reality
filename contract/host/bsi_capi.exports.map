@@ -1,0 +1,17 @@
+/* bsi_capi.exports.map -- what a BSI shipping library exposes and nothing else.
+ * The contract's whole engine-facing surface is bsi_capi_* (the consumer's ABI)
+ * plus bsi_engine_entry (the host's). Everything else -- the host's internals,
+ * the engine's own symbols, the BLAS it statically links -- stays private, so a
+ * consumer cannot accidentally bind to something the contract never promised.
+ * Referenced by CMake's --version-script; LINUX_BUILD.md L7 checks the result. */
+{
+  global:
+    bsi_capi_abi_version;
+    bsi_capi_open;
+    bsi_capi_call;
+    bsi_capi_close;
+    bsi_capi_last_error;
+    bsi_engine_entry;
+  local:
+    *;
+};

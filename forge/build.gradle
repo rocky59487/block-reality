@@ -92,14 +92,31 @@ test {
 // BR_SIDECAR, the game directory or PATH. What must never happen is a jar that SAYS it
 // carries an engine and does not, which is why the manifest is generated from the files
 // actually copied rather than written ahead of them.
+//
+// TWO SHAPES, ONE TASK (D-044). The engine is moving from an EXECUTABLE the mod starts as a
+// child process to a LIBRARY the mod loads in-process, because a jar containing a program
+// does not pass distribution review. Both shapes are built by this one task and never by
+// two, because the task DELETES ITS WHOLE OUTPUT DIRECTORY first — a second task writing
+// into the same place would have its work thrown away or, worse, would ship both engines
+// (which is the 2.4 MB -> 4.5 MB bug this deletion was added to fix).
+//
+//   -PbrEngineDir=<dir>     sidecar executables (br-sidecar, br-sidecar.exe). Default ../dist.
+//   -PbrNativesDir=<dir>    engine libraries, laid out by scripts/stage_natives.py as
+//                           <os>-<arch>/<file> plus provenance.json. Default none.
+//
+// A jar must carry ONE of them. Shipping both would mean whichever the runtime picked, the
+// other travelled for nothing, and "which engine is this jar" would have two answers.
 def brEngineDir = project.findProperty('brEngineDir') ?: '../dist'
+def brNativesDir = project.findProperty('brNativesDir') ?: 'none'
 def brEngineOut = layout.buildDirectory.dir('generated/engine').get().asFile
 
 tasks.register('bundleEngines') {
-    description = 'Copies the built engines into the jar, with a hash manifest.'
+    description = 'Copies the built engine (executable or library) into the jar, with a hash manifest.'
     group = 'build'
     def src = brEngineDir == 'none' ? null : file(brEngineDir)
+    def natSrc = brNativesDir == 'none' ? null : file(brNativesDir)
     if (src != null) inputs.files(fileTree(src) { include 'br-sidecar', 'br-sidecar.exe' })
+    if (natSrc != null) inputs.files(fileTree(natSrc))
     outputs.dir(brEngineOut)
     doLast {
         // The WHOLE generated directory is cleared, not just the destination below. It
@@ -131,6 +148,65 @@ tasks.register('bundleEngines') {
             new File(dest, name).bytes = f.bytes
             lines << "${os} ${arch} ${name} ${hex} ${f.length()}"
         }
+        // ---------------------------------------------------------------- the library shape
+        //
+        // Everything here is filled in from provenance.json, which scripts/stage_natives.py
+        // wrote by LOADING each library and asking it `bsi.hello`. Nothing in this block
+        // asserts a version or a contract hash on the engine's behalf; if the staging step
+        // did not run, there is no provenance and the build stops rather than writing
+        // "unknown" into a manifest a player's log will later quote back.
+        def natLines = []
+        if (natSrc != null) {
+            def prov = new File(natSrc, 'provenance.json')
+            if (!prov.isFile()) {
+                throw new GradleException("-PbrNativesDir=${brNativesDir} has no provenance.json. " +
+                        'Stage the libraries with scripts/stage_natives.py, which asks each one ' +
+                        'for its version and contract instead of guessing them.')
+            }
+            def doc = new groovy.json.JsonSlurper().parse(prov)
+            def pin = new File(project.projectDir, '../contract/CONTRACT_SHA256').text.trim().split()[0].toLowerCase()
+            doc.libraries.each { lib ->
+                def f = new File(new File(natSrc, lib.platform), lib.file)
+                if (!f.isFile()) {
+                    throw new GradleException("provenance.json lists ${lib.platform}/${lib.file}, " +
+                            "which is not in ${natSrc}")
+                }
+                def md = java.security.MessageDigest.getInstance('SHA-256')
+                f.withInputStream { ins ->
+                    byte[] buf = new byte[65536]
+                    int n
+                    while ((n = ins.read(buf)) > 0) md.update(buf, 0, n)
+                }
+                def hex = md.digest().collect { String.format('%02x', it) }.join('')
+                // The provenance was written from a copy; this is the copy going into the
+                // jar. They must be the same bytes, or the manifest describes a file the
+                // player never receives.
+                if (hex != lib.sha256) {
+                    throw new GradleException("${lib.platform}/${lib.file} is ${hex.take(12)}… " +
+                            "but provenance.json recorded ${lib.sha256.take(12)}… — the staging " +
+                            'directory changed under the build')
+                }
+                if (lib.contractSha256.toLowerCase() != pin) {
+                    throw new GradleException("${lib.platform}/${lib.file} speaks contract " +
+                            "${lib.contractSha256.take(12)}… and this repository pins ${pin.take(12)}…")
+                }
+                def pdir = new File(dest, lib.platform)
+                pdir.mkdirs()
+                new File(pdir, lib.file).bytes = f.bytes
+                natLines << "${lib.os} ${lib.arch} ${lib.file} ${hex} ${f.length()} ${lib.engineVersion} ${lib.contractSha256}"
+            }
+            if (natLines.isEmpty()) {
+                throw new GradleException("-PbrNativesDir=${brNativesDir} was asked for and " +
+                        'staged no library. An explicit request that produces nothing is a ' +
+                        'failure, not a quiet development build; pass none to mean none.')
+            }
+        }
+        if (!lines.isEmpty() && !natLines.isEmpty()) {
+            throw new GradleException('this build carries BOTH a sidecar executable and an ' +
+                    'engine library. Pass -PbrEngineDir=none when passing -PbrNativesDir, so ' +
+                    '"which engine is this jar" has one answer.')
+        }
+
         // Apache-2.0 4(a) and 4(d) are about the ARTEFACT, not the repository: a
         // recipient of the jar must get the licence and the NOTICE with it. Both files
         // existed at the repo root and neither was in the jar or the archive. The engine
@@ -144,7 +220,12 @@ tasks.register('bundleEngines') {
         tp.mkdirs()
         file('../third_party').listFiles()?.each { f -> new File(tp, f.name).bytes = f.bytes }
 
-        if (lines.isEmpty()) {
+        if (!natLines.isEmpty()) {
+            new File(dest, 'natives.manifest').setText(
+                    "# os arch file sha256 size engineVersion contractSha256\n"
+                            + natLines.join('\n') + '\n', 'UTF-8')
+            logger.lifecycle("bundleEngines: ${natLines.size()} engine library/libraries from ${natSrc}")
+        } else if (lines.isEmpty()) {
             logger.lifecycle("bundleEngines: no engine found in ${src ?: 'none'} — " +
                     'building a jar without one (development build)')
         } else {

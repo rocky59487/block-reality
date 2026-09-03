@@ -43,8 +43,21 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 class LangKeysTest {
 
-    /** A system property, not a translation key. The only literal that looks like one. */
-    private static final Set<String> NOT_LANG_KEYS = Set.of("br.sidecar");
+    /**
+     * System property names, not translation keys.
+     *
+     * <p>The scanner takes every {@code "br.*"} literal in the sources as a key the game
+     * can ask for, which is what makes it derived rather than listed — a new key demands
+     * its string without anyone remembering to add it here. The cost is these: the two
+     * {@code -D} properties that name where an engine is, which have the same shape and
+     * are never rendered at a player.
+     *
+     * <p>Adding to this set is how the gate is WEAKENED, so it takes a reason. The bar is
+     * that the literal is passed to {@link System#getProperty} or an equivalent, and never
+     * to a translation lookup — verifiable by grep, which is why the property is named
+     * here rather than a prefix being excluded wholesale.
+     */
+    private static final Set<String> NOT_LANG_KEYS = Set.of("br.sidecar", "br.engine");
 
     private static final Pattern LITERAL = Pattern.compile("\"(br\\.[a-z0-9_.]*)\"");
     private static final Pattern ENTRY = Pattern.compile("^ {2}\"([^\"]+)\": \"(.*)\",?$");

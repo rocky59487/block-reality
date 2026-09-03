@@ -321,3 +321,29 @@ struct BsiArenaHeader {            /* 128 B, LE */
 ## Part G · 修訂（dated 追記；上方原文一字不改）
 
 （無）
+
+- **2026-09-02（併入兩倉主線後，host 實作前；全部加法，`CONTRACT_SHA256` 重釘、兩倉同步）**
+  1. **進程內 C ABI `bsi_capi.h`**（T-A 的函式呼叫形式）：`bsi_capi_abi_version / open / call / close / last_error`；一次 `call` = 一個 T-A frame 進、一個出；
+     `NEED_BIGGER` 不消費請求。任何 host+engine 的共享庫建置都匯出這五個符號；消費者以 JNA / ctypes / FFM 綁定，零膠碼。ABI 尾端追加。
+     這是消費者 D-044（jar 零可執行檔、不 spawn 子行程）在契約上的落點；T-B（sidecar 門鈴）降為 dev/CI 傳輸，C-2 仍要求三者逐位相同。
+  2. **arena `reply` 區內容 = 一個 T-A frame**（12 B 前綴 + header + payload）；`sections[].offset` 相對 payload 起點；門鈴回覆 `replyLen` = frame 位元組數。
+  3. **T-B′ 回覆行**在 `sections`（或錯誤框的 `message`/`at`）之後附 `"payloadBytes":N,"payloadB64":"…"`（N=0 時兩鍵仍出現，`payloadB64` 為空字串）；
+     一致性 runner 在比對 C-1/C-2 前剝除這兩鍵（它們是傳輸，不是語意）。
+  4. **`bsi.world.declare` body** `{"blocks":B,"attrs":A}`（`attrs` 可省略 = 0）；payload = B×40 + A×16，長度不符 → `PROTOCOL_ERROR`。
+  5. **`bsi.cancel`** body `{"targetId":"…"}`；回覆 `{…,"status":"ok","targetId":"…"}`。host 對同一 session 序列化請求，`cancel` 只能命中尚未派發的請求（引擎 `cancel` 槽可為 NULL）。
+  6. **`hello.response.transports`** token：`"frame"`（T-A / `bsi_capi`）、`"arena"`（T-B）、`"stdio-b64"`（T-B′）。
+  7. **`Zy`/`Zz` = 塑性斷面模數**（rect：`b·d²/4`、`d·b²/4`）；彈性模數由 `I/c` 導出，不另設欄。`C13` 的 `custom` 數字據此更正、`J` 釘 `7.324166666666667e-4`，
+     custom-vs-rect `bitwise` 線降 **provisional** 至首跑釘死。
+  8. **`diag.warnings`** 依 `code` 字典序升冪、同碼合併計數（host 排）。
+  9. **`steps` 模式不隱式 declare**：需要世界的步驟前必須有明確的 `bsi.world.declare` 步驟（`C11` 已補 `declare-world`）。`C4` 的 `requires` 去掉 stations（它不斷言站位），`C8` 自帶。
+  10. `bsi_engine.h` 的 `BSI_ENGINE_BUILD` 會把 `bsi_writer_*`/`bsi_host_*` 在引擎 DLL 內標為 `dllexport`（Windows）；Linux 無害（巨集為空）。只登記；修法（獨立 `BSI_HOST_EXPORT`）留下次主版前的加法。
+  11. **共用 host（`contract/host/`）與語料 runner 隨契約鏡像**：host 的任何修正 = 契約雜湊 bump（兩倉同步）。這是設計成本，照登。
+  12. **`attrs` 記錄更正**：原文 B.4「`blockIndex u32; key u32; type u8; reserved[3]; value[8]`（16 B）」欄位加總是 20 B，
+      與宣告的 16 B 矛盾（`bsi_engine.h` 的 `sizeof` 斷言在 host 首次建置時抓到）。更正為 `blockIndex u32; key u16; type u8; reserved u8; value[8]` = 16 B
+      （`attrKeys` 索引 65535 個足夠）。`bsi_engine.h`、schema `x-records.attr`/`attrsEcho` 同步；沒有任何實作曾用過舊排布。
+  13. **`bsi_engine.h` 的 `BSI_EXPORT` 補 ELF 分支**（2026-09-03）：出貨形狀是「隱藏一切、只留契約符號」的共享庫，
+      但 `BSI_EXPORT` 在非 Windows 是空巨集 ⇒ `-fvisibility=hidden` 下 `bsi_engine_entry` 自己也被藏起來，
+      而 version script **無法解除編譯期就標為 hidden 的符號**（首次建 `libbsi_tectonic.so` 時實測：`nm -D` 只剩 `bsi_capi_*`，host 回「not exported」）。
+      改為與 `bsi_capi.h` 同一條規則：`__GNUC__` 且 `BSI_ENGINE_BUILD` 時 `__attribute__((visibility("default")))`。
+      **純加法**：不定義 `BSI_ENGINE_BUILD` 的消費者、以及 Windows 分支，逐位不變。第 10 條記的 Windows `dllexport` 怪癖不受此影響、仍待下次主版前處理。
+

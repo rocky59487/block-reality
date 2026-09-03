@@ -1,0 +1,27 @@
+tectonic2
+Apache License, Version 2.0
+
+The structural analysis engine. Compiled into the engine library that this mod carries
+(libbsi_tectonic.so / bsi_tectonic.dll) together with the BSI host, and reached through the
+five C functions of contract/bsi_capi.h.
+
+Source: https://github.com/rocky59487/tectonic2
+
+Copyright 2026 tectonic2 contributors
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+except in compliance with the License. You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the
+License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+either express or implied. See the License for the specific language governing permissions
+and limitations under the License.
+
+The full text travels with this artefact as META-INF/LICENSE.
+
+The exact revision each shipped library was built from is recorded in the engine's own
+handshake reply, which the build reads rather than asserts: the manifest field
+engineVersion in blockreality-engine/natives.manifest carries engine name, version and
+build revision, and a build from a modified worktree is marked -dirty there.

@@ -102,3 +102,328 @@ jobs:
       # release body as "219 acceptance checks" when the real number was 218.
       - name: quoted check counts match the suites
         run: python3 scripts/check_docs.py dist/br-sidecar
+
+  # --------------------------------------------------------------- BSI v1 (D-043 / D-044)
+  #
+  # The interface both repositories implement, and the Java half that speaks it. This job
+  # needs nothing from outside the repository: the contract, the host, the stub engine and
+  # the conformance corpus are all in contract/, which is a byte-for-byte mirror of
+  # tectonic2's.
+  contract:
+    name: BSI contract, host, corpus, and the packaging rules
+    runs-on: ubuntu-latest
+    steps:
+      # fetch-depth 0 because the N23-e step below needs the merge base with the target
+      # branch, and a shallow clone has no such commit — the step would fail on a missing
+      # ref rather than on the rule it exists to enforce.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: the pinned hash matches the directory it pins (N23-a)
+        run: python3 contract/check_contract.py
+
+      - name: the corpus parses and the runner agrees with itself (N23-c)
+        run: |
+          python3 contract/conformance/run.py --selfcheck
+          python3 contract/conformance/run.py --list
+
+      # The mirror check WITHOUT a cross-repository clone. check_contract.py hashes every
+      # file under contract/ bar two, so "my pin matches my directory" AND "my pin matches
+      # the hash recorded for the tectonic2 commit I mirror" together mean the two
+      # directories are identical. A clone would prove the same thing and needs a token
+      # this workflow may not have; this leg cannot be skipped for want of one.
+      - name: contract/ is the same bytes as the tectonic2 commit it mirrors (N23-b)
+        run: |
+          ours=$(tr -d '[:space:]' < contract/CONTRACT_SHA256)
+          theirs=$(awk '$1=="sha256"{print $2}' .github/tectonic2-contract-ref)
+          ref=$(grep -m1 -E '^[0-9a-f]{40}$' .github/tectonic2-contract-ref)
+          if [ -z "$theirs" ]; then
+            echo ".github/tectonic2-contract-ref carries no 'sha256 <hex>' line, so nothing"
+            echo "pins this repository's contract/ to tectonic2's. Add it in the same commit"
+            echo "that copies a new contract/ across."; exit 1
+          fi
+          if [ "$ours" != "$theirs" ]; then
+            echo "contract/ here hashes to $ours"
+            echo "but tectonic2 $ref recorded $theirs"
+            echo "The two repositories have drifted. Re-mirror contract/ and re-pin both."
+            exit 1
+          fi
+          echo "contract/ mirrors tectonic2 $ref  ($ours)"
+
+      - name: a contract change carries its re-pinned hash (N23-e)
+        if: github.event_name == 'pull_request'
+        run: |
+          base=$(git merge-base origin/${{ github.base_ref }} HEAD)
+          changed=$(git diff --name-only "$base"...HEAD -- contract/ | grep -v '^contract/CONTRACT_SHA256$' || true)
+          if [ -n "$changed" ] && ! git diff --name-only "$base"...HEAD | grep -q '^contract/CONTRACT_SHA256$'; then
+            echo "contract/ changed without re-pinning CONTRACT_SHA256:"; echo "$changed"; exit 1
+          fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq cmake g++
+
+      - name: build the BSI host and its stub engines
+        run: |
+          cmake -S contract/host -B build/host -DCMAKE_BUILD_TYPE=Release -DBSI_HOST_BUILD_TESTS=ON
+          cmake --build build/host -j
+
+      - name: the host's own suite
+        run: ./build/host/host_tests
+
+      # C-1/C-2/C-9: the same corpus through every transport and through the in-process C
+      # ABI, and the replies must be BITWISE identical across all of them. The C ABI leg is
+      # the one the mod takes, so a divergence there is a divergence in shipping code.
+      - name: the corpus through all three transports and the C ABI
+        run: |
+          python3 contract/conformance/run.py --adapter engine --lib build/host/libbsi_stub_engine.so \
+              --hostd build/host/bsi-hostd --stub --repeat 3
+          python3 contract/conformance/run.py --adapter capi --lib build/host/libbsi_stub_capi.so \
+              --stub --repeat 3
+
+      # C-3: an engine built against another ABI must be REFUSED, not tolerated. This is
+      # the mechanism that lets the mod and the engine ship on their own schedules, so it
+      # is checked by trying it rather than by reading the code.
+      #
+      # The file is asserted to EXIST first. Without that line a wrong path also makes the
+      # runner exit non-zero, and the step goes green having proved nothing — a measurement
+      # that mistakes its own failure for the result it was looking for. That exact defect
+      # has bitten this pair of repositories before (tectonic2 CLAUDE.md, 2026-08-30: ten
+      # mutation binaries that never ran once were scored as ten that did).
+      - name: a foreign engine ABI is refused
+        run: |
+          test -f build/host/libbsi_stub_engine_abi2.so
+          if python3 contract/conformance/run.py --adapter engine \
+               --lib build/host/libbsi_stub_engine_abi2.so --hostd build/host/bsi-hostd --stub; then
+            echo "an ABI-2 engine was loaded; the version gate did nothing"; exit 1
+          fi
+
+      # ---------------------------------------------------------------- N24-a, packaging
+      #
+      # The packaging rules are about the JAR, not about mechanics: does it contain a
+      # program, does the manifest describe the bytes that are in it, does the engine it
+      # carries speak the interface the mod speaks, are the licences there. None of that
+      # needs a solver, so none of it needs the other repository.
+      #
+      # The subject is the STUB engine, which is a real shared library implementing
+      # bsi_capi.h and answering bsi.hello -- everything stage_natives.py and
+      # check_bundle.py look at. Gating these rules here rather than in engine-linux is
+      # what stops them from being unchecked whenever cross-repository access is not
+      # available, which is the state this repository was actually in.
+      - name: stage the stub engine, asking it what it is
+        run: |
+          python3 scripts/stage_natives.py --out /tmp/natives \
+              --lib linux-x86_64=$GITHUB_WORKSPACE/build/host/libbsi_stub_capi.so
+          cat /tmp/natives/provenance.json
+
+      - name: build a jar carrying it
+        run: |
+          chmod +x forge/gradlew
+          cd forge && ./gradlew --no-daemon build -x test -PbrEngineDir=none -PbrNativesDir=/tmp/natives
+
+      - name: the jar contains no program, and says truthfully what it does contain
+        run: |
+          mkdir -p /tmp/stage/third_party
+          cp forge/build/libs/blockreality-*.jar LICENSE NOTICE /tmp/stage/
+          cp third_party/*.txt /tmp/stage/third_party/
+          cp scripts/dist-docs/START-HERE-engine-library.txt /tmp/stage/START-HERE.txt
+          cp /tmp/natives/provenance.json /tmp/stage/engine-provenance.json
+          (cd /tmp/stage && find . -type f ! -name SHA256SUMS.txt -printf '%P\n' | sort \
+              | xargs sha256sum > SHA256SUMS.txt)
+          python3 scripts/check_bundle.py /tmp/stage
+
+      # ...and then check the checker. Seven injections against the staging directory the
+      # step above just passed; every one must turn it red. check_bundle.py has been
+      # tightened three times and it was an injection that found the hole every time.
+      - name: the packaging gate still bites
+        run: python3 scripts/check_bundle_selftest.py /tmp/stage
+
+  # ---------------------------------------------------------- the engine, actually built
+  #
+  # This closes the standing gap that CI never built an engine at all — the sidecar links
+  # FrameCore, which this repository does not carry, so `engine-gates` above can only check
+  # the committed binary against the committed suite. The v0.4 engine has no such problem:
+  # tectonic2 is a source dependency this job can clone and build, and everything
+  # downstream of it (the cross-language Java leg, the jar, the packaging rules) is then
+  # measured against a library that exists rather than one that is assumed.
+  #
+  # MEASURED, 2026-09-03: tectonic2 is private to this account and GITHUB_TOKEN cannot
+  # read it -- `remote: Repository not found`. So this job needs a repo-scoped PAT as the
+  # secret TECTONIC2_TOKEN, and until one exists it CANNOT RUN.
+  #
+  # It does not pretend otherwise. Every step is guarded on the token being present, and
+  # the last step always runs and says loudly which of the two happened. What makes that
+  # acceptable rather than the "skip and print green" disease this repository keeps a
+  # registry about is WHERE THE RULES MOVED: N24-a -- no executables, manifest against
+  # bytes, contract agreement, licences, and the seven injections -- is gated in the
+  # `contract` job above against the stub engine, with no token and no way to skip. What
+  # is missing without the token is narrower and named: the real engine building at all,
+  # its self-containment (L7), and the cross-language leg N24-b5.
+  #
+  # Registered in docs/GATES.md as [暫] until the secret exists.
+  engine-linux:
+    name: build the engine library, then the jar that carries it
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: can this job reach the engine source at all
+        id: reach
+        run: |
+          if [ -n "${{ secrets.TECTONIC2_TOKEN }}" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: which tectonic2 commit this repository mirrors
+        id: pin
+        if: steps.reach.outputs.ok == 'true'
+        run: echo "ref=$(grep -m1 -E '^[0-9a-f]{40}$' .github/tectonic2-contract-ref)" >> "$GITHUB_OUTPUT"
+
+      - name: clone tectonic2 at that commit
+        if: steps.reach.outputs.ok == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: rocky59487/tectonic2
+          ref: ${{ steps.pin.outputs.ref }}
+          path: .tectonic2
+          token: ${{ secrets.TECTONIC2_TOKEN }}
+
+      # The engine's contract/ and this repository's must be the same bytes. The hash
+      # comparison in the `contract` job proves it without a clone; here there IS a clone,
+      # so diff the directories and let the stronger check run where it can.
+      - name: contract/ is byte-for-byte identical (N23-b, the direct form)
+        if: steps.reach.outputs.ok == 'true'
+        run: diff -r contract .tectonic2/contract
+
+      - name: dependencies
+        if: steps.reach.outputs.ok == 'true'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libopenblas-dev liblapacke-dev libmetis-dev gfortran cmake g++
+
+      # Ubuntu ships no libmetis.a, and the shipped library must not depend on a system
+      # one. Built from the Apache-2.0 source with IDXTYPEWIDTH 32, the width the engine
+      # compiles against — a 64-bit idx_t would silently change every ordering.
+      - name: static METIS (IDXTYPEWIDTH 32)
+        if: steps.reach.outputs.ok == 'true'
+        working-directory: .tectonic2
+        run: |
+          pip3 download pymetis --no-binary :all: --no-deps -d /tmp/metis_src
+          tar xzf /tmp/metis_src/pymetis-*.tar.gz -C /tmp
+          cp -r /tmp/pymetis-*/src/metis /tmp/metis
+          sed -i 's/#define IDXTYPEWIDTH 64/#define IDXTYPEWIDTH 32/' /tmp/metis/include/metis.h
+          mkdir -p /tmp/metis_out
+          for f in /tmp/metis/GKlib/*.c /tmp/metis/libmetis/*.c; do
+            gcc -O2 -fPIC -DNDEBUG -DLINUX -D_FILE_OFFSET_BITS=64 -DUSE_GKREGEX \
+                -I/tmp/metis/include -I/tmp/metis/GKlib -I/tmp/metis/libmetis \
+                -c "$f" -o "/tmp/metis_out/$(basename ${f%.c}).o"
+          done
+          ar rcs /tmp/metis_out/libmetis.a /tmp/metis_out/*.o
+
+      - name: build libbsi_tectonic.so
+        if: steps.reach.outputs.ok == 'true'
+        working-directory: .tectonic2
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DTEC_METIS_STATIC=/tmp/metis_out/libmetis.a
+          cmake --build build -j --target bsi_tectonic
+
+      # The library must depend on nothing but the C runtime, or a player's machine
+      # decides whether the mod works. tectonic2's LINUX_BUILD L7 gates the same thing on
+      # its side; it is repeated here because THIS is the copy that goes in the jar.
+      - name: the library is self-contained and exports only the contract
+        if: steps.reach.outputs.ok == 'true'
+        run: |
+          echo "--- ldd"; ldd .tectonic2/build/libbsi_tectonic.so
+          extra=$(ldd .tectonic2/build/libbsi_tectonic.so | grep -vE 'linux-vdso|libm\.so|libc\.so|ld-linux' || true)
+          if [ -n "$extra" ]; then echo "unexpected dependencies:"; echo "$extra"; exit 1; fi
+          echo "--- exported"; nm -D --defined-only .tectonic2/build/libbsi_tectonic.so | grep ' T ' || true
+          leak=$(nm -D --defined-only .tectonic2/build/libbsi_tectonic.so | awk '$2=="T"{print $3}' \
+                 | grep -vE '^(bsi_capi_|bsi_engine_entry$|bsi_writer_)' || true)
+          if [ -n "$leak" ]; then echo "symbols outside the contract are exported:"; echo "$leak"; exit 1; fi
+
+      # N24-b5, the cross-language leg. -Dbr.engine fails loud when it does not resolve
+      # (mod/build.gradle), so this cannot quietly become a run with the tests skipped.
+      - name: Java suites against the freshly built engine
+        if: steps.reach.outputs.ok == 'true'
+        run: |
+          chmod +x mod/gradlew dist/br-sidecar
+          cd mod && ./gradlew --no-daemon test \
+              "-Dbr.sidecar=$GITHUB_WORKSPACE/dist/br-sidecar" \
+              "-Dbr.engine=$GITHUB_WORKSPACE/.tectonic2/build/libbsi_tectonic.so"
+
+      # Everything the manifest will claim is read OUT OF THE ENGINE here, by loading it
+      # and sending bsi.hello — not asserted by the build.
+      - name: stage the library, asking it what it is
+        if: steps.reach.outputs.ok == 'true'
+        run: |
+          python3 scripts/stage_natives.py --out /tmp/natives \
+              --lib linux-x86_64=$GITHUB_WORKSPACE/.tectonic2/build/libbsi_tectonic.so
+          cat /tmp/natives/provenance.json
+
+      - name: build the jar that carries the library
+        if: steps.reach.outputs.ok == 'true'
+        run: |
+          chmod +x forge/gradlew
+          cd forge && ./gradlew --no-daemon build -x test -PbrEngineDir=none -PbrNativesDir=/tmp/natives
+
+      - name: assemble a staging directory and gate it (N24-a)
+        if: steps.reach.outputs.ok == 'true'
+        run: |
+          mkdir -p /tmp/stage/third_party
+          cp forge/build/libs/blockreality-*.jar LICENSE NOTICE /tmp/stage/
+          cp third_party/*.txt /tmp/stage/third_party/
+          cp scripts/dist-docs/START-HERE-engine-library.txt /tmp/stage/START-HERE.txt
+          cp /tmp/natives/provenance.json /tmp/stage/engine-provenance.json
+          (cd /tmp/stage && find . -type f ! -name SHA256SUMS.txt -printf '%P\n' | sort \
+              | xargs sha256sum > SHA256SUMS.txt)
+          python3 scripts/check_bundle.py /tmp/stage
+
+      # ...and then check the checker. check_bundle.py has been tightened three times,
+      # every time after an injection walked past it green.
+      - name: the packaging gate still bites
+        if: steps.reach.outputs.ok == 'true'
+        run: python3 scripts/check_bundle_selftest.py /tmp/stage
+
+      - uses: actions/upload-artifact@v4
+        if: steps.reach.outputs.ok == 'true'
+        with:
+          name: engine-library-jar
+          path: |
+            /tmp/stage/blockreality-*.jar
+            /tmp/stage/engine-provenance.json
+
+      # ALWAYS runs. A job that measured nothing must say so where the run is read, not
+      # only in a comment at the top of a file nobody opens when the tick is green.
+      - name: say plainly whether this job measured anything
+        if: always()
+        run: |
+          if [ "${{ steps.reach.outputs.ok }}" = "true" ]; then
+            echo "engine-linux built the engine and ran the cross-language leg." \
+              >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning title=engine-linux did not run::No TECTONIC2_TOKEN, so the engine was never built. N24-a (packaging) still ran in the contract job against the stub engine; what was NOT measured here is the real engine building, its self-containment (L7), and the cross-language leg N24-b5."
+            {
+              echo "### engine-linux measured NOTHING"
+              echo
+              echo "\`TECTONIC2_TOKEN\` is not set, and \`GITHUB_TOKEN\` cannot read a private"
+              echo "repository in another project. Add a repo-scoped PAT with read access to"
+              echo "\`rocky59487/tectonic2\` as the repository secret \`TECTONIC2_TOKEN\`."
+              echo
+              echo "Still gated without it, in the \`contract\` job: N24-a1 (no executables),"
+              echo "N24-a3 (manifest against bytes, contract agreement), N24-a5 (licences),"
+              echo "and the seven packaging injections."
+              echo
+              echo "NOT measured: the engine builds at all, L7 self-containment, N24-b5."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi

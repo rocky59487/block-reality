@@ -3,14 +3,27 @@
 ## 執行
 
 ```
-python3 contract/conformance/run.py --adapter engine  --lib  <libengine.so|dll>     # 直接載入 bsi_engine.h 的 vtable
-python3 contract/conformance/run.py --adapter sidecar --exe  <br-sidecar>            # 經 T-B（arena）與 T-B′
-python3 contract/conformance/run.py --adapter frame_v2 --lib <tectonic_capi.dll>    # 經 T-A
-python3 contract/conformance/run.py --list                                            # 列 case 與家族
+python3 contract/conformance/run.py --selfcheck                                   # C-0 + 契約雜湊 + 每個 case 能展開
+python3 contract/conformance/run.py --list
+python3 contract/conformance/run.py --adapter engine  --lib libengine.so --hostd build/host/bsi-hostd   # 經 bsi-hostd：stdio-b64 / frame / arena 三傳輸各跑一次（C-2）
+python3 contract/conformance/run.py --adapter capi    --lib libbsi_engine.so                             # 進程內 ctypes 直呼 bsi_capi.h（消費者 JNA 走的路）
+python3 contract/conformance/run.py --adapter sidecar --exe <host-process ...>                         # 任何吃 bsi-hostd 旗標的 host 行程
+python3 contract/conformance/run.py --adapter frame_v2 --lib tectonic_capi.so                          # NOT RUN（exit 3）：引擎的 T-A bsi.* 動詞尚不存在
 ```
 
-`run.py`（B8 交付）做四件事：驗 `CONTRACT_SHA256`、驗 header 對 `bsi.schema.json`、跑每個 case 的斷言、
-以 `--repeat 3` 做 DET ×3 逐位。任一 [硬] 案例紅 → exit 1。能力字串未宣告的家族**跳過並照登**（不算綠）。
+旗標：`--transports a,b`、`--repeat N`（DET，預設 3）、`--families C-4,C-5`、`--case NAME`、`--record report.json`、
+`--stub`（允許 `x-bsi.stub` 測試替身；力學家族對它一律 SKIP 並印 `STUB (no mechanics)`）、
+`--assume-caps a,b`（**收割模式**：當作能力已宣告，結果標 `ASSUMED`，**exit 4，永不綠**）、
+`--expected-red account.json`（帳放在 `contract/` 之外；`{"cases":[{"case":…,"waits_on":…}]}`：帳上紅不算失敗，**帳上卻綠 = 過期 = 紅**）、
+`--allow-all-skip`。
+
+runner 對**每個回覆**做 C-1（schema、鍵序 = schema 屬性序、`sections` 連續且固定序、`bytes == count × 記錄大小`、
+`blocks.count == B`、id 遞增、`unassigned`/`warnings` 規範序）與隱含 C-7（`flags.overloaded ⇔ dc > 1.0`）；
+記錄解碼由 schema `x-records` 驅動，不硬編 offset。`requires` 未宣告的家族 **SKIP（列印，不算綠）**。
+每個 world / variant 各開一個新 session；`steps` 模式在同一 session 逐步執行，**不隱式 declare**，`BSI_VERSION` 之後的步驟另起行程。
+DET：未指定時注入 `numThreads:1`；header 逐字、payload 逐位。
+
+exit：0 全綠且 ≥1 案執行；1 硬紅或帳過期；2 契約/用法；3 adapter not-run；4 收割；5 全部 SKIP。
 
 ## case 格式（`cases/*.json`）
 
@@ -33,7 +46,10 @@ python3 contract/conformance/run.py --list                                      
 
 - `path` 用契約欄位名；`members[k]` 依 `id` 升冪；`stations[governing]` = governing 站。
 - `eq/abs_eq`（`abs_eq` 比絕對值，號向由 C-8 另驗）、`rel`/`abs` 容差、`gt/lt/le`、`count`、`has`、`error`（預期錯誤碼）、`bitwise:3`（DET）。
-- `grade`: `hard`（線凍死）/ `provisional`（[暫]：結構凍死、數字線首跑後 dated 釘）。
+- `grade`: `hard`（線凍死）/ `provisional`（[暫]：結構凍死、數字線首跑後 dated 釘）；單條斷言也可帶 `grade`。`rel` 為字串（`PROVISIONAL(...)`）時 runner 以 1e-2 評估並標 provisional。
+- `blocks` 可為字串 DSL：`column(x=0,z=0,y=0..19,steel,axis=1) + ground_rigid at (0,-1,0)`。
+- `worlds{A:[...],B:{extends,add},B_mirror:{transform:mirror_x,of}}`、`variants[{name,sect|loads|solve,assert}]`、`steps[{name,do,blocks|world,solve,loads,expectError,expectAt,expect,assert}]`、`extends`/`world`（引用另一 case 的 vocab/blocks/derive）。
+- `transform`：`mirror_x` = `x→-1-x`、`fx→-fx`；`rot90_y` = `(x,z)→(-1-z,x)`、axis `0↔2`、`(fx,fz)→(-fz,fx)`。
 
 ## 家族與 case 清單
 

@@ -7,12 +7,12 @@
      {"name":"ground_rigid","role":"support","supportKind":"fixAll"}],
    "sections":[
      {"name":"rect","kind":"rect","p":[0.2,0.4]},
-     {"name":"custom","kind":"custom","A":0.08,"Iy":2.6666666666666668e-4,"Iz":1.0666666666666667e-3,"J":"7.324e-4 (Timoshenko exact series, to be pinned)","cy":0.1,"cz":0.2,"Asy":0.06666666666666667,"Asz":0.06666666666666667,"Zy":2.6666666666666668e-3,"Zz":5.333333333333334e-3,"principalAngle":0.0}]},
+     {"name":"custom","kind":"custom","A":0.08,"Iy":2.6666666666666668e-4,"Iz":1.0666666666666667e-3,"J":7.324166666666667e-4,"cy":0.1,"cz":0.2,"Asy":0.06666666666666667,"Asz":0.06666666666666667,"Zy":8.0e-3,"Zz":4.0e-3,"principalAngle":0.0}]},
  "world":"C4-cantilever-selfweight",
  "variants":[
    {"name":"rect","sect":"rect"},
    {"name":"custom","sect":"custom"}],
  "assert":[
-   {"equal":["rect","custom"],"path":"payload","bitwise":true,"note":"J for a 200x400 rectangle must be the engine's own value; the case pins the two declarations to the same numbers by reading rect's derived properties through vocab.query before comparing"},
+   {"equal":["rect","custom"],"path":"payload","bitwise":true,"grade":"provisional","note":"Part G (2026-09-02): J pinned to the Roark value for b=0.2,d=0.4; Zy/Zz are PLASTIC section moduli (b*d^2/4, d*b^2/4). The bitwise line is provisional until first harvest: an engine may derive J by its own series and differ in the last ulp, in which case the line is re-pinned as rel<=1e-12, dated."},
    {"path":"diag.ignoredExtensions","eq":1}
  ]}
