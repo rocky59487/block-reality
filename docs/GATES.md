@@ -797,3 +797,43 @@ release workflow 另外驗證「evidence 記錄的二進位 sha256 == dist/ 出�
 
 **`SELFTEST ALL PASS (7 injections, 0 slipped)`**。
 每個 case 前都重算 `SHA256SUMS.txt`，否則七條全部會被「多餘檔案」規則攔下、**證明不了它們各自具名的那條**。
+
+##### 2026-09-03b CI 首跑，兩個真紅（照登，原文一字不改）
+
+判準登記之後的**第一次 CI 實跑**抓到兩件事。兩件都不是判準寫錯，是判準在工作。
+
+**1. `LangKeysTest` 紅：`keys with no en_us string == [br.engine]`**
+
+`LangKeysTest` 把原始碼裡每一個 `"br.*"` 字面量都當成「遊戲可能會要的翻譯鍵」——**推導而非列舉**，
+這正是它的價值：新鍵不必有人記得登記就會被要求翻譯。代價是 `-D` 系統屬性名長得一模一樣。
+`br.sidecar` 早就在 `NOT_LANG_KEYS` 裡，且註解寫著「唯一長得像鍵的字面量」；`br.engine` 是第二個。
+
+處置：加進同一個集合，**並把「什麼情況才准加」寫進註解**——該字面量必須是傳給
+`System.getProperty` 或等價物、且從不進翻譯查詢，**grep 可驗**。因此是具名屬性，
+不是整段前綴豁免。**加進這個集合就是在弱化這道 gate，所以要有理由。**
+
+**2. `engine-linux` 紅：`remote: Repository not found`**
+
+**量到的事實**：tectonic2 對本帳號是私有的，`GITHUB_TOKEN` 讀不到另一個專案的私有倉庫。
+所以這個 job **在 `TECTONIC2_TOKEN` 存在之前根本跑不起來**。
+
+處置**不是**把它 skip 掉印綠字——那正是本檔一直在記的病。做的是**把規則搬到跑得起來的地方**：
+
+| | 現在在哪 | 要不要 token |
+|---|---|---|
+| N24-a1 jar 零可執行檔 | `contract` job | **不要** |
+| N24-a3 manifest 對位元組 + 契約一致 | `contract` job | **不要** |
+| N24-a5 授權 | `contract` job | **不要** |
+| 七個打包注入 | `contract` job | **不要** |
+| 引擎建得起來、L7 自足 | `engine-linux` | 要 |
+| N24-b5 跨語言逐位 | `engine-linux` | 要 |
+
+搬得動的理由：**N24-a 測的是 jar，不是力學。** stub engine 是一支真的實作 `bsi_capi.h`、
+會回 `bsi.hello` 的共享函式庫，`stage_natives.py` 與 `check_bundle.py` 看的東西它全都有。
+實測：stub 過 `stage_natives.py`（`bsi-stub-0.0.1+stub`，契約雜湊相符）、jar 建得出來、
+`check_bundle.py` 綠、`SELFTEST ALL PASS (7 injections, 0 slipped)`。
+
+`engine-linux` 的每一步都用 `steps.reach.outputs.ok` 擋住，**最後一步 `if: always()`**，
+沒 token 時發 `::warning::` 並寫 `$GITHUB_STEP_SUMMARY`，逐條列出「這次沒量到什麼」。
+**登記為 [暫]，直到 `TECTONIC2_TOKEN` 存在為止。** 在那之前**不得**把
+「引擎建得起來」或 N24-b5 當成 CI 驗過的事。
