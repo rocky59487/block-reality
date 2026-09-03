@@ -56,6 +56,27 @@ subprojects {
             resolved = f.canonicalPath
         }
         systemProperty 'br.sidecar', resolved
+
+        // Same rule for the in-process engine (D-044): a relative path resolves against
+        // the repository root, and a path that was asked for but is not a readable file
+        // FAILS rather than skipping. The cross-language leg (N24-b5) is the only place
+        // the Java codec meets a real engine, so it going quiet is exactly the failure
+        // the sidecar rule above was written for.
+        def engineRequested = System.getProperty('br.engine', System.getenv('BR_ENGINE') ?: '')
+        def engineResolved = ''
+        if (engineRequested) {
+            def f = new File(engineRequested)
+            f = f.isAbsolute() ? f : new File(rootProject.projectDir, engineRequested)
+            if (!f.isFile() || !f.canRead()) {
+                throw new GradleException("br.engine='" + engineRequested + "' resolved to " +
+                        f.canonicalPath + ", which is not a readable file. Build it with " +
+                        "`cmake --build build --target bsi_tectonic` in the engine checkout, or " +
+                        "unset the property to skip the cross-language tests deliberately.")
+            }
+            engineResolved = f.canonicalPath
+        }
+        systemProperty 'br.engine', engineResolved
+
         testLogging { events 'passed', 'skipped', 'failed'; exceptionFormat 'full' }
     }
 }
