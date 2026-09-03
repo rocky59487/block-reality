@@ -308,6 +308,41 @@ jobs:
         if: steps.reach.outputs.ok == 'true'
         run: diff -r contract .tectonic2/contract
 
+      # ...and the pin is not the whole story. Both checks above compare against the
+      # tectonic2 commit this repository CHOSE to mirror, so tectonic2 can move its own
+      # main and nothing here notices: the pin still agrees with itself. This step reads
+      # tectonic2's live default branch instead.
+      #
+      # It needs the token, so it is not the primary defence -- tectonic2's own CI reads
+      # THIS repository's Main hash over an unauthenticated fetch (block-reality is
+      # public), and that leg cannot be skipped. This one closes the same hole from the
+      # side that happens to need a secret, and says so in the summary when it cannot run.
+      #
+      # Severity follows meaning, same as the tectonic2 side: between default branches a
+      # mismatch is real drift and is red; on a pull request it is a contract change in
+      # flight with its paired PR still open, which is what a coordinated change is
+      # supposed to look like.
+      - name: tectonic2's default branch has not moved the contract alone (N23-b)
+        if: steps.reach.outputs.ok == 'true'
+        run: |
+          mine=$(tr -d '[:space:]' < contract/CONTRACT_SHA256)
+          if theirs=$(curl -fsS --retry 3 --retry-delay 2 \
+                -H "Authorization: Bearer ${{ secrets.TECTONIC2_TOKEN }}" \
+                -H "Accept: application/vnd.github.raw" \
+                "https://api.github.com/repos/rocky59487/tectonic2/contents/contract/CONTRACT_SHA256?ref=main"); then
+            theirs=$(printf '%s' "$theirs" | tr -d '[:space:]')
+            if [ "$mine" = "$theirs" ]; then echo "tectonic2 main agrees: $mine"; exit 0; fi
+            verdict="tectonic2 main $theirs vs this tree $mine -- the contracts DISAGREE"
+          else
+            verdict="could not read tectonic2 main's contract hash"
+          fi
+          echo "$verdict" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "::warning::$verdict (in flight: land the paired tectonic2 PR)"
+          else
+            echo "::error::$verdict"; exit 1
+          fi
+
       - name: dependencies
         if: steps.reach.outputs.ok == 'true'
         run: sudo apt-get update -qq && sudo apt-get install -y -qq libopenblas-dev liblapacke-dev libmetis-dev gfortran cmake g++
@@ -412,7 +447,7 @@ jobs:
             echo "engine-linux built the engine and ran the cross-language leg." \
               >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "::warning title=engine-linux did not run::No TECTONIC2_TOKEN, so the engine was never built. N24-a (packaging) still ran in the contract job against the stub engine; what was NOT measured here is the real engine building, its self-containment (L7), and the cross-language leg N24-b5."
+            echo "::warning title=engine-linux did not run::No TECTONIC2_TOKEN, so the engine was never built. N24-a (packaging) still ran in the contract job against the stub engine; what was NOT measured here is the real engine building, its self-containment (L7), the cross-language leg N24-b5, and whether tectonic2's own main has moved the contract since the pinned commit (the pin check in the contract job cannot see that; tectonic2's CI reads this repository's Main hash without a token, which is the leg that always runs)."
             {
               echo "### engine-linux measured NOTHING"
               echo
