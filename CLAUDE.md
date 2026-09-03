@@ -17,6 +17,12 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 sidecar 退為傳輸轉接（stdio 門鈴 + 零複製 arena），FrameCore 保留為 CI 對數臂一個發布週期。
 總綱在 `docs/SWAP_PROGRAM.md`。`frame_capi_v2` 從未接上（D-002/D-013 的實況修正），也不再是換裝方向。
 
+> **2026-09-03 dated 追記（上段原文不改）**：**D-044** 改了出貨形狀——引擎是 jar 內的**原生共享庫**（`libbsi_tectonic.so` / `bsi_tectonic.dll`），
+> 以 JNA 綁 `contract/bsi_capi.h` 五個 C 函式進程內載入；jar 零可執行檔、零子行程；`contract/host/` 是 tectonic2 的逐位鏡像。
+> 「sidecar 退為傳輸轉接」與「程序隔離」**作廢**（原生崩潰帶掉 JVM，代價照登在 D-044）。落地：`mod/core/.../bsi/`、`engine/`（PR #88）；判準 N24（`docs/GATES.md`）。
+> **遊戲流程仍走 `SidecarClient`**（#89 接線前）；FrameCore 對數臂**沒有** BSI 實作（對位帳 A14）。
+> 兩倉對位帳 `docs/ALIGNMENT_LEDGER.md`（逐位鏡像 tectonic2）；perfect engine（tectonic2#18）對本倉的意涵在其 §6.3。
+
 ## 力學模型（必讀，決定了所有其他事）
 
 離散化是**桿件系統**，不是體素連續體：

@@ -837,3 +837,17 @@ release workflow 另外驗證「evidence 記錄的二進位 sha256 == dist/ 出�
 沒 token 時發 `::warning::` 並寫 `$GITHUB_STEP_SUMMARY`，逐條列出「這次沒量到什麼」。
 **登記為 [暫]，直到 `TECTONIC2_TOKEN` 存在為止。** 在那之前**不得**把
 「引擎建得起來」或 N24-b5 當成 CI 驗過的事。
+
+### 2026-09-03c 登記：對位帳（`docs/ALIGNMENT_LEDGER.md`）發現的判準缺口與更正（先於程式碼；沒有任何一條線因本節移動）
+
+| 判準 | 發現 | 處置 |
+|---|---|---|
+| **N19-b** 挫屈半邊（`bucklingCritical == 引擎 stability == critical`） | BSI v1 **沒有每格挫屈判定欄位**（`blocks.flags` 只有 overloaded/indicative；`buckling` 是每島 `state/factor`）；tectonic2 MC64 的 `stability` u8 只在 v2 wire。消費者自己比 `factor < 1` 違反契約 P2 | 挫屈半邊 **[暫]**，直到契約加法批次 #1 落地 `blocks.flags` bit2 `bucklingCritical`（引擎 double 定案、只在 commit 軌）。在此之前 HUD 對挫屈只准顯示「未評估」（N19-e 的情形延長） |
+| **N23-f** 旗標名 | `run.py` 沒有 `--adapter tectonic` / `--adapter framecore`；實際是 `capi` / `engine` / `sidecar` / `frame_v2` | 更正：tectonic 臂 = `--adapter capi --lib libbsi_tectonic.so`；FrameCore 臂見下 |
+| **N22 / N23-f** FrameCore 臂 | `diff_engines.py`、`br-sidecar-fc`、FrameCore 的 `bsi_engine_vtable` **皆無實作、無 issue**；N22-c「零 blocker 才發布」今天無法產生差異帳 | 登記為無主項（對位帳 C1）；裁決「保留 vtable 對數臂」或「降級為語料 + `verify.py` 對 tectonic 臂」後開 issue；降級則 N22 dated 降一級 |
+| **N23-b** 跨倉漂移 | 現行實作比的是「本倉 pin == `.github/tectonic2-contract-ref` 記的雜湊」，ref 釘 tectonic2 固定 commit；tectonic2 `main` 單邊改契約時**本倉 CI 仍綠**（有 token 的 `diff -r` 也是對 pinned commit）；tectonic2 CI 對本倉零檢查 | 登記為 **[暫]**：正確形狀 = tectonic2 CI 抓本倉 `Main` 的 `contract/CONTRACT_SHA256`（本倉公開，無需 token）+ 本倉有 token 時對 tectonic2 `main` 比。執行期握手（N23-d `BSI_VERSION`）仍是最後一道 |
+| **N24-b5** 決定論前提 | Java 與 runner 逐位的前提是兩邊都 `numThreads:1`（runner 預設注入；Java 由呼叫者傳） | #89 接線的驗收條件：預設 1（D-041 §6），`hello.threads` 只回報不採用 |
+| 語料缺口 | 無 `dc > 1`、無 `partial`、無 `numThreads` 越界、無 `bsi.cancel`、**無 C-12（f32）case**（`conformance/README.md` 表列的檔名不存在）⇒ N20-d 的 `precision.storage:"f32"` 在引擎側永遠不可宣告 | 契約加法批次 #1 一次補齊（tectonic2 主導判準，兩倉同步 hash bump） |
+| `bsi_capi_open` 選項 | Java 送 `numThreads` 於 open 選項（`InProcessEngine.java:46`），host 只解析 `log/probe/assumeCaps`，未知鍵靜默忽略；契約無 open 選項 schema | #89 移除；契約提案 open 選項 schema + 非 `x-` 未知鍵拒絕（P6） |
+| `bsi.hello` 的 `arena.supported` | 進程內路徑送 `true`（`BsiHeaders.java:29`），Java 無 arena 實作 | #89 改 `false`（T-A） |
+| N24-a2 白名單 | 不變：`SidecarProcess.java` 一筆；`BundledEngine`（sidecar 形狀）的 #80 併發缺陷未修，只在 `BundledNatives` 修 | 隨 #89 一起退場；#80 加一則說明 |
