@@ -712,3 +712,36 @@ release workflow 另外驗證「evidence 記錄的二進位 sha256 == dist/ 出�
 > 本節第一版寫「用 `frame_v2_abi_version()` 這三個符號,它們是免費的」——那是
 > frame_capi_v2 的符號,而 frame_capi_v2 從未接上（D-002 實況修正）。現行做法
 > 是上面的 git SHA + 檔案雜湊,提供同等的可追溯性。
+
+### 2026-09-03 凍結：N24 進程內引擎與打包合規（D-044；先於 Java 實作）
+
+> 出處：`docs/DECISIONS.md` D-044（進程內載入、JNA、jar 零可執行檔）與 tectonic2 `docs/specs/LINUX_BUILD.md` L4/L7/L8。
+> 受測者標在每條上：**Java** = `mod`/`forge` gradle test；**CI** = workflow；**引擎** = tectonic2 側（本倉不重複它的線）。
+
+#### N24-a 打包合規（CI + `scripts/check_bundle.py`）
+
+| 線 | 內容 |
+|---|---|
+| **N24-a1** | **jar 內零可執行檔**：任何 entry 名以 `.exe`/`.bat`/`.cmd`/`.sh` 結尾，或內容以 ELF（`7f 45 4c 46`）開頭而副檔名不是 `.so`，或以 PE（`MZ`）開頭而不是 `.dll` → FAIL。這條擋的是「換個名字就混進去」 |
+| **N24-a2** | **出貨路徑不 spawn 子行程**：grep 型測試，`mod/`、`forge/` 的非測試原始碼零 `ProcessBuilder`／`Runtime.exec`；白名單只允許明示的 dev/CI 臂類別，且白名單本身入本檔 |
+| **N24-a3** | natives 三方雜湊鏈不變（jar 位元組 == manifest == evidence），欄位加 `engineVersion`、`contractSha256` |
+| **N24-a4** | 解包**不設可執行位元**（POSIX 權限測試）：函式庫不是要執行的東西，設了就是把它當成執行檔 |
+| **N24-a5** | 授權：`META-INF/` 帶 OpenBLAS(BSD-3)、METIS(Apache-2.0)、tectonic2(Apache-2.0) 的授權文本；缺一即 FAIL |
+
+#### N24-b 進程內引擎（Java）
+
+| 線 | 內容 |
+|---|---|
+| **N24-b1** | `BsiNative.abiVersion() != 1` → 拒載並停用，**不嘗試呼叫任何其他函式** |
+| **N24-b2** | `bsi.hello` 的 `contractSha256` 與 jar 內 `contract/CONTRACT_SHA256` 不符 → `BSI_VERSION`、引擎停用、**其後零動詞**（= N23-d，改以進程內路徑實作） |
+| **N24-b3** | `NEED_BIGGER` 放大重試恰一次成功，且**同一請求**（不重送、不半途消費）；重試後仍不足 → 停用並說得出來 |
+| **N24-b4** | `EngineLocator` 順序：設定 → `-Dbr.engine` → `BR_ENGINE` → 覆蓋目錄 → jar 內附 → 無。**覆蓋目錄優先於 jar 內附**（引擎可獨立更新的機制本身） |
+| **N24-b5** | 跨語言：`-Dbr.engine=<libbsi_*.so>` 時走完 hello → vocab → declare → solve，回覆與 `run.py --adapter capi` **逐位相同**（C-2 的 Java 腿；沒有引擎時 `Assumptions` 跳過，**不假綠**） |
+
+#### 誠實邊界（照登）
+
+- **崩潰隔離沒有了**（D-044 的代價段）。本組**測不到**「原生崩潰不帶掉 JVM」——那不再成立。
+  能測的是它的替代品：ABI 版本、雜湊協商、規模上限、可關掉的開關。**不得**把 N24 說成崩潰安全的證據。
+- **Windows natives 本輪不存在**（tectonic2 LINUX_BUILD §5 B1）。N24-a 的 PE 分支與 N24-b 的 Windows 路徑
+  **今天沒有 fixture**；有了 Windows 建置才算跑過。在那之前這兩條的 Windows 半邊是 [暫]。
+- N24-b5 需要一顆真引擎；CI 有（`engine-linux` job 現建），開發機不一定有。

@@ -8,6 +8,46 @@
 
 ---
 
+## D-044 · 引擎進程內載入（JNA，零 JNI 膠碼）；jar 零可執行檔、零子行程；引擎與模組各自更新（取代 D-013 的程序隔離、改形 D-027/D-041）
+
+**決定**（2026-09-03，operator：「sidecar exe 無法通過審核，做一個低橋接複雜度、更新模組或引擎互不影響、且合規的打包方法」）：
+
+1. **出貨形狀 = 進程內原生共享庫**。`libbsi_tectonic.so` / `bsi_tectonic.dll`（tectonic2 D2-013）匯出 `contract/bsi_capi.h`
+   的五個 C 函式（`abi_version / open / call / close / last_error`；一次 `call` = 一個 BSI frame 進、一個出）。
+   **jar 內不再有任何可執行檔，遊戲行程不再 spawn 任何子行程。**
+2. **橋接 = JNA direct mapping**，零 JNI 膠碼、零 `javah`、零平台專屬 C 檔。綁的是五個函式；Minecraft 1.20.1 自帶
+   `net.java.dev.jna`（oshi 的依賴）——**實作時以 ForgeGradle 解出的 classpath 核對**，不在時以 `jarJar` 內嵌（Apache-2.0）。
+   同一組 C 函式 Python `ctypes` 也在用（語料 runner 的 `--adapter capi`），所以**消費者走的路每天都被 gate 走一遍**。
+3. **引擎與模組各自更新**。Java ↔ 原生之間只有兩個相容性事實：`bsi_capi` 的 ABI 版本（**只能尾端追加**）與
+   `bsi.hello` 的 `contractSha256`。雜湊不符 → `BSI_VERSION` → 引擎停用、HUD 指名「引擎契約 X ≠ 模組契約 Y」，**不是崩潰、不是靜默降級**。
+   換引擎 = 換 `<gamedir>/blockreality/engine/<os>-<arch>/` 底下那顆檔；換模組 = 換 jar。契約主版 bump 前，兩者互不要求同版。
+4. **解析順序**：設定值 → `-Dbr.engine` → `BR_ENGINE` → **覆蓋目錄**（`<gamedir>/blockreality/engine/<os>-<arch>/`）→ jar 內附
+   → 都沒有則引擎關閉且說得出原因。jar 內附的解到 `<gamedir>/blockreality/engine/cache/<sha256 前 16>/`，
+   **不 chmod +x**（它不是要執行的東西），沿用 `BundledEngine` 既有的雜湊驗證與原子搬移。
+5. **`bsi-hostd` 與 `br-sidecar-fc` 退為 dev/CI 對數臂**：同一份 host、同一份語料，`contract/conformance` 的 C-2 押著
+   「進程內與三種傳輸逐位相同」。**不進 jar、不進發布 zip。**
+
+**代價（照登，這是本條最重要的一段）**：進程內載入**放棄了 D-013 的崩潰隔離**——原生崩潰會帶掉整個 JVM，
+而 sidecar 時代它只會殺掉一個子行程。換來的是通過審核與少一個行程；防線是四條、每條都比「隔離」弱，寫在這裡而不是繞過去：
+(a) 引擎的 no-throw 邊界（`tec_capi.h` §3.0：任何位元組輸入都不得殺掉行程）；(b) host 的 `catch(...)` → `INTERNAL`；
+(c) 世界規模上限（`maxBlocks`，超過即拒絕而非嘗試）；(d) 分析在專用執行緒、`engine.mode=inprocess|off` 可整個關掉。
+
+**理由**：審核不接受 jar 內夾帶可執行檔或自行 spawn 子行程，而那正是 v0.3c 的出貨形狀。
+把引擎變成函式庫、把介面收斂到五個 C 函式，同時解決了三件事：合規、橋接複雜度（零膠碼）、與更新耦合（雜湊協商）。
+D-019 的「門鈴 + 共享記憶體」形狀在 BSI 裡以 T-B 保留，只是不再是出貨路徑。
+
+**否證條件**：
+(1) 一個發布週期內收到 **≥ 3 起**可歸因於原生崩潰的回報 → 加回子行程模式（`bsi-hostd` 升回出貨物，同契約同 codec），
+    本條改為「兩種模式並存、預設子行程」；
+(2) 實測 JNA 呼叫吃掉 **> 10%** 幀預算 → 改 JNI 或 Java 22+ FFM **直連同一個 C ABI**（契約不動，只換綁定方式）；
+(3) JNA 不在 Forge 的 classpath 上且 `jarJar` 內嵌造成衝突 → 退回手寫 JNI shim（多一個平台專屬 C 檔要維護，明知代價）；
+(4) 審核方的規則實際上禁止的是「載入原生程式碼」而不只是「可執行檔」 → 本條全盤重議，引擎改回獨立行程並走 IPC。
+
+**假設**（operator 可覆寫）：審核規則 = 禁 jar 內可執行檔、禁自行 spawn 子行程；載入自帶的原生函式庫是允許的。
+這是從「sidecar exe 無法通過審核」反推的，**沒有看到規則原文**；(4) 就是它不成立時的出口。
+
+---
+
 ## D-043 · BSI v1 通用介面：兩倉逐位相同的契約；Java 直接說 BSI；sidecar 退為傳輸轉接（取代 D-034(1)）
 
 **決定**（2026-09-02，operator 指示「設計一個通用完美的介面，可以強制讓兩邊使用，重新設計」）：
@@ -85,6 +125,13 @@ D-019 的「stdio 門鈴 + 共用記憶體」形狀**保留**（BSI T-B 就是�
 
 **否證條件**：(1) 傳輸轉接 > 10% 幀預算 → Java FFM（D-043 (3)）；(2) 靜態 MinGW 鏈兩週無解 → Windows 臂先動態 DLL 同捆（manifest 全列）；
 (3) 同進程出現除逾時外不可觀測的失敗 → 改直呼 `LiveState` 並補 ABI 等價 gate。
+
+> **2026-09-03 dated 追記（改形 → D-044）**：第 1 條的「兩顆二進位 `br-sidecar` / `br-sidecar-fc`」不再是出貨形狀 ——
+> 審核不接受 jar 內的可執行檔與自行 spawn 的子行程。引擎改為**進程內共享庫**（`bsi_capi.h` 五個 C 函式，JNA 綁定），
+> `bsi-hostd` 退為 dev/CI 對數臂。第 2 條的逾時與重啟形狀**隨之作廢**：進程內沒有可殺的子行程，
+> 逾時只能記錄（直接法不可中斷，tectonic2 MC68 §8 B2 已具名），`ENGINE_FAILED` 改由 `bsi_capi` 的錯誤碼與雜湊協商觸發。
+> 第 3 條（判定旗標由引擎下發）、第 4 條（每 revision 全量 declare）、第 6 條（`numThreads`，預設 1）**不變**。
+> 第 5 條的「jar 只帶一顆/平台」不變，只是帶的是 `.so`/`.dll` 而不是可執行檔。
 
 ## D-040 · 挫屈 = tectonic2 特徵值 lane；N16-c 修訂為「上界、方向具名」；`buckling.kind`；規模政策由宿主決定
 
@@ -455,6 +502,11 @@ install.bat/install.sh，在 jar 經由啟動器的 mod 瀏覽器抵達時**根�
 出現需要多顆引擎共存的情境（不同 ABI 的並行分析），以雜湊命名的目錄已經支援，但
 「一次只留一顆」的清理策略要重議。
 
+> **2026-09-03 dated 追記（D-044）**：「引擎隨 jar」不變，變的是**帶什麼**：`blockreality-engine/<os>-<arch>/` 底下是
+> 原生**函式庫**，不是可執行檔；解包後**不 chmod +x**。否證條件 (2)（jar 體積）在靜態 OpenBLAS/METIS 下確實被觸發
+> —— 實測 `libbsi_tectonic.so` 28.8 MB/平台。處置：**只帶當前平台一顆**，並開放 `<gamedir>/blockreality/engine/` 覆蓋目錄，
+> 讓引擎可以獨立於 jar 更新（D-044 第 3、4 條）。`check_bundle.py` 的三方雜湊鏈不變，另加「jar 內零可執行檔」硬規則。
+
 ## D-026 · 「完全支承」是第三種結局，不是機構
 
 > **2026-09-02 dated 追記**：第三種結局維持；`FULLY_SUPPORTED` 碼保留在 BSI 的開放列舉。tectonic v0 對全支承的格回**有結果的 member**
@@ -813,6 +865,10 @@ facet，斷面 token（`steel_rect_200x400` 等）是樑。兩組不重疊，認
 **否證條件**：實測 IPC 往返成本佔單次分析比例超過 20%，或子程序管理在某平台無法可靠實作。屆時評估 in-process 作為 opt-in（PFSF-CORE 的 JNI 載入骨架可照抄形狀）。
 
 ---
+
+> **2026-09-03 dated 追記（取代 → D-044）**：**程序隔離結束**。引擎改為進程內載入，原生崩潰會帶掉 JVM。
+> 這不是把風險說小了，是換了一組較弱的防線（引擎 no-throw 邊界、host `catch(...)`、規模上限、可關掉的開關），
+> 理由與代價全文在 D-044，否證條件 (1) 是「一個發布週期 ≥ 3 起可歸因崩潰就加回子行程模式」。
 
 ## D-012 · 材料表以 `DefaultMaterial` 為基底
 
