@@ -460,6 +460,13 @@ D-034 否證 (1) 的備援：若 T 軌拖過兩個發布窗，T2 凍結的同一
 - Physics Mod 串接（D-032）：先 spike 驗證其 API 可掛性；自家 fallback
   （FallingBlockEntity + 粒子）任何情況都在。上架頁不加前置依賴。
 
+> **2026-09-04 dated 追記（§5 原文不改；裁決 D-046）**：上文「換裝完成後，v0.5 的倒塌判定幾乎是『已在 wire 上』」說的是 tectonic2 的 **v2 wire**
+> （`fracture.step`、MC25–MC28），**不是 BSI**——BSI v1 今天沒有 `bsi.fracture` 的動詞，引擎的 `capabilities` 也是空集合。
+> 碎塊上 BSI 是引擎 **PE-4**（tectonic2 `docs/V2_PROGRAM.md` §3 軌 B6，其 v2.0-alpha），契約形狀 = `bsi.fracture.step` + `broken` 24 B / `fragments` 136 B
+> （commit 軌限定；display 軌 `UNSUPPORTED`），先凍其 `BSI_ADD2.md` 再兩倉同步落地。
+> 所以 v0.5 的順序是：引擎 PE-4 → 批次 #2 同步 → 本倉 `BsiRecords` 加型別 → 脫離集合以 `FallingBlockEntity` 群組演出，初速取自 `fragments`。
+> §9.5 生命週期 `STRUCTURAL → DETACHING → DYNAMIC → RESTING` 的引擎側對應是 PE-3 的 `lifecycle`（同批）。v1.0 的剛體與 Physics Mod 串接不變。
+
 ---
 
 ## 6. 風險與未決
