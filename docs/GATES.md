@@ -935,3 +935,24 @@ A14（FrameCore BSI 臂不存在）同上。C2 的「兩臂各 exit 0」隨 N23-
 **照登**：本批（BSI_ADD1）自己就是這條規則的第一個案例——寫下本節時，
 tectonic2 分支的契約雜湊是 `717aacedcd70…`、本倉 `Main` 還是 `c45f51fe7fca…`，
 兩邊 PR 都還沒併。**若新步驟在 PR 上是紅的，它會擋住自己**。
+
+### 2026-09-04 登記：N24-b5 首次在 CI 之外對本機建的引擎跑；引擎 v2 程序對本倉判準的影響（**不移任何一條線**；裁決 D-046）
+
+> 引擎側計畫 tectonic2 `docs/V2_PROGRAM.md`（§1 是完整稽核表）、設計鎖 `docs/specs/V2_ARCHITECTURE.md`、裁決 D2-016。
+> 本節是消費者側的照登與受影響清單。證據 = 本輪容器的 `mod_test_2026-09-04.log`（**不進 repo**）。
+
+| 本倉的線 | 量到 | 處置 |
+|---|---|---|
+| **N24-b5** 跨語言逐位 | `./gradlew :core:test` 帶 `br.engine=` 本機從 tectonic2 `7ac9b4f` 建的 `libbsi_tectonic.so`（Linux，**共享 METIS，非出貨建置**）+ `br.sidecar=dist/br-sidecar`（本輪建）：**259 PASSED / 1 SKIPPED / 0 FAILED**。`InProcessEngineTest` 5/5：懸臂自重反力對閉合解、外來契約雜湊拒絕且不再送任何東西、非引擎拒絕並指名、open 選項在契約內、本 build 知道自己說哪份契約；`NoSubprocessTest` 2/2 | 線不動。這是 N24-b5 **首次在 CI 之外**跑；CI 那一腿仍是權威（它建的是靜態 METIS 的出貨形狀） |
+| **N22-a′** 封閉解與不變量 | `python3 sidecar/verify.py dist/br-sidecar` → `ALL PASS (330 checks)` | 綠；FrameCore 臂（v0.3c 出貨路徑）照舊 |
+| **N22-c′** 語料對真引擎 exit 0 | 無 `--assume-caps`：executed 0 / skipped 10 / hard_red 0，exit 0 —— **全 SKIP 是誠實狀態，SKIP 不算綠**；收割（assume `bsi.core,bsi.readback.members`）執行 5 / SKIP 5 / 帳上紅 2（C-5 → MC65a、C-11 端格 → MC64）/ hard_red 0 | 仍等 tectonic2 #20；`sidecar/expected_red.json` 不變 |
+| **N23-a/b/e** | 兩倉 `contract/` `diff -rq` 空；`CONTRACT_SHA256` `717aacedcd70…`；`.github/tectonic2-contract-ref` 兩行 = `b700731` + 同雜湊 | 綠 |
+| **N23-b** 有 token 那一腿 | `TECTONIC2_TOKEN` 仍未設 | [暫] 照舊 |
+| **N19-b** bit2 [暫] | 引擎 MC66a 進其 v1.5（`V2_PROGRAM.md` §4）；在那之前 bit2 恆 0 | 不動 |
+| **N20-d** f32 [暫] | 引擎 MC65b 進其 v1.4 | 不動 |
+| **這次沒量到** | `forge` 模組測試（ForgeGradle 臂未起）；`SidecarPathsTest` 1 條平台條件 SKIPPED；Windows / macOS natives（#90） | 照登 |
+
+**v2 程序對本倉判準的影響：零。** N19–N24 一條不動；引擎的 V2_STATE / V2_LANES 對 wire 逐位不變（其 pins 就是證明），本倉不需要新的線。
+**將來會有的線**（登記在此，凍時另開節）：契約加法批次 #2（`include:"islands"`、`bsi.fracture.step`）落地時，
+本倉的 `BsiRecords` 記錄型別與 `BsiResponse` 要各有一條走完位元組合的腿（N24-a 型），且 **v0.5** 的倒塌驗收
+（脫離集合、初速取自 `fragments`、display 軌 `UNSUPPORTED`）在那時凍，**不塞進 v0.4**。

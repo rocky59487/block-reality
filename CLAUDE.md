@@ -28,6 +28,10 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 
 - **已落地**：`contract/`（BSI v1 + 共用 host，逐位鏡像 tectonic2）；Java 側 `mod/core/.../bsi/`（frame/header/codec）
   與 `.../engine/`（`InProcessEngine` + JNA 綁定）；N19–N24 判準已凍；CI 跑契約、打包、跨倉漂移。
+- **2026-09-04 量到的整合現況**（Linux 箱，RECORDED）：契約逐位、pin 自洽；`InProcessEngineTest` **首次在 CI 之外**對本機建的 `libbsi_tectonic.so` 跑，
+  `:core` 259 過 / 1 跳 / 0 敗；`sidecar/verify.py` 330 全過。引擎 `capabilities:[]` 仍是現況。細節 `docs/GATES.md` 2026-09-04。
+  引擎側的 v2 程序（融合 + perfect engine）在 tectonic2 `docs/V2_PROGRAM.md`；本倉對位 **D-046**：**等的是 tectonic2 #20，不等其拆 `Session`**；
+  契約加法批次 #2（`include:"islands"`、`bsi.fracture.step`）綁 **v0.5 倒塌**，v0.4 的 N19–N24 一條不動。
 - **還沒接**：**遊戲流程仍走 `SidecarClient`**（protocol 2 / FrameCore），`InProcessEngine` 尚未接進遊戲迴圈（#89）。
   「檔案在」不算「有」——見下面的三條鐵則第 2 條。
 - **不會做**：FrameCore 的 BSI 對數臂（D-045）。連帶 N22 差異帳改形為「單臂語料 + 封閉解」並**降一級**，

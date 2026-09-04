@@ -247,3 +247,43 @@ PE-1（遙測，可與 MC62 `explain` 合併）→ PE-3（島生命週期，建�
 3. **operator**：加 `TECTONIC2_TOKEN`（C3）——它是 BR 那一腿與 `engine-linux` 整個 job 的前提。
 4. **T2**：PE-1 判準凍結（**#18 關閉的前提**）；MC61/MC62 側枝合流 → v1.3。
 5. **BR**：#90 Windows/macOS natives；#91 evidence BSI 臂。
+
+### 2026-09-04 — 整合稽核落帳、v2 程序（D2-016 ↔ D-046）、§7 順序第三次更新
+
+> 本節照登本輪**量到的**整合現況，並把 v2 程序對兩倉的意涵記在對位帳裡；兩倉逐位鏡像。
+> 稽核細節 tectonic2 `docs/V2_PROGRAM.md` §1；裁決 tectonic2 D2-016、block-reality D-046。
+
+#### 量到的（Linux 箱，RECORDED；不是 gate 執行紀錄）
+
+| 條 | 結果 |
+|---|---|
+| 契約 | 兩倉 `contract/` `diff -rq` 空；雜湊 `717aacedcd70…`（44 檔）；BR pin 兩行 = T2 `b700731` + 同雜湊 |
+| 本檔 | 兩倉 `diff -q` 相同（本節寫入後重新確認） |
+| 引擎（T2 HEAD `7ac9b4f`） | L2 133/133、L3、L4（`capabilities []`）、L5 DET ×3、host 90、MC68-MUT 4/4 綠；**L7 本箱 MISS**（共享 METIS，非出貨建置）；無 caps 語料全 SKIP；收割 執行 5 / SKIP 5 / 帳上紅 2 / hard_red 0 |
+| 跨語言（BR N24-b5） | BR `:api` + `:core` 對本輪建的 `.so`：259 PASSED / 1 SKIPPED / 0 FAILED；`InProcessEngineTest` 5/5 —— **首次在 CI 之外**對本機建的引擎跑 |
+| FrameCore 臂（BR N22-a′） | `sidecar/verify.py dist/br-sidecar` ALL PASS（330） |
+| 遊戲流程 | 仍走 `SidecarClient`（#89 等 T2 #20） |
+| 沒量到 | Windows 九套、L6 其餘八套、L7 靜態自足、BR `forge` 模組、跨箱效能、`TECTONIC2_TOKEN` 那一腿（C3 仍未設） |
+
+**一句話**：介面層已整合、能力層未整合、產品層未切換。
+
+#### v2 程序對兩倉的意涵（全部加法；本節不動契約）
+
+| 條 | T2 | BR |
+|---|---|---|
+| 設計鎖 / 計畫 | `docs/specs/V2_ARCHITECTURE.md`、`docs/V2_PROGRAM.md`；D2-016 | D-046（對位）；`SWAP_PROGRAM.md` §8 2026-09-04 |
+| 軌 A（消費者對位）只等 V2_PIN | MC63 → MC64 → MC65a → `bsi.core` 宣告 + `bsi_exit`（#20）→ MC65b → MC60d → MC66a/b | #89 的引擎側前提隨 #20 成立；`sidecar/expected_red.json` 隨 T2 帳清空 |
+| 契約加法批次 #2（v2.0-alpha） | `BSI_ADD2.md` 先凍：`include:"islands"` 12 B、`bsi.islands.state`、`bsi.fracture.step` + `broken` 24 B / `fragments` 136 B | 同步 hash bump、`.github/tectonic2-contract-ref` 兩行、Java 記錄型別；v0.5 倒塌吃 `fragments`（`V04_PLAN.md` §5 dated） |
+| 版號 | `kEngineVersion` 1.3.0（v1.3）… 2.0.0（v2.0；major 標架構不標破壞） | `bsi.hello` 的 `version` 只顯示，不裁決；契約主版不 bump |
+| 仍然成立 | A2/A3/A6 等 MC65a；A9/A11/A15–A19 未處理；C3/C4/C6–C8 照舊 | 同左 |
+
+#### §7 之後的順序（第三次更新；取代 2026-09-03 節的同名小節）
+
+1. **T2**：V2_PIN 判準凍結 → pins 落地（v1.3 出口之一）；側枝 `03de26c` 合流 MC61/MC62（D2-012 執行）。
+2. **T2**：MC63 → MC64 → MC65a（建在 `island/component_graph.h`）→ **#20 關閉**、`bsi_expected_red.json` 清空、`bsi_exit` 第十套。
+3. **BR**：#89 接線（驗收含 A11/A17）；#91 evidence BSI 臂；`expected_red.json` 隨之清空。
+4. **operator**：`TECTONIC2_TOKEN`（C3）。
+5. **T2**：V2_STATE → V2_LANES → PE-1（v1.6）；MC65b → MC60d → MC66a/b（v1.4 / v1.5）。
+6. **兩倉**：`BSI_ADD2.md` 先凍 → PE-3 / PE-4 → 同步 hash bump（v2.0-alpha）。
+7. **BR**：#90 Windows/macOS natives（T2 軌 C3 的 `.dll` 是前提）；v0.5 倒塌。
+8. **T2**：PE-5 相圖 → PE-2 條件式 → V2_MOVE 或模組地圖 → v2.0。
