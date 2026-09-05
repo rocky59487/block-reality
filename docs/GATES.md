@@ -956,3 +956,35 @@ tectonic2 分支的契約雜湊是 `717aacedcd70…`、本倉 `Main` 還是 `c45
 **將來會有的線**（登記在此，凍時另開節）：契約加法批次 #2（`include:"islands"`、`bsi.fracture.step`）落地時，
 本倉的 `BsiRecords` 記錄型別與 `BsiResponse` 要各有一條走完位元組合的腿（N24-a 型），且 **v0.5** 的倒塌驗收
 （脫離集合、初速取自 `fragments`、display 軌 `UNSUPPORTED`）在那時凍，**不塞進 v0.4**。
+
+---
+
+### 2026-09-05 凍結：N25 第一次在遊戲裡跑（判準先凍，先於任何一次啟動）
+
+> 這條線補的不是缺陷，是**空白**。`forge/run/` 不存在 ⇒ `runClient` / `runServer` 一次都沒跑過；
+> N1–N24 全部檢查位元組與邏輯，**沒有一條**檢查 Forge 載得起來、玩家看得到讀數。
+> 本節在第一次啟動**之前** commit（鐵則 1）。手冊在 `docs/SMOKE.md`。
+
+**為什麼是現在而不是 #89 之後**：預設 jar 是 sidecar shape（`brNativesDir` 預設 `none`），
+Windows 帶 `br-sidecar.exe`，今天算得動。#89 接線後 sidecar 退場、預設換成 natives shape，
+而 natives 只有 Linux（#90）——那時候 Windows 上的遊戲內實測**只驗得到載入，驗不到讀數**。
+這個窗口在 #89 關上。
+
+| # | 判準 | 通過條件 |
+|---|---|---|
+| **N25-a** | 專用伺服器起得來 | `:forge:runServer` 走到 `Done (`；`com.blockreality` 的方塊／物品／指令註冊數與原始碼列舉相符；來自 `com.blockreality` 的 ERROR 與 exception **皆為 0** |
+| **N25-b** | 引擎狀態說得出來 | 啟動 log 對引擎恰好說一件事：**找到並握手**（附路徑與 protocol），或**沒有並具名理由**。兩者都通過——沒有引擎是合法結局（D-024）；**假裝有才是紅** |
+| **N25-c** | 空世界的指令不炸 | `/br status`、`/br members`、`/br section` 在零結構時各回一個說得通的答案，零例外 |
+| **N25-d** | 分析真的跑出數字 | 放一根落地柱 + 一根樑，`/br status` 回**非零** member 數與一個 max D/C；該值與 `sidecar/verify.py` 對等價 fixture 的值**同號、同量級**。**不釘位數**——遊戲側的斷面／材料 token 與 fixture 不必相同，釘位數會變成釘一個沒人維護的巧合 |
+| **N25-e** | 真 jar 進得了客戶端 | `forge/build/libs/*.jar` 放進 `.minecraft/mods`，用已裝的 `1.20.1-forge-47.4.10` profile 進到世界，**零 crash** |
+| **N25-f** | HUD 有讀數，且與指令一致 | 應力眼鏡／HUD 顯示 D/C 與挫屈狀態；**同一根構件**在 HUD 與 `/br status` 給**同一個答案**。這條專門咬 PR #82 那型缺陷（覆蓋層扣住、聊天照印） |
+| **N25-g** | 引擎自解對得上 | 首次使用時引擎解到遊戲目錄，其 sha256 與 jar 內 `blockreality-engine` manifest 相符（D-027 / `BundledEngine`） |
+
+**不涵蓋（照登）**：崩塌演出、多人同步、長時 soak、natives shape 的 jar（Linux only，#90）、
+`forge` 模組的 JUnit 臂（ForgeGradle 未起，2026-09-04 節已登記）。
+
+**這條線不進 CI。** 它需要一個 GPU 與一雙眼睛（N25-e..g），而 N25-a..d 進 CI 的形狀是
+Forge 的 `runGameTestServer`，那要先寫 `@GameTest` 與結構模板——**今天不宣稱有**（鐵則 2）。
+本節凍的是「跑過一次並照登」，不是「有機器每次在檢查」。兩者的差別寫在這裡，免得日後被讀成後者。
+
+**預期會紅。** 這是專案第一次在遊戲裡跑。紅照登進 dated 節，不換 fixture、不事後重詮釋（鐵則 3）。
