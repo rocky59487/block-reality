@@ -988,3 +988,52 @@ Forge 的 `runGameTestServer`，那要先寫 `@GameTest` 與結構模板——**
 本節凍的是「跑過一次並照登」，不是「有機器每次在檢查」。兩者的差別寫在這裡，免得日後被讀成後者。
 
 **預期會紅。** 這是專案第一次在遊戲裡跑。紅照登進 dated 節，不換 fixture、不事後重詮釋（鐵則 3）。
+
+---
+
+### 2026-09-05 照登：N25 伺服器腿（a–d）跑過了；順手量到接地端的質量短少
+
+> 證據 = 本輪的 `forge/run/logs/` 與 RCON 回覆逐字（**不進 repo**，比照 2026-09-04 節）。
+> 環境：Windows 11、JDK 17.0.18、ForgeGradle `:forge:runServer`、Forge 47.4.13、超平坦世界、
+> 引擎 `dist/br-sidecar.exe`（`sidecar/main.cpp` 最後改動早於其 mtime）。
+> 指令經 RCON 送，因為專用伺服器的 console 不回顯指令輸出，而 N25-c/d 要讀的正是那段文字。
+
+| # | 量到 | 判定 |
+|---|---|---|
+| **N25-a** | `Done (2.446s)!`；`Found valid mod file main with {blockreality} mods - versions {0.4.0-dev}`；`com.blockreality` 的 ERROR / exception **= 0**；`/stop` 後 `BUILD SUCCESSFUL`、exit 0 | **綠** |
+| **N25-b** | 引擎恰好說一件事，而且是「找到」那一種：`bundled: unpacked the bundled engine to forge/run/blockreality/engine/5dd50e9cb8e3/br-sidecar.exe (4123538 bytes, sha256 5dd50e9cb8e3)`。首次求解後 `engine READY (transport: shm)` | **綠** |
+| **N25-c** | 空世界下 `/br status`、`/br members`、`/br section 1`、`/br loads`、`/br resolve`、`/br scan` 六個各回一句說得通的話（未分析時是 `No usable analysis. Try /br status.`），零例外 | **綠** |
+| **N25-d** | 門形框（兩根 5 格柱 + 5 格樑，15 格）：`3 members, 0 plate facets, max D/C 0.0081 (member #3)`、`1 solved, 0 unrestrained`、`equilibrium residual 1.687e-16`、`lambda_cr 192.153`。兩根柱逐字相同（#2/#3 皆 D/C 0.0081、CRUSH at x=4000mm、peak 2.83 MPa）＝對稱性沒破；樑的控制點在 x=3000mm ＝跨中 | **綠** |
+| **N25-e/f/g** | 未跑（要客戶端） | 待 |
+
+**這是本專案第一次在跑起來的遊戲裡算出東西。** 在此之前 `forge/run/` 不存在。
+
+#### 順手量到的兩件事（照登，判準不動）
+
+**(1) 不成對的構件端各短少半格材料。** `/br members` 報 5 格柱 `L=4000mm`、5 格樑 `L=6000mm`——
+run 自己的長度是**中心到中心**（N 格 = N−1 公尺），接合處由鄰居延伸過來補回，
+但**自由端與接地端沒有鄰居**。`sidecar/repro_grounded_end_mass.py` 量到：
+
+```
+孤立接地柱     2 格 → 1.0 m (−50.0%)   5 格 → 4.0 m (−20.0%)
+              10 格 → 9.0 m (−10.0%)  20 格 → 19.0 m (−5.0%)
+門形框         h=5 span=6  15 格 → 14.0 m (−6.7%)
+              h=5 span=10 19 格 → 18.0 m (−5.3%)
+              h=9 span=6  23 格 → 22.0 m (−4.3%)
+```
+
+淨短少**恆為 1 公尺**，不隨跨度或高度變——所以它是個**固定量**，佔比在小結構上最痛
+（2 格柱少一半的自重）。這在自重主導的荷載下直接進 D/C。
+
+**不在此裁決，也不在 adapter 修**：擷取層在換裝後歸引擎（`core/mc/extract.h`），
+而 SWAP_PROGRAM §1 記著 tectonic2 的擷取用的是**面節點（§1d）**——所以新引擎可能本來就不同。
+處置是拿同一組 fixture 去問 tectonic 臂，答案不同就是換裝的行為變更，要進遷移說明。
+**這不是新開一條線，是既有 gate 的一個缺口**：`[M1]` 上下鏡像只斷言「長度多重集合與自重」守恆，
+對**系統性、對稱**的短少無感——鏡像後兩邊一樣少。
+
+**(2) `/fill` 與 `/setblock` 放的方塊不進結構集合。** 15 格放下去後 `blocks 0`；
+`/br scan` 才收進來（`Scanned 9x9 chunks: 15 structural blocks now tracked`）。
+結構集合是**靠觀察建的**（放置事件），指令、worldgen、結構模板放的方塊在掃描前不存在。
+對玩家無影響（玩家用手放），但它是 #86 的同一個病因的另一面：範圍由「被看到過什麼」定義。
+`/br scan` 存在就是為了這個，所以**不是缺陷**——登記在此是因為它決定了 N25-a..d 進 CI
+（`runGameTestServer`）時測資只能用 `scan`，不能假設 `/fill` 會觸發。
