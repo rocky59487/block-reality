@@ -1037,3 +1037,25 @@ run 自己的長度是**中心到中心**（N 格 = N−1 公尺），接合處�
 對玩家無影響（玩家用手放），但它是 #86 的同一個病因的另一面：範圍由「被看到過什麼」定義。
 `/br scan` 存在就是為了這個，所以**不是缺陷**——登記在此是因為它決定了 N25-a..d 進 CI
 （`runGameTestServer`）時測資只能用 `scan`，不能假設 `/fill` 會觸發。
+
+#### 客戶端腿：載入驗了，讀數沒驗（N25-e 部分、N25-f/g 未跑）
+
+`:forge:runClient` 起到主畫面（`OpenAL initialized`、`Sound engine started`）：
+`com.blockreality` 的 ERROR / exception **= 0**，缺材質／缺模型 **= 0**，全 log 的 `[ERROR]` 行 **= 0**
+（僅有 Netty 的 `sun.misc.Unsafe` 反射警告，那是每個 Forge 1.20.1 啟動都有的雜訊）。
+**這是不變式 8（`client/` 下的類別必須 `@OnlyIn(Dist.CLIENT)`）第一次被實際執行驗證**——
+在此之前只有原始碼層面的約定，沒有一次載入。
+
+**但這不是 N25-e。** N25-e 凍的是「**真 jar** 放進 `.minecraft/mods`、用 `1.20.1-forge-47.4.10` profile
+進到世界」。上面跑的是 dev client（`sourceSets.main`），而且**沒有世界、沒有結構、沒有 HUD 讀數**。
+N25-e 記為**部分**，N25-f（HUD 與 `/br status` 對同一根構件是否同一個答案）與 N25-g（真 jar 的自解）
+記為**未跑**。不以 dev client 冒充（鐵則 3：不換 fixture）。
+
+**擋住的原因照登**：本輪的執行者沒有桌面控制權限，而 N25-f 要看螢幕。
+jar 已就位（`%APPDATA%/.minecraft/mods/blockreality-0.4.0-dev.jar`），
+原有的 `blockreality-0.1a.jar` 與 `mpd.jar` 暫移至 `mods-n25-backup/`（可逆）。
+
+**順帶量到一個事實，它讓紅線更精確**：`.minecraft/mods/blockreality-0.1a.jar` 的 mtime 是
+**2026-08-22**，而 `.minecraft/logs/` 最新的一份是 **2026-04-12**。
+jar 曾被放進去，但**在那之後遊戲一次都沒開過**。
+「從來沒有在跑起來的遊戲裡開過」不只是沒有 gate，是有痕跡可證。

@@ -62,6 +62,20 @@ BR_SIDECAR=$PWD/dist/br-sidecar.exe ./gradlew :forge:runServer
 N25-f 是這一腿的重點。它咬的是本倉庫的常見缺陷型態：**同一個數字兩個介面兩個答案**
 （PR #82：覆蓋層把 D/C 扣住，聊天視窗照印）。
 
+## 2b. 客戶端腿的最短路徑（給有螢幕的人）
+
+jar 已就位時，這一段是四分鐘的事：
+
+1. 啟動器選 `1.20.1-forge-47.4.10` → 建創造模式**超平坦**世界
+2. `/give @s blockreality:steel_beam 64` 與 `/give @s blockreality:stress_glasses`
+3. 蓋一座門形框：兩根 5 格柱，間隔 6 格，頂上用樑接起來
+4. `/br scan`（**必要**——指令與 worldgen 放的方塊不進結構集合，只有手放的會）
+5. `/br status` 記下 max D/C 與是第幾號構件
+6. 戴上應力眼鏡看**同一根**構件的 HUD 讀數
+
+**N25-f 的通過條件就是第 5 步與第 6 步給同一個答案。**
+不同就是紅，照登，不要重蓋一座。
+
 ## 3. 照登
 
 結果——**包含紅的**——寫進 `docs/GATES.md` 的 dated 節。
