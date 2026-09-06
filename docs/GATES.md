@@ -1074,3 +1074,13 @@ L=4m、reaction=24642.72 N、root moment=49285.44 N·m，rel1e-9。
 不改引擎數值、契約或 production decoder。以原生六匯出庫重新跑 :core:test；
 首次失敗留在 tectonic2 gate/evidence/BSI_CORE，過往 caps=[] 的綠只證明 reaction/hash，
 不能支撐 members 數值（此項歷史結論降為未驗證）。新結論須以修正後真執行證據為準。
+
+
+### 同日修正後驗證
+
+MSVC真host+adapter+CAPI六匯出庫（無counted wrapper）SHA256
+f7326cce0b3bb851ed0db0f7dae2c7f45f4367743db1b734bf58faf86399ec4a，
+BSI能力core/members。Java :core:test 260總數、220PASS、40SKIP、0FAIL；
+InProcessEngineTest 5項全執行PASS，members彎矩/斷面/自由端斷言確實執行。
+Windows自足封裝仍未完成；NATIVE/真遊戲#89保持待辦。契約49檔canonical逐位相同、hash未改。
+完整原始輸出、首次FAIL與修後XML在引擎gate/evidence/BSI_CORE/regression。

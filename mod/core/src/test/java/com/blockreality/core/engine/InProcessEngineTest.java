@@ -61,10 +61,7 @@ class InProcessEngineTest {
                     BsiRecords.Block.of(4, 0, 0, 0, -1, 0));
             assertTrue(eng.declareWorld(7, world), "world.declare");
 
-            // Ask only for what the engine says it can do. It declares no capabilities today
-            // (tectonic2 MC68: C-5, C-6 and C-11's end-block step are red until MC64/MC65a), and
-            // the host refuses an undeclared section rather than inventing one -- which is the
-            // behaviour under test as much as the numbers are.
+            // Exercise member recovery when declared; the shared host refuses undeclared sections.
             List<String> include = eng.has("bsi.readback.members") ? List.of("members") : List.of();
             BsiResponse r = eng.solve(true, new double[]{0, -9.81, 0}, List.of(), 1, include);
             assertNotNull(r);
@@ -73,7 +70,8 @@ class InProcessEngineTest {
             assertEquals(6, r.blocks().size(), "one record per declared cell, canonical order");
 
             // w = rho*A*g = 7850 * 0.08 * 9.81; L = 4 m node to node (corpus C4)
-            double expected = 7850 * 0.08 * 9.81 * 4.0;
+            double length = 4.0;
+            double expected = 7850 * 0.08 * 9.81 * length;
             BsiResponse.Equilibrium eq = r.equilibrium();
             assertNotNull(eq, "the solve must carry an equilibrium section");
             assertEquals(expected, eq.reaction()[1], expected * 1e-9, "reaction = rho*A*g*L");
@@ -81,9 +79,13 @@ class InProcessEngineTest {
             assertTrue(eq.residual() <= 1e-9, "residual " + eq.residual());
 
             if (eng.has("bsi.readback.members")) {
+                assertEquals(1, r.members().size(), "one recovered member (corpus C4)");
                 BsiResponse.Member m = r.members().get(0);
-                assertEquals(4.0, m.lengthM(), 1e-9, "node to node");
-                assertEquals(expected / 2, Math.abs(m.endI()[5]), expected * 1e-9 * 4, "root moment |Mz| = wL^2/2");
+                assertEquals(length, m.lengthM(), 1e-9, "node to node");
+                assertTrue(m.section() >= 0, "resolved section id (corpus C4)");
+                double rootMoment = expected * length / 2;
+                assertEquals(rootMoment, Math.abs(m.endI()[5]), expected * 1e-9 * 4, "root moment |Mz| = wL^2/2");
+                assertTrue(Math.abs(m.endJ()[5]) <= 1e-9 * rootMoment, "free-end moment (corpus C4)");
             }
         }
     }
