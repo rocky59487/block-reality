@@ -57,3 +57,7 @@ runner 須正常控制臂 PASS + 變異 exit 1 + 具名 FAIL；崩潰或編譯�
 Linux ASan/UBSan 未跑就是未驗證，不用 Windows 取代。
 回覆變更只有修正 retry 的結果及 hello contract hash；既有整個 protocol state machine 不改。
 本單元不關閉 #27，直到 issue 的跨平台 / sanitizer / 真引擎 JNA 驗收全有證據。
+
+## 2026-09-06 實作前置核對補述
+
+真 adapter 的 world_edit vtable slot 為 nullptr（MC67 未落地）。RETRY-01/02 的成功 edit/revision 僅由 counting stub 驗證；真 adapter 的同腿須明確得到 UNSUPPORTED、edit count=0，不能在測試 wrapper 補假實作。真引擎 hello/vocab/world/solve 與 RETRY-05 的線完全不變。這是缺少 BSI world.edit 的具名邊界，#27 收版仍須記錄，不能宣称 game edit 已接通。
