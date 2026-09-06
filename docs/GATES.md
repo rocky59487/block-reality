@@ -1059,3 +1059,18 @@ jar 已就位（`%APPDATA%/.minecraft/mods/blockreality-0.4.0-dev.jar`），
 **2026-08-22**，而 `.minecraft/logs/` 最新的一份是 **2026-04-12**。
 jar 曾被放進去，但**在那之後遊戲一次都沒開過**。
 「從來沒有在跑起來的遊戲裡開過」不只是沒有 gate，是有痕跡可證。
+
+
+## 2026-09-06 BSI_CORE 真 members 首跑：JNA oracle 修正先凍
+
+引擎宣告 bsi.core / bsi.readback.members 後，InProcessEngineTest 原先因 caps=[]
+未執行的 members 分支首次在此箱執行，root moment 斷言 FAIL：expected 12321.36，actual 49285.44。
+原測試把 reaction=wL 再除2當成 wL²/2，漏了 L=4m；這是測試量綱錯誤。
+契約 C4-cantilever-selfweight（hash 7104a36d8a5e…）從未改線：w=6160.68 N/m、
+L=4m、reaction=24642.72 N、root moment=49285.44 N·m，rel1e-9。
+
+實作前凍結：只修 Java 測試的彎矩 oracle 為 reaction*L/2，容許誤差維持原值；
+沿同一契約檢查 members count=1、resolved section>=0、free-end moment<=1e-9*wL²/2。
+不改引擎數值、契約或 production decoder。以原生六匯出庫重新跑 :core:test；
+首次失敗留在 tectonic2 gate/evidence/BSI_CORE，過往 caps=[] 的綠只證明 reaction/hash，
+不能支撐 members 數值（此項歷史結論降為未驗證）。新結論須以修正後真執行證據為準。
