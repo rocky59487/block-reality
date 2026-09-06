@@ -1084,3 +1084,24 @@ BSI能力core/members。Java :core:test 260總數、220PASS、40SKIP、0FAIL；
 InProcessEngineTest 5項全執行PASS，members彎矩/斷面/自由端斷言確實執行。
 Windows自足封裝仍未完成；NATIVE/真遊戲#89保持待辦。契約49檔canonical逐位相同、hash未改。
 完整原始輸出、首次FAIL與修後XML在引擎gate/evidence/BSI_CORE/regression。
+
+## 2026-09-07 BSI 回收契約與 Java codec（實作前凍）
+
+對應 tectonic2 docs/specs/MC65B_BSI_CONTRACT.md（判準 commit 34f62b5）。
+先同步 facetBlocks 契約缺口：shells 增加 12 B 格座標區段，由 facet.blockFirst/Count 索引，
+位於 facetSurfaces 後。include 各項獨立；stations-only 合法，需要父索引者要求 members+stations。
+storage=f32 只窄化整筆 stations（含位置）及 facetSurfaces，blocks.dc 保持 f64、24 B 原布局。
+tier 與 storage 分開；C12 是 commit，不能證明 display。原 BSI.md prose 保留，以 dated 裁定覆蓋。
+
+硬線：Java 新增 typed precision 請求與 facets/facetBlocks/surfaces 解碼，保留舊 solve 簽章及 bytes。
+無 Java 力學公式、無 DC 重判。以手工 LE records 與 IEEE 常數驗全部欄位、兩個父記錄不同子數、
+top4/bottom4 次序、f32/f64、NaN 中性軸；壞 section count/size、整數越界、重複/重疊、
+同時 f32/f64、父索引越界、surface/facet 數不符均拒絕，未知合法 section 保留。
+stations-only 不強求父記錄；只請 members 沒有 stations 不強求 station section。
+回收數值須有限，僅 naY/naZ 可 NaN；不將 malformed frame 靜默轉為「無資料」。
+新增 assertion 首跑後 dated 記實際數；:core:test 用新 hash 的真 native 重編庫，既有 JNA 五項實跑。
+
+host 以獨立 LE/IEEE fixture、8 變異、Windows/Linux/i9 DET×3 與 ASan/UBSan 驗證，
+保留所有首跑失敗；兩倉 contract 全檔一致且各自 pin 自洽，同 commit 更新 engine-ref 的 commit/hash。
+此段只完成 contract/codec，native adapter 新 stations/shells/f32 尚不宣告；
+下一段真 C6/C8/C12 與新 JNA 力學腿後才啟用。NATIVE / GAME_SWAP / #89 與舊公式刪除仍待辦。
