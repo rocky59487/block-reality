@@ -264,6 +264,8 @@
     "header": "bsi_capi.h", "abi": 1,
     "symbols": ["bsi_capi_abi_version", "bsi_capi_open", "bsi_capi_call", "bsi_capi_close", "bsi_capi_last_error"],
     "frame": "'F' 'C' | flags u16 | headerLen u32 | payloadLen u32 | header | payload (LE); one call = one frame in, one frame out",
+    "retry": "NEED_BIGGER caches one executed request/reply; byte-identical retry only copies the reply; different pending request returns PROTOCOL",
+    "maxFrameBytes": 268435456,
     "openOptions": {
       "type": "object",
       "properties": {

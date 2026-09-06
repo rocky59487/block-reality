@@ -87,7 +87,8 @@ public final class BsiNative implements AutoCloseable {
      * One request frame in, one reply frame out.
      *
      * <p>{@code NEED_BIGGER} is answered by growing once and re-sending the same request: the
-     * contract says a refused call consumes nothing, so a retry is a repeat and not a resume.
+     * host caches the already executed request/reply. Byte-identical retry only delivers that reply;
+     * no other request may overtake it before successful delivery.
      *
      * @return the reply frame bytes, or null when the library refused the request at the transport
      *         level (a malformed frame — which would be this class's own defect, not the engine's).

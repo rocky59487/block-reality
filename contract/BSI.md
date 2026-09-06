@@ -324,7 +324,7 @@ struct BsiArenaHeader {            /* 128 B, LE */
 
 - **2026-09-02（併入兩倉主線後，host 實作前；全部加法，`CONTRACT_SHA256` 重釘、兩倉同步）**
   1. **進程內 C ABI `bsi_capi.h`**（T-A 的函式呼叫形式）：`bsi_capi_abi_version / open / call / close / last_error`；一次 `call` = 一個 T-A frame 進、一個出；
-     `NEED_BIGGER` 不消費請求。任何 host+engine 的共享庫建置都匯出這五個符號；消費者以 JNA / ctypes / FFM 綁定，零膠碼。ABI 尾端追加。
+     `NEED_BIGGER` 表示回覆已暫存、未交付（請求可能已執行），逐位相同重試只複製 cached reply，禁止再次執行。任何 host+engine 的共享庫建置都匯出這五個符號；消費者以 JNA / ctypes / FFM 綁定，零膠碼。ABI 尾端追加。
      這是消費者 D-044（jar 零可執行檔、不 spawn 子行程）在契約上的落點；T-B（sidecar 門鈴）降為 dev/CI 傳輸，C-2 仍要求三者逐位相同。
   2. **arena `reply` 區內容 = 一個 T-A frame**（12 B 前綴 + header + payload）；`sections[].offset` 相對 payload 起點；門鈴回覆 `replyLen` = frame 位元組數。
   3. **T-B′ 回覆行**在 `sections`（或錯誤框的 `message`/`at`）之後附 `"payloadBytes":N,"payloadB64":"…"`（N=0 時兩鍵仍出現，`payloadB64` 為空字串）；
@@ -381,3 +381,14 @@ struct BsiArenaHeader {            /* 128 B, LE */
       **只有第三層是無條件的。** 跨倉那層取決於 CI 有沒有真的去抓**對面的主線**：比對一個釘死的舊 commit
       會讓對面主線的單邊改動完全看不見。逐層的抓得到/抓不到見 `contract/README.md`；兩倉的實況與修法見
       `docs/ALIGNMENT_LEDGER.md` A12。**這條不改任何欄位**，只是不讓序言被讀成比實際更強的保證。
+
+### C ABI 重試澄清（2026-09-06，tectonic2 #27）
+
+每 handle 最多保留一個待交付 request/reply。NEED_BIGGER 的 outNeeded 固定；
+重試須含 flags、header、payload 全部 bytes 相同。待交付時不同 request 回
+PROTOCOL，保留原回覆、session 不前進。成功交付清空快取；成功後相同 request
+是新的呼叫，沒有跨呼叫永久去重。close 釋放快取，並須由 caller 與 call 序列化。
+request/reply 各最多 256 MiB（含 prefix），快取最多 512 MiB，不含 engine/writer
+工作記憶體；超限 request 在執行前拒絕。reply 超限或準備時發生例外使 handle
+失效（INVALID、須 close/reopen），不冒險重試可能已執行的動詞。
+這是 logical exactly-once delivery retry，不是一般 edit transaction 或 crash recovery。

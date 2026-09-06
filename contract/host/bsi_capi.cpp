@@ -7,6 +7,11 @@
 #include <memory>
 #include <mutex>
 
+// Test-only escapes are never accepted by an ordinary host build.
+#if (defined(BSI_TEST_RETRY_REEXECUTE) || defined(BSI_TEST_RETRY_IDENTITY)) && !defined(BSI_HOST_TEST_MUTATIONS)
+#error "BSI retry mutation requires BSI_HOST_TEST_MUTATIONS"
+#endif
+
 // The engine this library carries. A shared-library build defines
 // BSI_HOST_STATIC_ENGINE and links an engine object that exports bsi_engine_entry;
 // the generic host (bsi-hostd) does not use this file.
@@ -19,6 +24,12 @@ struct Handle {
     std::unique_ptr<bsi::Session> session;
     std::string lastError;
     std::mutex mu;
+    std::vector<uint8_t> pendingRequest, pendingReply;
+    const char* fatalError = nullptr;
+    void releasePending() {
+        std::vector<uint8_t>().swap(pendingRequest);
+        std::vector<uint8_t>().swap(pendingReply);
+    }
 };
 
 bsi::Engine* sharedEngine(std::string& err) {
@@ -99,22 +110,65 @@ BSI_CAPI void* bsi_capi_open(const char* optionsJson) {
 }
 
 BSI_CAPI int bsi_capi_call(void* hv, const uint8_t* req, size_t reqLen, uint8_t* out, size_t outCap, size_t* outLen, size_t* outNeeded) {
+    if (outLen) *outLen = 0;
+    if (outNeeded) *outNeeded = 0;
     Handle* h = (Handle*)hv;
     if (!h || !h->session) return BSI_CAPI_INVALID;
     std::lock_guard<std::mutex> g(h->mu);
-    bsi::frame::View in;
-    if (!req || !bsi::frame::decode(req, reqLen, in)) { h->lastError = "malformed request frame"; return BSI_CAPI_PROTOCOL; }
-    bsi::Reply reply;
-    h->session->handle(in.headerStr(), in.payload, in.payloadLen, reply);
-    size_t need = bsi::frame::encodedSize(reply.header.size(), reply.payload.size());
-    if (outNeeded) *outNeeded = need;
-    if (!out || outCap < need) { h->lastError = "reply needs " + std::to_string(need) + " bytes"; return BSI_CAPI_NEED_BIGGER; }
-    uint16_t flags = bsi::frame::kFlagEndOfResponse;
-    if (!reply.payload.empty()) flags |= bsi::frame::kFlagHasPayload | bsi::frame::kFlagBinaryPayload;
-    bsi::frame::encodeInto(out, flags, reply.header, reply.payload.data(), reply.payload.size());
-    if (outLen) *outLen = need;
-    h->lastError.clear();
-    return BSI_CAPI_OK;
+    if (h->fatalError) return BSI_CAPI_INVALID;
+    try {
+        if (!h->pendingReply.empty()) {
+#ifndef BSI_TEST_RETRY_IDENTITY
+            if (!req || reqLen != h->pendingRequest.size() ||
+                std::memcmp(req, h->pendingRequest.data(), reqLen) != 0) {
+                h->lastError = "pending reply: retry must match the complete request bytes";
+                return BSI_CAPI_PROTOCOL;
+            }
+#endif
+#ifdef BSI_TEST_RETRY_REEXECUTE
+            h->releasePending();
+#endif
+        }
+        if (h->pendingReply.empty()) {
+            bsi::frame::View in;
+            if (!req || reqLen > BSI_CAPI_MAX_FRAME_BYTES || !bsi::frame::decode(req, reqLen, in)) {
+                h->lastError = "malformed or oversized request frame";
+                return BSI_CAPI_PROTOCOL;
+            }
+            // Own request identity before dispatch can advance the state machine.
+            h->pendingRequest.assign(req, req + reqLen);
+            bsi::Reply reply;
+            h->session->handle(in.headerStr(), in.payload, in.payloadLen, reply);
+            if (reply.header.size() > BSI_CAPI_MAX_FRAME_BYTES - bsi::frame::kPrefixBytes ||
+                reply.payload.size() > BSI_CAPI_MAX_FRAME_BYTES - bsi::frame::kPrefixBytes - reply.header.size()) {
+                h->fatalError = "reply exceeds frame limit; close and reopen this session";
+                h->releasePending();
+                return BSI_CAPI_INVALID;
+            }
+            uint16_t flags = bsi::frame::kFlagEndOfResponse;
+            if (!reply.payload.empty()) flags |= bsi::frame::kFlagHasPayload | bsi::frame::kFlagBinaryPayload;
+            h->pendingReply = bsi::frame::encode(flags, reply.header, reply.payload.data(), reply.payload.size());
+        }
+        const size_t need = h->pendingReply.size();
+        if (outNeeded) *outNeeded = need;
+        if (!out || outCap < need) {
+            h->lastError = "reply needs " + std::to_string(need) + " bytes; retry the same request";
+            return BSI_CAPI_NEED_BIGGER;
+        }
+        std::memcpy(out, h->pendingReply.data(), need);
+        if (outLen) *outLen = need;
+        h->releasePending();
+        h->lastError.clear();
+        return BSI_CAPI_OK;
+    } catch (...) {
+        // No retry is safe after an uncertain dispatch/allocation failure.
+        // Keep the diagnostic allocation-free, including during bad_alloc.
+        h->fatalError = "request preparation failed; close and reopen this session";
+        h->releasePending();
+        if (outLen) *outLen = 0;
+        if (outNeeded) *outNeeded = 0;
+        return BSI_CAPI_INVALID;
+    }
 }
 
 BSI_CAPI void bsi_capi_close(void* hv) { delete (Handle*)hv; }
@@ -122,6 +176,7 @@ BSI_CAPI void bsi_capi_close(void* hv) { delete (Handle*)hv; }
 BSI_CAPI const char* bsi_capi_last_error(void* hv) {
     Handle* h = (Handle*)hv;
     if (!h) return openError().empty() ? nullptr : openError().c_str();
+    if (h->fatalError) return h->fatalError;
     if (h->lastError.empty()) return nullptr;
     return h->lastError.c_str();
 }

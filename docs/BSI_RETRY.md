@@ -61,3 +61,9 @@ Linux ASan/UBSan 未跑就是未驗證，不用 Windows 取代。
 ## 2026-09-06 實作前置核對補述
 
 真 adapter 的 world_edit vtable slot 為 nullptr（MC67 未落地）。RETRY-01/02 的成功 edit/revision 僅由 counting stub 驗證；真 adapter 的同腿須明確得到 UNSUPPORTED、edit count=0，不能在測試 wrapper 補假實作。真引擎 hello/vocab/world/solve 與 RETRY-05 的線完全不變。這是缺少 BSI world.edit 的具名邊界，#27 收版仍須記錄，不能宣称 game edit 已接通。
+
+## 2026-09-06 驗證落地與計數釘死
+
+首跑正常臂 124；補齊 prepare 例外 / Failed handle 的 4 個檢查後，stub / 真 adapter 均釘 128。Windows / Linux 各 DET ×3、兩臂共 4 條 mutation 通過；Linux ASan/UBSan 三臂零診斷；Windows / Linux 生產 BsiNative 對 72,646 B reply 均 solve count=1，Java REEXECUTE 注入確實 count=2 並 fail。i9 同 binary 128、DET ×3、mutation 2/2。沒有改數值 pins；真 adapter world.edit 仍明確 UNSUPPORTED，capabilities 仍 []。完整環境、未量測項與工具失敗照登於 docs/BSI_RETRY_RESULTS.md（鏡像引擎 gate/evidence/BSI_RETRY/RESULTS.md）。
+
+配對引擎 commit：77b53cb76c091b77d79bef0d7503de4ac0506b8c；尚未推送遠端，CI 接線不是遠端 CI 執行宣稱。
