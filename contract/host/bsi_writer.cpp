@@ -1,5 +1,6 @@
 #include "bsi_reply.hpp"
 #include "bsi_schema.hpp"
+#include "bsi_recovery.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -12,7 +13,7 @@ namespace bsi {
 int ReplyBuilder::blocks(const bsi_block_result* r, uint32_t n) {
     if (haveBlocks_) { blocksTwice_ = true; return BSI_E_INTERNAL; }
     haveBlocks_ = true;
-    blocks_.assign(r, r + n);
+    if (n) blocks_.assign(r, r + n);
     return BSI_OK;
 }
 
@@ -23,8 +24,8 @@ int ReplyBuilder::member(const bsi_member_result* m, const int32_t* xyz, uint32_
     copy.blockCount = nb;
     copy.stationFirst = (uint32_t)stations_.size();
     copy.stationCount = ns;
-    memberBlocks_.insert(memberBlocks_.end(), xyz, xyz + (size_t)nb * 3);
-    stations_.insert(stations_.end(), st, st + ns);
+    if (nb) memberBlocks_.insert(memberBlocks_.end(), xyz, xyz + (size_t)nb * 3);
+    if (ns) stations_.insert(stations_.end(), st, st + ns);
     members_v_.push_back(copy);
     return BSI_OK;
 }
@@ -34,7 +35,7 @@ int ReplyBuilder::facet(const bsi_facet_result* f, const int32_t* xyz, uint32_t 
     bsi_facet_result copy = *f;
     copy.blockFirst = (uint32_t)(facetBlocks_.size() / 3);
     copy.blockCount = nb;
-    facetBlocks_.insert(facetBlocks_.end(), xyz, xyz + (size_t)nb * 3);
+    if (nb) facetBlocks_.insert(facetBlocks_.end(), xyz, xyz + (size_t)nb * 3);
     for (int k = 0; k < 4; ++k) surfaces_.push_back(top[k]);
     for (int k = 0; k < 4; ++k) surfaces_.push_back(bottom[k]);
     facets_v_.push_back(copy);
@@ -44,7 +45,7 @@ int ReplyBuilder::facet(const bsi_facet_result* f, const int32_t* xyz, uint32_t 
 int ReplyBuilder::unassigned(const char* why, int32_t island, const int32_t* xyz, uint32_t nb) {
     if (!why) return BSI_E_INTERNAL;
     UnassignedGroup g; g.why = why; g.island = island;
-    g.xyz.assign(xyz, xyz + (size_t)nb * 3);
+    if (nb) g.xyz.assign(xyz, xyz + (size_t)nb * 3);
     unassigned_.push_back(std::move(g));
     return BSI_OK;
 }
@@ -96,14 +97,15 @@ int ReplyBuilder::error(const char* code, const char* message, const int32_t* at
 }
 
 int ReplyBuilder::attrsEcho(const bsi_attr* a, uint32_t n) {
-    attrsEcho_.assign(a, a + n);
+    attrsEcho_.clear();
+    if (n) attrsEcho_.assign(a, a + n);
     return BSI_OK;
 }
 
 void ReplyBuilder::appendSection(const char* name, const void* data, uint64_t bytes, uint64_t count) {
     SectionInfo s; s.name = name; s.offset = payload_.size(); s.bytes = bytes; s.count = count;
     const uint8_t* p = (const uint8_t*)data;
-    payload_.insert(payload_.end(), p, p + bytes);
+    if (bytes) payload_.insert(payload_.end(), p, p + bytes);
     sections_.push_back(s);
 }
 
@@ -155,19 +157,34 @@ bool ReplyBuilder::finalizeDeclare(std::string& why) {
 }
 
 bool ReplyBuilder::finalizeSolve(std::string& why) {
+    payload_.clear(); sections_.clear(); why.clear();
     if (blocksTwice_) { why = "blocks written twice"; return false; }
     if (!haveBlocks_) { why = "engine wrote no blocks section"; return false; }
     if (blocks_.size() != declared_) { why = "blocks count " + std::to_string(blocks_.size()) + " != declared " + std::to_string(declared_); return false; }
     if (!haveEq_) { why = "engine wrote no equilibrium"; return false; }
     if (!haveQuality_) { why = "engine wrote no quality"; return false; }
     if (!haveDiag_) { why = "engine wrote no diag"; return false; }
+    // Validate every emitted recovery value before producing any section.
+    const bool f32 = storage_ == BSI_STORAGE_F32;
+    if (include_ & kIncMembers) for (const auto& m : members_v_)
+        if (!recovery::valid(m)) { why = "nonfinite member recovery"; return false; }
+    if (include_ & kIncStations) for (const auto& s : stations_)
+        if (!recovery::valid(s, f32)) { why = "invalid station recovery or f32 overflow"; return false; }
+    if (include_ & kIncShells) {
+        for (const auto& f : facets_v_)
+            if (!recovery::valid(f)) { why = "nonfinite facet recovery"; return false; }
+        for (const auto& s : surfaces_)
+            if (!recovery::valid(s, f32)) { why = "invalid surface recovery or f32 overflow"; return false; }
+    }
     // ids strictly ascending
     for (size_t k = 1; k < members_v_.size(); ++k) if (members_v_[k].id <= members_v_[k - 1].id) { why = "member ids not ascending"; return false; }
     for (size_t k = 1; k < facets_v_.size(); ++k) if (facets_v_[k].id <= facets_v_[k - 1].id) { why = "facet ids not ascending"; return false; }
     // stations ascending in s within a member
+#ifndef BSI_TEST_RECOVERY_STATION_ORDER
     for (const auto& m : members_v_)
         for (uint32_t k = 1; k < m.stationCount; ++k)
             if (stations_[m.stationFirst + k].s < stations_[m.stationFirst + k - 1].s) { why = "stations not ascending in s"; return false; }
+#endif
     // ownerKind consistency with unassigned
     std::map<std::array<int32_t, 3>, int> unassignedCells;
     for (const auto& g : unassigned_) for (size_t k = 0; k + 2 < g.xyz.size(); k += 3) unassignedCells[{g.xyz[k], g.xyz[k + 1], g.xyz[k + 2]}]++;
@@ -192,12 +209,18 @@ bool ReplyBuilder::finalizeSolve(std::string& why) {
     std::sort(buckling_.begin(), buckling_.end(), [](const Buckling& a, const Buckling& b) { return a.island < b.island; });
 
     // ---- layout, fixed order ----
-    payload_.clear(); sections_.clear();
+#ifdef BSI_TEST_RECOVERY_NARROW_DC
+    if (f32) for (auto& b : blocks_) b.dc = recovery::narrow(b.dc);
+#endif
     appendSection("blocks", blocks_.data(), (uint64_t)blocks_.size() * sizeof(bsi_block_result), blocks_.size());
     appendSection("equilibrium", &eq_, sizeof eq_, 1);
     appendSection("quality", &qual_, sizeof qual_, 1);
     appendSection("buckling", buckling_.data(), (uint64_t)buckling_.size() * sizeof(Buckling), buckling_.size());
+#ifdef BSI_TEST_RECOVERY_FORCE_MEMBERS
+    if (include_ & (kIncMembers | kIncStations)) {
+#else
     if (include_ & kIncMembers) {
+#endif
         appendSection("members", members_v_.data(), (uint64_t)members_v_.size() * sizeof(bsi_member_result), members_v_.size());
         appendSection("memberBlocks", memberBlocks_.data(), (uint64_t)memberBlocks_.size() * 4, memberBlocks_.size() / 3);
     }
@@ -206,20 +229,26 @@ bool ReplyBuilder::finalizeSolve(std::string& why) {
             std::vector<StationF32> f(stations_.size());
             for (size_t k = 0; k < stations_.size(); ++k) {
                 const bsi_station& s = stations_[k]; StationF32& d = f[k];
-                d.s = (float)s.s; d.x = (float)s.x; d.y = (float)s.y; d.z = (float)s.z;
-                for (int j = 0; j < 4; ++j) d.sigma[j] = (float)s.sigma[j];
-                d.tau = (float)s.tau; d.naY = (float)s.naY; d.naZ = (float)s.naZ;
+                d.s = recovery::narrow(s.s); d.x = recovery::narrow(s.x); d.y = recovery::narrow(s.y); d.z = recovery::narrow(s.z);
+                for (int j = 0; j < 4; ++j) d.sigma[j] = recovery::narrow(s.sigma[j]);
+                d.tau = recovery::narrow(s.tau); d.naY = recovery::narrow(s.naY); d.naZ = recovery::narrow(s.naZ);
             }
             appendSection("stations:f32", f.data(), (uint64_t)f.size() * sizeof(StationF32), f.size());
         } else appendSection("stations", stations_.data(), (uint64_t)stations_.size() * sizeof(bsi_station), stations_.size());
     }
     if (include_ & kIncShells) {
         appendSection("facets", facets_v_.data(), (uint64_t)facets_v_.size() * sizeof(bsi_facet_result), facets_v_.size());
+#ifdef BSI_TEST_RECOVERY_SURFACE_ORDER
+        for (size_t k = 0; k + 7 < surfaces_.size(); k += 8) std::swap(surfaces_[k], surfaces_[k + 4]);
+#endif
         if (storage_ == BSI_STORAGE_F32) {
             std::vector<float> f(surfaces_.size() * 4);
-            for (size_t k = 0; k < surfaces_.size(); ++k) { f[4 * k] = (float)surfaces_[k].s1; f[4 * k + 1] = (float)surfaces_[k].s2; f[4 * k + 2] = (float)surfaces_[k].theta; f[4 * k + 3] = (float)surfaces_[k].vm; }
+            for (size_t k = 0; k < surfaces_.size(); ++k) { f[4 * k] = recovery::narrow(surfaces_[k].s1); f[4 * k + 1] = recovery::narrow(surfaces_[k].s2); f[4 * k + 2] = recovery::narrow(surfaces_[k].theta); f[4 * k + 3] = recovery::narrow(surfaces_[k].vm); }
             appendSection("facetSurfaces:f32", f.data(), (uint64_t)f.size() * 4, facets_v_.size());
         } else appendSection("facetSurfaces", surfaces_.data(), (uint64_t)surfaces_.size() * sizeof(bsi_surface), facets_v_.size());
+#ifndef BSI_TEST_RECOVERY_NO_FACET_BLOCKS
+        appendSection("facetBlocks", facetBlocks_.data(), (uint64_t)facetBlocks_.size() * 4, facetBlocks_.size() / 3);
+#endif
     }
     if (include_ & kIncAttrsEcho) appendSection("attrsEcho", attrsEcho_.data(), (uint64_t)attrsEcho_.size() * sizeof(bsi_attr), attrsEcho_.size());
     return true;

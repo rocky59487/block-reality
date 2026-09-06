@@ -392,3 +392,20 @@ request/reply 各最多 256 MiB（含 prefix），快取最多 512 MiB，不含 
 工作記憶體；超限 request 在執行前拒絕。reply 超限或準備時發生例外使 handle
 失效（INVALID、須 close/reopen），不冒險重試可能已執行的動詞。
 這是 logical exactly-once delivery retry，不是一般 edit transaction 或 crash recovery。
+
+### 回收區段澄清與加法（2026-09-07，MC65B）
+
+1. `include` 各項獨立：stations-only 輸出全部有效構件的站位，按 member id、各構件 s 升序
+   串接，不隱式輸出 `members` / `memberBlocks`。需要父索引者要求 members+stations。
+2. `include:shells` 新增 `facetBlocks`（每筆 x/y/z 三個 i32，12 B），位於 facetSurfaces 後、
+   attrsEcho 前；由各 facets.blockFirst/blockCount 索引，即使零筆仍有區段。
+   不改既有記錄大小、欄位順序或舊區段內容。
+3. 本條取代 B.5 precision.storage 表格的「blocks.dc 以 f32」敘述：`blocks` 始終 24 B、
+   dc 是 f64；沒有 blocks:f32。f32 只適用整筆 stations（含 s/x/y/z，44 B）及
+   facetSurfaces（128 B）。members/facets 的位置、內力、DC 與 flags 保持原精度/判定。
+4. 回收欄位的有限數值不得 NaN/Infinity，唯 station.naY/naZ 用 NaN 表示缺少該截距。
+   f32 欄位若絕對值超出 FLT_MAX，host 回 INTERNAL，沒有部分 payload。
+   窄化為 IEEE binary32 round-to-nearest ties-to-even，保留 signed zero，允許次正規數/下溢。
+   此條不重新定義非 computed buckling.factor 的 NaN。
+5. storage 與 tier 是獨立控制。C12-f32-display 檔名雖含 display，兩個變體均為 commit，
+   只支持 f32 storage 驗收，不支持 bsi.precision.display 宣告。

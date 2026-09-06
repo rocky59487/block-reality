@@ -1114,3 +1114,14 @@ host 以獨立 LE/IEEE fixture、8 變異、Windows/Linux/i9 DET×3 與 ASan/UBS
 獨立取 a4582bc 的 BsiHeaders/JsonWriter/BsiContract 編譯並印出原 bytes，證明原輸出為後者；
 只校正 fixture 字面值，舊 header 逐位不變的硬線維持。首跑 XML/輸出與舊碼重建輸出保存在
 tectonic2 gate/evidence/MC65B_BSI_CONTRACT/initial；新增 vocab.declare/query 控制防止復發。
+
+### 同日修後驗證
+
+Java :core:test 271總數=231PASS/40SKIP/0FAIL；新增BsiRecoveryTest 11/11與
+新契約hash真InProcessEngineTest 5/5均執行。七個隔離來源變異（size/overlap/variants/range/
+cardinality/finite/vocab）每臂完整11測試、exit1且原正常斷言具名FAIL。
+共享host 500 checks/8變異、Windows/Linux/i9 DET×3；Linux ASan/UBSan零診斷、非LSan；
+舊區段12組兩箱前後逐位不變、host90/retry128與BSI310回歸，無assume語料仍5PASS/5SKIP。
+新hash為59beed904d7321ddc1c46b5cca11dba669a129e495e921ff6d3d86edbced3b03，51檔雙倉相同。
+完整來源hash、raw與XML：tectonic2 gate/evidence/MC65B_BSI_CONTRACT。
+MC65B adapter新三能力、真新能力JNA、Windows自足封裝與GAME_SWAP均保留待辦。

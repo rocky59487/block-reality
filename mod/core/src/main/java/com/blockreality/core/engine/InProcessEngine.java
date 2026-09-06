@@ -108,10 +108,16 @@ public final class InProcessEngine implements AutoCloseable {
     /** One solve. Returns the reply (which may be an error frame) or null when the engine is off. */
     public BsiResponse solve(boolean selfWeight, double[] gravity, List<BsiRecords.Load> loads,
                              Integer numThreads, List<String> include) {
+        return solve(selfWeight, gravity, loads, numThreads, include, null);
+    }
+
+    /** Explicit storage/tier request; the engine's capability gate owns any refusal. */
+    public BsiResponse solve(boolean selfWeight, double[] gravity, List<BsiRecords.Load> loads,
+                             Integer numThreads, List<String> include, BsiHeaders.Precision precision) {
         if (status != Status.READY) return null;
         byte[] payload = loads == null || loads.isEmpty() ? null : BsiRecords.encodeLoads(loads);
         int n = payload == null ? 0 : payload.length / BsiRecords.LOAD_BYTES;
-        return send(BsiHeaders.solve(nextId(), revision, selfWeight, gravity, n, numThreads, include), payload);
+        return send(BsiHeaders.solve(nextId(), revision, selfWeight, gravity, n, numThreads, include, precision), payload);
     }
 
     private boolean ok(BsiResponse r) {
@@ -127,6 +133,9 @@ public final class InProcessEngine implements AutoCloseable {
             return BsiResponse.of(BsiFrame.decode(reply, reply.length));
         } catch (BsiNative.EngineRefused e) {
             disable("ENGINE_FAILED", e.getMessage());
+            return null;
+        } catch (IllegalArgumentException e) {
+            disable("PROTOCOL_ERROR", e.getMessage());
             return null;
         }
     }

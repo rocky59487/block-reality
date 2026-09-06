@@ -250,6 +250,7 @@
     "stations":     {"bytes": 88,  "fields": [["s","f64"],["x","f64","m"],["y","f64","m"],["z","f64","m"],["sigma","f64[4]","Pa"],["tau","f64","Pa"],["naY","f64","m"],["naZ","f64","m"]], "x-f32": 44},
     "facets":       {"bytes": 280, "fields": [["id","i32"],["island","i32"],["blockFirst","u32"],["blockCount","u32"],["material","i32"],["reserved0","u32"],["thicknessM","f64","m"],["corners","f64[12]","m"],["ex","f64[3]"],["ey","f64[3]"],["n","f64[3]"],["N","f64[3]","N/m"],["M","f64[3]","N*m/m"],["Q","f64[2]","N/m"],["dc","f64"],["flags","u8"],["governingFibre","u8"],["reserved","u8[6]"]]},
     "facetSurfaces":{"bytes": 256, "fields": [["top","f64[16]","Pa,Pa,rad,Pa x4"],["bottom","f64[16]","Pa,Pa,rad,Pa x4"]], "x-f32": 128},
+    "facetBlocks":  {"bytes": 12,  "fields": [["x","i32"],["y","i32"],["z","i32"]]},
     "attrsEcho":    {"bytes": 16,  "fields": [["blockIndex","u32"],["key","u16"],["type","u8"],["reserved","u8"],["value","u8[8]"]]}
   },
 
