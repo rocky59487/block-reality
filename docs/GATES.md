@@ -1105,3 +1105,12 @@ host 以獨立 LE/IEEE fixture、8 變異、Windows/Linux/i9 DET×3 與 ASan/UBS
 保留所有首跑失敗；兩倉 contract 全檔一致且各自 pin 自洽，同 commit 更新 engine-ref 的 commit/hash。
 此段只完成 contract/codec，native adapter 新 stations/shells/f32 尚不宣告；
 下一段真 C6/C8/C12 與新 JNA 力學腿後才啟用。NATIVE / GAME_SWAP / #89 與舊公式刪除仍待辦。
+
+### 同日 Java 首跑照登與 fixture 校正
+
+270 項首跑 228PASS/2FAIL/40SKIP。新 BsiSections 將 vocab.declare 的 sections（斷面名稱/id 表）
+誤認為 binary sections，導致真 JNA vocab.declare 失敗；應依 method 分流，非放鬆 binary 守門。
+另新 header fixture 手寫成 gravity:[0.0,-9.81,0.0]，舊 JsonWriter 實際輸出 [0,-9.81,0]。
+獨立取 a4582bc 的 BsiHeaders/JsonWriter/BsiContract 編譯並印出原 bytes，證明原輸出為後者；
+只校正 fixture 字面值，舊 header 逐位不變的硬線維持。首跑 XML/輸出與舊碼重建輸出保存在
+tectonic2 gate/evidence/MC65B_BSI_CONTRACT/initial；新增 vocab.declare/query 控制防止復發。
