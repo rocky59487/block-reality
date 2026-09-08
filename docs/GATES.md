@@ -1192,3 +1192,19 @@ PR #96 前一 head e068019 的 CI run34201823453，core/Forge均PASS，check_doc
 JAVA_TOTAL 包含環境SKIP，不得稱總數全PASS；README/研究簡報改寫為登錄數，
 check_docs只配合新措辭、保留總數精確比對與必須匹配規則，歷史版本文件不改。
 原生CI job因未配置TECTONIC2_TOKEN跳過實測，不以外層success當native成功。
+
+## 2026-09-08 MC65B BSI 梁樣本幾何（實作前凍）
+
+對位 tectonic2 docs/specs/MC65B_MEMBER_GEOMETRY.md。本段接通原生框架與面中心取樣位置到
+Java，梁 renderer/封包及 GAME_SWAP 留在下一單元；版本仍 0.4.0-dev。
+新增能力 bsi.readback.memberGeometry 與 include memberGeometry，需同時 include members；
+新區段在 stations 後、facets 前，168 B（id/reserved + f64 origin/ex/ey/ez/faceY/faceZ），
+storage=f32 仍保持此幾何 f64。舊 member160/station88 B 與未請求的 solve bytes 不變。
+Java 驗 id/count 同序一對一、有限值、reserved=0、右手正交單位軸（絕對誤差1e-9）、
+faceY={h,-h,0,0}/faceZ={0,0,b,-b} 且 h/b>0；集合與幾何不可變。
+四值是面中心參考點，不是角應力或非矩形截面外形；不猜框架、不再套 axisRot、不算力學/DC。
+驗收：手工 LE bytes/非法布局/單位與不可變性，真 CAPI/JNA 水平垂直Z向/非正方截面/四種
+axisRot/F64與F32及平移，舊 core/API purity 回歸。Java 配對與框架守門變異須 assertion FAIL。
+C++ Windows/Linux/i9 DET×3、ASan/UBSan（非LSan）及 host 布局/配對/finite 變異由配對引擎留證。
+暫計數首跑後 dated 登記；raw base64+SHA/XML/來源與 Git bytes manifest 隨引擎 evidence，
+不得把 stub 或 SKIP 當成真 native 通過。原殼/BSI/版本門檻與歷史 FAIL 保留。
