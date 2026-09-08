@@ -66,3 +66,11 @@ small須全部保留；oversize只省略id999並明示控制未顯示、其餘sm
 shell-heavy須保留控制511和最前63片，恰16384格；dense須保留控制梁63，
 其餘按同一凍結byte/格/站點預算與原序貪心選取，至少有省略，不改任何保留樣本。
 邊界测试以獨立小語料的實際codec bytes釘住limit/limit-1，生產budget不得隨測試變動。
+
+## 2026-09-08 收版計數
+
+core316（304PASS/12SKIP）、Forge80PASS，共396登錄/384PASS/12SKIP。固定probe不列JUnit項數。
+十變異各1test/1 AssertionFailedError/0error/0skip：TX_BYTES、TX_BLOCKS、TX_STATIONS、PRIORITY、
+OMISSION、RX_FRAME、RX_BLOCKS、RX_STATIONS、RX_ID與ORDER；原序守門另有明示咬合。
+最終four-fixture bytes=6039/259973/6040/193342，內容與界線見evidence；硬預算未移。
+small累計配置增加到約71.8KB（原55.9KB），時間僅RECORDED_ONLY；未跑i9/Linux或真Minecraft。
