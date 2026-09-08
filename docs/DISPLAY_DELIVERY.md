@@ -46,3 +46,23 @@ shell-heavy=512殼(每片256格)，末片為控制元素。
 
 本單元是headless顯示交付，不是GAME_SWAP或整體FPS；NATIVE封裝、MC66屈曲、
 DISPLAY_BAND(PE3依賴)及v2/v3/v4仍待原判準驗收。歷史41.7ms FAIL與Linux7FAIL保留。
+
+## 2026-09-08 基線 harvest 與數字線（實作前）
+
+AMD Ryzen9 8940HX / Windows11 / Java21.0.11，BLAS環境Haswell/4（本probe不求解）。
+三輪相同wire SHA：small6036B；dense905978B；oversize1104013B；shell-heavy1546682B。
+後兩者輸出buffer擴到2097152B，每次prepare+encode+decode配置約9.62/9.81MB。
+這是執行緒累計配置而非峰值；原始輸出保留。未設定速度勝出線。
+
+現在釘死：frame最多262144B，其中2048B保留summary/計數/控制身份，
+元素payload合計最多260096B；格合計16384、站點合計2048，保持完整元素。
+每更新最多嘗試64梁/512殼候選（控制元素先計入），避免超額後持續序列化整個世界；
+尋找控制身份可掃原列表，O(n)時間/O(1)額外空間。保留元素仍按原輸入序送出。
+超額者整筆省略，後續候選仍可使用剩餘空間；不在多位玩家廣播時重算選取/編碼。
+收端相同frame與合計counts上限，元素配置前扣額度。單次scratch capacity不超剩餘payload；
+所保存payload總量不超260096B，兩者合計不超520192B（不含來源模型/物件header/最終網路buffer）。
+
+small須全部保留；oversize只省略id999並明示控制未顯示、其餘small完整；
+shell-heavy須保留控制511和最前63片，恰16384格；dense須保留控制梁63，
+其餘按同一凍結byte/格/站點預算與原序貪心選取，至少有省略，不改任何保留樣本。
+邊界测试以獨立小語料的實際codec bytes釘住limit/limit-1，生產budget不得隨測試變動。
