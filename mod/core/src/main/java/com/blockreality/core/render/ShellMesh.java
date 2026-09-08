@@ -1,6 +1,6 @@
 package com.blockreality.core.render;
 
-import com.blockreality.api.ShellFieldSpec;
+import com.blockreality.api.ShellDisplayField;
 import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.geom.Vec3d;
 
@@ -12,11 +12,11 @@ import java.util.Optional;
  * blocks rather than on the mesh.
  *
  * <h2>Why the two are not the same place</h2>
- * Facet corners sit at block <em>centres</em>, the same convention members use, because
+ * Legacy Sidecar facet corners sit at block <em>centres</em>, the same convention members use, because
  * that is what lets a column share a node with the floor it holds up. The meshed plate is
  * therefore half a block short of the visible slab all the way round: an N×N slab of
  * blocks meshes into (N−1)×(N−1) facets. A block on the slab's edge is genuinely outside
- * every facet.
+ * every facet. Native BSI uses its own supplied corner geometry; this picker never reconstructs it from cells.
  *
  * <p>Two answers were available and only one is honest. Drawing the contour on the facets
  * would put a carpet floating half a block off the floor. Drawing it on the blocks means
@@ -34,7 +34,7 @@ public final class ShellMesh {
      * @param outsideMm how far the point lay outside the facet in the plate's own plane,
      *                  millimetres. Zero when the point is genuinely inside.
      */
-    public record Hit(ShellSnapshot shell, ShellFieldSpec field,
+    public record Hit(ShellSnapshot shell, ShellDisplayField field,
                       double xi, double eta, double outsideMm) { }
 
     /**
@@ -49,9 +49,8 @@ public final class ShellMesh {
         double bestScore = Double.MAX_VALUE;
 
         for (ShellSnapshot s : shells) {
-            if (s.field().isEmpty()) continue;
-            ShellFieldSpec f = s.field().get();
-            if (!f.isComplete()) continue;
+            if (s.display().isEmpty()) continue;
+            ShellDisplayField f = s.display().get();
 
             double[] p = f.paramAt(pMm);
             double overX = Math.max(0, Math.abs(p[0]) - 1) * f.halfX();

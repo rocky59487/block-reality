@@ -42,7 +42,10 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   新增InProcessRecoveryTest 3/3要求新能力，與原InProcessEngineTest 5/5使用真DLL全執行。
   Java274項=234PASS/40SKIP/0FAIL；殼幾何/格索引/上下面/f32直接由引擎提供。
   契約52檔hash b5ad59f1bfa9…同步，完整證據在tectonic2 MC65B_BSI_ADAPTER。
-  下一段清償StressFieldSpec/ShellFieldSpec與顯示資料遷移；#89與Windows自足封裝仍未完成。
+  殼顯示已遷移：BsiShellDisplay→ShellDisplayField→ShellMesh/HUD/renderer/channel6，
+  客戶端只插值樣本，殼旗標獨立轉發；core283=271PASS/12SKIP、Forge57全過，真JNA9/9，八變異。
+  ShellFieldSpec仍留在Sidecar相容入口一次取樣/舊診斷；梁缺BSI局部截面框架，下一單元先凍契約加法。
+  #89與Windows自足封裝仍未完成，版本仍是引擎1.2.0對位、模組0.4.0-dev。
 - **還沒接**：**遊戲流程仍走 `SidecarClient`**（protocol 2 / FrameCore），`InProcessEngine` 尚未接進遊戲迴圈（#89）。
   「檔案在」不算「有」——見下面的三條鐵則第 2 條。
 - **不會做**：FrameCore 的 BSI 對數臂（D-045）。連帶 N22 差異帳改形為「單臂語料 + 封閉解」並**降一級**，

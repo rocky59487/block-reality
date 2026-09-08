@@ -110,6 +110,12 @@ public enum StressPalette {
         return Rgb.lerp(Rgb.lerp(DC_SAFE, DC_NEAR, 0.35), DC_NEAR, (dc - 0.6) / 0.4);
     }
 
+    /** Native verdict controls failure colour; the number only sets the below-capacity ramp. */
+    public static Rgb utilization(double dc, boolean overloaded) {
+        if (overloaded) return DC_OVER;
+        return dc >= 1 ? DC_NEAR : utilization(dc);
+    }
+
     public static Hatch utilizationHatch(double dc) {
         if (!Double.isFinite(dc)) return Hatch.NONE;
         if (dc >= 1.0) return Hatch.CROSS;

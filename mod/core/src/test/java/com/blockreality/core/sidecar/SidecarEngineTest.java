@@ -583,7 +583,7 @@ class SidecarEngineTest {
         Optional<ShellMesh.Hit> hit = ShellMesh.locate(r.shells(), new Vec3d(centre, 64500, centre));
         assertTrue(hit.isPresent());
         assertEquals(0.0, hit.get().outsideMm(), 1e-9, "the plate centre is inside a facet");
-        double got = hit.get().field().momentAt(hit.get().xi(), hit.get().eta()).mxx();
+        double got = hit.get().shell().field().orElseThrow().momentAt(hit.get().xi(), hit.get().eta()).mxx();
         assertEquals(expect, Math.abs(got), 0.01 * expect,
                 "span moment within 1% at " + (n - 1) + " elements");
     }

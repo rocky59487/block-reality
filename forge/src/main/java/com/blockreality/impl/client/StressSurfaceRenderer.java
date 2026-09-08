@@ -226,7 +226,7 @@ public final class StressSurfaceRenderer {
             if (hit.isEmpty()) continue;
             ShellMesh.Hit h = hit.get();
             Rgb flat = switch (mode) {
-                case UTILIZATION -> StressPalette.utilization(h.shell().dc());
+                case UTILIZATION -> StressPalette.utilization(h.shell().dc(), h.shell().overloaded());
                 case MATERIAL -> StressPalette.material(h.shell().material());
                 default -> null;
             };
@@ -268,6 +268,7 @@ public final class StressSurfaceRenderer {
             // so its half-height maps to the plate's half-thickness: the top face reads the
             // top fibre, the underside the bottom one, and a side face sweeps between them.
             double zf = clamp(h.field().offNormalMm(p) / 500.0);
+            // Drawing interpolates the recovered scalars; it does not recover a tensor at this vertex.
             double sigma = h.field().signedPrincipal(clamp(par[0]), clamp(par[1]), zf);
             c = ClientStressState.palette().signedStress(sigma, scale);
         }

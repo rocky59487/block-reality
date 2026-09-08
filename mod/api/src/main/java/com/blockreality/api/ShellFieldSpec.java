@@ -5,7 +5,8 @@ import com.blockreality.api.geom.Vec3d;
 import java.util.List;
 
 /**
- * The surface stress field of one MITC4 plate facet, as a function rather than as samples.
+ * Legacy protocol-2 force field, retained for Sidecar ingestion and server diagnostics.
+ * The client now consumes {@link ShellDisplayField}; native BSI never constructs this class.
  *
  * <p>The beam field ({@link StressFieldSpec}) is a scalar: one number describes the state
  * at a point of a section. A plate's is <strong>not</strong>. The state at a point on a
@@ -167,12 +168,7 @@ public record ShellFieldSpec(
      * same convention as every other stress this project reports.
      */
     public double signedPrincipal(double xi, double eta, double zFrac) {
-        Surface s = surfaceAt(xi, eta, zFrac);
-        double avg = 0.5 * (s.sx() + s.sy());
-        double dev = 0.5 * (s.sx() - s.sy());
-        double r = Math.sqrt(dev * dev + s.txy() * s.txy());
-        double s1 = avg + r, s2 = avg - r;
-        return Math.abs(s1) >= Math.abs(s2) ? s1 : s2;
+        return sample(xi, eta, zFrac).signedPrincipal();
     }
 
     /** Von Mises equivalent stress, never negative. */
@@ -206,4 +202,22 @@ public record ShellFieldSpec(
     }
 
     private static double clamp(double v) { return v < -1 ? -1 : Math.min(v, 1); }
+
+    /** Protocol-2 compatibility only. Native BSI already provides these samples. */
+    public ShellDisplayField sampledDisplay() {
+        java.util.List<ShellDisplayField.Surface> top = new java.util.ArrayList<>(4);
+        java.util.List<ShellDisplayField.Surface> bottom = new java.util.ArrayList<>(4);
+        int[] xs = {-1, 1, 1, -1}, ys = {-1, -1, 1, 1};
+        for (int k = 0; k < 4; k++) {
+            top.add(sample(xs[k], ys[k], 1)); bottom.add(sample(xs[k], ys[k], -1));
+        }
+        return new ShellDisplayField(cornersMm, ex, ey, normal, top, bottom);
+    }
+    private ShellDisplayField.Surface sample(double xi, double eta, double face) {
+        Surface s = surfaceAt(xi, eta, face);
+        double avg = 0.5 * (s.sx() + s.sy()), dev = 0.5 * (s.sx() - s.sy());
+        double radius = Math.sqrt(dev * dev + s.txy() * s.txy());
+        return new ShellDisplayField.Surface(avg + radius, avg - radius,
+                Math.atan2(2 * s.txy(), s.sx() - s.sy()) / 2, vonMises(xi, eta, face));
+    }
 }

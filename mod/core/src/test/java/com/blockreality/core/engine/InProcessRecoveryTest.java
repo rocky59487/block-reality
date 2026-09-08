@@ -16,6 +16,36 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /** Actual C6/C8/C12 through JNA; configured native runs require every capability. */
 class InProcessRecoveryTest {
+    @Test void nativeShellRecoveryFeedsTheSameDisplayAndPickingPath() {
+        try (InProcessEngine engine = engine()) {
+            assertTrue(engine.declareWorld(73, world(true, 0)));
+            for (var storage : BsiHeaders.Storage.values()) {
+                var response = solve(engine, storage, List.of("shells"));
+                var display = com.blockreality.core.bsi.BsiShellDisplay.decode(response, 73, java.util.Map.of(1,"slab"));
+                assertEquals(15, display.size());
+                for (int k=0; k<display.size(); k++) {
+                    var shell = display.get(k); var field = shell.display().orElseThrow();
+                    var facet = response.facets().get(k); var surfaces = response.facetSurfaces().get(k);
+                    assertTrue(shell.field().isEmpty()); assertTrue(shell.rawDc().isEmpty());
+                    assertEquals(facet.dc(),shell.dc()); assertEquals(facet.overloaded(),shell.overloaded());
+                    assertEquals(facet.governingTop(),shell.governingTopFace());
+                    assertEquals(facet.blockCount(),shell.blocks().size());
+                    var hit = com.blockreality.core.render.ShellMesh.locate(display,field.centreMm()).orElseThrow();
+                    assertEquals(shell.id(), hit.shell().id()); assertEquals(0,hit.outsideMm());
+                    for (int j=0; j<4; j++) {
+                        double[] p = facet.corners()[j];
+                        assertEquals(new com.blockreality.api.geom.Vec3d(p[0]*1000,p[1]*1000,p[2]*1000),field.cornersMm().get(j));
+                        for (int side=0; side<2; side++) {
+                            var actual = (side==0 ? field.top() : field.bottom()).get(j);
+                            var expected = (side==0 ? surfaces.top() : surfaces.bottom()).get(j);
+                            assertEquals(expected.s1()*1e-6,actual.s1()); assertEquals(expected.s2()*1e-6,actual.s2());
+                            assertEquals(expected.theta(),actual.theta()); assertEquals(expected.vm()*1e-6,actual.vm());
+                        }
+                    }
+                }
+            }
+        }
+    }
     private static final String VOCAB = """
             {"version":1,"materials":[
             {"name":"steel","role":"member","model":"isotropic","E":2e11,"nu":0.3,"rho":7850,

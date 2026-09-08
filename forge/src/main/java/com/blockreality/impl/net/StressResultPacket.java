@@ -5,7 +5,6 @@ import com.blockreality.api.BucklingState;
 import com.blockreality.api.EndForces;
 import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.MemberSnapshot;
-import com.blockreality.api.ShellFieldSpec;
 import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.StressFieldSpec;
 import com.blockreality.api.StressStation;
@@ -286,7 +285,7 @@ public final class StressResultPacket {
 
     // ---------------------------------------------------------------- encode
     //
-    // The FIELD travels, not samples of it. Thirty-odd numbers per member replace eleven
+    // Legacy beams still carry the FIELD; shells carry native recovery samples (channel 6). Thirty-odd numbers per member replace eleven
     // stations of four fibres each — about a seventh of the bytes — and the client can
     // then evaluate the exact stress at any point of any block face, which is what a
     // surface contour needs and what interpolating between samples could never give.
@@ -349,31 +348,7 @@ public final class StressResultPacket {
         buf.writeVarInt(Math.min(p.shells.size(), MAX_SHELLS));
         for (int i = 0; i < p.shells.size() && i < MAX_SHELLS; i++) {
             ShellSnapshot s = p.shells.get(i);
-            buf.writeVarInt(s.id());
-            buf.writeUtf(clip(s.plate(), TOKEN_MAX), TOKEN_MAX);
-            buf.writeUtf(clip(s.material(), TOKEN_MAX), TOKEN_MAX);
-            buf.writeFloat((float) s.thicknessMm());
-            buf.writeFloat((float) s.dc());
-            buf.writeBoolean(s.dc() > 1.0);
-            buf.writeFloat((float) s.dcRaw());
-            buf.writeBoolean(s.governingTopFace());
-            buf.writeBoolean(s.edgeRecovered());
-
-            List<BlockKey> blocks = s.blocks();
-            int nb = Math.min(blocks.size(), 4);
-            buf.writeVarInt(nb);
-            for (int k = 0; k < nb; k++) {
-                BlockKey b = blocks.get(k);
-                buf.writeVarInt(b.x());
-                buf.writeVarInt(b.y());
-                buf.writeVarInt(b.z());
-            }
-
-            buf.writeBoolean(p.withheldShells.contains(s.id()));
-
-            boolean hasField = s.field().isPresent() && s.field().get().isComplete();
-            buf.writeBoolean(hasField);
-            if (hasField) writeShellField(buf, s.field().get());
+            ShellPacketCodec.write(buf, s, p.withheldShells.contains(s.id()));
         }
     }
 
@@ -399,31 +374,6 @@ public final class StressResultPacket {
         int i = m.governingStation();
         if (i < 0 || i >= m.stations().size()) return -1;
         return m.stations().get(i).xMm();
-    }
-
-    // The four corner positions travel, not a centre and a size: the corners ARE the
-    // element, and reconstructing them from a centre would bake in the assumption that
-    // every facet is an axis-aligned square. That happens to be true of what the extractor
-    // produces today and it is not something the wire should quietly depend on.
-    private static void writeShellField(FriendlyByteBuf buf, ShellFieldSpec f) {
-        for (Vec3d c : f.cornersMm()) writeVec(buf, c);
-        writeVec(buf, f.ex());
-        writeVec(buf, f.ey());
-        writeVec(buf, f.normal());
-        buf.writeFloat((float) f.thicknessMm());
-        buf.writeFloat((float) f.nxx());
-        buf.writeFloat((float) f.nyy());
-        buf.writeFloat((float) f.nxy());
-        buf.writeFloat((float) f.mxx());
-        buf.writeFloat((float) f.myy());
-        buf.writeFloat((float) f.mxy());
-        buf.writeFloat((float) f.qx());
-        buf.writeFloat((float) f.qy());
-        for (ShellFieldSpec.Moments m : f.cornerM()) {
-            buf.writeFloat((float) m.mxx());
-            buf.writeFloat((float) m.myy());
-            buf.writeFloat((float) m.mxy());
-        }
     }
 
     private static void writeField(FriendlyByteBuf buf, StressFieldSpec f) {
@@ -565,28 +515,9 @@ public final class StressResultPacket {
         int nShells = count(buf.readVarInt(), MAX_SHELLS, "shells");
         List<ShellSnapshot> shells = new ArrayList<>(nShells);
         for (int i = 0; i < nShells; i++) {
-            int id = buf.readVarInt();
-            String plate = buf.readUtf(48);
-            String shellMaterial = buf.readUtf(48);
-            double t = finite(buf.readFloat(), "thickness");
-            double dc = finite(buf.readFloat(), "shell dc");
-            boolean overloaded = buf.readBoolean();
-            dc = alignToVerdict(dc, overloaded);
-            double dcRaw = finite(buf.readFloat(), "shell dcRaw");
-            boolean top = buf.readBoolean();
-            boolean recovered = buf.readBoolean();
-
-            int nb = count(buf.readVarInt(), 4, "shell blocks");
-            List<BlockKey> blocks = new ArrayList<>(nb);
-            for (int k = 0; k < nb; k++) {
-                blocks.add(new BlockKey(buf.readVarInt(), buf.readVarInt(), buf.readVarInt()));
-            }
-
-            if (buf.readBoolean()) withheldShells.add(id);
-
-            Optional<ShellFieldSpec> field = buf.readBoolean()
-                    ? Optional.of(readShellField(buf, t)) : Optional.empty();
-            shells.add(new ShellSnapshot(id, shellMaterial, plate, t, dc, dcRaw, top, recovered, blocks, field));
+            ShellPacketCodec.Entry entry = ShellPacketCodec.read(buf);
+            shells.add(entry.shell());
+            if (entry.withheld()) withheldShells.add(entry.shell().id());
         }
 
         // Nothing was left out, yet something claims its input was cut. The server sets
@@ -636,25 +567,6 @@ public final class StressResultPacket {
         if (overloaded && dc <= 1.0) return Math.nextUp(1.0);
         if (!overloaded && dc > 1.0) return 1.0;
         return dc;
-    }
-
-    private static ShellFieldSpec readShellField(FriendlyByteBuf buf, double fallbackT) {
-        List<Vec3d> corners = new ArrayList<>(4);
-        for (int k = 0; k < 4; k++) corners.add(readVec(buf));
-        Vec3d ex = readVec(buf), ey = readVec(buf), n = readVec(buf);
-        double t = finite(buf.readFloat(), "field thickness");
-        double nxx = finite(buf.readFloat(), "Nxx"), nyy = finite(buf.readFloat(), "Nyy"),
-                nxy = finite(buf.readFloat(), "Nxy");
-        double mxx = finite(buf.readFloat(), "Mxx"), myy = finite(buf.readFloat(), "Myy"),
-                mxy = finite(buf.readFloat(), "Mxy");
-        double qx = finite(buf.readFloat(), "Qx"), qy = finite(buf.readFloat(), "Qy");
-        List<ShellFieldSpec.Moments> corner = new ArrayList<>(4);
-        for (int k = 0; k < 4; k++) {
-            corner.add(new ShellFieldSpec.Moments(finite(buf.readFloat(), "Mc"),
-                    finite(buf.readFloat(), "Mc"), finite(buf.readFloat(), "Mc")));
-        }
-        return new ShellFieldSpec(corners, ex, ey, n, t > 0 ? t : fallbackT,
-                nxx, nyy, nxy, mxx, myy, mxy, qx, qy, corner);
     }
 
     private static StressFieldSpec readField(FriendlyByteBuf buf) {

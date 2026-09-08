@@ -401,7 +401,8 @@ class StressResultPacketTest {
         ShellSnapshot s = out.shells().get(0);
         assertEquals("concrete_slab_200", s.plate());
         assertTrue(s.governingTopFace());
-        assertTrue(s.field().isPresent());
+        assertTrue(s.display().isPresent());
+        assertTrue(s.field().isEmpty(), "client does not regenerate shell mechanics");
     }
 
     @Test

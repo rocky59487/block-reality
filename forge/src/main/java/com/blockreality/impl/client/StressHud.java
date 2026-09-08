@@ -210,11 +210,11 @@ public final class StressHud {
 
         g.drawString(mc.font, Component.translatable("br.hud.plate_dc",
                 String.format(Locale.ROOT, "%.3f", s.dc())),
-                x, y, s.dc() > 1.0 ? 0xFF6B6B : 0xFFFFFF);
+                x, y, s.overloaded() ? 0xFF6B6B : 0xFFFFFF);
         y += 11;
 
-        if (s.field().isPresent()) {
-            var f = s.field().get();
+        if (s.display().isPresent()) {
+            var f = s.display().get();
             g.drawString(mc.font, Component.translatable("br.hud.plate_faces",
                     String.format(Locale.ROOT, "%+.2f", f.signedPrincipal(0, 0, +1)),
                     String.format(Locale.ROOT, "%+.2f", f.signedPrincipal(0, 0, -1))),
