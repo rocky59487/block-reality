@@ -1358,3 +1358,20 @@ surfaceTiles測試中將長度縮至2e-8 mm以放大座標缺陷（純顯示幾�
 
 只有新BSI→真JNA→樣本/封包通過才標雙側消費鏈驗證；仍不是Minecraft真遊戲換裝。
 NATIVE/GAME_SWAP/#89、MC64_FORWARD、原41.7ms与Linux7FAIL、原v2/v3/v4欠項均保留。
+
+
+## 2026-09-08 首跑範圍修正與具名計數
+
+初次Windows/Linux各77項中76PASS/1FAIL：HOST 1 zero requested。原fixture只有支承，
+真引擎回EMPTY_WORLD；診斷header與首版gate源碼照留，不能把它解釋為成功的零構件求解。
+原fixture現在明確驗EMPTY_WORLD，零筆成功區段另以標示stub的host引擎驗證，降級為host布局證據。
+真原生零構件成功案例本段未量；原固定端梁自重±集中力的真原生測試沒有更換。
+新增stub的首建置因lambda推導enum返回值不合int vtable失敗，改明確int；兩箱原始編譯錯誤保留。
+
+首輪正確編譯後Windows/Linux各79PASS/DET×3；八變異均正常編譯、有具名FAIL：
+LEGACY16、SIDE20、GOV12、PAIR2、ORDER1、VALIDATE4、GOVERNING2、LAYOUT3。
+全部名稱與FAIL集合釘在gate/bsi_station_identity_counts.json，不放寬既有數值容差。
+Java五變異ID_POSITION/ID_SIDE/ID_GOV/ID_VALIDATE/PACKET_ID均抓到具名斷言。
+回歸runner的cap白名單首跑漏新增stationIdentity，保留原失敗後加唯一新cap；
+修改時一次縮排編譯錯誤也照留。此修正不改語料PASS8/SKIP2、原310邊界或任何物理oracle。
+完整三箱、sanitizer與回歸結論待本段結果記錄；以上不是Minecraft遊戲換裝或v4完成。
