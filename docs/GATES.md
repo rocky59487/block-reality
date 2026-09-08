@@ -1299,3 +1299,8 @@ surfaceTiles測試中將長度縮至2e-8 mm以放大座標缺陷（純顯示幾�
 縱向座標應隨clip交點保存，不能靠世界投影後的固定epsilon猜回。新增隔離PATCH_COORDINATE
 變異，把固定snap放回，必須使該具名測試assertion FAIL。其餘八臂與299/62計數不變，總共九臂。
 
+
+
+2026-09-08 九臂收版：PATCH_COORDINATE的固定snap反例由surfaceTiles具名assertion FAIL咬合。
+該測試補了端點讀數，亦使UNIT/ORDER各由4增為5個FAIL；完整集合釘在mutation_counts.json。
+其餘FAIL數不變，core299/Forge62正常臂全過（12環境SKIP）；未移動原生單側MISS。

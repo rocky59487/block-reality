@@ -16,6 +16,44 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /** Actual C6/C8/C12 through JNA; configured native runs require every capability. */
 class InProcessRecoveryTest {
+    @Test void nativeBeamSamplesAndPointLoadSidesReachTheSharedDisplay() {
+        try (InProcessEngine engine = engine()) {
+            assertTrue(engine.has("bsi.readback.memberGeometry"));
+            assertTrue(engine.declareWorld(73, world(false, 0)));
+            for (var storage : BsiHeaders.Storage.values()) {
+                var r=engine.solve(true,new double[]{0,-9.81,0},
+                        List.of(new BsiRecords.Load(2,0,0,0,-10000,0)),1,List.of("members","stations","memberGeometry"),
+                        new BsiHeaders.Precision(BsiHeaders.Tier.COMMIT,storage));
+                assertNotNull(r);assertEquals("ok",r.status(),r.message());
+                var mapped=com.blockreality.core.bsi.BsiBeamDisplay.decode(r,73,java.util.Map.of(0,"steel"),java.util.Map.of(0,"rect"));
+                assertEquals(r.members().size(),mapped.size());
+                int duplicates=0;
+                for(int k=0;k<mapped.size();k++) {
+                    var m=mapped.get(k);var b=r.members().get(k);var f=m.display().orElseThrow();var g=r.memberGeometry().get(k);
+                    assertEquals(b.stationCount(),m.stations().size());assertEquals(b.blockCount(),m.blocks().size());
+                    assertTrue(m.field().isEmpty());assertEquals(b.overloaded(),m.overloaded());assertEquals(b.maxDC(),m.dc());
+                    assertEquals(g.origin().scaled(1000),f.originMm());assertEquals(g.ey(),f.ay());assertEquals(g.faceY().get(0)*1000,f.halfYMm());
+                    assertEquals(-b.endI()[0],m.endI().n());assertEquals(b.endJ()[5]*1000,m.endJ().mz());
+                    for(int j=0;j<m.stations().size();j++) {
+                        var s=m.stations().get(j);double[] raw=r.stations()[b.stationFirst()+j];
+                        assertEquals(raw[0]*b.lengthM()*1000,s.xMm(),1e-9);
+                        assertEquals(new com.blockreality.api.geom.Vec3d(raw[1]*1000,raw[2]*1000,raw[3]*1000),s.centroidMm());
+                        for(int face=0;face<4;face++)assertEquals(raw[4+face]*1e-6,s.fibres().get(face).sigmaMpa());
+                        assertEquals(raw[8]*1e-6,s.tauMpa());
+                        assertEquals(Double.isNaN(raw[9]),s.naOffsetYMm().isEmpty());
+                        if(Double.isFinite(raw[9]))assertEquals(raw[9]*1000,s.naOffsetYMm().orElseThrow());
+                        if(j>0 && s.xMm()==m.stations().get(j-1).xMm())duplicates++;
+                    }
+                    var ribbon=com.blockreality.core.render.StressRibbonBuilder.build(m,com.blockreality.api.render.StressPalette.SIGNED_DEFAULT,m.peakMagnitudeMpa());
+                    assertTrue(ribbon.bands().stream().allMatch(band->!band.from().equals(band.to())));
+                    for(var s:m.stations())assertTrue(com.blockreality.core.render.SectionDiagram.sampled(s).isPresent());
+                }
+                // Current native recovery chooses one side per unique location (dated GATES record).
+                // This leg proves full forwarding, not native dual-side readback.
+                assertEquals(0,duplicates,"current native station recovery is single-sided");
+            }
+        }
+    }
     @Test void nativeShellRecoveryFeedsTheSameDisplayAndPickingPath() {
         try (InProcessEngine engine = engine()) {
             assertTrue(engine.declareWorld(73, world(true, 0)));

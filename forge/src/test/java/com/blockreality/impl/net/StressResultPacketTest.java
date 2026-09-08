@@ -394,8 +394,9 @@ class StressResultPacketTest {
         assertEquals(GoverningFibre.CRUSH, m.governingFibre());
         assertEquals("steel_rect_200x400", m.section());
         assertEquals(List.of(new BlockKey(1, 64, 0)), m.blocks());
-        assertTrue(m.field().isPresent());
-        assertEquals(11, m.stations().size(), "stations are regenerated from the field");
+        assertTrue(m.display().isPresent());
+        assertTrue(m.field().isEmpty());
+        assertEquals(11, m.stations().size(), "all supplied stations survive unchanged");
 
         assertEquals(1, out.shells().size());
         ShellSnapshot s = out.shells().get(0);

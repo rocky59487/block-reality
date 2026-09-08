@@ -5,14 +5,9 @@ import com.blockreality.api.geom.Vec3d;
 import java.util.Optional;
 
 /**
- * The stress field of one member, as a function rather than as samples of one.
- *
- * <p>This is what makes a proper contour possible. Sending eleven stations and four fibres
- * forces a renderer to interpolate between samples of a function it could simply evaluate,
- * and no amount of interpolation recovers what happens between the four corners of a
- * section. With the member's local frame, its section properties and the uniform load, the
- * exact value is available at every point of the member — which is exactly what a surface
- * plot needs, and it is smaller on the wire than the samples were.
+ * Legacy Sidecar stress-field diagnostics for uniform loads. The current client uses
+ * {@link BeamDisplayField} and the supplied stations; it does not evaluate these formulas.
+ * Concentrated loads and missing recovery data cannot be reconstructed by this type.
  *
  * <p><strong>The field.</strong> Tension-positive, at distance {@code x} along the member
  * and offsets {@code y}, {@code z} in the local section axes:

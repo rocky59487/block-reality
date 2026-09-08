@@ -44,9 +44,14 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   契約52檔hash b5ad59f1bfa9…同步，完整證據在tectonic2 MC65B_BSI_ADAPTER。
   殼顯示已遷移：BsiShellDisplay→ShellDisplayField→ShellMesh/HUD/renderer/channel6，
   客戶端只插值樣本，殼旗標獨立轉發；core283=271PASS/12SKIP、Forge57全過，真JNA9/9，八變異。
-  ShellFieldSpec仍留在Sidecar相容入口一次取樣/舊診斷；梁的BSI框架/面中心取樣幾何已接通，下一單元遷移梁顯示與封包。
+  ShellFieldSpec仍留在Sidecar相容入口一次取樣/舊診斷；梁BSI框架/面中心幾何已接通。
   53檔契約hash42a1b24c3c0b…；memberGeometry固定168B/f64，核心290=278PASS/12SKIP、Forge57PASS，
   真JNA10/10，三個Java幾何守門變異有具名FAIL；引擎564checks/五變異三箱與sanitizer詳見MC65B_MEMBER_GEOMETRY。
+  梁顯示已接 BsiBeamDisplay→BeamDisplayField→ribbon/section/HUD/表面切分/channel7。
+  不重算梁力學，完整站點/格集合/NA缺值/overloaded與控制站索引原樣傳送；舊field只在Sidecar相容入口/診斷保留。
+  最新 core299=287PASS/12SKIP、Forge62PASS，真JNA11/11、九變異具名咬合。首跑證明
+  原生每位置只輸出memberScreenSideAt選的一側；雙側回收MISS，手工雙側測試不能充作原生雙側能力。
+  下一單元凍opt-in雙側回收/側資訊，再接MC64_FORWARD、NATIVE/GAME_SWAP。
   #89與Windows自足封裝仍未完成，版本仍是引擎1.2.0對位、模組0.4.0-dev。
 - **還沒接**：**遊戲流程仍走 `SidecarClient`**（protocol 2 / FrameCore），`InProcessEngine` 尚未接進遊戲迴圈（#89）。
   「檔案在」不算「有」——見下面的三條鐵則第 2 條。

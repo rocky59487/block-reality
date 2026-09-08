@@ -4,12 +4,10 @@ package com.blockreality.api;
  * The six internal force components at one end of a member, in the member's own local
  * frame. Units are N and N·mm.
  *
- * <p>{@code N} is <strong>compression-positive</strong> here because that is what
- * FrameCore reports and these are passed through unaltered — the tension-positive
- * conversion is applied only to the fibre stresses in {@link Fibre}, exactly once, at
- * the sidecar boundary. Mixing the two conventions in one record would be the single
- * easiest way to introduce a sign bug, so they are kept in separate types with the
- * convention stated on each.
+ * <p>These are section forces at both ends, with {@code N} compression-positive.
+ * Sidecar supplies this convention; the BSI display adapter negates BSI's tension-positive
+ * N and converts moments from N·m once at ingestion. These values are diagnostic:
+ * native and network display paths use the supplied {@link Fibre} samples instead.
  */
 public record EndForces(double n, double vy, double vz, double t, double my, double mz) {
 

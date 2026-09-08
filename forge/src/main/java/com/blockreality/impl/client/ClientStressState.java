@@ -192,14 +192,14 @@ public final class ClientStressState {
 
     /**
      * The station of the focused member that governs its D/C — the section worth showing.
-     * Falls back to the first station when the engine reported no governing index.
+     * Absent when the engine did not identify a unique governing sample.
      */
     public static Optional<StressStation> focusedStation() {
         return focusedMember().flatMap(m -> {
             List<StressStation> st = m.stations();
             if (st.isEmpty()) return Optional.empty();
             int i = m.governingStation();
-            return Optional.of(st.get(i >= 0 && i < st.size() ? i : 0));
+            return i >= 0 && i < st.size() ? Optional.of(st.get(i)) : Optional.empty();
         });
     }
 
@@ -221,7 +221,7 @@ public final class ClientStressState {
     }
 
     public static Optional<SectionDiagram> focusedSection() {
-        return focusedStation().flatMap(SectionDiagram::of);
+        return focusedStation().flatMap(SectionDiagram::sampled);
     }
 
     /** Recomputed on the client tick from where the camera is looking. */
@@ -415,7 +415,7 @@ public final class ClientStressState {
         // make a lightly loaded floor look exactly as alarming as an overstressed beam.
         double peak = 0;
         for (MemberSnapshot m : shownMembers) {
-            if (m.field().isPresent()) peak = Math.max(peak, m.field().get().peakMagnitudeMpa(21));
+            peak = Math.max(peak, m.peakMagnitudeMpa());
         }
         peak = Math.max(peak, ShellMesh.peakMpa(shownShells));
         colourScaleMpa = peak > 0 ? peak : 1;
