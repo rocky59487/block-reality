@@ -61,3 +61,13 @@ blockreality/contract/CONTRACT_SHA256。保留原 DLL、原模型與首次 XML�
 改為 core/Forge 共用一個 Gradle 資源規則，直接取本倉 contract 的 hash/schema。
 兩個輸出資源須與來源逐位相同；不得手工填 hash、放過 BSI_VERSION 或在測試注入假資源。
 真 native packet 仍須通過。這不代表 jar 原生庫封裝或 GAME_SWAP 已完成。
+
+## 2026-09-08 計數與收版線
+
+最終 core316（304 PASS/12 SKIP）、Forge71 PASS，共387登錄；原Sidecar28全部執行。
+新核心手工suite9項，Forge全域suite4項；native分析與shell聚合各一項，native→packet一項，
+另有failed-packet與獨立資源測試。XML原始bytes為計數來源，SKIP不算PASS。
+隔離變異凍結（tests/failures/errors/skipped）：GLOBAL_NUMERIC=4/2/0/0，BUCK_NUMERIC=4/2/0/0，
+DROP_BIT=9/3/0/0，REVISION_CHAIN=9/1/0/0，NARROW=4/2/0/0，ALIGN=4/2/0/0，
+UNKNOWN_STATE/LAST_BLOCK/QUALITY/OWNER各9/1/0/0。初版REVISION的9/0/0/0另列未逃逸。
+本輪沒有新i9/Linux實跑或新DET宣稱；來源未改的正式v1.3庫既有三箱證據不冒充本次Java驗證。
