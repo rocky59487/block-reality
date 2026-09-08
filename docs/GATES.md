@@ -1125,3 +1125,17 @@ cardinality/finite/vocab）每臂完整11測試、exit1且原正常斷言具名F
 新hash為59beed904d7321ddc1c46b5cca11dba669a129e495e921ff6d3d86edbced3b03，51檔雙倉相同。
 完整來源hash、raw與XML：tectonic2 gate/evidence/MC65B_BSI_CONTRACT。
 MC65B adapter新三能力、真新能力JNA、Windows自足封裝與GAME_SWAP均保留待辦。
+
+## 2026-09-08 — 原生 BSI 回收 JNA 驗收先凍
+
+引擎側判準 MC65B_BSI_ADAPTER.md（5debd6e）為本段對位。新增真 JNA 腿要求
+stations/shells/f32 三能力，不可因缺能力跳過；明確送 COMMIT+F64/F32，
+以 C8 懸臂解析頂拉底壓/根部應力、C6 梁板自重差 70632 N（rel1e-9）及
+旋轉/鏡像不變性（rel1e-12）驗證實際解碼。storage 對 stations/surfaces 逐欄
+Java float cast 位元一致；舊 blocks/members/facets D/C double 不縮窄。
+既有五項真 JNA 與 codec/Java 核心保留。沒有 BR_ENGINE 的開發跑可 skip，
+驗收必須配置真 native 並核對新增測試零 skip。這不完成遊戲換裝 #89。
+
+C1 checker 原固定順序漏列前段新 facetBlocks，修正為 facetSurfaces 後、attrsEcho 前，
+加入正例及錯序/重複負例；兩倉 contract 完整鏡像及同 commit 更新兩行 engine ref。
+任何首跑 FAIL 保留，數值 oracle 不依引擎輸出修訂。
