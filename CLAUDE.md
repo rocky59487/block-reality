@@ -34,7 +34,7 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   契約加法批次 #2（`include:"islands"`、`bsi.fracture.step`）綁 **v0.5 倒塌**，v0.4 的 N19–N24 一條不動。
 - **2026-09-06 BSI_CORE**：配對分支引擎宣告core/members，Windows真CAPI :core 260總數/220過/40跳。
   members首次執行抓到測試root moment漏乘L，依契約原wL²/2修正；原記錄不改、見GATES.md。
-  Windows自足封裝仍待NATIVE，遊戲換裝#89未完成。
+  引擎 v1.3 已驗 Windows/Linux 自足原生庫；NATIVE 的消費者封裝與遊戲換裝 #89 未完成。
 - **2026-09-07 BSI回收契約／codec**：facetBlocks、stations-only與f32布局已同步兩倉，hash59beed904d73…；
   Java facets/格索引/surfaces解碼與typed precision已接，binary區段範圍/有限值守門；
   271項=231PASS/40SKIP，真JNA五項全執行，七個Java變異具名咬合。首跑失敗見GATES.md。
@@ -54,7 +54,8 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   契約54檔hash4977f57308e6，79checks/八變異三箱DET×3、sanitizer及兩箱48組舊回應逐位。
   首跑ground-only EMPTY_WORLD、host stub零筆證據降級均留GATES與MC65B_BSI_STATION_IDENTITY。
   下一單元先凍MC64_FORWARD全域/屈曲旗標與單一AnalysisResult入口，再凍display budget、接NATIVE/GAME_SWAP。
-  #89與Windows自足封裝仍未完成，版本仍是引擎1.2.0對位、模組0.4.0-dev。
+  #89 與消費者封裝仍未完成，版本對位引擎 1.3.0、模組仍 0.4.0-dev。
+  正式引擎來源與原生資產見 tectonic2 v1.3 及套件 provenance.json；本倉 pin 鎖定同一引擎來源提交。
 - **還沒接**：**遊戲流程仍走 `SidecarClient`**（protocol 2 / FrameCore），`InProcessEngine` 尚未接進遊戲迴圈（#89）。
   「檔案在」不算「有」——見下面的三條鐵則第 2 條。
 - **不會做**：FrameCore 的 BSI 對數臂（D-045）。連帶 N22 差異帳改形為「單臂語料 + 封閉解」並**降一級**，
