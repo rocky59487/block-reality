@@ -79,5 +79,7 @@
   "br.unassigned.fully_supported": "%s block(s) fully supported — in the model, nothing to report",
   "br.unassigned.unknown": "%s block(s) left out for a reason this build does not know",
   "br.hud.focus_withheld": "not judged: this member runs into unloaded chunks",
-  "br.engine.platform": "No bundled engine for this platform (%s) — analysis is off. You can build br-sidecar from source and point sidecarPath at it."
+  "br.engine.platform": "No bundled engine for this platform (%s) — analysis is off. You can build br-sidecar from source and point sidecarPath at it.",
+  "br.buckling.not_eligible_scale": "Buckling not evaluated (engine DOF budget)",
+  "br.buckling.solver_failed": "Buckling computation failed"
 }

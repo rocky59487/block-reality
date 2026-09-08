@@ -199,8 +199,8 @@ public final class BRCommand {
                             "  last result     %d members, %d plate facets, max D/C %.4f  (%s)%s",
                             r.members().size(), r.shells().size(), r.maxDc(),
                             r.governingKind().isEmpty() ? "-" : r.governingKind() + " #" + r.governing(),
-                            r.maxDc() > 1.0 ? "  OVER CAPACITY" : ""),
-                    r.maxDc() > 1.0 ? ChatFormatting.RED : ChatFormatting.GREEN);
+                            r.overCapacity() ? "  OVER CAPACITY" : ""),
+                    r.overCapacity() ? ChatFormatting.RED : ChatFormatting.GREEN);
             // The overlay greys out elements whose input was cut and says why. This
             // line used to print their D/C anyway, so one member read "not judged" on
             // screen and a number in chat. Whichever surface a player believes, one of

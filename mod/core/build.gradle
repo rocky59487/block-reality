@@ -19,20 +19,7 @@ dependencies {
 // them at handshake time. They are copied from contract/, never a second copy
 // checked in: a copy drifts, and a drifting contract hash is exactly the failure
 // the handshake exists to catch.
-tasks.named('processResources') {
-    def contractDir = rootProject.file('../contract')
-    inputs.dir contractDir
-    from(contractDir) {
-        include 'CONTRACT_SHA256'
-        include 'bsi.schema.json'
-        into 'blockreality/contract'
-    }
-    doFirst {
-        if (!new File(contractDir, 'CONTRACT_SHA256').exists()) {
-            throw new GradleException("contract/CONTRACT_SHA256 is missing: this build cannot state which contract it speaks")
-        }
-    }
-}
+apply from: rootProject.file('../gradle/contract-resources.gradle')
 
 // N23-a: the pin must match the bytes it pins, on every build, not only in CI.
 def checkContract = tasks.register('checkContract', Exec) {

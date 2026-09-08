@@ -155,3 +155,11 @@ Java 的 `BsiFrame`/`BsiHeaders`/`BsiResponse` 只能實作契約，不得自創
 **嚴重度依「不符代表什麼」定**：兩個預設分支之間不符 = **真漂移 → 紅**；
 PR 上不符 = 變更**在途中** → 警告（否則每次合法的契約變更都從紅開始，然後所有人學會忽略它）。
 **fetch 失敗永不綠。** 最後一道是執行期握手：`bsi.hello` 的 `contractSha256` 不符 → `BSI_VERSION` → 引擎停用並指名兩個雜湊。
+
+### 2026-09-08 MC64_FORWARD 現況
+
+單一BsiAnalysisResult入口已接InProcessEngine.analyze；全域旗標取完整blocks bits，AnalysisResult與channel9獨立保存boolean/f64。
+Forge與core共用Gradle契約資源規則；真原生→Forge封包已驗證，缺resource的首敗保留。
+core316=304PASS/12SKIP、Forge71PASS，真JNA與十個具名變異通過；單處revision變異未逃逸照登。
+遊戲仍SidecarClient，真HUD/換裝未驗收；BSI混合屈曲state/screen明示拒絕。下一單元DISPLAY_DELIVERY，
+原DISPLAY_BAND仍依PE3/MC65B。引擎v1.3標籤未變、模組0.4.0-dev，沒有新效能宣稱。

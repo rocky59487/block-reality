@@ -45,13 +45,15 @@ import java.util.Optional;
  *                             sum of reactions. Machine precision on a sound solve.
  * @param bucklingFactor  smallest linear-buckling load factor across every structure:
  *                        the multiple of the CURRENT load at which something goes
- *                        unstable, so {@code <= 1} means it already has. 0 means it was
+ *                        unstable. The originating engine supplies its critical flag. 0 means it was
  *                        not computed. Deliberately not called a safety factor — it is
  *                        the eigenvalue of the linear onset problem and therefore an
  *                        upper bound on the real critical load, not a margin.
  * @param bucklingState what {@code bucklingFactor} is. The number alone cannot say: 0 was
  *                      "not asked for", "nothing eligible" and "asked, found nothing" at
  *                      once (N18)
+ * @param overCapacity supplied global capacity flag, independent of the numeric summary
+ * @param bucklingCritical supplied global stability flag, independent of the factor
  * @param unassigned  blocks this solve produced no element result for, grouped by reason.
  *                    The reasons are NOT interchangeable and the game side does have to
  *                    tell them apart: a plate block that closed no facet is a modelling
@@ -76,7 +78,20 @@ public record AnalysisResult(
         BucklingState bucklingState,
         List<MemberSnapshot> members,
         List<ShellSnapshot> shells,
-        List<UnassignedBlocks> unassigned) {
+        List<UnassignedBlocks> unassigned,
+        boolean overCapacity,
+        boolean bucklingCritical) {
+
+    /** Legacy Sidecar compatibility: that protocol supplies numbers without global flags. */
+    public AnalysisResult(WorldRevision revision, boolean ok, boolean singular, String diagnostic,
+                          double maxDc, int governing, String governingKind, int islands,
+                          int singularIslands, double equilibriumResidual, double bucklingFactor,
+                          BucklingState bucklingState, List<MemberSnapshot> members,
+                          List<ShellSnapshot> shells, List<UnassignedBlocks> unassigned) {
+        this(revision, ok, singular, diagnostic, maxDc, governing, governingKind, islands,
+                singularIslands, equilibriumResidual, bucklingFactor, bucklingState, members,
+                shells, unassigned, maxDc > 1.0, bucklingFactor > 0 && bucklingFactor <= 1.0);
+    }
 
     public AnalysisResult {
         members = List.copyOf(members);
@@ -99,14 +114,14 @@ public record AnalysisResult(
     public boolean allSingular() { return ok && singular && !isUsable(); }
 
     /**
-     * True when some structure is at or past its linear buckling load.
+     * The supplied global buckling verdict; only the legacy constructor compares a factor.
      *
      * <p>Separate from {@code maxDc > 1} on purpose. They are different failures with
      * different causes: one is the material running out of strength, the other is the
      * geometry running out of stiffness, and a slender column reaches the second at a
      * stress the first calls comfortable.
      */
-    public boolean bucklingCritical() { return bucklingFactor > 0 && bucklingFactor <= 1.0; }
+    public boolean bucklingCritical() { return bucklingCritical; }
 
     public static AnalysisResult failed(WorldRevision rev, String why) {
         return new AnalysisResult(rev, false, false, why, 0, -1, "", 0, 0, 0, 0,

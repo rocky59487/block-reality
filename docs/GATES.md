@@ -1395,3 +1395,11 @@ display budget要依原v2顯示軌與訂閱需求另凍，不能以f32存儲充�
 NATIVE自足包/來源鏈及GAME_SWAP(#89)真遊戲驗收之前保留最後Sidecar相容入口；
 目前遊戲仍SidecarClient/protocol2/FrameCore。MC65B active、引擎1.2.0/模組0.4.0-dev不變。
 本段沒有重跑2690或效能；原41.7ms FAIL、Linux7FAIL及v2/v3/v4欠項照留。
+
+## 2026-09-08 MC64_FORWARD
+
+判準docs/MC64_FORWARD.md先凍（012a9af）；revision未逃逸與Forge資源首敗依4c0305a/e45e6b2先記後修。
+headless BSI→AnalysisResult→channel9保存獨立flags與f64；core316=304PASS/12SKIP、Forge71PASS（共387登錄）。
+十變異具名assertion FAIL；原REVISION單點變異9PASS不算咬合，改整鏈錯信reply revision才咬原stale oracle。
+Forge首70項為69PASS/1FAIL，原因缺契約資源；共用Gradle規則修復，正式輸出hash/schema逐位核對。
+原始輸出、XML與來源SHA見tectonic2 gate/evidence/MC64_FORWARD；未宣稱真遊戲換裝/屈曲求解/效能。

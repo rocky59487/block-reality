@@ -5,9 +5,13 @@ import com.blockreality.core.bsi.BsiFrame;
 import com.blockreality.core.bsi.BsiHeaders;
 import com.blockreality.core.bsi.BsiRecords;
 import com.blockreality.core.bsi.BsiResponse;
+import com.blockreality.core.bsi.BsiAnalysisResult;
+import com.blockreality.api.AnalysisResult;
+import com.blockreality.api.WorldRevision;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -36,6 +40,7 @@ public final class InProcessEngine implements AutoCloseable {
     private String engineName = "", engineVersion = "";
     private List<String> capabilities = List.of();
     private long revision;
+    private boolean worldDeclared;
 
     private InProcessEngine(BsiNative n) { this.native_ = n; }
 
@@ -98,11 +103,24 @@ public final class InProcessEngine implements AutoCloseable {
     }
 
     public boolean declareWorld(long worldRevision, List<BsiRecords.Block> blocks) {
+        worldDeclared = false;
         if (status != Status.READY) return false;
         this.revision = worldRevision;
         byte[] payload = BsiRecords.encodeBlocks(blocks);
         BsiResponse r = send(BsiHeaders.worldDeclare(nextId(), revision, payload.length / BsiRecords.BLOCK_BYTES, 0), payload);
-        return ok(r);
+        worldDeclared = ok(r);
+        return worldDeclared;
+    }
+
+    /** Complete commit analysis for the declared world; never falls back to a previous result. */
+    public AnalysisResult analyze(WorldRevision expected, boolean selfWeight, double[] gravity,
+            List<BsiRecords.Load> loads, Integer numThreads, Map<Integer,String> materials,
+            Map<Integer,String> sections, BsiHeaders.Storage storage) {
+        if (status != Status.READY || !worldDeclared || expected.value() != revision)
+            return AnalysisResult.failed(expected, "BSI analysis: no matching declared world");
+        var precision = new BsiHeaders.Precision(BsiHeaders.Tier.COMMIT, storage);
+        return BsiAnalysisResult.decode(solve(selfWeight, gravity, loads, numThreads,
+                BsiAnalysisResult.INCLUDE, precision), expected, materials, sections, precision);
     }
 
     /** One solve. Returns the reply (which may be an error frame) or null when the engine is off. */

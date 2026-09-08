@@ -79,5 +79,7 @@
   "br.unassigned.fully_supported": "%s 格完全支承——已在模型內，沒有內力可報",
   "br.unassigned.unknown": "%s 格未納入，理由是這個版本不認得的代碼",
   "br.hud.focus_withheld": "未判定：這根構件延伸進未載入的區塊",
-  "br.engine.platform": "此平台（%s）沒有隨附的分析引擎，分析停用。可自行編譯 br-sidecar 並在設定 sidecarPath 指定。"
+  "br.engine.platform": "此平台（%s）沒有隨附的分析引擎，分析停用。可自行編譯 br-sidecar 並在設定 sidecarPath 指定。",
+  "br.buckling.not_eligible_scale": "挫屈未評估（引擎自由度預算）",
+  "br.buckling.solver_failed": "挫屈計算失敗"
 }

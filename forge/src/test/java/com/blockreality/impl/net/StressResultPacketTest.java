@@ -144,17 +144,13 @@ class StressResultPacketTest {
     }
 
     @org.junit.jupiter.api.Test
-    void aFactorTooSmallForAFloatIsRestoredNotRejected() {
-        // The smallest positive double becomes 0.0f in transit. The state says a factor
-        // WAS computed and was positive; only its magnitude is lost, so the decoder puts
-        // back the smallest positive value rather than calling the packet a contradiction.
-        // Same treatment maxDc already gets, and for the same reason: the verdict travels
-        // as its own flag and never depended on this number.
+    void theSmallestDoubleFactorIsPreservedExactly() {
+        // Channel9 retains the original subnormal double and the independent flag.
         AnalysisResult r = result(List.of(), List.of(), 0.4, -1, "", Double.MIN_VALUE);
         StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
         assertTrue(out.valid(), out.invalidReason());
         assertEquals(BucklingState.COMPUTED, out.bucklingState());
-        assertTrue(out.bucklingFactor() > 0, "a computed factor must stay positive");
+        assertEquals(Double.MIN_VALUE, out.bucklingFactor(), "channel9 preserves the exact factor");
         assertTrue(out.bucklingCritical(), "0 < factor <= 1, decided on the server's double");
     }
 
@@ -186,11 +182,11 @@ class StressResultPacketTest {
         buf.writeVarLong(9);
         buf.writeUtf(DIM, 256);
         buf.writeBoolean(false);   // singular
-        buf.writeFloat(0.25f);     // maxDc
+        buf.writeDouble(0.25f);     // maxDc
         buf.writeBoolean(false);   // overCapacity
         buf.writeVarInt(1);        // islands
         buf.writeVarInt(0);        // singularIslands
-        buf.writeFloat(2.5f);      // bucklingFactor
+        buf.writeDouble(2.5f);      // bucklingFactor
         buf.writeBoolean(false);   // bucklingCritical
         buf.writeByte(BucklingState.NOT_ELIGIBLE.ordinal());   // ...which cannot have one
         for (int i = 0; i < UnassignedReason.values().length; i++) buf.writeVarInt(0);
@@ -210,11 +206,11 @@ class StressResultPacketTest {
         buf.writeVarLong(9);
         buf.writeUtf(DIM, 256);
         buf.writeBoolean(false);
-        buf.writeFloat(0.25f);
+        buf.writeDouble(0.25f);
         buf.writeBoolean(false);
         buf.writeVarInt(1);
         buf.writeVarInt(0);
-        buf.writeFloat(0f);
+        buf.writeDouble(0f);
         buf.writeBoolean(false);
         buf.writeByte(120);        // no such state
         for (int i = 0; i < UnassignedReason.values().length; i++) buf.writeVarInt(0);
@@ -491,11 +487,11 @@ class StressResultPacketTest {
         buf.writeVarLong(9);
         buf.writeUtf(DIM, 256);
         buf.writeBoolean(false);
-        buf.writeFloat(0.25f);
+        buf.writeDouble(0.25f);
         buf.writeBoolean(false);
         buf.writeVarInt(1);
         buf.writeVarInt(0);
-        buf.writeFloat(0f);    // bucklingFactor
+        buf.writeDouble(0f);    // bucklingFactor
         buf.writeBoolean(false);  // bucklingCritical
         buf.writeByte(BucklingState.NOT_ELIGIBLE.ordinal());   // bucklingState
         for (int i = 0; i < UnassignedReason.values().length; i++) {
