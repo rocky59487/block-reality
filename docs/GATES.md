@@ -1217,3 +1217,49 @@ Java 首次 PowerShell 拆開 -Dbr.sidecar，Gradle 未執行測試；第二次�
 Vec3d.equals 對 -0.0 與 +0.0 作位元判等，但契約未規定零符號。改幾何 oracle 為零容差
 分量比較（只允許數值相等，正負零視同）；F64/F32 幾何 raw bytes 逐位要求維持。
 原 fixture 與原始失敗保存，不改原生輸出、不改 1e-9 守門硬線。後續结果另留 evidence。
+
+
+# MC65B Java 梁顯示遷移（2026-09-08，實作前凍）
+
+引擎仍 1.2.0。本段只改 Java/Forge 消費路徑，沿用 98bfbd9 的原生庫與
+hash42a1b24c3c0b… 的 BSI 契約；不改求解器、舊 Sidecar wire、BSI bytes。
+
+## 硬線
+
+1. 不可變 BeamDisplayField 統一框架與全部站點；面順序 TOP_Y/BOT_Y/PLUS_Z/MINUS_Z。
+   BSI SI→mm/MPa 只換一次，保持原點、軸、面尺寸與 centroid，不加半格、不交換軸。
+   sigma/tau/NA 直接取樣；NA 的 NaN 只轉 Optional.empty，不從應力反算缺失截距。
+   end forces 僅診斷：BSI N 拉正轉既有 EndForces 壓正，其餘局部分量不翻號，力矩 N·m→N·mm。
+2. mapper 要求本 revision 的成功 bsi.solve response 與 members/memberGeometry/stations 區段；
+   零筆與未請求分開；材料/斷面 token 必須解析；非法數值/幾何/站序拒絕。
+   governingFibre 對應既有同序 enum；overloaded 只讀 flag。
+   governingS 保留 f64 位置；只有唯一匹配站能填 governingStation，f32 用相同 narrowing 匹配。
+   重複站不猜左右控制側，不以最大應力/DC 自行選站；HUD 不回退第一站冒作控制截面。
+3. 站點保持穩定順序，不合併相同 x；縱向分段線性插值，重複位置可分別查第一/最後樣本。
+   兩側之間不生零長 ribbon；NA 線段在缺值、重複位置斷開。舊平面點集合只作診斷。
+   橫截面四面中心不足以恢復角/內部精確應力：中心用四值平均，沿 Y/Z 正負半軸的
+   有界凸組合，|y|+|z|>1 時正規化權重。面中心精確、角為鄰面平均，不外推應力。
+   表面網格在重複站位置切開，各側用對應樣本；顯示近似不參與 DC 或崩塌。
+4. 新 snapshot additive display、overloaded、governingPosition；舊建構子保留。
+   Sidecar 相容入口用已給的 stations 與舊 field 幾何建立 display，不重新取樣；舊公式/診斷保留。
+   舊不合法幾何可保留診斷資料但 display 缺失。客戶端 renderer/legend/HUD/packet 不再調梁力學公式。
+   SectionDiagram 原 of(station) 留作 legacy 診斷；HUD 改用讀取提供 NA 的 sampled 入口。
+5. Forge channel 7：傳全部 stations、幾何、診斷端力、明確 governing index/position 及 flag，
+   全 f64，不以 DC 移位補分類。單梁 blocks/stations 各上限 65536，超限拒絕、不靜默截斷。
+   原 MAX_MEMBERS/MAX_SHELLS/withheld 邏輯保留；沒有 display 仍傳既有站點，缺值不造零。
+   改版後舊 packet test 的 field-present/regenerated 主張改為 display-present/field-empty，
+   其他舊物理 fixture 與判準不改；原 compareDoubles 僅遍歷共同 shape 的限制明列，新腿逐項驗證。
+
+## 驗收
+
+- 手工不服從端力公式的樣本：四面、尺寸、單位、凸插值、左右跳變、NA 缺值、不可變、
+  非有限/退化/逆序拒絕；原生 flag 與 DC=1 true/false 均保留。手工 BSI 嚴格入口與零筆。
+- 真 DLL JNA COMMIT F64/F32，既有梁世界及集中載重：完整 BSI→display→ribbon/section，
+  各樣本對 BSI 值、端力換算與幾何；重複站若有必保留，不把 SKIP 算通過。
+- Forge packet 完整往返（>256 blocks、非 11 站、同位置多站、NA 缺值、缺 display）、全部截短
+  與非法數值/個數拒絕；core/API purity/Forge 全回歸。新表面切分的兩側樣本獨立驗證。
+- 隔離來源變異至少 UNIT、ORDER、REVISION、FLAG、NA、DUPLICATE、PACKET_FLAG、PACKET_STATIONS；
+  正常編譯後須具名 assertion FAIL，不能用 compile failure/缺庫當咬合。計數首跑 dated 釘死。
+- raw stdout/stderr base64+SHA、XML 原字節與來源 SHA 留 evidence，manifest 驗 staged/committed bytes。
+  本段不宣稱重跑 C++ 2690/i9 性能；GAME_SWAP/#89、MC64_FORWARD 全域判定與 NATIVE 封裝仍待辦。
+
