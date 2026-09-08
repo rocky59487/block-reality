@@ -51,3 +51,13 @@ GAME_SWAP、真 Minecraft 視窗／HUD、display budget、jar 原生封裝仍各
 修訂為 REVISION_CHAIN：同時移除該比對、將兩個下游 mapper 的 expected 誤改為
 reply.revision，模擬整條鏈信任回覆而忘記呼叫端 revision。原 stale oracle 不改。
 其餘變異不改；failed AnalysisResult 不得形成有效展示封包，非法封包不得編碼成健康空回覆。
+
+## 2026-09-08 Forge 原生握手前置
+
+新增原生→AnalysisResult→Forge packet 首跑為 Forge 70 總數、69 PASS/1 FAIL：
+InProcessEngine 為 DISABLED。Forge 只引入 mod/api 與 mod/core 的 Java 來源，沒有引入
+mod/core 的 processResources 規則；Forge resources 不含 BsiContract 所需的
+blockreality/contract/CONTRACT_SHA256。保留原 DLL、原模型與首次 XML，不降為 SKIP。
+改為 core/Forge 共用一個 Gradle 資源規則，直接取本倉 contract 的 hash/schema。
+兩個輸出資源須與來源逐位相同；不得手工填 hash、放過 BSI_VERSION 或在測試注入假資源。
+真 native packet 仍須通過。這不代表 jar 原生庫封裝或 GAME_SWAP 已完成。
