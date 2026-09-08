@@ -1177,3 +1177,18 @@ resultants poison 不影響顯示；非有限/退化幾何拒絕與 immutable；
 各需正常測試具名 FAIL（編譯失敗不算）。數量首跑後 dated 登記，首跑失敗照存。
 raw base64+SHA、XML、來源 SHA 及 Git bytes manifest 放引擎 MC65B_JAVA_SHELL_DISPLAY 證據；
 不宣稱本輪 C++/i9 性能或真遊戲已驗收。下一單元凍梁框架加法，再完成梁與遊戲入口。
+
+### 同日首跑、CI 與計數（實作結果首輪照登）
+
+殼顯示首跑 core 編譯缺 javax.annotation；補 compileOnlyApi jsr305，無 runtime 依賴。
+首輪可執行 282 項=238PASS/4FAIL/40SKIP：四個 BinaryCodecTest 的舊合法 fixture 殼角退化。
+不改 fixture、不改 Sidecar codec 接受條件：舊資料保留 field 診斷，無法建立顯示場時 display 缺值；
+native/新顯示場仍拒絕非有限與退化。新增相容腿後 283=243PASS/40SKIP；配置真 Sidecar 加真 DLL
+後 283=271PASS/12SKIP；Forge57/57。core 初次編譯失敗後殘留的274項XML是舊檔，不當本轮執行證據。
+八變異各以完整8個core或4個Forge測試具名咬合；raw與XML保留。
+
+PR #96 前一 head e068019 的 CI run34201823453，core/Forge均PASS，check_docs因文件仍313
+而實際327 FAIL。此輪登錄總數變成340（283 core+57 Forge），文件數字依XML更新。
+JAVA_TOTAL 包含環境SKIP，不得稱總數全PASS；README/研究簡報改寫為登錄數，
+check_docs只配合新措辭、保留總數精確比對與必須匹配規則，歷史版本文件不改。
+原生CI job因未配置TECTONIC2_TOKEN跳過實測，不以外層success當native成功。
