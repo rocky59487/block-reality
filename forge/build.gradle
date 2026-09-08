@@ -73,6 +73,8 @@ test {
     testLogging { events 'passed', 'skipped', 'failed'; exceptionFormat 'full' }
 }
 
+apply from: rootProject.file('../gradle/contract-resources.gradle')
+
 // ---------------------------------------------------------------- bundled engine
 //
 // The analysis engine travels INSIDE the jar and unpacks itself on first use (D-027).

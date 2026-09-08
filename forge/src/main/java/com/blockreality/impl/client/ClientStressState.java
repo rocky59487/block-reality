@@ -109,8 +109,7 @@ public final class ClientStressState {
 
     /**
      * Some structure is at or past its linear buckling load — the SERVER's verdict,
-     * carried by the packet. Comparing the float32-degraded factor against 1.0 here
-     * could flip the judgement within a ulp of the boundary (#55).
+     * carried independently by channel9. The client does not compare the factor to a threshold.
      */
     public static boolean bucklingCritical() { return bucklingCriticalFlag; }
 

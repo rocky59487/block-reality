@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 /**
  * The drawable half of an analysis, sent to the client.
  *
- * <p>Channel 7 carries immutable beam/shell samples, complete per-element cell lists,
+ * <p>Channel 9 carries immutable beam/shell samples, complete per-element cell lists,
  * independent verdict flags and beam diagnostic end forces. It carries no mechanical field.
  *
  * <h2>Decoding never throws — and never launders</h2>
@@ -41,8 +41,7 @@ import java.util.function.Supplier;
  *       state and logs why, which is the same fail-closed posture the engine wire has.
  * </ul>
  *
- * <p>Element flags are forwarded independently of their f64 DC values. Global maxDc and
- * buckling still use the legacy float/flag compatibility path pending MC64_FORWARD.
+ * <p>Channel 9 forwards global and element flags independently of their f64 values.
  */
 public final class StressResultPacket {
 
@@ -61,12 +60,12 @@ public final class StressResultPacket {
     private final String dimension;
     private final boolean singular;
     private final double maxDc;
-    /** Server-side double verdict of {@code maxDc > 1}; see the class javadoc. */
+    /** Supplied capacity verdict; independent of the display number. */
     private final boolean overCapacity;
     private final int islands;
     private final int singularIslands;
     private final double bucklingFactor;
-    /** Server-side double verdict of {@code 0 < bucklingFactor <= 1}. */
+    /** Supplied buckling verdict; its boundary belongs to the originating engine. */
     private final boolean bucklingCritical;
     /**
      * What the buckling number is, in one field instead of a factor plus a flag.
@@ -159,6 +158,7 @@ public final class StressResultPacket {
     public static StressResultPacket of(AnalysisResult r, String dimension, boolean bucklingSkipped,
                                         Set<Integer> withheldMembers, Set<Integer> withheldShells,
                                         int truncatedBlocks) {
+        if (!r.ok()) return invalid("analysis failed: " + r.diagnostic());
         List<MemberSnapshot> m = keepGoverning(r.members(), MAX_MEMBERS,
                 "member".equals(r.governingKind()) ? r.governing() : Integer.MIN_VALUE,
                 MemberSnapshot::id, "members");
@@ -174,7 +174,7 @@ public final class StressResultPacket {
         }
         return new StressResultPacket(true, "",
                 r.revision().value(), dimension, r.singular(),
-                r.maxDc(), r.maxDc() > 1.0,
+                r.maxDc(), r.overCapacity(),
                 r.islands(), r.singularIslands(),
                 r.bucklingFactor(), r.bucklingCritical(), state, byReason,
                 r.members().size(), r.shells().size(),
@@ -225,7 +225,7 @@ public final class StressResultPacket {
 
     public int singularIslands() { return singularIslands; }
 
-    /** Smallest linear-buckling load factor; {@code <= 1} means already unstable. */
+    /** Smallest supplied linear-buckling factor. Read bucklingCritical() for the verdict. */
     public double bucklingFactor() { return bucklingFactor; }
 
     /** The server's double-precision verdict; the client never re-derives it. */
@@ -270,19 +270,17 @@ public final class StressResultPacket {
 
     // ---------------------------------------------------------------- encode
     //
-    // Legacy beams still carry the FIELD; shells carry native recovery samples (channel 6). Thirty-odd numbers per member replace eleven
-    // stations of four fibres each — about a seventh of the bytes — and the client can
-    // then evaluate the exact stress at any point of any block face, which is what a
-    // surface contour needs and what interpolating between samples could never give.
+    // Shared beam/shell samples and independent global verdicts; no force reconstruction.
     public static void encode(StressResultPacket p, FriendlyByteBuf buf) {
+        if (!p.valid) throw new IllegalArgumentException("cannot encode invalid analysis packet");
         buf.writeVarLong(p.revision);
         buf.writeUtf(p.dimension, 256);
         buf.writeBoolean(p.singular);
-        buf.writeFloat((float) p.maxDc);
+        buf.writeDouble(p.maxDc);
         buf.writeBoolean(p.overCapacity);
         buf.writeVarInt(Math.max(0, p.islands));
         buf.writeVarInt(Math.max(0, p.singularIslands));
-        buf.writeFloat((float) p.bucklingFactor);
+        buf.writeDouble(p.bucklingFactor);
         buf.writeBoolean(p.bucklingCritical);
         buf.writeByte(p.bucklingState.ordinal());
         // Fixed length: both ends come out of the same jar, so the enum cannot differ
@@ -344,12 +342,12 @@ public final class StressResultPacket {
         if (revision < 0) throw new Bad("negative revision");
         String dimension = buf.readUtf(256);
         boolean singular = buf.readBoolean();
-        double maxDc = finite(buf.readFloat(), "maxDc");
+        double maxDc = finite(buf.readDouble(), "maxDc");
+        if (maxDc < 0) throw new Bad("negative maxDc");
         boolean overCapacity = buf.readBoolean();
-        maxDc = alignToVerdict(maxDc, overCapacity);
         int islands = count(buf.readVarInt(), Integer.MAX_VALUE, "islands");
         int singularIslands = count(buf.readVarInt(), Integer.MAX_VALUE, "singularIslands");
-        double bucklingFactor = finite(buf.readFloat(), "bucklingFactor");
+        double bucklingFactor = finite(buf.readDouble(), "bucklingFactor");
         if (bucklingFactor < 0) throw new Bad("negative bucklingFactor");
         boolean bucklingCritical = buf.readBoolean();
         int stateOrdinal = buf.readByte();
@@ -357,13 +355,7 @@ public final class StressResultPacket {
             throw new Bad("unknown bucklingState ordinal " + stateOrdinal);
         }
         BucklingState bucklingState = BucklingState.values()[stateOrdinal];
-        // A positive factor smaller than the smallest float degrades to 0.0f in transit,
-        // which would look like a contradiction while being nothing but the same lossy
-        // trip alignToVerdict already handles for maxDc. The server said a factor was
-        // computed and that it was positive; the magnitude is what the wire lost, so
-        // restore the smallest positive value rather than reject the packet. The
-        // verdict itself never depended on this number — it travels as its own flag.
-        if (bucklingState.hasFactor() && bucklingFactor == 0) bucklingFactor = Float.MIN_VALUE;
+        // f64 preserves even subnormal factors. Contradictions are rejected, never repaired.
         // A factor and a state that disagree is a contradiction, not a schema: every
         // state but COMPUTED means the number was never produced.
         if (bucklingState.hasFactor() != (bucklingFactor > 0)) {
@@ -417,18 +409,6 @@ public final class StressResultPacket {
                 truncatedBlocks, withheldMembers, withheldShells, members, shells);
     }
 
-    /**
-     * Nudges a float-degraded D/C onto the side of 1.0 the server ruled for, so every
-     * downstream comparison ({@code isOverloaded}, palette thresholds) agrees with the
-     * carried verdict. The shift is at most one ulp around 1.0 — far inside the display
-     * track's 1e-5 budget — and only fires when the rounding actually crossed the line.
-     */
-    private static double alignToVerdict(double dc, boolean overloaded) {
-        if (overloaded && dc <= 1.0) return Math.nextUp(1.0);
-        if (!overloaded && dc > 1.0) return 1.0;
-        return dc;
-    }
-
     /** Out-of-range counts reject the packet: a count past the cap is not this schema. */
     private static int count(int n, int max, String what) {
         if (n < 0 || n > max) throw new Bad("implausible " + what + " count " + n);
@@ -441,8 +421,8 @@ public final class StressResultPacket {
      * engine wire, which is itself finite-checked, so a well-behaved server can never
      * hit this.
      */
-    private static double finite(float f, String what) {
-        if (!Float.isFinite(f)) throw new Bad(what + " is not finite");
+    private static double finite(double f, String what) {
+        if (!Double.isFinite(f)) throw new Bad(what + " is not finite");
         return f;
     }
 

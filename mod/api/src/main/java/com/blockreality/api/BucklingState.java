@@ -33,7 +33,13 @@ public enum BucklingState {
     DISABLED_BY_SCALE("disabled-by-scale"),
 
     /** A state this build does not know, or a reply that carried none. */
-    UNKNOWN("");
+    UNKNOWN(""),
+
+    /** The engine declined an island because its own DOF budget was exceeded. */
+    NOT_ELIGIBLE_SCALE("not-eligible-scale"),
+
+    /** The engine attempted buckling but could not compute a result. */
+    SOLVER_FAILED("solver-failed");
 
     private final String wire;
 
