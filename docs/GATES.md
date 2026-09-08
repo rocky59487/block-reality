@@ -1280,3 +1280,22 @@ opt-in 回收加法（含側資訊），避免默改既有 solve bytes。此次 
 當次計數先釘 core299 / Forge62；八個變異需各自完整執行 BsiBeamDisplayTest 8 或
 MemberPacketCodecTest 5，具名 assertion FAIL。新發現若增腿另 dated 留帳。
 
+
+
+## 2026-09-08 梁顯示最終本地結果
+
+core299=287PASS/12SKIP/0FAIL、Forge62PASS，真Sidecar28與JNA11/11均執行；API purity過。
+八變異具名assertion FAIL：UNIT4、ORDER4、REVISION1、FLAG1、NA2、DUPLICATE1、PACKET_FLAG1、PACKET_STATIONS3。
+core變異每臂8測試，packet變異每臂5，無compile failure冒作咬合。原始stdout/stderr、XML原字節、來源SHA
+與Git manifest見tectonic2 gate/evidence/MC65B_JAVA_BEAM_DISPLAY。Forge三個既有deprecation warnings。
+有效表面畫面為面中心凸插值，非精確角/內部應力；封包頻寬增加，未量FPS或i9性能。
+原生只輸出每位置一側的MISS不因Java手工雙側通過而消失；GAME_SWAP仍未完成。
+
+
+## 2026-09-08 表面座標反例
+
+收版檢查發現固定1e-7 mm切面snap可能吞掉極近站点。保留同一fixture應力，另在既有
+surfaceTiles測試中將長度縮至2e-8 mm以放大座標缺陷（純顯示幾何測試，不宣稱真實梁適用）。
+縱向座標應隨clip交點保存，不能靠世界投影後的固定epsilon猜回。新增隔離PATCH_COORDINATE
+變異，把固定snap放回，必須使該具名測試assertion FAIL。其餘八臂與299/62計數不變，總共九臂。
+
