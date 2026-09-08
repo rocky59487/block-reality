@@ -95,4 +95,66 @@ class MemberPacketCodecTest {
             assertThrows(IllegalArgumentException.class,()->MemberPacketCodec.write(b,tooManyStations,false));
         } finally { b.release(); }
     }
+
+    private static MemberSnapshot identified(int governing) {
+        var m=member(true,true);var stations=new ArrayList<StressStation>();
+        // Distinct f64 sites intentionally collide if prematurely narrowed to f32.
+        double[] positions={0,.5,.5,.50000001,1};int[] sides={-1,-1,1,-1,-1};
+        for(int k=0;k<positions.length;k++) {
+            var s=m.stations().get(Math.min(k,3));double x=positions[k]*m.lengthMm();
+            stations.add(new StressStation(x,m.display().orElseThrow().originMm().plus(new Vec3d(x,0,0)),s.fibres(),
+                    s.sigmaTensMpa(),s.sigmaCompMpa(),s.tauMpa(),s.naOffsetYMm(),s.naOffsetZMm(),
+                    Optional.of(new StressStation.Identity(positions[k],sides[k]))));
+        }
+        var f=m.display().orElseThrow();
+        return new MemberSnapshot(m.id(),m.material(),m.section(),m.lengthMm(),m.dc(),m.governingFibre(),governing,
+                m.endI(),m.endJ(),m.blocks(),stations,Optional.empty(),Optional.of(new BeamDisplayField(
+                f.originMm(),f.ax(),f.ay(),f.az(),f.lengthMm(),f.halfYMm(),f.halfZMm(),stations)),true,Optional.of(1000.));
+    }
+    @Test void exactIdentityAndMissingGoverningSurviveTheFullPacket() {
+        for(int governing:new int[]{-1,1,2}) {
+            var source=identified(governing);var b=bytes(source);
+            try {
+                var p=StressResultPacket.decode(b);assertTrue(p.valid(),p.invalidReason());var m=p.members().get(0);
+                assertEquals(governing,m.governingStation());assertEquals(source.stations(),m.stations());
+                assertEquals(source.blocks(),m.blocks());assertEquals(source.overloaded(),m.overloaded());
+                assertEquals(source.display().orElseThrow().breaksMm(),m.display().orElseThrow().breaksMm());
+                assertNotEquals(m.stations().get(2).identity(),m.stations().get(3).identity());
+                assertTrue(m.stations().get(1).naOffsetYMm().isEmpty());
+            } finally { b.release(); }
+        }
+    }
+    @Test void identifiedPacketTruncationsAndInvalidIdentityAreRejected() {
+        var full=bytes(identified(-1));
+        try {
+            for(int n=0;n<full.readableBytes();n++) {
+                var b=new FriendlyByteBuf(full.copy(0,n));
+                try { assertFalse(StressResultPacket.decode(b).valid(),"identity cut "+n); } finally { b.release(); }
+            }
+        } finally { full.release(); }
+        // Independent minimal channel-8 member prefix. No codec writes these bytes.
+        var prefix=new FriendlyByteBuf(Unpooled.buffer());
+        prefix.writeVarInt(4);prefix.writeDouble(2000);prefix.writeDouble(1);prefix.writeBoolean(true);
+        prefix.writeByte(GoverningFibre.TENSION.ordinal());prefix.writeVarInt(-1);prefix.writeBoolean(false);
+        prefix.writeUtf("rect");prefix.writeUtf("steel");for(int k=0;k<12;k++)prefix.writeDouble(0);
+        prefix.writeVarInt(0);prefix.writeBoolean(false);prefix.writeBoolean(false);prefix.writeVarInt(1);
+        prefix.writeBoolean(true);int identityOffset=prefix.writerIndex();prefix.writeDouble(.5);prefix.writeByte(-1);
+        prefix.writeDouble(1000);for(int k=0;k<3;k++)prefix.writeDouble(0);prefix.writeVarInt(0);
+        for(int k=0;k<3;k++)prefix.writeDouble(0);prefix.writeBoolean(false);prefix.writeBoolean(false);
+        try {
+            var valid=new FriendlyByteBuf(prefix.copy());
+            try { assertEquals(new StressStation.Identity(.5,-1),MemberPacketCodec.read(valid).member().stations().get(0).identity().orElseThrow()); }
+            finally { valid.release(); }
+            for(double bad:new double[]{Double.NaN,Double.POSITIVE_INFINITY,-.01,1.01}) {
+                var b=new FriendlyByteBuf(prefix.copy());
+                try { b.setDouble(identityOffset,bad);assertThrows(IllegalArgumentException.class,()->MemberPacketCodec.read(b)); }
+                finally { b.release(); }
+            }
+            for(int bad:new int[]{0,2,-2}) {
+                var b=new FriendlyByteBuf(prefix.copy());
+                try { b.setByte(identityOffset+8,bad);assertThrows(IllegalArgumentException.class,()->MemberPacketCodec.read(b)); }
+                finally { b.release(); }
+            }
+        } finally { prefix.release(); }
+    }
 }

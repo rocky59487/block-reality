@@ -79,6 +79,7 @@ final class BsiSections {
                 finite(data, o, 9, f32, false); finite(data, o + 9 * width, 2, f32, true);
             }
         }
+        BsiStationIdentity.validate(data, sections);
         return Collections.unmodifiableMap(sections);
     }
 
@@ -110,6 +111,7 @@ final class BsiSections {
             case "quality" -> BsiRecords.QUALITY_BYTES;
             case "buckling" -> BsiRecords.BUCKLING_BYTES;
             case "members" -> BsiRecords.MEMBER_BYTES;
+            case "stationIdentity" -> BsiRecords.STATION_IDENTITY_BYTES;
             case "memberGeometry" -> BsiRecords.MEMBER_GEOMETRY_BYTES;
             case "memberBlocks" -> BsiRecords.MEMBER_BLOCK_BYTES;
             case "stations" -> BsiRecords.STATION_BYTES;

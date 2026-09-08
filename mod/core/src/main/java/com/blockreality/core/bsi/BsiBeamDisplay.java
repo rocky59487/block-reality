@@ -25,6 +25,7 @@ public final class BsiBeamDisplay {
             throw new IllegalArgumentException("beam display was not requested");
         var members = reply.members(); var geometry = reply.memberGeometry();
         var coords = reply.memberBlocks(); var raw = reply.stations();
+        var identities = reply.stationIdentity(); boolean identified = reply.sections().containsKey("stationIdentity");
         List<MemberSnapshot> out = new ArrayList<>(members.size());
         for (int i = 0; i < members.size(); i++) {
             var m = members.get(i); var g = geometry.get(i);
@@ -42,6 +43,8 @@ public final class BsiBeamDisplay {
             double governingS = f32 ? (double)(float)m.governingS() : m.governingS();
             for (int k = 0; k < m.stationCount(); k++) {
                 double[] s = raw[m.stationFirst() + k];
+                var identity = identified ? identities.get(m.stationFirst() + k) : null;
+                double position = identity == null ? s[0] : identity.s();
                 List<Fibre> fibres = new ArrayList<>(4);
                 double tension = 0, compression = 0;
                 for (int j = 0; j < 4; j++) {
@@ -50,9 +53,10 @@ public final class BsiBeamDisplay {
                             (j < 2 ? g.faceY().get(0) : g.faceZ().get(2)) * 1000, sigma));
                     tension = Math.max(tension, sigma); compression = Math.max(compression, -sigma);
                 }
-                samples.add(new StressStation(s[0] * length, new Vec3d(s[1] * 1000, s[2] * 1000, s[3] * 1000),
-                        fibres, tension, compression, s[8] * 1e-6, offset(s[9]), offset(s[10])));
-                if (s[0] == governingS) { governing = k; matches++; }
+                samples.add(new StressStation(position * length, new Vec3d(s[1] * 1000, s[2] * 1000, s[3] * 1000),
+                        fibres, tension, compression, s[8] * 1e-6, offset(s[9]), offset(s[10]),
+                        identity == null ? Optional.empty() : Optional.of(new StressStation.Identity(identity.s(), identity.side()))));
+                if (identity != null ? identity.governing() : s[0] == governingS) { governing = k; matches++; }
             }
             var display = new BeamDisplayField(g.origin().scaled(1000), g.ex(), g.ey(), g.ez(), length,
                     g.faceY().get(0) * 1000, g.faceZ().get(2) * 1000, samples);

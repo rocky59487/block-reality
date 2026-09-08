@@ -426,3 +426,15 @@ axisRot 已套到截面，不再套第二次。此四點是應力取樣參考位
 所有值必須有限，軸的內積與 ex×ey=ez 每個分量誤差≤1e-9；錯誤幾何、保留位、id/筆數/面序
 由 host 回 INTERNAL，消費者也須拒絕。新引擎可用新增 writer 函式傳入幾何；舊 writer、vtable
 與公開 CAPI 簽章不變。協商的新能力與 contract hash 是預期差異，未請求的 solve bytes 不變。
+
+
+## 2026-09-08 加法：stationIdentity
+
+include stationIdentity需要members+stations，以及cap bsi.readback.stationIdentity；缺cap先UNSUPPORTED，
+具備cap但缺依賴PROTOCOL_ERROR。未請求時所有原solve輸出保持。只在請求時取雙側集中力樣本。
+區段在stations(:f32)之後、memberGeometry之前，與stations逐筆對位；members ranges完整連續覆蓋。
+每筆16B LE：s:f64、side:i8(-1 LEFT/+1 RIGHT)、flags:u8(bit0 governing)、reserved:u16=0、reserved2:u32=0。
+永遠f64身份，s有限[0,1]且等於窄化前station.s；順序s遞增，同s最多LEFT/RIGHT兩筆。
+未知side/flags/reserved拒絕。每member最多一筆governing且s等於member.governingS；沒有則原生無匹配索引(-1)。
+舊member160/station88或44/geometry168不改；identity零筆時仍輸出已請求的區段。
+Java不得由f32位置重猜側或最大DC，flags/DC仍由原判定提供。f32世界座標未恢復為f64精度。

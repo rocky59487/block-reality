@@ -372,6 +372,7 @@ private:
             else if (e.str == "stations") o.includeMask |= kIncStations;
             else if (e.str == "shells") o.includeMask |= kIncShells;
             else if (e.str == "attrsEcho") o.includeMask |= kIncAttrsEcho;
+            else if (e.str == "stationIdentity") o.includeMask |= kIncStationIdentity;
             else if (e.str == "memberGeometry") o.includeMask |= kIncMemberGeometry;
         }
         // capability gate BEFORE the engine (P6)
@@ -390,6 +391,8 @@ private:
         if ((o.includeMask & kIncShells) && !has("bsi.readback.shells")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "include shells needs bsi.readback.shells"); return; }
         if ((o.includeMask & kIncAttrsEcho) && !has("bsi.block.attrs")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "include attrsEcho needs bsi.block.attrs"); return; }
         if ((o.includeMask & kIncMemberGeometry) && !has("bsi.readback.memberGeometry")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "include memberGeometry needs bsi.readback.memberGeometry"); return; }
+        if ((o.includeMask & kIncStationIdentity) && !has("bsi.readback.stationIdentity")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "include stationIdentity needs bsi.readback.stationIdentity"); return; }
+        if ((o.includeMask & kIncStationIdentity) && (o.includeMask & (kIncMembers|kIncStations)) != (kIncMembers|kIncStations)) { errorReply(out, rq.id, rq.method, rq.revision, "PROTOCOL_ERROR", "stationIdentity requires include members and stations"); return; }
         if ((o.includeMask & kIncMemberGeometry) && !(o.includeMask & kIncMembers)) { errorReply(out, rq.id, rq.method, rq.revision, "PROTOCOL_ERROR", "memberGeometry requires include members"); return; }
         // loads
         uint64_t N = 0;

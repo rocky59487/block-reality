@@ -2,6 +2,7 @@
 #include "bsi_schema.hpp"
 #include "bsi_recovery.hpp"
 #include "bsi_member_geometry.hpp"
+#include "bsi_station_identity.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -28,6 +29,12 @@ int ReplyBuilder::member(const bsi_member_result* m, const int32_t* xyz, uint32_
     if (nb) memberBlocks_.insert(memberBlocks_.end(), xyz, xyz + (size_t)nb * 3);
     if (ns) stations_.insert(stations_.end(), st, st + ns);
     members_v_.push_back(copy);
+    return BSI_OK;
+}
+
+int ReplyBuilder::stationIdentity(const bsi_station_identity* ids, uint32_t n) {
+    if(n && !ids) return BSI_E_INTERNAL;
+    if(n) stationIdentity_.insert(stationIdentity_.end(),ids,ids+n);
     return BSI_OK;
 }
 
@@ -194,6 +201,12 @@ bool ReplyBuilder::finalizeSolve(std::string& why) {
             if (!geometry::valid(memberGeometry_[k])) { why = "invalid memberGeometry"; return false; }
         }
     }
+    if (include_ & kIncStationIdentity) {
+        if ((include_ & (kIncMembers|kIncStations)) != (kIncMembers|kIncStations) ||
+            !identity::valid(members_v_,stations_,stationIdentity_)) {
+            why="invalid stationIdentity or missing parent sections"; return false;
+        }
+    }
     // ids strictly ascending
     for (size_t k = 1; k < members_v_.size(); ++k) if (members_v_[k].id <= members_v_[k - 1].id) { why = "member ids not ascending"; return false; }
     for (size_t k = 1; k < facets_v_.size(); ++k) if (facets_v_[k].id <= facets_v_[k - 1].id) { why = "facet ids not ascending"; return false; }
@@ -242,6 +255,10 @@ bool ReplyBuilder::finalizeSolve(std::string& why) {
         appendSection("members", members_v_.data(), (uint64_t)members_v_.size() * sizeof(bsi_member_result), members_v_.size());
         appendSection("memberBlocks", memberBlocks_.data(), (uint64_t)memberBlocks_.size() * 4, memberBlocks_.size() / 3);
     }
+#ifdef BSI_TEST_IDENTITY_LAYOUT
+    if (include_ & kIncStationIdentity)
+        appendSection("stationIdentity", stationIdentity_.data(), uint64_t(stationIdentity_.size())*16, stationIdentity_.size());
+#endif
     if (include_ & kIncStations) {
         if (storage_ == BSI_STORAGE_F32) {
             std::vector<StationF32> f(stations_.size());
@@ -254,6 +271,10 @@ bool ReplyBuilder::finalizeSolve(std::string& why) {
             appendSection("stations:f32", f.data(), (uint64_t)f.size() * sizeof(StationF32), f.size());
         } else appendSection("stations", stations_.data(), (uint64_t)stations_.size() * sizeof(bsi_station), stations_.size());
     }
+#ifndef BSI_TEST_IDENTITY_LAYOUT
+    if (include_ & kIncStationIdentity)
+        appendSection("stationIdentity", stationIdentity_.data(), uint64_t(stationIdentity_.size())*16, stationIdentity_.size());
+#endif
     if (include_ & kIncMemberGeometry)
         appendSection("memberGeometry", memberGeometry_.data(), (uint64_t)memberGeometry_.size() * sizeof(bsi_member_geometry), memberGeometry_.size());
     if (include_ & kIncShells) {
@@ -287,6 +308,9 @@ BSI_EXPORT void bsi_host_log(const bsi_host* h, int level, const char* msg) {
 BSI_EXPORT int bsi_writer_blocks(bsi_writer* w, const bsi_block_result* r, uint32_t n) { return (w && w->b && (r || n == 0)) ? w->b->blocks(r, n) : BSI_E_INTERNAL; }
 BSI_EXPORT int bsi_writer_member(bsi_writer* w, const bsi_member_result* m, const int32_t* xyz, uint32_t nb, const bsi_station* st, uint32_t ns) {
     return (w && w->b && (xyz || nb == 0) && (st || ns == 0)) ? w->b->member(m, xyz, nb, st, ns) : BSI_E_INTERNAL;
+}
+BSI_EXPORT int bsi_writer_station_identity(bsi_writer* w, const bsi_station_identity* ids, uint32_t n) {
+    return (w && w->b) ? w->b->stationIdentity(ids,n) : BSI_E_INTERNAL;
 }
 BSI_EXPORT int bsi_writer_member_geometry(bsi_writer* w, const bsi_member_geometry* g) {
     return (w && w->b) ? w->b->memberGeometry(g) : BSI_E_INTERNAL;

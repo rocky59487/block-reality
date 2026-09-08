@@ -208,6 +208,14 @@ public final class BsiResponse {
     }
 
     /** Empty if absent; sections() distinguishes absence from a requested empty result. */
+    @javax.annotation.Nonnull public List<BsiStationIdentity> stationIdentity() {
+        ByteBuffer b = view("stationIdentity"); Section s = sections.get("stationIdentity");
+        if (b == null) return List.of();
+        List<BsiStationIdentity> out = new ArrayList<>(s.count());
+        for (int k = 0; k < s.count(); k++) out.add(BsiStationIdentity.read(b, k * BsiRecords.STATION_IDENTITY_BYTES));
+        return List.copyOf(out);
+    }
+
     public List<BsiMemberGeometry> memberGeometry() {
         ByteBuffer b = view("memberGeometry"); Section s = sections.get("memberGeometry");
         if (b == null) return List.of();

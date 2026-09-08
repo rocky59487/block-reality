@@ -49,9 +49,11 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   真JNA10/10，三個Java幾何守門變異有具名FAIL；引擎564checks/五變異三箱與sanitizer詳見MC65B_MEMBER_GEOMETRY。
   梁顯示已接 BsiBeamDisplay→BeamDisplayField→ribbon/section/HUD/表面切分/channel7。
   不重算梁力學，完整站點/格集合/NA缺值/overloaded與控制站索引原樣傳送；舊field只在Sidecar相容入口/診斷保留。
-  最新 core299=287PASS/12SKIP、Forge62PASS，真JNA11/11、九變異具名咬合。首跑證明
-  原生每位置只輸出memberScreenSideAt選的一側；雙側回收MISS，手工雙側測試不能充作原生雙側能力。
-  下一單元凍opt-in雙側回收/側資訊，再接MC64_FORWARD、NATIVE/GAME_SWAP。
+  最新core305=293PASS/12SKIP、Forge64PASS，真JNA12/12、五身份變異具名咬合。
+  stationIdentity opt-in沿原生共同核轉發雙側與主宰旗標；BsiBeamDisplay/StressStation.Identity/channel8保留f64身份，舊請求單側不改。
+  契約54檔hash4977f57308e6，79checks/八變異三箱DET×3、sanitizer及兩箱48組舊回應逐位。
+  首跑ground-only EMPTY_WORLD、host stub零筆證據降級均留GATES與MC65B_BSI_STATION_IDENTITY。
+  下一單元先凍MC64_FORWARD全域/屈曲旗標與單一AnalysisResult入口，再凍display budget、接NATIVE/GAME_SWAP。
   #89與Windows自足封裝仍未完成，版本仍是引擎1.2.0對位、模組0.4.0-dev。
 - **還沒接**：**遊戲流程仍走 `SidecarClient`**（protocol 2 / FrameCore），`InProcessEngine` 尚未接進遊戲迴圈（#89）。
   「檔案在」不算「有」——見下面的三條鐵則第 2 條。

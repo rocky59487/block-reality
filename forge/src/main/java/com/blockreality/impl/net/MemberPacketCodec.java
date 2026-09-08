@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/** Channel 7 member samples. Shared geometry is sent once; the client receives no mechanical field. */
+/** Channel 8 member samples with optional exact side identity. Shared geometry is sent once; the client receives no mechanical field. */
 final class MemberPacketCodec {
     private MemberPacketCodec() { }
     private static final List<String> FACES = List.of("TOP_Y", "BOT_Y", "PLUS_Z", "MINUS_Z");
@@ -30,6 +30,8 @@ final class MemberPacketCodec {
         }
         b.writeVarInt(count(m.stations().size(), MAX_ITEMS));
         for (var s : m.stations()) {
+            b.writeBoolean(s.identity().isPresent());
+            s.identity().ifPresent(id -> { b.writeDouble(id.s()); b.writeByte(id.side()); });
             b.writeDouble(s.xMm()); vec(b, s.centroidMm());
             if (m.display().isEmpty()) b.writeVarInt(count(s.fibres().size(), 4));
             for (var f : s.fibres()) {
@@ -54,9 +56,11 @@ final class MemberPacketCodec {
         boolean withheld = b.readBoolean(); Geometry g = null;
         if (b.readBoolean()) g = new Geometry(vec(b), vec(b), vec(b), vec(b), finite(b), finite(b));
         int ns = count(b.readVarInt(), MAX_ITEMS);
-        if (ns > b.readableBytes() / 58) throw new IllegalArgumentException("truncated beam stations");
+        if (ns > b.readableBytes() / 59) throw new IllegalArgumentException("truncated beam stations");
         List<StressStation> stations = new ArrayList<>(ns);
         for (int i = 0; i < ns; i++) {
+            Optional<StressStation.Identity> identity = b.readBoolean()
+                    ? Optional.of(new StressStation.Identity(finite(b), b.readByte())) : Optional.empty();
             double x = finite(b); Vec3d centre = vec(b);
             int nf = g == null ? count(b.readVarInt(), 4) : 4;
             List<Fibre> fibres = new ArrayList<>(nf);
@@ -66,7 +70,7 @@ final class MemberPacketCodec {
                 double offset = g == null ? finite(b) : j < 2 ? g.hy : g.hz;
                 fibres.add(new Fibre(name, dir, offset, finite(b)));
             }
-            stations.add(new StressStation(x, centre, fibres, finite(b), finite(b), finite(b), optional(b), optional(b)));
+            stations.add(new StressStation(x, centre, fibres, finite(b), finite(b), finite(b), optional(b), optional(b), identity));
         }
         if (id < 0 || length < 0 || dc < 0 || governing < -1 || governing >= ns
                 || position.filter(x -> x < 0 || x > length).isPresent())

@@ -46,7 +46,7 @@ public final class BRNetwork {
     //      nothing released speaks "4" or "5", so this is still one unshipped step.
     // "6": shell recovery samples and authoritative flags replace the reconstructed field.
     // "7": beam samples, full cells and governing station identity replace force reconstruction.
-    private static final String PROTOCOL = "7";
+    private static final String PROTOCOL = "8";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(BlockRealityMod.MOD_ID, "main"),

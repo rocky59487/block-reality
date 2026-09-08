@@ -590,7 +590,7 @@ def check_reply(schema, validator, method, reply, declared_blocks=None):
         if keys != [k for k in order if k in h]:
             probs.append(f"solve.response key order {keys} != schema order")
         off = 0
-        want = ["blocks", "equilibrium", "quality", "buckling", "members", "memberBlocks", "stations", "memberGeometry", "facets", "facetSurfaces", "facetBlocks", "attrsEcho"]
+        want = ["blocks", "equilibrium", "quality", "buckling", "members", "memberBlocks", "stations", "stationIdentity", "memberGeometry", "facets", "facetSurfaces", "facetBlocks", "attrsEcho"]
         names = [s["name"].split(":")[0] for s in h["sections"]]
         if [n for n in want if n in names] != names:
             probs.append(f"sections not in the fixed order: {names}")

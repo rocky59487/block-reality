@@ -1375,3 +1375,23 @@ Java五變異ID_POSITION/ID_SIDE/ID_GOV/ID_VALIDATE/PACKET_ID均抓到具名斷�
 回歸runner的cap白名單首跑漏新增stationIdentity，保留原失敗後加唯一新cap；
 修改時一次縮排編譯錯誤也照留。此修正不改語料PASS8/SKIP2、原310邊界或任何物理oracle。
 完整三箱、sanitizer與回歸結論待本段結果記錄；以上不是Minecraft遊戲換裝或v4完成。
+
+
+2026-09-08 BSI雙側身份消費鏈已本地驗證（17d1390/5f08177先凍；6c6c677/1d35d6d保留首敗並釘數）。
+include stationIdentity/cap bsi.readback.stationIdentity；16B f64位置+side+原生governing bit，
+必須members+stations，舊include仍單側。BsiStationIdentity→StressStation.Identity→
+BsiBeamDisplay→BeamDisplayField→channel8；xMm用身份f64，raw xyz仍隨f32窄化，缺主宰索引保留-1。
+原Element flags/DC/NA及完整樣本轉發，不另掃最大值、不重算力學。
+新79checks/八變異在Windows/Linux/i9 DET×3，Linux ASan/UBSan零診斷（非LSan）。
+兩箱原137/77/22、BSI310/564與core310/語料8PASS2SKIP、Linux4host/3傳輸；各48組舊完整solve逐位。
+core305=293PASS/12SKIP、Forge64PASS，真JNA12/12與Sidecar28/28；五Java變異各具名FAIL。
+原77項首跑ground-only EMPTY_WORLD失敗不改寫；零筆成功改明示host stub布局證據並降級。
+contract54檔/51hash檔，4977f57308e6520a6df1903013d757a62546e20809d57a9cf0bc6009ee3b3253。
+完整原碼/原始輸出/XML/SHA見tectonic2 gate/evidence/MC65B_BSI_STATION_IDENTITY/RESULTS.md。
+
+接續安排：先獨立凍MC64_FORWARD全域與屈曲判定旗標的來源/生命週期，接通result→packet→HUD；
+同時檢視BSI單一AnalysisResult入口，避免GAME_SWAP時再生第二套聚合/判定。
+display budget要依原v2顯示軌與訂閱需求另凍，不能以f32存儲充作display tier。
+NATIVE自足包/來源鏈及GAME_SWAP(#89)真遊戲驗收之前保留最後Sidecar相容入口；
+目前遊戲仍SidecarClient/protocol2/FrameCore。MC65B active、引擎1.2.0/模組0.4.0-dev不變。
+本段沒有重跑2690或效能；原41.7ms FAIL、Linux7FAIL及v2/v3/v4欠項照留。

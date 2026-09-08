@@ -54,6 +54,33 @@ class InProcessRecoveryTest {
             }
         }
     }
+    @Test void nativeOptInSidesAndGoverningIdentityReachDisplay() {
+        try (InProcessEngine engine=engine()) {
+            assertTrue(engine.has("bsi.readback.stationIdentity"));assertTrue(engine.declareWorld(73,world(false,0)));
+            for(var storage:BsiHeaders.Storage.values())for(int sign:new int[]{-1,1}) {
+                var r=engine.solve(true,new double[]{0,-9.81,0},List.of(new BsiRecords.Load(2,0,0,0,sign*10000,0)),1,
+                        List.of("members","stations","memberGeometry","stationIdentity"),new BsiHeaders.Precision(BsiHeaders.Tier.COMMIT,storage));
+                assertNotNull(r);assertEquals("ok",r.status(),r.message());var ids=r.stationIdentity();
+                var mapped=com.blockreality.core.bsi.BsiBeamDisplay.decode(r,73,java.util.Map.of(0,"steel"),java.util.Map.of(0,"rect"));
+                int pairs=0,marked=0;
+                for(int k=0;k<mapped.size();k++) {
+                    var m=mapped.get(k);var parent=r.members().get(k);int governing=-1;
+                    for(int j=0;j<m.stations().size();j++) {
+                        var s=m.stations().get(j);var id=ids.get(parent.stationFirst()+j);var raw=r.stations()[parent.stationFirst()+j];
+                        assertEquals(id.s(),s.identity().orElseThrow().s());assertEquals(id.side(),s.identity().orElseThrow().side());
+                        assertEquals(id.s()*m.lengthMm(),s.xMm());for(int face=0;face<4;face++)assertEquals(raw[4+face]*1e-6,s.fibres().get(face).sigmaMpa());
+                        assertEquals(Double.isNaN(raw[9]),s.naOffsetYMm().isEmpty());
+                        if(id.governing()){governing=j;marked++;}
+                        if(j>0 && id.s()==ids.get(parent.stationFirst()+j-1).s()){pairs++;assertEquals(-1,ids.get(parent.stationFirst()+j-1).side());assertEquals(1,id.side());}
+                    }
+                    assertEquals(governing,m.governingStation());assertEquals(parent.overloaded(),m.overloaded());assertEquals(parent.maxDC(),m.dc());
+                    var ribbon=com.blockreality.core.render.StressRibbonBuilder.build(m,com.blockreality.api.render.StressPalette.SIGNED_DEFAULT,m.peakMagnitudeMpa());
+                    assertTrue(ribbon.bands().stream().allMatch(b->!b.from().equals(b.to())));
+                }
+                assertEquals(1,pairs);assertEquals(1,marked);
+            }
+        }
+    }
     @Test void nativeShellRecoveryFeedsTheSameDisplayAndPickingPath() {
         try (InProcessEngine engine = engine()) {
             assertTrue(engine.declareWorld(73, world(true, 0)));

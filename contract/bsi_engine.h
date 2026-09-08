@@ -122,6 +122,15 @@ typedef struct bsi_station {        /* 88 B */
   double naY, naZ;                  /* m from centroid; NaN = none */
 } bsi_station;
 
+/* Optional station identity; f64 even when the matching station is f32. */
+typedef struct bsi_station_identity { /* 16 B, parallel to stations */
+  double s;
+  int8_t side;                      /* -1 left / +1 right */
+  uint8_t flags;                    /* bit0: source governing sample; else zero */
+  uint16_t reserved;
+  uint32_t reserved2;
+} bsi_station_identity;
+
 typedef struct bsi_member_result {  /* 160 B; blocks/stations are passed separately */
   int32_t  id, island;
   uint32_t blockFirst, blockCount;  /* filled by the writer */
@@ -198,7 +207,7 @@ typedef struct bsi_solve_options {
   uint8_t  warmStart;
   uint32_t maxTimeMs;
   uint32_t numThreads;                    /* 0 = engine default */
-  uint32_t includeMask;                   /* bit0 members, bit1 stations, bit2 shells, bit3 attrsEcho, bit4 memberGeometry (requires members) */
+  uint32_t includeMask;                   /* bit0 members, bit1 stations, bit2 shells, bit3 attrsEcho, bit4 memberGeometry (requires members), bit5 stationIdentity (requires members+stations) */
 } bsi_solve_options;
 
 /* ---- host services & result writer ---------------------------------------- */
@@ -213,6 +222,7 @@ BSI_EXPORT int bsi_writer_blocks(bsi_writer*, const bsi_block_result* r, uint32_
 BSI_EXPORT int bsi_writer_member(bsi_writer*, const bsi_member_result* m,
                                  const int32_t* blocksXyz, uint32_t nBlocks,
                                  const bsi_station* st, uint32_t nStations);
+BSI_EXPORT int bsi_writer_station_identity(bsi_writer* w, const bsi_station_identity* ids, uint32_t n);
 BSI_EXPORT int bsi_writer_member_geometry(bsi_writer*, const bsi_member_geometry*);
 BSI_EXPORT int bsi_writer_facet(bsi_writer*, const bsi_facet_result* f,
                                 const int32_t* blocksXyz, uint32_t nBlocks,
