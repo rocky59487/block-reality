@@ -17,6 +17,10 @@ class SectionOrderTest(unittest.TestCase):
     def test_legacy_order(self):
         self.assertEqual([], self.problems(["blocks", "members", "memberBlocks", "stations:f32", "attrsEcho"]))
 
+    def test_geometry_between_stations_and_facets(self):
+        self.assertEqual([], self.problems(["blocks", "members", "memberBlocks", "stations:f32", "memberGeometry", "facets", "facetSurfaces", "facetBlocks"]))
+        self.assertTrue(any("fixed order" in p for p in self.problems(["memberGeometry", "stations"])))
+
     def test_facet_blocks_after_surfaces(self):
         for surface in ["facetSurfaces", "facetSurfaces:f32"]:
             self.assertEqual([], self.problems(["blocks", "facets", surface, "facetBlocks", "attrsEcho"]))

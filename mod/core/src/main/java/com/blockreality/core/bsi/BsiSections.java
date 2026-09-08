@@ -48,6 +48,17 @@ final class BsiSections {
             range(data, o + 16, stations, false);
             finite(data, o + 32, 15, false, false);
         }
+        var geometry = sections.get("memberGeometry");
+        if (geometry != null) {
+            if (members == null || geometry.count() != members.count()) throw invalid("memberGeometry requires matching members");
+            int previous = -1;
+            for (int k = 0; k < geometry.count(); k++) {
+                var g = BsiMemberGeometry.read(data, geometry.offset() + k * BsiRecords.MEMBER_GEOMETRY_BYTES);
+                if (g.id() <= previous || g.id() != data.getInt(members.offset() + k * BsiRecords.MEMBER_BYTES))
+                    throw invalid("memberGeometry id mismatch or order");
+                previous = g.id();
+            }
+        }
         var facets = sections.get("facets");
         var surfaces = either(sections, "facetSurfaces");
         if (facets != null || surfaces != null || sections.containsKey("facetBlocks")) {
@@ -99,6 +110,7 @@ final class BsiSections {
             case "quality" -> BsiRecords.QUALITY_BYTES;
             case "buckling" -> BsiRecords.BUCKLING_BYTES;
             case "members" -> BsiRecords.MEMBER_BYTES;
+            case "memberGeometry" -> BsiRecords.MEMBER_GEOMETRY_BYTES;
             case "memberBlocks" -> BsiRecords.MEMBER_BLOCK_BYTES;
             case "stations" -> BsiRecords.STATION_BYTES;
             case "stations:f32" -> BsiRecords.STATION_F32_BYTES;

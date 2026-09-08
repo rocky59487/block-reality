@@ -207,6 +207,15 @@ public final class BsiResponse {
         return out;
     }
 
+    /** Empty if absent; sections() distinguishes absence from a requested empty result. */
+    public List<BsiMemberGeometry> memberGeometry() {
+        ByteBuffer b = view("memberGeometry"); Section s = sections.get("memberGeometry");
+        if (b == null) return List.of();
+        List<BsiMemberGeometry> out = new ArrayList<>();
+        for (int k = 0; k < s.count(); k++) out.add(BsiMemberGeometry.read(b, k * BsiRecords.MEMBER_GEOMETRY_BYTES));
+        return List.copyOf(out);
+    }
+
     public List<Facet> facets() {
         List<Facet> out = new ArrayList<>();
         ByteBuffer b = view("facets"); Section s = sections.get("facets");

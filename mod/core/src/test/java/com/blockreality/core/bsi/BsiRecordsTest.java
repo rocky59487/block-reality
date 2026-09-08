@@ -103,6 +103,7 @@ class BsiRecordsTest {
         assertEquals(size(schema, "quality", false), BsiRecords.QUALITY_BYTES);
         assertEquals(size(schema, "buckling", false), BsiRecords.BUCKLING_BYTES);
         assertEquals(size(schema, "members", false), BsiRecords.MEMBER_BYTES);
+        assertEquals(size(schema, "memberGeometry", false), BsiRecords.MEMBER_GEOMETRY_BYTES);
         assertEquals(size(schema, "memberBlocks", false), BsiRecords.MEMBER_BLOCK_BYTES);
         assertEquals(size(schema, "stations", false), BsiRecords.STATION_BYTES);
         assertEquals(size(schema, "stations", true), BsiRecords.STATION_F32_BYTES);

@@ -372,6 +372,7 @@ private:
             else if (e.str == "stations") o.includeMask |= kIncStations;
             else if (e.str == "shells") o.includeMask |= kIncShells;
             else if (e.str == "attrsEcho") o.includeMask |= kIncAttrsEcho;
+            else if (e.str == "memberGeometry") o.includeMask |= kIncMemberGeometry;
         }
         // capability gate BEFORE the engine (P6)
         if (o.bucklingMode == BSI_BUCK_EIGEN && !has("bsi.buckling.eigen")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "buckling.mode=eigen needs bsi.buckling.eigen"); return; }
@@ -388,6 +389,8 @@ private:
         if ((o.includeMask & kIncStations) && !has("bsi.readback.stations")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "include stations needs bsi.readback.stations"); return; }
         if ((o.includeMask & kIncShells) && !has("bsi.readback.shells")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "include shells needs bsi.readback.shells"); return; }
         if ((o.includeMask & kIncAttrsEcho) && !has("bsi.block.attrs")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "include attrsEcho needs bsi.block.attrs"); return; }
+        if ((o.includeMask & kIncMemberGeometry) && !has("bsi.readback.memberGeometry")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "include memberGeometry needs bsi.readback.memberGeometry"); return; }
+        if ((o.includeMask & kIncMemberGeometry) && !(o.includeMask & kIncMembers)) { errorReply(out, rq.id, rq.method, rq.revision, "PROTOCOL_ERROR", "memberGeometry requires include members"); return; }
         // loads
         uint64_t N = 0;
         if (const json::Value* v = body.find("loads")) N = (uint64_t)v->i64;

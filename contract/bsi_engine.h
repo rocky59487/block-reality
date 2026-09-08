@@ -134,6 +134,14 @@ typedef struct bsi_member_result {  /* 160 B; blocks/stations are passed separat
   uint8_t  reserved[5];
 } bsi_member_result;
 
+/* Opt-in sample reference geometry; f64 even with storage=f32. Not a section mesh. */
+typedef struct bsi_member_geometry { /* 168 B */
+  int32_t id;
+  uint32_t reserved;
+  double origin[3], ex[3], ey[3], ez[3];
+  double faceY[4], faceZ[4];        /* TOP_Y, BOT_Y, PLUS_Z, MINUS_Z; metres */
+} bsi_member_geometry;
+
 typedef struct bsi_facet_result {   /* 280 B */
   int32_t  id, island;
   uint32_t blockFirst, blockCount;
@@ -190,7 +198,7 @@ typedef struct bsi_solve_options {
   uint8_t  warmStart;
   uint32_t maxTimeMs;
   uint32_t numThreads;                    /* 0 = engine default */
-  uint32_t includeMask;                   /* bit0 members, bit1 stations, bit2 shells, bit3 attrsEcho */
+  uint32_t includeMask;                   /* bit0 members, bit1 stations, bit2 shells, bit3 attrsEcho, bit4 memberGeometry (requires members) */
 } bsi_solve_options;
 
 /* ---- host services & result writer ---------------------------------------- */
@@ -205,6 +213,7 @@ BSI_EXPORT int bsi_writer_blocks(bsi_writer*, const bsi_block_result* r, uint32_
 BSI_EXPORT int bsi_writer_member(bsi_writer*, const bsi_member_result* m,
                                  const int32_t* blocksXyz, uint32_t nBlocks,
                                  const bsi_station* st, uint32_t nStations);
+BSI_EXPORT int bsi_writer_member_geometry(bsi_writer*, const bsi_member_geometry*);
 BSI_EXPORT int bsi_writer_facet(bsi_writer*, const bsi_facet_result* f,
                                 const int32_t* blocksXyz, uint32_t nBlocks,
                                 const bsi_surface top[4], const bsi_surface bottom[4]);

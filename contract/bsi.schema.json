@@ -9,7 +9,7 @@
 
   "x-capabilities": [
     "bsi.core", "bsi.world.edit",
-    "bsi.readback.members", "bsi.readback.stations", "bsi.readback.shells",
+    "bsi.readback.members", "bsi.readback.stations", "bsi.readback.shells", "bsi.readback.memberGeometry",
     "bsi.buckling.eigen", "bsi.buckling.eigen.shells", "bsi.buckling.screen",
     "bsi.precision.display", "bsi.precision.f32", "bsi.precision.warmstart", "bsi.precision.timeout",
     "bsi.material.orthotropic", "bsi.material.composite", "bsi.material.rope",
@@ -38,7 +38,7 @@
     "storage": ["f64", "f32"],
     "editClass": ["A", "B", "C"],
     "warningCode": ["BEARING_SKIPPED_FIXED", "BEARING_SKIPPED_NO_NODE", "BEARING_SKIPPED_NO_FACET", "BUTT_UNSTITCHED", "SHAPE_APPROXIMATED", "SEAM_UNJOINED", "INDICATIVE_THICK_SHELL", "UNCLASSIFIED"],
-    "include": ["members", "stations", "shells", "attrsEcho"],
+    "include": ["members", "stations", "shells", "attrsEcho", "memberGeometry"],
     "attrType": ["f64", "i64", "u64mask"],
     "standardAttrKeys": ["shape", "damage", "temperatureK"],
     "transport": ["frame", "arena", "stdio-b64"]
@@ -246,6 +246,7 @@
     "quality":      {"bytes": 16,  "fields": [["achievedRel","f64"],["iterations","i32"],["tierHonoured","u8"],["warmStartUsed","u8"],["storage","u8"],["timedOut","u8"]]},
     "buckling":     {"bytes": 16,  "fields": [["island","i32"],["state","u8"],["kind","u8"],["reserved","u16"],["factor","f64"]]},
     "members":      {"bytes": 160, "fields": [["id","i32"],["island","i32"],["blockFirst","u32"],["blockCount","u32"],["stationFirst","u32"],["stationCount","u32"],["material","i32"],["section","i32"],["lengthM","f64","m"],["endI","f64[6]","N,N,N,N*m,N*m,N*m"],["endJ","f64[6]","N,N,N,N*m,N*m,N*m"],["maxDC","f64"],["governingS","f64"],["mode","u8"],["governingFibre","u8"],["flags","u8"],["reserved","u8[5]"]]},
+    "memberGeometry": {"bytes": 168, "fields": [["id","i32"],["reserved","u32"],["origin","f64[3]"],["ex","f64[3]"],["ey","f64[3]"],["ez","f64[3]"],["faceY","f64[4]"],["faceZ","f64[4]"]]},
     "memberBlocks": {"bytes": 12,  "fields": [["x","i32"],["y","i32"],["z","i32"]]},
     "stations":     {"bytes": 88,  "fields": [["s","f64"],["x","f64","m"],["y","f64","m"],["z","f64","m"],["sigma","f64[4]","Pa"],["tau","f64","Pa"],["naY","f64","m"],["naZ","f64","m"]], "x-f32": 44},
     "facets":       {"bytes": 280, "fields": [["id","i32"],["island","i32"],["blockFirst","u32"],["blockCount","u32"],["material","i32"],["reserved0","u32"],["thicknessM","f64","m"],["corners","f64[12]","m"],["ex","f64[3]"],["ey","f64[3]"],["n","f64[3]"],["N","f64[3]","N/m"],["M","f64[3]","N*m/m"],["Q","f64[2]","N/m"],["dc","f64"],["flags","u8"],["governingFibre","u8"],["reserved","u8[6]"]]},

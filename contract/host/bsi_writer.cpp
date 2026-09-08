@@ -1,6 +1,7 @@
 #include "bsi_reply.hpp"
 #include "bsi_schema.hpp"
 #include "bsi_recovery.hpp"
+#include "bsi_member_geometry.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -27,6 +28,12 @@ int ReplyBuilder::member(const bsi_member_result* m, const int32_t* xyz, uint32_
     if (nb) memberBlocks_.insert(memberBlocks_.end(), xyz, xyz + (size_t)nb * 3);
     if (ns) stations_.insert(stations_.end(), st, st + ns);
     members_v_.push_back(copy);
+    return BSI_OK;
+}
+
+int ReplyBuilder::memberGeometry(const bsi_member_geometry* g) {
+    if (!g) return BSI_E_INTERNAL;
+    memberGeometry_.push_back(*g);
     return BSI_OK;
 }
 
@@ -176,6 +183,17 @@ bool ReplyBuilder::finalizeSolve(std::string& why) {
         for (const auto& s : surfaces_)
             if (!recovery::valid(s, f32)) { why = "invalid surface recovery or f32 overflow"; return false; }
     }
+    if (include_ & kIncMemberGeometry) {
+        if (!(include_ & kIncMembers) || memberGeometry_.size() != members_v_.size()) {
+            why = "memberGeometry requires one record per member"; return false;
+        }
+        for (size_t k = 0; k < memberGeometry_.size(); ++k) {
+#ifndef BSI_TEST_GEOMETRY_PAIR
+            if (memberGeometry_[k].id != members_v_[k].id) { why = "memberGeometry id mismatch"; return false; }
+#endif
+            if (!geometry::valid(memberGeometry_[k])) { why = "invalid memberGeometry"; return false; }
+        }
+    }
     // ids strictly ascending
     for (size_t k = 1; k < members_v_.size(); ++k) if (members_v_[k].id <= members_v_[k - 1].id) { why = "member ids not ascending"; return false; }
     for (size_t k = 1; k < facets_v_.size(); ++k) if (facets_v_[k].id <= facets_v_[k - 1].id) { why = "facet ids not ascending"; return false; }
@@ -236,6 +254,8 @@ bool ReplyBuilder::finalizeSolve(std::string& why) {
             appendSection("stations:f32", f.data(), (uint64_t)f.size() * sizeof(StationF32), f.size());
         } else appendSection("stations", stations_.data(), (uint64_t)stations_.size() * sizeof(bsi_station), stations_.size());
     }
+    if (include_ & kIncMemberGeometry)
+        appendSection("memberGeometry", memberGeometry_.data(), (uint64_t)memberGeometry_.size() * sizeof(bsi_member_geometry), memberGeometry_.size());
     if (include_ & kIncShells) {
         appendSection("facets", facets_v_.data(), (uint64_t)facets_v_.size() * sizeof(bsi_facet_result), facets_v_.size());
 #ifdef BSI_TEST_RECOVERY_SURFACE_ORDER
@@ -267,6 +287,9 @@ BSI_EXPORT void bsi_host_log(const bsi_host* h, int level, const char* msg) {
 BSI_EXPORT int bsi_writer_blocks(bsi_writer* w, const bsi_block_result* r, uint32_t n) { return (w && w->b && (r || n == 0)) ? w->b->blocks(r, n) : BSI_E_INTERNAL; }
 BSI_EXPORT int bsi_writer_member(bsi_writer* w, const bsi_member_result* m, const int32_t* xyz, uint32_t nb, const bsi_station* st, uint32_t ns) {
     return (w && w->b && (xyz || nb == 0) && (st || ns == 0)) ? w->b->member(m, xyz, nb, st, ns) : BSI_E_INTERNAL;
+}
+BSI_EXPORT int bsi_writer_member_geometry(bsi_writer* w, const bsi_member_geometry* g) {
+    return (w && w->b) ? w->b->memberGeometry(g) : BSI_E_INTERNAL;
 }
 BSI_EXPORT int bsi_writer_facet(bsi_writer* w, const bsi_facet_result* f, const int32_t* xyz, uint32_t nb, const bsi_surface top[4], const bsi_surface bottom[4]) {
     return (w && w->b && top && bottom && (xyz || nb == 0)) ? w->b->facet(f, xyz, nb, top, bottom) : BSI_E_INTERNAL;

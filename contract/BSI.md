@@ -409,3 +409,20 @@ request/reply 各最多 256 MiB（含 prefix），快取最多 512 MiB，不含 
    此條不重新定義非 computed buckling.factor 的 NaN。
 5. storage 與 tier 是獨立控制。C12-f32-display 檔名雖含 display，兩個變體均為 commit，
    只支持 f32 storage 驗收，不支持 bsi.precision.display 宣告。
+
+
+### 2026-09-08 · 梁樣本幾何加法
+
+新增能力 `bsi.readback.memberGeometry` 與 include `memberGeometry`（mask bit4）；
+需要同時 include members。缺能力先回 UNSUPPORTED；有能力但缺 members 回 PROTOCOL_ERROR，
+都在求解之前拒絕。舊 include 與 member160/station88 B 不變。
+新區段 `memberGeometry` 在 stations（若有）後、facets（若有）前；每筆與 members 同序同 id，
+筆數相等，零筆仍出區段。布局固定 168 B：id i32、reserved u32=0、origin/ex/ey/ez 各 f64[3]、
+faceY/faceZ 各 f64[4]；即使 storage=f32 也不窄化幾何。
+origin 為實際 i 節點世界公尺座標，ex/ey/ez 為求解用的右手正交單位局部軸。
+faceY={h,-h,0,0}、faceZ={0,0,b,-b}，h/b>0，單位 m，順序對應 stations.sigma 的
+TOP_Y/BOT_Y/PLUS_Z/MINUS_Z。樣本参考位置=station.xyz+ey*faceY[k]+ez*faceZ[k]。
+axisRot 已套到截面，不再套第二次。此四點是應力取樣參考位置，不是四角或孔洞截面外形。
+所有值必須有限，軸的內積與 ex×ey=ez 每個分量誤差≤1e-9；錯誤幾何、保留位、id/筆數/面序
+由 host 回 INTERNAL，消費者也須拒絕。新引擎可用新增 writer 函式傳入幾何；舊 writer、vtable
+與公開 CAPI 簽章不變。協商的新能力與 contract hash 是預期差異，未請求的 solve bytes 不變。

@@ -28,6 +28,7 @@ public final class BsiRecords {
     public static final int QUALITY_BYTES = 16;
     public static final int BUCKLING_BYTES = 16;
     public static final int MEMBER_BYTES = 160;
+    public static final int MEMBER_GEOMETRY_BYTES = 168;
     public static final int MEMBER_BLOCK_BYTES = 12;
     public static final int STATION_BYTES = 88;
     public static final int STATION_F32_BYTES = 44;

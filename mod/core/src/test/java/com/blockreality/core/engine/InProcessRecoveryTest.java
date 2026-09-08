@@ -46,6 +46,35 @@ class InProcessRecoveryTest {
             }
         }
     }
+    @Test void memberGeometryUsesActualAxesRotatedSectionAndF64WorldPositions() {
+        try (InProcessEngine engine = engine()) {
+            assertTrue(engine.has("bsi.readback.memberGeometry"));
+            double[][] axes={{1,0,0,0,1,0,0,0,1},{0,1,0,1,0,0,0,0,-1},{0,0,1,0,1,0,-1,0,0}};
+            long revision=0;
+            for(int axis=0;axis<3;axis++) for(int rot=0;rot<4;rot++) for(int shift=0;shift<2;shift++) {
+                int[] offset={shift*23,shift*64,shift*-31};
+                List<BsiRecords.Block> world=new ArrayList<>();
+                for(int k=-1;k<5;k++) world.add(new BsiRecords.Block(offset[0]+(axis==0?k:0),offset[1]+(axis==1?k:0),
+                        offset[2]+(axis==2?k:0),k<0?2:0,-1,axis,0,rot,1,1));
+                assertTrue(engine.declareWorld(++revision,world));
+                byte[] full=null;
+                for(var storage:BsiHeaders.Storage.values()) {
+                    var reply=engine.solve(true,new double[]{0,-9.81,0},List.of(),1,List.of("members","stations","memberGeometry"),new BsiHeaders.Precision(BsiHeaders.Tier.COMMIT,storage));
+                    assertNotNull(reply);assertFalse(reply.isError(),reply.message());assertEquals("ok",reply.status());
+                    assertEquals(1,reply.members().size());assertEquals(1,reply.memberGeometry().size());
+                    var g=reply.memberGeometry().get(0);assertEquals(reply.members().get(0).id(),g.id());
+                    assertEquals(new com.blockreality.api.geom.Vec3d(offset[0]+.5,offset[1]+.5,offset[2]+.5),g.origin());
+                    var got=List.of(g.ex(),g.ey(),g.ez());
+                    for(int j=0;j<3;j++)assertArrayEquals(new double[]{axes[axis][3*j],axes[axis][3*j+1],axes[axis][3*j+2]},new double[]{got.get(j).x(),got.get(j).y(),got.get(j).z()},0.);
+                    double h=(rot%2==0)?.2:.1,b=(rot%2==0)?.1:.2;
+                    assertEquals(List.of(h,-h,0.,0.),g.faceY());assertEquals(List.of(0.,0.,b,-b),g.faceZ());
+                    if(full==null)full=section(reply,"memberGeometry");else assertArrayEquals(full,section(reply,"memberGeometry"));
+                }
+                var missing=engine.solve(false,new double[]{0,0,0},List.of(),1,List.of("memberGeometry"));
+                assertNotNull(missing);assertEquals("PROTOCOL_ERROR",missing.code());
+            }
+        }
+    }
     private static final String VOCAB = """
             {"version":1,"materials":[
             {"name":"steel","role":"member","model":"isotropic","E":2e11,"nu":0.3,"rho":7850,
