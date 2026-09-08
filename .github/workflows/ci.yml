@@ -397,6 +397,18 @@ jobs:
               "-Dbr.sidecar=$GITHUB_WORKSPACE/dist/br-sidecar" \
               "-Dbr.engine=$GITHUB_WORKSPACE/.tectonic2/build/libbsi_tectonic.so"
 
+      - name: BsiNative large reply executes the real solver once
+        if: steps.reach.outputs.ok == 'true'
+        run: |
+          export OPENBLAS_NUM_THREADS=4 OPENBLAS_CORETYPE=Haswell
+          cmake -S .tectonic2/gate/bsi_retry -B .tectonic2/build_retry -DCMAKE_BUILD_TYPE=Release
+          cmake --build .tectonic2/build_retry --target native_clean bsi_retry_native -j 4
+          mkdir -p .tectonic2/retry_frames
+          .tectonic2/build_retry/native_clean contract/conformance/cases/C4-cantilever-selfweight.json .tectonic2/retry_frames
+          cd mod && ./gradlew --no-daemon :core:bsiRetryGate \
+              "-Dbr.retryEngine=$GITHUB_WORKSPACE/.tectonic2/build_retry/libbsi_retry_native.so" \
+              "-Dbr.retryFrames=$GITHUB_WORKSPACE/.tectonic2/retry_frames"
+
       # Everything the manifest will claim is read OUT OF THE ENGINE here, by loading it
       # and sending bsi.hello — not asserted by the build.
       - name: stage the library, asking it what it is

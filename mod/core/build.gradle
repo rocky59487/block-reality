@@ -42,3 +42,18 @@ def checkContract = tasks.register('checkContract', Exec) {
     isIgnoreExitValue = false
 }
 tasks.named('check') { dependsOn checkContract }
+
+// Gate-only counted native library; never a jar payload. No silent SKIP.
+tasks.register('bsiRetryGate', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.blockreality.core.engine.BsiRetryGate'
+    doFirst {
+        def library = System.getProperty('br.retryEngine', '')
+        def frames = System.getProperty('br.retryFrames', '')
+        if (!new File(library).isFile() || !new File(frames, 'oracle.frame').isFile()) {
+            throw new GradleException('bsiRetryGate requires absolute -Dbr.retryEngine=<counted native library> and -Dbr.retryFrames=<native frames directory>')
+        }
+        args library, frames
+    }
+}

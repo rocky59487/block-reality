@@ -3,6 +3,8 @@ package com.blockreality.core.bsi;
 import com.blockreality.core.json.JsonWriter;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Request headers, with their keys in the order the schema lists them.
@@ -14,6 +16,13 @@ import java.util.List;
 public final class BsiHeaders {
 
     private BsiHeaders() {}
+
+    public enum Tier { COMMIT, DISPLAY }
+    public enum Storage { F64, F32 }
+    /** Storage changes serialization; it does not select the solver's precision tier. */
+    public record Precision(Tier tier, Storage storage) {
+        public Precision { Objects.requireNonNull(tier, "tier"); Objects.requireNonNull(storage, "storage"); }
+    }
 
     private static JsonWriter base(String id, String method, long revision) {
         return new JsonWriter().beginObj()
@@ -48,6 +57,11 @@ public final class BsiHeaders {
     /** Options of one solve. {@code include} names the optional sections; null means none. */
     public static String solve(String id, long revision, boolean selfWeight, double[] gravity,
                                int loads, Integer numThreads, List<String> include) {
+        return solve(id, revision, selfWeight, gravity, loads, numThreads, include, null);
+    }
+
+    public static String solve(String id, long revision, boolean selfWeight, double[] gravity,
+                               int loads, Integer numThreads, List<String> include, Precision precision) {
         JsonWriter w = base(id, "bsi.solve", revision);
         w.key("body").beginObj().kv("selfWeight", selfWeight);
         if (gravity != null) {
@@ -55,6 +69,9 @@ public final class BsiHeaders {
         }
         if (loads > 0) w.kv("loads", loads);
         if (numThreads != null) w.kv("numThreads", numThreads.intValue());
+        if (precision != null) w.key("precision").beginObj()
+                .kv("tier", precision.tier().name().toLowerCase(Locale.ROOT))
+                .kv("storage", precision.storage().name().toLowerCase(Locale.ROOT)).endObj();
         if (include != null && !include.isEmpty()) {
             w.key("include").beginArr();
             for (String s : include) w.val(s);

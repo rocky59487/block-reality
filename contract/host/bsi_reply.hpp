@@ -15,7 +15,7 @@ struct SectionInfo { std::string name; uint64_t offset = 0, bytes = 0, count = 0
 struct UnassignedGroup { std::string why; int32_t island = -1; std::vector<int32_t> xyz; };
 struct WarningCount { std::string code; uint32_t count = 0; };
 
-enum IncludeBits { kIncMembers = 1, kIncStations = 2, kIncShells = 4, kIncAttrsEcho = 8 };
+enum IncludeBits { kIncMembers = 1, kIncStations = 2, kIncShells = 4, kIncAttrsEcho = 8, kIncMemberGeometry = 16, kIncStationIdentity = 32 };
 
 class ReplyBuilder {
 public:
@@ -25,6 +25,8 @@ public:
     // ---- engine-facing (called through bsi_writer_*) ----
     int blocks(const bsi_block_result* r, uint32_t n);
     int member(const bsi_member_result* m, const int32_t* xyz, uint32_t nb, const bsi_station* st, uint32_t ns);
+    int stationIdentity(const bsi_station_identity* ids, uint32_t n);
+    int memberGeometry(const bsi_member_geometry* g);
     int facet(const bsi_facet_result* f, const int32_t* xyz, uint32_t nb, const bsi_surface top[4], const bsi_surface bottom[4]);
     int unassigned(const char* why, int32_t island, const int32_t* xyz, uint32_t nb);
     int warning(const char* code, uint32_t count);
@@ -93,6 +95,8 @@ private:
     std::vector<bsi_member_result> members_v_;
     std::vector<int32_t> memberBlocks_;
     std::vector<bsi_station> stations_;
+    std::vector<bsi_member_geometry> memberGeometry_;
+    std::vector<bsi_station_identity> stationIdentity_;
     std::vector<bsi_facet_result> facets_v_;
     std::vector<int32_t> facetBlocks_;
     std::vector<bsi_surface> surfaces_;       // 8 per facet: top[4], bottom[4]

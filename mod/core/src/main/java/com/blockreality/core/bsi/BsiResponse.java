@@ -5,7 +5,6 @@ import com.blockreality.core.json.JsonValue;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,26 +56,30 @@ public final class BsiResponse {
     /** A cell listed as not modelled, with the reason the engine gave. */
     public record Unassigned(String why, int island, List<int[]> blocks) {}
 
+    /** Centroid resultants and the engine's verdict; geometry and forces remain f64. */
+    public record Facet(int id, int island, int blockFirst, int blockCount, int material, double thicknessM,
+                        double[][] corners, double[] ex, double[] ey, double[] n, double[] membrane,
+                        double[] bending, double[] shear, double dc, int flags, int governingFibre) {
+        public boolean overloaded() { return (flags & 1) != 0; }
+        public boolean governingTop() { return (flags & 2) != 0; }
+    }
+    public record Surface(double s1, double s2, double theta, double vm) {}
+    /** Each list follows the facet's four corners, with top preceding bottom on the wire. */
+    public record FacetSurfaces(List<Surface> top, List<Surface> bottom) {}
+
     private final String headerText;
     private final JsonValue header;
     private final byte[] payload;
-    private final Map<String, Section> sections = new LinkedHashMap<>();
+    private final Map<String, Section> sections;
 
     private BsiResponse(String headerText, JsonValue header, byte[] payload) {
         this.headerText = headerText;
         this.header = header;
-        this.payload = payload;
-        if (header.isArr("sections")) {
-            for (JsonValue s : header.arr("sections")) {
-                Section sec = new Section(s.str("name", ""), s.i32("offset", -1), s.i32("bytes", -1), s.i32("count", -1));
-                if (sec.offset() >= 0 && sec.bytes() >= 0 && sec.offset() + sec.bytes() <= payload.length) {
-                    sections.put(sec.name(), sec);
-                }
-            }
-        }
+        this.payload = payload.clone();
+        this.sections = BsiSections.parse(header, this.payload);
     }
 
-    /** Parse one frame's header and payload. Returns null when the header is not a JSON object. */
+    /** Parse a frame; null for a non-object header, IllegalArgumentException for an invalid binary directory. */
     public static BsiResponse of(BsiFrame.Decoded frame) {
         if (frame == null) return null;
         JsonValue h = JsonValue.parse(frame.header());
@@ -86,7 +89,7 @@ public final class BsiResponse {
 
     public String headerText() { return headerText; }
     public JsonValue header() { return header; }
-    public byte[] payload() { return payload; }
+    public byte[] payload() { return payload.clone(); }
     public boolean isError() { return "error".equals(header.str("kind", "")); }
     /** The contract's error token, or empty for a response. Consumers branch on this, never on the message. */
     public String code() { return header.str("code", ""); }
@@ -167,9 +170,15 @@ public final class BsiResponse {
 
     /** World coordinates of the cells a member covers, indexed by {@code blockFirst}/{@code blockCount}. */
     public List<int[]> memberBlocks() {
+        return coordinates("memberBlocks");
+    }
+
+    public List<int[]> facetBlocks() { return coordinates("facetBlocks"); }
+
+    private List<int[]> coordinates(String name) {
         List<int[]> out = new ArrayList<>();
-        ByteBuffer b = view("memberBlocks");
-        Section s = sections.get("memberBlocks");
+        ByteBuffer b = view(name);
+        Section s = sections.get(name);
         if (b == null) return out;
         for (int k = 0; k < s.count(); k++) {
             int o = k * BsiRecords.MEMBER_BLOCK_BYTES;
@@ -179,7 +188,7 @@ public final class BsiResponse {
     }
 
     /**
-     * Stations of the display track, as f64 or f32 depending on what was asked for. The f32 variant
+     * Recovered stations, as f64 or f32 storage independently of the requested solve tier. The f32 variant
      * is the same eleven fields at half the width (contract Part G item 7), so one reader serves both.
      */
     public double[][] stations() {
@@ -195,6 +204,61 @@ public final class BsiResponse {
                 out[k][f] = f32 ? b.getFloat(o + f * 4) : b.getDouble(o + f * 8);
             }
         }
+        return out;
+    }
+
+    /** Empty if absent; sections() distinguishes absence from a requested empty result. */
+    @javax.annotation.Nonnull public List<BsiStationIdentity> stationIdentity() {
+        ByteBuffer b = view("stationIdentity"); Section s = sections.get("stationIdentity");
+        if (b == null) return List.of();
+        List<BsiStationIdentity> out = new ArrayList<>(s.count());
+        for (int k = 0; k < s.count(); k++) out.add(BsiStationIdentity.read(b, k * BsiRecords.STATION_IDENTITY_BYTES));
+        return List.copyOf(out);
+    }
+
+    public List<BsiMemberGeometry> memberGeometry() {
+        ByteBuffer b = view("memberGeometry"); Section s = sections.get("memberGeometry");
+        if (b == null) return List.of();
+        List<BsiMemberGeometry> out = new ArrayList<>();
+        for (int k = 0; k < s.count(); k++) out.add(BsiMemberGeometry.read(b, k * BsiRecords.MEMBER_GEOMETRY_BYTES));
+        return List.copyOf(out);
+    }
+
+    public List<Facet> facets() {
+        List<Facet> out = new ArrayList<>();
+        ByteBuffer b = view("facets"); Section s = sections.get("facets");
+        if (b == null) return out;
+        for (int k = 0; k < s.count(); k++) {
+            int o = k * BsiRecords.FACET_BYTES;
+            double[][] corners = new double[4][];
+            for (int c = 0; c < 4; c++) corners[c] = doubles(b, o + 32 + c * 24, 3);
+            out.add(new Facet(b.getInt(o), b.getInt(o + 4), b.getInt(o + 8), b.getInt(o + 12),
+                    b.getInt(o + 16), b.getDouble(o + 24), corners, doubles(b, o + 128, 3), doubles(b, o + 152, 3),
+                    doubles(b, o + 176, 3), doubles(b, o + 200, 3), doubles(b, o + 224, 3), doubles(b, o + 248, 2),
+                    b.getDouble(o + 264), b.get(o + 272) & 255, b.get(o + 273) & 255));
+        }
+        return out;
+    }
+
+    public List<FacetSurfaces> facetSurfaces() {
+        List<FacetSurfaces> out = new ArrayList<>(); Section s = either("facetSurfaces");
+        if (s == null) return out;
+        ByteBuffer b = view(s.name()); boolean f32 = s.name().endsWith(":f32");
+        for (int k = 0; k < s.count(); k++) {
+            List<Surface> top = new ArrayList<>(), bottom = new ArrayList<>();
+            for (int c = 0; c < 8; c++) {
+                double[] v = new double[4];
+                for (int j = 0; j < 4; j++) v[j] = f32 ? b.getFloat() : b.getDouble();
+                (c < 4 ? top : bottom).add(new Surface(v[0], v[1], v[2], v[3]));
+            }
+            out.add(new FacetSurfaces(List.copyOf(top), List.copyOf(bottom)));
+        }
+        return out;
+    }
+
+    private static double[] doubles(ByteBuffer b, int offset, int n) {
+        double[] out = new double[n];
+        for (int k = 0; k < n; k++) out[k] = b.getDouble(offset + 8 * k);
         return out;
     }
 

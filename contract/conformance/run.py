@@ -29,7 +29,8 @@ MECHANICS_FAMILIES = {"C-4", "C-5", "C-6", "C-7", "C-8", "C-10", "C-12", "C-13"}
 
 # ----------------------------------------------------------------------------- contract
 def load_schema():
-    return json.load(open(os.path.join(CONTRACT, "bsi.schema.json"), encoding="utf-8"))
+    with open(os.path.join(CONTRACT, "bsi.schema.json"), encoding="utf-8") as source:
+        return json.load(source)
 
 def contract_sha():
     return open(os.path.join(CONTRACT, "CONTRACT_SHA256"), encoding="utf-8").read().strip()
@@ -589,7 +590,7 @@ def check_reply(schema, validator, method, reply, declared_blocks=None):
         if keys != [k for k in order if k in h]:
             probs.append(f"solve.response key order {keys} != schema order")
         off = 0
-        want = ["blocks", "equilibrium", "quality", "buckling", "members", "memberBlocks", "stations", "facets", "facetSurfaces", "attrsEcho"]
+        want = ["blocks", "equilibrium", "quality", "buckling", "members", "memberBlocks", "stations", "stationIdentity", "memberGeometry", "facets", "facetSurfaces", "facetBlocks", "attrsEcho"]
         names = [s["name"].split(":")[0] for s in h["sections"]]
         if [n for n in want if n in names] != names:
             probs.append(f"sections not in the fixed order: {names}")
@@ -869,6 +870,9 @@ def run_steps(schema, validator, args, case, transport, assume, is_stub):
 # ----------------------------------------------------------------------------- driver
 def selfcheck(schema):
     rc = subprocess.call([sys.executable, os.path.join(CONTRACT, "check_contract.py")])
+    if rc != 0:
+        return rc
+    rc = subprocess.call([sys.executable, os.path.join(CONTRACT, "conformance", "test_section_order.py")])
     if rc != 0:
         return rc
     roots = set(schema["x-records"].keys()) | {"status", "diag", "buckling", "unassigned", "sections", "payload", "error"}

@@ -20,11 +20,18 @@ import java.util.List;
  *
  * @param peakMpa the magnitude that maps to full saturation, for the legend
  */
-public record StressRibbon(int memberId, double peakMpa, List<Band> bands, List<Vec3d> neutralAxis) {
+public record StressRibbon(int memberId, double peakMpa, List<Band> bands, List<Vec3d> neutralAxis,
+                           List<List<Vec3d>> neutralSegments) {
 
     public StressRibbon {
         bands = List.copyOf(bands);
         neutralAxis = List.copyOf(neutralAxis);
+        neutralSegments = neutralSegments.stream().map(List::copyOf).toList();
+    }
+
+    /** Legacy flat points; new drawing consumers must use neutralSegments to respect missing samples. */
+    public StressRibbon(int memberId, double peakMpa, List<Band> bands, List<Vec3d> neutralAxis) {
+        this(memberId, peakMpa, bands, neutralAxis, neutralAxis.isEmpty() ? List.of() : List.of(neutralAxis));
     }
 
     /**

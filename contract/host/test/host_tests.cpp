@@ -29,6 +29,10 @@ static void chk(const char* id, const char* what, bool ok) {
 }
 
 using namespace bsi;
+#ifdef _WIN32
+static void setenv(const char* key, const char* value, int) { _putenv_s(key, value); }
+static void unsetenv(const char* key) { _putenv_s(key, ""); }
+#endif
 
 static const char* kVocab =
  R"({"version":1,"materials":[

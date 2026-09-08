@@ -67,7 +67,7 @@ public final class StressRibbonBuilder {
             Vec3d centre = st.centroidMm();
             for (Fibre f : st.fibres()) {
                 byFibre.computeIfAbsent(f.name(), k -> new ArrayList<>())
-                       .add(new Sample(scale(f.positionMm(centre)), f.direction(), f.sigmaMpa()));
+                       .add(new Sample(st.xMm(), scale(f.positionMm(centre)), f.direction(), f.sigmaMpa()));
             }
         }
 
@@ -77,6 +77,7 @@ public final class StressRibbonBuilder {
             for (int i = 0; i + 1 < s.size(); i++) {
                 Sample a = s.get(i);
                 Sample b = s.get(i + 1);
+                if (b.xMm <= a.xMm) continue;
                 Rgb ca = palette.signedStress(a.sigma, peak);
                 Rgb cb = palette.signedStress(b.sigma, peak);
                 // The hatch is picked from the more heavily stressed end, so a segment
@@ -88,7 +89,24 @@ public final class StressRibbonBuilder {
             }
         }
 
-        return new StressRibbon(member.id(), peak, bands, neutralAxis(stations));
+        return new StressRibbon(member.id(), peak, bands, neutralAxis(stations), neutralSegments(stations));
+    }
+
+    private static List<List<Vec3d>> neutralSegments(List<StressStation> stations) {
+        List<List<Vec3d>> segments = new ArrayList<>();
+        List<Vec3d> current = new ArrayList<>(); double previous = -1;
+        for (StressStation s : stations) {
+            var top = s.fibre("TOP_Y"); var off = s.naOffsetYMm();
+            if (off.isEmpty() || top.isEmpty() || s.xMm() <= previous) {
+                if (!current.isEmpty()) segments.add(List.copyOf(current));
+                current.clear();
+            }
+            if (off.isPresent() && top.isPresent())
+                current.add(scale(s.centroidMm().plus(top.get().direction().scaled(off.get()))));
+            previous = s.xMm();
+        }
+        if (!current.isEmpty()) segments.add(List.copyOf(current));
+        return List.copyOf(segments);
     }
 
     /**
@@ -116,5 +134,5 @@ public final class StressRibbonBuilder {
         return new Vec3d(mm.x() * MM_TO_BLOCK, mm.y() * MM_TO_BLOCK, mm.z() * MM_TO_BLOCK);
     }
 
-    private record Sample(Vec3d pos, Vec3d dir, double sigma) { }
+    private record Sample(double xMm, Vec3d pos, Vec3d dir, double sigma) { }
 }

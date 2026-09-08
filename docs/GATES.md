@@ -1059,3 +1059,339 @@ jar 已就位（`%APPDATA%/.minecraft/mods/blockreality-0.4.0-dev.jar`），
 **2026-08-22**，而 `.minecraft/logs/` 最新的一份是 **2026-04-12**。
 jar 曾被放進去，但**在那之後遊戲一次都沒開過**。
 「從來沒有在跑起來的遊戲裡開過」不只是沒有 gate，是有痕跡可證。
+
+
+## 2026-09-06 BSI_CORE 真 members 首跑：JNA oracle 修正先凍
+
+引擎宣告 bsi.core / bsi.readback.members 後，InProcessEngineTest 原先因 caps=[]
+未執行的 members 分支首次在此箱執行，root moment 斷言 FAIL：expected 12321.36，actual 49285.44。
+原測試把 reaction=wL 再除2當成 wL²/2，漏了 L=4m；這是測試量綱錯誤。
+契約 C4-cantilever-selfweight（hash 7104a36d8a5e…）從未改線：w=6160.68 N/m、
+L=4m、reaction=24642.72 N、root moment=49285.44 N·m，rel1e-9。
+
+實作前凍結：只修 Java 測試的彎矩 oracle 為 reaction*L/2，容許誤差維持原值；
+沿同一契約檢查 members count=1、resolved section>=0、free-end moment<=1e-9*wL²/2。
+不改引擎數值、契約或 production decoder。以原生六匯出庫重新跑 :core:test；
+首次失敗留在 tectonic2 gate/evidence/BSI_CORE，過往 caps=[] 的綠只證明 reaction/hash，
+不能支撐 members 數值（此項歷史結論降為未驗證）。新結論須以修正後真執行證據為準。
+
+
+### 同日修正後驗證
+
+MSVC真host+adapter+CAPI六匯出庫（無counted wrapper）SHA256
+f7326cce0b3bb851ed0db0f7dae2c7f45f4367743db1b734bf58faf86399ec4a，
+BSI能力core/members。Java :core:test 260總數、220PASS、40SKIP、0FAIL；
+InProcessEngineTest 5項全執行PASS，members彎矩/斷面/自由端斷言確實執行。
+Windows自足封裝仍未完成；NATIVE/真遊戲#89保持待辦。契約49檔canonical逐位相同、hash未改。
+完整原始輸出、首次FAIL與修後XML在引擎gate/evidence/BSI_CORE/regression。
+
+## 2026-09-07 BSI 回收契約與 Java codec（實作前凍）
+
+對應 tectonic2 docs/specs/MC65B_BSI_CONTRACT.md（判準 commit 34f62b5）。
+先同步 facetBlocks 契約缺口：shells 增加 12 B 格座標區段，由 facet.blockFirst/Count 索引，
+位於 facetSurfaces 後。include 各項獨立；stations-only 合法，需要父索引者要求 members+stations。
+storage=f32 只窄化整筆 stations（含位置）及 facetSurfaces，blocks.dc 保持 f64、24 B 原布局。
+tier 與 storage 分開；C12 是 commit，不能證明 display。原 BSI.md prose 保留，以 dated 裁定覆蓋。
+
+硬線：Java 新增 typed precision 請求與 facets/facetBlocks/surfaces 解碼，保留舊 solve 簽章及 bytes。
+無 Java 力學公式、無 DC 重判。以手工 LE records 與 IEEE 常數驗全部欄位、兩個父記錄不同子數、
+top4/bottom4 次序、f32/f64、NaN 中性軸；壞 section count/size、整數越界、重複/重疊、
+同時 f32/f64、父索引越界、surface/facet 數不符均拒絕，未知合法 section 保留。
+stations-only 不強求父記錄；只請 members 沒有 stations 不強求 station section。
+回收數值須有限，僅 naY/naZ 可 NaN；不將 malformed frame 靜默轉為「無資料」。
+新增 assertion 首跑後 dated 記實際數；:core:test 用新 hash 的真 native 重編庫，既有 JNA 五項實跑。
+
+host 以獨立 LE/IEEE fixture、8 變異、Windows/Linux/i9 DET×3 與 ASan/UBSan 驗證，
+保留所有首跑失敗；兩倉 contract 全檔一致且各自 pin 自洽，同 commit 更新 engine-ref 的 commit/hash。
+此段只完成 contract/codec，native adapter 新 stations/shells/f32 尚不宣告；
+下一段真 C6/C8/C12 與新 JNA 力學腿後才啟用。NATIVE / GAME_SWAP / #89 與舊公式刪除仍待辦。
+
+### 同日 Java 首跑照登與 fixture 校正
+
+270 項首跑 228PASS/2FAIL/40SKIP。新 BsiSections 將 vocab.declare 的 sections（斷面名稱/id 表）
+誤認為 binary sections，導致真 JNA vocab.declare 失敗；應依 method 分流，非放鬆 binary 守門。
+另新 header fixture 手寫成 gravity:[0.0,-9.81,0.0]，舊 JsonWriter 實際輸出 [0,-9.81,0]。
+獨立取 a4582bc 的 BsiHeaders/JsonWriter/BsiContract 編譯並印出原 bytes，證明原輸出為後者；
+只校正 fixture 字面值，舊 header 逐位不變的硬線維持。首跑 XML/輸出與舊碼重建輸出保存在
+tectonic2 gate/evidence/MC65B_BSI_CONTRACT/initial；新增 vocab.declare/query 控制防止復發。
+
+### 同日修後驗證
+
+Java :core:test 271總數=231PASS/40SKIP/0FAIL；新增BsiRecoveryTest 11/11與
+新契約hash真InProcessEngineTest 5/5均執行。七個隔離來源變異（size/overlap/variants/range/
+cardinality/finite/vocab）每臂完整11測試、exit1且原正常斷言具名FAIL。
+共享host 500 checks/8變異、Windows/Linux/i9 DET×3；Linux ASan/UBSan零診斷、非LSan；
+舊區段12組兩箱前後逐位不變、host90/retry128與BSI310回歸，無assume語料仍5PASS/5SKIP。
+新hash為59beed904d7321ddc1c46b5cca11dba669a129e495e921ff6d3d86edbced3b03，51檔雙倉相同。
+完整來源hash、raw與XML：tectonic2 gate/evidence/MC65B_BSI_CONTRACT。
+MC65B adapter新三能力、真新能力JNA、Windows自足封裝與GAME_SWAP均保留待辦。
+
+## 2026-09-08 — 原生 BSI 回收 JNA 驗收先凍
+
+引擎側判準 MC65B_BSI_ADAPTER.md（5debd6e）為本段對位。新增真 JNA 腿要求
+stations/shells/f32 三能力，不可因缺能力跳過；明確送 COMMIT+F64/F32，
+以 C8 懸臂解析頂拉底壓/根部應力、C6 梁板自重差 70632 N（rel1e-9）及
+旋轉/鏡像不變性（rel1e-12）驗證實際解碼。storage 對 stations/surfaces 逐欄
+Java float cast 位元一致；舊 blocks/members/facets D/C double 不縮窄。
+既有五項真 JNA 與 codec/Java 核心保留。沒有 BR_ENGINE 的開發跑可 skip，
+驗收必須配置真 native 並核對新增測試零 skip。這不完成遊戲換裝 #89。
+
+C1 checker 原固定順序漏列前段新 facetBlocks，修正為 facetSurfaces 後、attrsEcho 前，
+加入正例及錯序/重複負例；兩倉 contract 完整鏡像及同 commit 更新兩行 engine ref。
+任何首跑 FAIL 保留，數值 oracle 不依引擎輸出修訂。
+
+### 2026-09-08 — 真原生回收驗證結果
+
+InProcessRecoveryTest 三項全過：C8根部面應力±9,241,020 Pa、C6梁板自重差70,632 N與
+鏡像/旋轉不變性、殼框架及所有上下表面f32 round-trip；完整274=234PASS/40SKIP/0FAIL，
+原五項InProcessEngineTest也全部執行。所用DLL/source/contract hash與XML見引擎
+gate/evidence/MC65B_BSI_ADAPTER；Windows/Linux/i9新310checks/9變異DET×3，
+ASan/UBSan零診斷（非LSan）、C6/C8/C12無assume，共8PASS/2SKIP。
+契約C1的三個正反例全過，刪facetBlocks順序項的隔離checker變異完整三測試且具名一FAIL。
+首跑synthetic buckling state誤寫及i9結果zip同名衝突留raw，未更動力學oracle。
+新contract hash b5ad59f1bfa94dfb428d1fac75ae5dcf0fe7327eec768419f17bd8947d27459b，52檔同步。
+下一段依先凍判準制度移除Java旧力學重生；native packaging、GAME_SWAP/#89與舊DC重判保留。
+
+## 2026-09-08 — MC65B Java 殼顯示遷移（實作前凍）
+
+對位 tectonic2 docs/specs/MC65B_JAVA_SHELL_DISPLAY.md。BSI 梁缺少局部截面框架，
+不允許 Java 猜軸/面或以面中心應力生角應力；梁另待契約加法。本段先接完整殼資料。
+
+新不可變顯示場只含 f64 幾何及 top4/bottom4 的 s1/s2/theta/vm。SI→mm/MPa 一次，
+Y-up 不交換軸/不加半格；每角取絕對值較大的 principal（平手 s1），畫面只做夾取後的
+純量插值。這不是中間點精確力學，不能送判定/崩塌；原精確 tensor 插值的顯示結論不沿用。
+BSI→snapshot→既有 ShellMesh/Forge renderer/HUD/packet 共用它；native 不建 ShellFieldSpec，
+不重算 Mohr/vM/DC。mapper 只接期待 revision 的 solve.response/ok，缺 shells 拒絕，
+有區段零筆合法；外部可變來源不能改 snapshot；不輸出假的 dcRaw。
+
+殼封包傳完整格集合、樣本/f64 與獨立 overloaded/governingTop；DC=1 可搭任一旗標，
+不修飾 DC。Forge channel protocol bump，舊 channel 拒絕；BSI 和 Sidecar wire 不改。
+Sidecar 舊 ShellFieldSpec 在相容入口一次取樣、原力學診斷保留；客戶端殼不再重生公式。
+梁舊公式與 MC64_FORWARD 其餘項、NATIVE/GAME_SWAP/#89 保持待辦。
+
+驗收：手工八角 fixture（角序/上下/單位/中心凸組合/夾取/峰值/不同法向拾取），
+resultants poison 不影響顯示；非有限/退化幾何拒絕與 immutable；真 DLL C6 F64/F32
+经 JNA→mapper→ShellMesh 逐欄換算，原八項 JNA 全執行。Forge 殼封包→ShellMesh 往返，
+旗標與 DC 獨立、超四格、缺 raw/field 保留，所有截短及非有限拒絕；完整 core/Forge 測試。
+隔離來源變異：unit/top/order/revision/verdict/finite/packet-flag/packet-blocks，
+各需正常測試具名 FAIL（編譯失敗不算）。數量首跑後 dated 登記，首跑失敗照存。
+raw base64+SHA、XML、來源 SHA 及 Git bytes manifest 放引擎 MC65B_JAVA_SHELL_DISPLAY 證據；
+不宣稱本輪 C++/i9 性能或真遊戲已驗收。下一單元凍梁框架加法，再完成梁與遊戲入口。
+
+### 同日首跑、CI 與計數（實作結果首輪照登）
+
+殼顯示首跑 core 編譯缺 javax.annotation；補 compileOnlyApi jsr305，無 runtime 依賴。
+首輪可執行 282 項=238PASS/4FAIL/40SKIP：四個 BinaryCodecTest 的舊合法 fixture 殼角退化。
+不改 fixture、不改 Sidecar codec 接受條件：舊資料保留 field 診斷，無法建立顯示場時 display 缺值；
+native/新顯示場仍拒絕非有限與退化。新增相容腿後 283=243PASS/40SKIP；配置真 Sidecar 加真 DLL
+後 283=271PASS/12SKIP；Forge57/57。core 初次編譯失敗後殘留的274項XML是舊檔，不當本轮執行證據。
+八變異各以完整8個core或4個Forge測試具名咬合；raw與XML保留。
+
+PR #96 前一 head e068019 的 CI run34201823453，core/Forge均PASS，check_docs因文件仍313
+而實際327 FAIL。此輪登錄總數變成340（283 core+57 Forge），文件數字依XML更新。
+JAVA_TOTAL 包含環境SKIP，不得稱總數全PASS；README/研究簡報改寫為登錄數，
+check_docs只配合新措辭、保留總數精確比對與必須匹配規則，歷史版本文件不改。
+原生CI job因未配置TECTONIC2_TOKEN跳過實測，不以外層success當native成功。
+
+## 2026-09-08 MC65B BSI 梁樣本幾何（實作前凍）
+
+對位 tectonic2 docs/specs/MC65B_MEMBER_GEOMETRY.md。本段接通原生框架與面中心取樣位置到
+Java，梁 renderer/封包及 GAME_SWAP 留在下一單元；版本仍 0.4.0-dev。
+新增能力 bsi.readback.memberGeometry 與 include memberGeometry，需同時 include members；
+新區段在 stations 後、facets 前，168 B（id/reserved + f64 origin/ex/ey/ez/faceY/faceZ），
+storage=f32 仍保持此幾何 f64。舊 member160/station88 B 與未請求的 solve bytes 不變。
+Java 驗 id/count 同序一對一、有限值、reserved=0、右手正交單位軸（絕對誤差1e-9）、
+faceY={h,-h,0,0}/faceZ={0,0,b,-b} 且 h/b>0；集合與幾何不可變。
+四值是面中心參考點，不是角應力或非矩形截面外形；不猜框架、不再套 axisRot、不算力學/DC。
+驗收：手工 LE bytes/非法布局/單位與不可變性，真 CAPI/JNA 水平垂直Z向/非正方截面/四種
+axisRot/F64與F32及平移，舊 core/API purity 回歸。Java 配對與框架守門變異須 assertion FAIL。
+C++ Windows/Linux/i9 DET×3、ASan/UBSan（非LSan）及 host 布局/配對/finite 變異由配對引擎留證。
+暫計數首跑後 dated 登記；raw base64+SHA/XML/來源與 Git bytes manifest 隨引擎 evidence，
+不得把 stub 或 SKIP 當成真 native 通過。原殼/BSI/版本門檻與歷史 FAIL 保留。
+
+
+### 2026-09-08 梁幾何首跑照登
+
+Java 首次 PowerShell 拆開 -Dbr.sidecar，Gradle 未執行測試；第二次測試 fixture 漏 Decoded
+的 flags 參數，compileTestJava 失敗；第三次290項=277PASS/1FAIL/12SKIP，原生幾何
+Vec3d.equals 對 -0.0 與 +0.0 作位元判等，但契約未規定零符號。改幾何 oracle 為零容差
+分量比較（只允許數值相等，正負零視同）；F64/F32 幾何 raw bytes 逐位要求維持。
+原 fixture 與原始失敗保存，不改原生輸出、不改 1e-9 守門硬線。後續结果另留 evidence。
+
+
+# MC65B Java 梁顯示遷移（2026-09-08，實作前凍）
+
+引擎仍 1.2.0。本段只改 Java/Forge 消費路徑，沿用 98bfbd9 的原生庫與
+hash42a1b24c3c0b… 的 BSI 契約；不改求解器、舊 Sidecar wire、BSI bytes。
+
+## 硬線
+
+1. 不可變 BeamDisplayField 統一框架與全部站點；面順序 TOP_Y/BOT_Y/PLUS_Z/MINUS_Z。
+   BSI SI→mm/MPa 只換一次，保持原點、軸、面尺寸與 centroid，不加半格、不交換軸。
+   sigma/tau/NA 直接取樣；NA 的 NaN 只轉 Optional.empty，不從應力反算缺失截距。
+   end forces 僅診斷：BSI N 拉正轉既有 EndForces 壓正，其餘局部分量不翻號，力矩 N·m→N·mm。
+2. mapper 要求本 revision 的成功 bsi.solve response 與 members/memberGeometry/stations 區段；
+   零筆與未請求分開；材料/斷面 token 必須解析；非法數值/幾何/站序拒絕。
+   governingFibre 對應既有同序 enum；overloaded 只讀 flag。
+   governingS 保留 f64 位置；只有唯一匹配站能填 governingStation，f32 用相同 narrowing 匹配。
+   重複站不猜左右控制側，不以最大應力/DC 自行選站；HUD 不回退第一站冒作控制截面。
+3. 站點保持穩定順序，不合併相同 x；縱向分段線性插值，重複位置可分別查第一/最後樣本。
+   兩側之間不生零長 ribbon；NA 線段在缺值、重複位置斷開。舊平面點集合只作診斷。
+   橫截面四面中心不足以恢復角/內部精確應力：中心用四值平均，沿 Y/Z 正負半軸的
+   有界凸組合，|y|+|z|>1 時正規化權重。面中心精確、角為鄰面平均，不外推應力。
+   表面網格在重複站位置切開，各側用對應樣本；顯示近似不參與 DC 或崩塌。
+4. 新 snapshot additive display、overloaded、governingPosition；舊建構子保留。
+   Sidecar 相容入口用已給的 stations 與舊 field 幾何建立 display，不重新取樣；舊公式/診斷保留。
+   舊不合法幾何可保留診斷資料但 display 缺失。客戶端 renderer/legend/HUD/packet 不再調梁力學公式。
+   SectionDiagram 原 of(station) 留作 legacy 診斷；HUD 改用讀取提供 NA 的 sampled 入口。
+5. Forge channel 7：傳全部 stations、幾何、診斷端力、明確 governing index/position 及 flag，
+   全 f64，不以 DC 移位補分類。單梁 blocks/stations 各上限 65536，超限拒絕、不靜默截斷。
+   原 MAX_MEMBERS/MAX_SHELLS/withheld 邏輯保留；沒有 display 仍傳既有站點，缺值不造零。
+   改版後舊 packet test 的 field-present/regenerated 主張改為 display-present/field-empty，
+   其他舊物理 fixture 與判準不改；原 compareDoubles 僅遍歷共同 shape 的限制明列，新腿逐項驗證。
+
+## 驗收
+
+- 手工不服從端力公式的樣本：四面、尺寸、單位、凸插值、左右跳變、NA 缺值、不可變、
+  非有限/退化/逆序拒絕；原生 flag 與 DC=1 true/false 均保留。手工 BSI 嚴格入口與零筆。
+- 真 DLL JNA COMMIT F64/F32，既有梁世界及集中載重：完整 BSI→display→ribbon/section，
+  各樣本對 BSI 值、端力換算與幾何；重複站若有必保留，不把 SKIP 算通過。
+- Forge packet 完整往返（>256 blocks、非 11 站、同位置多站、NA 缺值、缺 display）、全部截短
+  與非法數值/個數拒絕；core/API purity/Forge 全回歸。新表面切分的兩側樣本獨立驗證。
+- 隔離來源變異至少 UNIT、ORDER、REVISION、FLAG、NA、DUPLICATE、PACKET_FLAG、PACKET_STATIONS；
+  正常編譯後須具名 assertion FAIL，不能用 compile failure/缺庫當咬合。計數首跑 dated 釘死。
+- raw stdout/stderr base64+SHA、XML 原字節與來源 SHA 留 evidence，manifest 驗 staged/committed bytes。
+  本段不宣稱重跑 C++ 2690/i9 性能；GAME_SWAP/#89、MC64_FORWARD 全域判定與 NATIVE 封裝仍待辦。
+
+
+
+## 2026-09-08 首跑與能力降級
+
+首次 runner 指錯 Sidecar 路徑（sidecar/dist 而非 dist），Gradle 設定階段退出，未跑測試。
+正確路徑首跑 core299=286PASS/1FAIL/12SKIP；Forge62全過。唯一 FAIL 是新 JNA 測試
+額外要求 point load 一定產生重複站。追查 `core/mc/member_stations.h` 的 locations 去重，
+memberStations 每位置只取 memberScreenSideAt 選的一側；這是現有回收的真實限制，非 Java 丟資料。
+
+保留同一世界、原始測試與 raw，不改原生輸出。JNA 改釘目前沒有重複站且全部來源样本原樣到達；
+其結論降為「單側原生樣本完整轉發」，不得宣稱真原生雙側顯示已驗收。Java 手工雙側、f32 合併
+位置的保序、封包/表面切分腿仍必須過。NATIVE_DUAL_SIDE=MISS 保持未完成；後續需獨立凍
+opt-in 回收加法（含側資訊），避免默改既有 solve bytes。此次 MC65B 仍 active。
+
+當次計數先釘 core299 / Forge62；八個變異需各自完整執行 BsiBeamDisplayTest 8 或
+MemberPacketCodecTest 5，具名 assertion FAIL。新發現若增腿另 dated 留帳。
+
+
+
+## 2026-09-08 梁顯示最終本地結果
+
+core299=287PASS/12SKIP/0FAIL、Forge62PASS，真Sidecar28與JNA11/11均執行；API purity過。
+八變異具名assertion FAIL：UNIT4、ORDER4、REVISION1、FLAG1、NA2、DUPLICATE1、PACKET_FLAG1、PACKET_STATIONS3。
+core變異每臂8測試，packet變異每臂5，無compile failure冒作咬合。原始stdout/stderr、XML原字節、來源SHA
+與Git manifest見tectonic2 gate/evidence/MC65B_JAVA_BEAM_DISPLAY。Forge三個既有deprecation warnings。
+有效表面畫面為面中心凸插值，非精確角/內部應力；封包頻寬增加，未量FPS或i9性能。
+原生只輸出每位置一側的MISS不因Java手工雙側通過而消失；GAME_SWAP仍未完成。
+
+
+## 2026-09-08 表面座標反例
+
+收版檢查發現固定1e-7 mm切面snap可能吞掉極近站点。保留同一fixture應力，另在既有
+surfaceTiles測試中將長度縮至2e-8 mm以放大座標缺陷（純顯示幾何測試，不宣稱真實梁適用）。
+縱向座標應隨clip交點保存，不能靠世界投影後的固定epsilon猜回。新增隔離PATCH_COORDINATE
+變異，把固定snap放回，必須使該具名測試assertion FAIL。其餘八臂與299/62計數不變，總共九臂。
+
+
+
+2026-09-08 九臂收版：PATCH_COORDINATE的固定snap反例由surfaceTiles具名assertion FAIL咬合。
+該測試補了端點讀數，亦使UNIT/ORDER各由4增為5個FAIL；完整集合釘在mutation_counts.json。
+其餘FAIL數不變，core299/Forge62正常臂全過（12環境SKIP）；未移動原生單側MISS。
+
+
+## 2026-09-08 BSI雙側樣本身份（實作前凍結）
+
+# MC65B BSI 雙側樣本身份與消費鏈
+
+2026-09-08；引擎基準2992e77、消費者c04017d。先凍判準，版本仍1.2.0、MC65B active。
+
+## 契約加法（硬）
+
+- include stationIdentity / cap bsi.readback.stationIdentity / includeMask bit5(32)。必須同時
+  include members+stations；缺cap先UNSUPPORTED，有cap但缺父區段PROTOCOL_ERROR，求解前拒絕。
+- 新packed bsi_station_identity 16B：s:f64、side:i8(-1 LEFT/+1 RIGHT)、flags:u8（bit0 governing）、
+  reserved:u16=0、reserved2:u32=0。永遠f64，不隨storage=f32窄化；samples序號即身份索引。
+- 新區段stationIdentity在stations或stations:f32之後、memberGeometry之前。逐筆對齐stations；
+  members的stationFirst/Count完整連續覆蓋樣本，id遞增。已請求零樣本仍有零筆區段，未請求不輸出。
+  parent與站點舊layout/ABI/vtable/六個C匯出不改。舊include不切雙側，完整舊solve bytes保持。
+- opt-in只呼叫共同MemberStationRecovery；重合載重LEFT/RIGHT各一筆，平滑點單筆。
+  identity.s有限[0,1]、與pre-narrow station.s exact相同。Java對f32比較(float)identity.s，對f64 exact。
+  s遞增；同s最多兩筆且LEFT再RIGHT。不允許未知側、未知flag、reserved非零。
+- 每member governing bit最多一筆；為1者identity.s必須等於member.governingS。
+  來源governingIndex=-1則零bit，Java保留-1，不能重掃最大DC/猜同位置哪側。
+  原MemberDetail/flags/DC/容量判定完全不變；adapter只轉型，不重算力學。
+
+## Java／Forge（硬）
+
+- BsiStationIdentity不可變，BsiSections一次驗父/完整範圍/數量/精度對位/排序/旗標/保留欄位。
+- StressStation新增Optional<Identity(s,side)>，舊建構子保留並給empty。身份s始終f64；
+  BsiBeamDisplay用identity.s換xMm、用governing bit取索引，保留所有面中心/NA與原flags。
+  f32的世界xyz仍是舊窄化樣本，不宣稱恢復其精度；mm幾何也受double表示精度限制。
+- 既有BeamDisplayField/ribbon/NA/surface共用同一樣本，不另生成站位。channel8傳optional身份，
+  全站位/範圍上限與原端力診斷保留；舊peer由protocol版本拒絕，不靜默誤讀。
+
+## 硬驗收與邊界
+
+- 手工16B LE樣本、零筆、f64/f32、近點被f32合併但身份不同、左右序、governing=-1/左右索引；
+  非有限、非法值/reserved、對位/父/完整覆蓋/順序/主宰不一致均拒絕，不靠同式重打物理oracle。
+- 真原生C4固定端幾何＋自重＋正負集中力，對同一LiveState typed來源逐筆SI值與side/index；
+  原137 typed力學gate回歸，BSI新增只驗轉發。cap/依賴拒絕、零member及原單側仍有腿。
+- 真JNA原InProcessRecoveryTest固定端world(false,0)與中心點力不換，F64/F32加入opt-in，
+  保留原單側測試。新雙側必須到BsiBeamDisplay/ribbon與主宰樣本；手工數值不依端力公式。
+- Forge完整往返含身份、-1主宰、f32近點與NA缺值；所有截短/非法identity拒絕；channel8明確。
+- 新native/host gate Windows/Linux/i9 DET×3；Linux ASan/UBSan clean零診斷（非LSan）。
+  source變異LEGACY、SIDE、GOV，以及host PAIR、ORDER、VALIDATE、GOVERNING、LAYOUT，
+  正常編譯後必須有具名assertion FAIL；新Java ID_POSITION/ID_SIDE/ID_GOV/ID_VALIDATE/PACKET_ID同理。
+  新計數[暫]首跑後dated釘死，未釘前不宣稱。
+- 舊BSI回收310/geometry564、BSI core310/無assume語料、Linux host與3傳輸；
+  Windows/Linux48組舊完整solve基準/head逐位（3世界×8include×F64/F32），不把hello新cap當舊solve。
+  Java core/API purity/Forge全回歸；原137typed clean回歸，不宣稱本段重跑2690或效能。
+- contract全檔鏡像與新hash；引擎先commit，consumer ref同consumer實作commit更新。
+  原始stdout/stderr與XML/來源base64+SHA、manifest驗staged/committed bytes；首跑失敗照登。
+
+只有新BSI→真JNA→樣本/封包通過才標雙側消費鏈驗證；仍不是Minecraft真遊戲換裝。
+NATIVE/GAME_SWAP/#89、MC64_FORWARD、原41.7ms与Linux7FAIL、原v2/v3/v4欠項均保留。
+
+
+## 2026-09-08 首跑範圍修正與具名計數
+
+初次Windows/Linux各77項中76PASS/1FAIL：HOST 1 zero requested。原fixture只有支承，
+真引擎回EMPTY_WORLD；診斷header與首版gate源碼照留，不能把它解釋為成功的零構件求解。
+原fixture現在明確驗EMPTY_WORLD，零筆成功區段另以標示stub的host引擎驗證，降級為host布局證據。
+真原生零構件成功案例本段未量；原固定端梁自重±集中力的真原生測試沒有更換。
+新增stub的首建置因lambda推導enum返回值不合int vtable失敗，改明確int；兩箱原始編譯錯誤保留。
+
+首輪正確編譯後Windows/Linux各79PASS/DET×3；八變異均正常編譯、有具名FAIL：
+LEGACY16、SIDE20、GOV12、PAIR2、ORDER1、VALIDATE4、GOVERNING2、LAYOUT3。
+全部名稱與FAIL集合釘在gate/bsi_station_identity_counts.json，不放寬既有數值容差。
+Java五變異ID_POSITION/ID_SIDE/ID_GOV/ID_VALIDATE/PACKET_ID均抓到具名斷言。
+回歸runner的cap白名單首跑漏新增stationIdentity，保留原失敗後加唯一新cap；
+修改時一次縮排編譯錯誤也照留。此修正不改語料PASS8/SKIP2、原310邊界或任何物理oracle。
+完整三箱、sanitizer與回歸結論待本段結果記錄；以上不是Minecraft遊戲換裝或v4完成。
+
+
+2026-09-08 BSI雙側身份消費鏈已本地驗證（17d1390/5f08177先凍；6c6c677/1d35d6d保留首敗並釘數）。
+include stationIdentity/cap bsi.readback.stationIdentity；16B f64位置+side+原生governing bit，
+必須members+stations，舊include仍單側。BsiStationIdentity→StressStation.Identity→
+BsiBeamDisplay→BeamDisplayField→channel8；xMm用身份f64，raw xyz仍隨f32窄化，缺主宰索引保留-1。
+原Element flags/DC/NA及完整樣本轉發，不另掃最大值、不重算力學。
+新79checks/八變異在Windows/Linux/i9 DET×3，Linux ASan/UBSan零診斷（非LSan）。
+兩箱原137/77/22、BSI310/564與core310/語料8PASS2SKIP、Linux4host/3傳輸；各48組舊完整solve逐位。
+core305=293PASS/12SKIP、Forge64PASS，真JNA12/12與Sidecar28/28；五Java變異各具名FAIL。
+原77項首跑ground-only EMPTY_WORLD失敗不改寫；零筆成功改明示host stub布局證據並降級。
+contract54檔/51hash檔，4977f57308e6520a6df1903013d757a62546e20809d57a9cf0bc6009ee3b3253。
+完整原碼/原始輸出/XML/SHA見tectonic2 gate/evidence/MC65B_BSI_STATION_IDENTITY/RESULTS.md。
+
+接續安排：先獨立凍MC64_FORWARD全域與屈曲判定旗標的來源/生命週期，接通result→packet→HUD；
+同時檢視BSI單一AnalysisResult入口，避免GAME_SWAP時再生第二套聚合/判定。
+display budget要依原v2顯示軌與訂閱需求另凍，不能以f32存儲充作display tier。
+NATIVE自足包/來源鏈及GAME_SWAP(#89)真遊戲驗收之前保留最後Sidecar相容入口；
+目前遊戲仍SidecarClient/protocol2/FrameCore。MC65B active、引擎1.2.0/模組0.4.0-dev不變。
+本段沒有重跑2690或效能；原41.7ms FAIL、Linux7FAIL及v2/v3/v4欠項照留。

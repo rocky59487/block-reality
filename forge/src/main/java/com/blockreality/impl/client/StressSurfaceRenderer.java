@@ -3,7 +3,7 @@ package com.blockreality.impl.client;
 import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.ScanMode;
-import com.blockreality.api.StressFieldSpec;
+import com.blockreality.api.BeamDisplayField;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.api.geom.Vec3d;
 import com.blockreality.api.render.Rgb;
@@ -35,37 +35,16 @@ import org.joml.Matrix4f;
 import java.util.List;
 import java.util.Set;
 
-/**
- * A stress contour on the surface of the structure, the way a post-processor draws one.
- *
- * <p>The earlier overlay drew four thin ribbons per member: samples of a field, floating
- * inside the blocks. This draws the field itself, on the <strong>outer faces of the
- * blocks</strong> — every face not shared with another structural block gets a colour map
- * evaluated from {@link StressFieldSpec}, so the result is a continuous contour over the
- * whole structure rather than a set of lines through it.
- *
- * <p>Three things make it read like an engineering plot rather than decoration:
- *
- * <ul>
- *   <li><strong>Per-vertex colour on a subdivided face.</strong> Each face is split into a
- *       grid and every grid vertex is evaluated exactly. Stress varies linearly through the
- *       depth and quadratically along a member under distributed load; a single quad per
- *       face would straight-line the parabola and lose the peak.
- *   <li><strong>Interior faces are skipped.</strong> A face shared with another structural
- *       block is not a surface, and drawing it wastes fill rate on something no one can
- *       see — and, worse, makes the outside look muddy where two members meet.
- *   <li><strong>The block is a magnified section.</strong> A one-metre cube stands for a
- *       200×400 section, so a point on the cube maps proportionally onto the section
- *       instead of being extrapolated outside the material.
- * </ul>
- */
+/** Surface contours interpolate engine samples. Beam faces are magnified face-centre samples,
+ * not a reconstructed section field. Tiles split at repeated station positions so each side
+ * keeps its own value. Shells use the same immutable sample boundary and authoritative flags. */
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(modid = BlockRealityMod.MOD_ID, value = Dist.CLIENT)
 public final class StressSurfaceRenderer {
 
     private StressSurfaceRenderer() { }
 
-    /** Subdivisions per face edge. 4 captures the parabola; more is invisible and costs fill. */
+    /** Fixed visual tessellation; sampling is piecewise linear and does not recover an exact field. */
     private static final int GRID = 4;
 
     /** Lifted off the block surface so it does not z-fight with the block texture. */
@@ -144,8 +123,8 @@ public final class StressSurfaceRenderer {
         drawPlates(buf, m, cam, occupied, mode, scale, alpha(focus, -1));
 
         for (MemberSnapshot member : members) {
-            if (member.field().isEmpty() || member.blocks().isEmpty()) continue;
-            StressFieldSpec f = member.field().get();
+            if (member.display().isEmpty() || member.blocks().isEmpty()) continue;
+            BeamDisplayField f = member.display().get();
 
             // OR, not AND: outside the box means beyond the distance on EITHER axis.
             // The old conjunction only culled members far away on BOTH axes, which
@@ -161,7 +140,7 @@ public final class StressSurfaceRenderer {
             // `flat` null. MATERIAL used to fall through to null with STRESS, which meant
             // the player could select a third lens that silently drew the second one.
             Rgb flat = switch (mode) {
-                case UTILIZATION -> StressPalette.utilization(member.dc());
+                case UTILIZATION -> StressPalette.utilization(member.dc(), member.overloaded());
                 case MATERIAL -> StressPalette.material(member.material());
                 default -> null;
             };
@@ -226,7 +205,7 @@ public final class StressSurfaceRenderer {
             if (hit.isEmpty()) continue;
             ShellMesh.Hit h = hit.get();
             Rgb flat = switch (mode) {
-                case UTILIZATION -> StressPalette.utilization(h.shell().dc());
+                case UTILIZATION -> StressPalette.utilization(h.shell().dc(), h.shell().overloaded());
                 case MATERIAL -> StressPalette.material(h.shell().material());
                 default -> null;
             };
@@ -268,6 +247,7 @@ public final class StressSurfaceRenderer {
             // so its half-height maps to the plate's half-thickness: the top face reads the
             // top fibre, the underside the bottom one, and a side face sweeps between them.
             double zf = clamp(h.field().offNormalMm(p) / 500.0);
+            // Drawing interpolates the recovered scalars; it does not recover a tensor at this vertex.
             double sigma = h.field().signedPrincipal(clamp(par[0]), clamp(par[1]), zf);
             c = ClientStressState.palette().signedStress(sigma, scale);
         }
@@ -278,7 +258,7 @@ public final class StressSurfaceRenderer {
 
     private static double clamp(double v) { return v < -1 ? -1 : Math.min(v, 1); }
 
-    private static void drawBlock(BufferBuilder buf, Matrix4f m, BlockKey b, StressFieldSpec f,
+    private static void drawBlock(BufferBuilder buf, Matrix4f m, BlockKey b, BeamDisplayField f,
                                   Set<Long> occupied, Rgb flat, double scale, float alpha) {
         for (int[] face : FACES) {
             // A face shared with another structural block is interior: not a surface.
@@ -294,33 +274,39 @@ public final class StressSurfaceRenderer {
                     double u0 = -0.5 + (double) i / GRID, u1 = -0.5 + (double) (i + 1) / GRID;
                     double v0 = -0.5 + (double) j / GRID, v1 = -0.5 + (double) (j + 1) / GRID;
 
-                    emit(buf, m, cx, cy, cz, face, u0, v0, f, flat, scale, alpha);
-                    emit(buf, m, cx, cy, cz, face, u1, v0, f, flat, scale, alpha);
-                    emit(buf, m, cx, cy, cz, face, u1, v1, f, flat, scale, alpha);
-                    emit(buf, m, cx, cy, cz, face, u0, v1, f, flat, scale, alpha);
+                    drawBeamTile(buf, m, List.of(point(cx, cy, cz, face, u0, v0),
+                            point(cx, cy, cz, face, u1, v0), point(cx, cy, cz, face, u1, v1),
+                            point(cx, cy, cz, face, u0, v1)), f, flat, scale, alpha);
                 }
             }
         }
     }
 
-    private static void emit(BufferBuilder buf, Matrix4f m,
-                             double cx, double cy, double cz, int[] face,
-                             double u, double v, StressFieldSpec f,
-                             Rgb flat, double scale, float alpha) {
-        double x = cx + face[3] * u + face[6] * v;
-        double y = cy + face[4] * u + face[7] * v;
-        double z = cz + face[5] * u + face[8] * v;
+    private static Vec3d point(double cx, double cy, double cz, int[] face, double u, double v) {
+        return new Vec3d((cx + face[3] * u + face[6] * v) * 1000,
+                (cy + face[4] * u + face[7] * v) * 1000, (cz + face[5] * u + face[8] * v) * 1000);
+    }
 
-        Rgb c = flat;
-        if (c == null) {
-            // Evaluated exactly at this vertex, in millimetres, against the member's own
-            // frame. The GPU interpolates between vertices, which is why the grid matters.
-            double sigma = f.sigmaAtWorldMm(new Vec3d(x * 1000, y * 1000, z * 1000), 500);
-            c = ClientStressState.palette().signedStress(sigma, scale);
+    private static void drawBeamTile(BufferBuilder buf, Matrix4f m, List<Vec3d> tile,
+                                     BeamDisplayField f, Rgb flat, double scale, float alpha) {
+        if (flat != null) {
+            for (Vec3d p : tile) beamVertex(buf, m, p, flat, alpha);
+            return;
         }
-        buf.vertex(m, (float) x, (float) y, (float) z)
-           .color(c.r() / 255f, c.g() / 255f, c.b() / 255f, alpha)
-           .endVertex();
+        for (var polygon : com.blockreality.core.render.BeamSurfacePatch.sample(f, tile, 500)) {
+            // Triangle fan encoded as degenerate quads, sharing the existing QUADS render pass.
+            for (int k = 1; k + 1 < polygon.size(); k++) {
+                for (int index : new int[]{0, k, k + 1, k + 1}) {
+                    var v = polygon.get(index);
+                    beamVertex(buf, m, v.positionMm(), ClientStressState.palette().signedStress(v.sigmaMpa(), scale), alpha);
+                }
+            }
+        }
+    }
+
+    private static void beamVertex(BufferBuilder buf, Matrix4f m, Vec3d p, Rgb c, float alpha) {
+        buf.vertex(m, (float)(p.x() / 1000), (float)(p.y() / 1000), (float)(p.z() / 1000))
+                .color(c.r() / 255f, c.g() / 255f, c.b() / 255f, alpha).endVertex();
     }
 
     static long key(int x, int y, int z) {

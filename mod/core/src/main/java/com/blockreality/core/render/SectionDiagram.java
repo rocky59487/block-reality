@@ -29,6 +29,17 @@ import java.util.Optional;
 public record SectionDiagram(double topSigmaMpa, double bottomSigmaMpa,
                              Optional<Double> neutralFraction) {
 
+    /** Display path: show only the neutral-axis intercept actually supplied by the engine. */
+    public static Optional<SectionDiagram> sampled(StressStation station) {
+        var top = station.fibre("TOP_Y"); var bot = station.fibre("BOT_Y");
+        if (top.isEmpty() || bot.isEmpty()) return Optional.empty();
+        double height = top.get().offsetMm() + bot.get().offsetMm();
+        Optional<Double> fraction = station.naOffsetYMm().map(y -> (top.get().offsetMm() - y) / height)
+                .filter(f -> Double.isFinite(f) && f >= 0 && f <= 1);
+        return Optional.of(new SectionDiagram(top.get().sigmaMpa(), bot.get().sigmaMpa(), fraction));
+    }
+
+    /** Legacy diagnostic reconstruction. The client uses {@link #sampled} instead. */
     public static Optional<SectionDiagram> of(StressStation station) {
         Optional<Fibre> top = station.fibre("TOP_Y");
         Optional<Fibre> bot = station.fibre("BOT_Y");
@@ -47,7 +58,7 @@ public record SectionDiagram(double topSigmaMpa, double bottomSigmaMpa,
         return Optional.of(new SectionDiagram(t, b, na));
     }
 
-    /** Stress at a depth, 0 at the top fibre and 1 at the bottom. Linear by Euler-Bernoulli. */
+    /** Bounded display interpolation between supplied face values, 0 at top and 1 at bottom. */
     public double sigmaAt(double fraction) {
         double f = fraction < 0 ? 0 : Math.min(fraction, 1);
         return topSigmaMpa + (bottomSigmaMpa - topSigmaMpa) * f;

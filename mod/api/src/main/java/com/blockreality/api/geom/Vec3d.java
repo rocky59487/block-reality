@@ -15,6 +15,14 @@ public record Vec3d(double x, double y, double z) {
 
     public Vec3d scaled(double s) { return new Vec3d(x * s, y * s, z * s); }
 
+    @javax.annotation.Nonnull public Vec3d minus(@javax.annotation.Nonnull Vec3d o) {
+        return new Vec3d(x - o.x, y - o.y, z - o.z);
+    }
+
+    public double dot(@javax.annotation.Nonnull Vec3d o) { return x * o.x + y * o.y + z * o.z; }
+
+    public double lengthSquared() { return dot(this); }
+
     public double length() { return Math.sqrt(x * x + y * y + z * z); }
 
     /** Unit vector, or {@link #ZERO} for a zero-length input — never NaN. */

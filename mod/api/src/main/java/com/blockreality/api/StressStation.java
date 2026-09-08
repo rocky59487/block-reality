@@ -21,6 +21,7 @@ import java.util.Optional;
  *                      section factor: 1.5 for a solid rectangle, 4/3 for a solid circle
  * @param naOffsetYMm   neutral-axis offset from the centroid along local y, if one exists
  * @param naOffsetZMm   neutral-axis offset from the centroid along local z, if one exists
+ * @param identity      exact normalized engine position and side, absent for legacy samples
  */
 public record StressStation(
         double xMm,
@@ -30,10 +31,24 @@ public record StressStation(
         double sigmaCompMpa,
         double tauMpa,
         Optional<Double> naOffsetYMm,
-        Optional<Double> naOffsetZMm) {
+        Optional<Double> naOffsetZMm,
+        @javax.annotation.Nonnull Optional<Identity> identity) {
+
+    /** Normalized engine position and side; absent for legacy sources. */
+    public record Identity(double s, int side) {
+        public Identity {
+            if (!Double.isFinite(s) || s < 0 || s > 1 || (side != -1 && side != 1))
+                throw new IllegalArgumentException("invalid station identity");
+        }
+    }
+    public StressStation(double xMm, Vec3d centroidMm, List<Fibre> fibres, double sigmaTensMpa,
+                         double sigmaCompMpa, double tauMpa, Optional<Double> naOffsetYMm, Optional<Double> naOffsetZMm) {
+        this(xMm, centroidMm, fibres, sigmaTensMpa, sigmaCompMpa, tauMpa, naOffsetYMm, naOffsetZMm, Optional.empty());
+    }
 
     public StressStation {
         fibres = List.copyOf(fibres);
+        java.util.Objects.requireNonNull(identity, "identity");
     }
 
     /**

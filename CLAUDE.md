@@ -29,9 +29,33 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 - **已落地**：`contract/`（BSI v1 + 共用 host，逐位鏡像 tectonic2）；Java 側 `mod/core/.../bsi/`（frame/header/codec）
   與 `.../engine/`（`InProcessEngine` + JNA 綁定）；N19–N24 判準已凍；CI 跑契約、打包、跨倉漂移。
 - **2026-09-04 量到的整合現況**（Linux 箱，RECORDED）：契約逐位、pin 自洽；`InProcessEngineTest` **首次在 CI 之外**對本機建的 `libbsi_tectonic.so` 跑，
-  `:core` 259 過 / 1 跳 / 0 敗；`sidecar/verify.py` 330 全過。引擎 `capabilities:[]` 仍是現況。細節 `docs/GATES.md` 2026-09-04。
+  `:core` 259 過 / 1 跳 / 0 敗；`sidecar/verify.py` 330 全過。當次引擎 `capabilities:[]`，members分支未執行。細節 `docs/GATES.md` 2026-09-04。
   引擎側的 v2 程序（融合 + perfect engine）在 tectonic2 `docs/V2_PROGRAM.md`；本倉對位 **D-046**：**等的是 tectonic2 #20，不等其拆 `Session`**；
   契約加法批次 #2（`include:"islands"`、`bsi.fracture.step`）綁 **v0.5 倒塌**，v0.4 的 N19–N24 一條不動。
+- **2026-09-06 BSI_CORE**：配對分支引擎宣告core/members，Windows真CAPI :core 260總數/220過/40跳。
+  members首次執行抓到測試root moment漏乘L，依契約原wL²/2修正；原記錄不改、見GATES.md。
+  引擎 v1.3 已驗 Windows/Linux 自足原生庫；NATIVE 的消費者封裝與遊戲換裝 #89 未完成。
+- **2026-09-07 BSI回收契約／codec**：facetBlocks、stations-only與f32布局已同步兩倉，hash59beed904d73…；
+  Java facets/格索引/surfaces解碼與typed precision已接，binary區段範圍/有限值守門；
+  271項=231PASS/40SKIP，真JNA五項全執行，七個Java變異具名咬合。首跑失敗見GATES.md。
+- **2026-09-08 原生回收整合**：引擎已提供stations/shells/f32，真C6/C8/C12通過；
+  新增InProcessRecoveryTest 3/3要求新能力，與原InProcessEngineTest 5/5使用真DLL全執行。
+  Java274項=234PASS/40SKIP/0FAIL；殼幾何/格索引/上下面/f32直接由引擎提供。
+  契約52檔hash b5ad59f1bfa9…同步，完整證據在tectonic2 MC65B_BSI_ADAPTER。
+  殼顯示已遷移：BsiShellDisplay→ShellDisplayField→ShellMesh/HUD/renderer/channel6，
+  客戶端只插值樣本，殼旗標獨立轉發；core283=271PASS/12SKIP、Forge57全過，真JNA9/9，八變異。
+  ShellFieldSpec仍留在Sidecar相容入口一次取樣/舊診斷；梁BSI框架/面中心幾何已接通。
+  53檔契約hash42a1b24c3c0b…；memberGeometry固定168B/f64，核心290=278PASS/12SKIP、Forge57PASS，
+  真JNA10/10，三個Java幾何守門變異有具名FAIL；引擎564checks/五變異三箱與sanitizer詳見MC65B_MEMBER_GEOMETRY。
+  梁顯示已接 BsiBeamDisplay→BeamDisplayField→ribbon/section/HUD/表面切分/channel7。
+  不重算梁力學，完整站點/格集合/NA缺值/overloaded與控制站索引原樣傳送；舊field只在Sidecar相容入口/診斷保留。
+  最新core305=293PASS/12SKIP、Forge64PASS，真JNA12/12、五身份變異具名咬合。
+  stationIdentity opt-in沿原生共同核轉發雙側與主宰旗標；BsiBeamDisplay/StressStation.Identity/channel8保留f64身份，舊請求單側不改。
+  契約54檔hash4977f57308e6，79checks/八變異三箱DET×3、sanitizer及兩箱48組舊回應逐位。
+  首跑ground-only EMPTY_WORLD、host stub零筆證據降級均留GATES與MC65B_BSI_STATION_IDENTITY。
+  下一單元先凍MC64_FORWARD全域/屈曲旗標與單一AnalysisResult入口，再凍display budget、接NATIVE/GAME_SWAP。
+  #89 與消費者封裝仍未完成，版本對位引擎 1.3.0、模組仍 0.4.0-dev。
+  正式引擎來源與原生資產見 tectonic2 v1.3 及套件 provenance.json；本倉 pin 鎖定同一引擎來源提交。
 - **還沒接**：**遊戲流程仍走 `SidecarClient`**（protocol 2 / FrameCore），`InProcessEngine` 尚未接進遊戲迴圈（#89）。
   「檔案在」不算「有」——見下面的三條鐵則第 2 條。
 - **不會做**：FrameCore 的 BSI 對數臂（D-045）。連帶 N22 差異帳改形為「單臂語料 + 封閉解」並**降一級**，

@@ -2,18 +2,12 @@ package com.blockreality.impl.net;
 
 import com.blockreality.api.AnalysisResult;
 import com.blockreality.api.BucklingState;
-import com.blockreality.api.EndForces;
-import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.MemberSnapshot;
-import com.blockreality.api.ShellFieldSpec;
 import com.blockreality.api.ShellSnapshot;
-import com.blockreality.api.StressFieldSpec;
-import com.blockreality.api.StressStation;
 import com.blockreality.api.UnassignedBlocks;
 import com.blockreality.api.UnassignedReason;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.api.WorldRevision;
-import com.blockreality.api.geom.Vec3d;
 import com.blockreality.impl.BlockRealityMod;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
@@ -29,8 +23,8 @@ import java.util.function.Supplier;
 /**
  * The drawable half of an analysis, sent to the client.
  *
- * <p>Only what the overlay needs travels: geometry, signed stress and D/C. End forces,
- * block lists and diagnostics stay on the server, where the decisions are made.
+ * <p>Channel 7 carries immutable beam/shell samples, complete per-element cell lists,
+ * independent verdict flags and beam diagnostic end forces. It carries no mechanical field.
  *
  * <h2>Decoding never throws — and never launders</h2>
  * Two rules, and they answer different attacks:
@@ -47,27 +41,17 @@ import java.util.function.Supplier;
  *       state and logs why, which is the same fail-closed posture the engine wire has.
  * </ul>
  *
- * <h2>Safety classification travels, it is not recomputed</h2>
- * Whether a member is over capacity, and whether the structure is at its buckling load,
- * are decided on the server in double precision and carried as flags. A client comparing
- * float32-degraded numbers against 1.0 would flip the verdict for values within a ulp of
- * the boundary — the display track showing a different judgement from the commit track,
- * which invariants 5/6 forbid (#55). The decoded numeric values are nudged into the half
- * the server ruled for, so downstream code that reads {@code dc()} stays consistent with
- * the flag by construction.
+ * <p>Element flags are forwarded independently of their f64 DC values. Global maxDc and
+ * buckling still use the legacy float/flag compatibility path pending MC64_FORWARD.
  */
 public final class StressResultPacket {
 
     /** Above this many members the rest are dropped — and the drop is logged, never silent. */
     private static final int MAX_MEMBERS = 64;
-    /** Blocks per member. A member longer than this is drawn short rather than dropped. */
-    private static final int MAX_BLOCKS = 256;
     /** Facets sent. A floor meshes into one facet per 2x2 block square, so this fills up
      *  far faster than members do — and, like members, the drop is logged. */
     private static final int MAX_SHELLS = 512;
 
-    /** Stations the client regenerates for the picker and the section diagram. */
-    private static final int STATIONS = 11;
 
     private final boolean valid;
     private final String invalidReason;
@@ -286,7 +270,7 @@ public final class StressResultPacket {
 
     // ---------------------------------------------------------------- encode
     //
-    // The FIELD travels, not samples of it. Thirty-odd numbers per member replace eleven
+    // Legacy beams still carry the FIELD; shells carry native recovery samples (channel 6). Thirty-odd numbers per member replace eleven
     // stations of four fibres each — about a seventh of the bytes — and the client can
     // then evaluate the exact stress at any point of any block face, which is what a
     // surface contour needs and what interpolating between samples could never give.
@@ -310,75 +294,15 @@ public final class StressResultPacket {
         buf.writeVarInt(Math.min(p.members.size(), MAX_MEMBERS));
 
         for (int i = 0; i < p.members.size() && i < MAX_MEMBERS; i++) {
-            MemberSnapshot m = p.members.get(i);
-            buf.writeVarInt(m.id());
-            buf.writeFloat((float) m.dc());
-            // The double-precision verdict, decided here and only here (#55).
-            buf.writeBoolean(m.dc() > 1.0);
-            buf.writeByte(m.governingFibre().ordinal());
-            // Where along the member the governing section sits, in mm. The client
-            // regenerates stations from the field, so an INDEX into the server's
-            // station list would not survive the trip; a position does (INV-5).
-            buf.writeFloat((float) governingXmm(m));
-            buf.writeUtf(clip(m.section(), TOKEN_MAX), TOKEN_MAX);
-            // The material lens needs this, and it used to be dropped: the decoder built
-            // every MemberSnapshot with "" for material, so the client could not tell
-            // steel from timber and the third lens quietly rendered as the second one.
-            buf.writeUtf(clip(m.material(), TOKEN_MAX), TOKEN_MAX);
-
-            List<BlockKey> blocks = m.blocks();
-            int nb = Math.min(blocks.size(), MAX_BLOCKS);
-            buf.writeVarInt(nb);
-            for (int k = 0; k < nb; k++) {
-                BlockKey b = blocks.get(k);
-                buf.writeVarInt(b.x());
-                buf.writeVarInt(b.y());
-                buf.writeVarInt(b.z());
-            }
-
-            // Carried per element rather than as a separate id list: a list can disagree
-            // with the elements beside it after a truncation to MAX_MEMBERS, and a flag
-            // that has drifted off its member is worse than no flag.
-            buf.writeBoolean(p.withheldMembers.contains(m.id()));
-
-            boolean hasField = m.field().isPresent();
-            buf.writeBoolean(hasField);
-            if (hasField) writeField(buf, m.field().get());
+            MemberPacketCodec.write(buf, p.members.get(i), p.withheldMembers.contains(p.members.get(i).id()));
         }
 
         buf.writeVarInt(Math.min(p.shells.size(), MAX_SHELLS));
         for (int i = 0; i < p.shells.size() && i < MAX_SHELLS; i++) {
             ShellSnapshot s = p.shells.get(i);
-            buf.writeVarInt(s.id());
-            buf.writeUtf(clip(s.plate(), TOKEN_MAX), TOKEN_MAX);
-            buf.writeUtf(clip(s.material(), TOKEN_MAX), TOKEN_MAX);
-            buf.writeFloat((float) s.thicknessMm());
-            buf.writeFloat((float) s.dc());
-            buf.writeBoolean(s.dc() > 1.0);
-            buf.writeFloat((float) s.dcRaw());
-            buf.writeBoolean(s.governingTopFace());
-            buf.writeBoolean(s.edgeRecovered());
-
-            List<BlockKey> blocks = s.blocks();
-            int nb = Math.min(blocks.size(), 4);
-            buf.writeVarInt(nb);
-            for (int k = 0; k < nb; k++) {
-                BlockKey b = blocks.get(k);
-                buf.writeVarInt(b.x());
-                buf.writeVarInt(b.y());
-                buf.writeVarInt(b.z());
-            }
-
-            buf.writeBoolean(p.withheldShells.contains(s.id()));
-
-            boolean hasField = s.field().isPresent() && s.field().get().isComplete();
-            buf.writeBoolean(hasField);
-            if (hasField) writeShellField(buf, s.field().get());
+            ShellPacketCodec.write(buf, s, p.withheldShells.contains(s.id()));
         }
     }
-
-    /** Longest token this packet will carry. The engine's own catalogue is well inside it. */
-    private static final int TOKEN_MAX = 48;
 
     /**
      * Truncates rather than throws.
@@ -393,63 +317,6 @@ public final class StressResultPacket {
     private static String clip(String s, int max) {
         if (s == null) return "";
         return s.length() <= max ? s : s.substring(0, max);
-    }
-
-    private static double governingXmm(MemberSnapshot m) {
-        int i = m.governingStation();
-        if (i < 0 || i >= m.stations().size()) return -1;
-        return m.stations().get(i).xMm();
-    }
-
-    // The four corner positions travel, not a centre and a size: the corners ARE the
-    // element, and reconstructing them from a centre would bake in the assumption that
-    // every facet is an axis-aligned square. That happens to be true of what the extractor
-    // produces today and it is not something the wire should quietly depend on.
-    private static void writeShellField(FriendlyByteBuf buf, ShellFieldSpec f) {
-        for (Vec3d c : f.cornersMm()) writeVec(buf, c);
-        writeVec(buf, f.ex());
-        writeVec(buf, f.ey());
-        writeVec(buf, f.normal());
-        buf.writeFloat((float) f.thicknessMm());
-        buf.writeFloat((float) f.nxx());
-        buf.writeFloat((float) f.nyy());
-        buf.writeFloat((float) f.nxy());
-        buf.writeFloat((float) f.mxx());
-        buf.writeFloat((float) f.myy());
-        buf.writeFloat((float) f.mxy());
-        buf.writeFloat((float) f.qx());
-        buf.writeFloat((float) f.qy());
-        for (ShellFieldSpec.Moments m : f.cornerM()) {
-            buf.writeFloat((float) m.mxx());
-            buf.writeFloat((float) m.myy());
-            buf.writeFloat((float) m.mxy());
-        }
-    }
-
-    private static void writeField(FriendlyByteBuf buf, StressFieldSpec f) {
-        writeVec(buf, f.originMm());
-        writeVec(buf, f.ax());
-        writeVec(buf, f.ay());
-        writeVec(buf, f.az());
-        buf.writeFloat((float) f.lengthMm());
-        buf.writeFloat((float) f.area());
-        buf.writeFloat((float) f.iy());
-        buf.writeFloat((float) f.iz());
-        buf.writeFloat((float) f.cy());
-        buf.writeFloat((float) f.cz());
-        buf.writeFloat((float) f.wy());
-        buf.writeFloat((float) f.wz());
-        writeForces(buf, f.endI());
-        writeForces(buf, f.endJ());
-    }
-
-    private static void writeForces(FriendlyByteBuf buf, EndForces e) {
-        buf.writeFloat((float) e.n());
-        buf.writeFloat((float) e.vy());
-        buf.writeFloat((float) e.vz());
-        buf.writeFloat((float) e.t());
-        buf.writeFloat((float) e.my());
-        buf.writeFloat((float) e.mz());
     }
 
     // ---------------------------------------------------------------- decode
@@ -515,78 +382,17 @@ public final class StressResultPacket {
         Set<Integer> withheldShells = new java.util.LinkedHashSet<>();
         List<MemberSnapshot> members = new ArrayList<>(nMembers);
         for (int i = 0; i < nMembers; i++) {
-            int id = buf.readVarInt();
-            double dc = finite(buf.readFloat(), "member dc");
-            boolean overloaded = buf.readBoolean();
-            dc = alignToVerdict(dc, overloaded);
-            int fibreOrdinal = buf.readByte() & 0xFF;
-            if (fibreOrdinal >= GoverningFibre.values().length) {
-                // Mapping an unknown ordinal to NONE would show a governing member
-                // with no governing reason — a confident wrong label (#40).
-                throw new Bad("unknown governing fibre ordinal " + fibreOrdinal);
-            }
-            GoverningFibre fibre = GoverningFibre.values()[fibreOrdinal];
-            double governingXmm = buf.readFloat();
-            if (Double.isNaN(governingXmm) || Double.isInfinite(governingXmm)) {
-                throw new Bad("governingXmm is not finite");
-            }
-            String section = buf.readUtf(48);
-            String material = buf.readUtf(48);
-
-            int nb = count(buf.readVarInt(), MAX_BLOCKS, "member blocks");
-            List<BlockKey> blocks = new ArrayList<>(nb);
-            for (int k = 0; k < nb; k++) {
-                blocks.add(new BlockKey(buf.readVarInt(), buf.readVarInt(), buf.readVarInt()));
-            }
-
-            if (buf.readBoolean()) withheldMembers.add(id);
-
-            Optional<StressFieldSpec> field = buf.readBoolean()
-                    ? Optional.of(readField(buf)) : Optional.empty();
-
-            // Stations are REGENERATED from the field rather than sent. Handing a client
-            // that can evaluate exactly an approximation of the same thing would be
-            // strictly worse and strictly bigger.
-            List<StressStation> stations = field.map(f -> f.stations(STATIONS)).orElse(List.of());
-
-            // The member's end forces are the SAME two objects the field carries — the
-            // server builds both from one pair (ProtocolCodec) — so they are taken from
-            // the decoded field rather than left at zero. They used to be ZERO here, and
-            // nothing read them, which is exactly why it survived: a public record
-            // component that silently becomes 0.0 after a network trip is a trap for the
-            // next caller, not a saving. Found by the display-track pipeline gate.
-            members.add(new MemberSnapshot(id, material, section, field.map(StressFieldSpec::lengthMm).orElse(0.0),
-                    dc, fibre, nearestStation(stations, governingXmm),
-                    field.map(StressFieldSpec::endI).orElse(EndForces.ZERO),
-                    field.map(StressFieldSpec::endJ).orElse(EndForces.ZERO),
-                    blocks, stations, field));
+            MemberPacketCodec.Entry entry = MemberPacketCodec.read(buf);
+            members.add(entry.member());
+            if (entry.withheld()) withheldMembers.add(entry.member().id());
         }
 
         int nShells = count(buf.readVarInt(), MAX_SHELLS, "shells");
         List<ShellSnapshot> shells = new ArrayList<>(nShells);
         for (int i = 0; i < nShells; i++) {
-            int id = buf.readVarInt();
-            String plate = buf.readUtf(48);
-            String shellMaterial = buf.readUtf(48);
-            double t = finite(buf.readFloat(), "thickness");
-            double dc = finite(buf.readFloat(), "shell dc");
-            boolean overloaded = buf.readBoolean();
-            dc = alignToVerdict(dc, overloaded);
-            double dcRaw = finite(buf.readFloat(), "shell dcRaw");
-            boolean top = buf.readBoolean();
-            boolean recovered = buf.readBoolean();
-
-            int nb = count(buf.readVarInt(), 4, "shell blocks");
-            List<BlockKey> blocks = new ArrayList<>(nb);
-            for (int k = 0; k < nb; k++) {
-                blocks.add(new BlockKey(buf.readVarInt(), buf.readVarInt(), buf.readVarInt()));
-            }
-
-            if (buf.readBoolean()) withheldShells.add(id);
-
-            Optional<ShellFieldSpec> field = buf.readBoolean()
-                    ? Optional.of(readShellField(buf, t)) : Optional.empty();
-            shells.add(new ShellSnapshot(id, shellMaterial, plate, t, dc, dcRaw, top, recovered, blocks, field));
+            ShellPacketCodec.Entry entry = ShellPacketCodec.read(buf);
+            shells.add(entry.shell());
+            if (entry.withheld()) withheldShells.add(entry.shell().id());
         }
 
         // Nothing was left out, yet something claims its input was cut. The server sets
@@ -611,21 +417,6 @@ public final class StressResultPacket {
                 truncatedBlocks, withheldMembers, withheldShells, members, shells);
     }
 
-    /** The regenerated station closest to the wire's governing position; -1 if none. */
-    private static int nearestStation(List<StressStation> stations, double xMm) {
-        if (xMm < 0 || stations.isEmpty()) return -1;
-        int best = 0;
-        double bestD = Math.abs(stations.get(0).xMm() - xMm);
-        for (int i = 1; i < stations.size(); i++) {
-            double d = Math.abs(stations.get(i).xMm() - xMm);
-            if (d < bestD) {
-                best = i;
-                bestD = d;
-            }
-        }
-        return best;
-    }
-
     /**
      * Nudges a float-degraded D/C onto the side of 1.0 the server ruled for, so every
      * downstream comparison ({@code isOverloaded}, palette thresholds) agrees with the
@@ -636,45 +427,6 @@ public final class StressResultPacket {
         if (overloaded && dc <= 1.0) return Math.nextUp(1.0);
         if (!overloaded && dc > 1.0) return 1.0;
         return dc;
-    }
-
-    private static ShellFieldSpec readShellField(FriendlyByteBuf buf, double fallbackT) {
-        List<Vec3d> corners = new ArrayList<>(4);
-        for (int k = 0; k < 4; k++) corners.add(readVec(buf));
-        Vec3d ex = readVec(buf), ey = readVec(buf), n = readVec(buf);
-        double t = finite(buf.readFloat(), "field thickness");
-        double nxx = finite(buf.readFloat(), "Nxx"), nyy = finite(buf.readFloat(), "Nyy"),
-                nxy = finite(buf.readFloat(), "Nxy");
-        double mxx = finite(buf.readFloat(), "Mxx"), myy = finite(buf.readFloat(), "Myy"),
-                mxy = finite(buf.readFloat(), "Mxy");
-        double qx = finite(buf.readFloat(), "Qx"), qy = finite(buf.readFloat(), "Qy");
-        List<ShellFieldSpec.Moments> corner = new ArrayList<>(4);
-        for (int k = 0; k < 4; k++) {
-            corner.add(new ShellFieldSpec.Moments(finite(buf.readFloat(), "Mc"),
-                    finite(buf.readFloat(), "Mc"), finite(buf.readFloat(), "Mc")));
-        }
-        return new ShellFieldSpec(corners, ex, ey, n, t > 0 ? t : fallbackT,
-                nxx, nyy, nxy, mxx, myy, mxy, qx, qy, corner);
-    }
-
-    private static StressFieldSpec readField(FriendlyByteBuf buf) {
-        Vec3d origin = readVec(buf), ax = readVec(buf), ay = readVec(buf), az = readVec(buf);
-        double len = finite(buf.readFloat(), "lengthMm");
-        double a = finite(buf.readFloat(), "A");
-        double iy = finite(buf.readFloat(), "Iy");
-        double iz = finite(buf.readFloat(), "Iz");
-        double cy = finite(buf.readFloat(), "cy");
-        double cz = finite(buf.readFloat(), "cz");
-        double wy = finite(buf.readFloat(), "wy");
-        double wz = finite(buf.readFloat(), "wz");
-        return new StressFieldSpec(origin, ax, ay, az, len, a, iy, iz, cy, cz, wy, wz,
-                readForces(buf), readForces(buf));
-    }
-
-    private static EndForces readForces(FriendlyByteBuf buf) {
-        return new EndForces(finite(buf.readFloat(), "N"), finite(buf.readFloat(), "Vy"),
-                finite(buf.readFloat(), "Vz"), finite(buf.readFloat(), "T"),
-                finite(buf.readFloat(), "My"), finite(buf.readFloat(), "Mz"));
     }
 
     /** Out-of-range counts reject the packet: a count past the cap is not this schema. */
@@ -692,17 +444,6 @@ public final class StressResultPacket {
     private static double finite(float f, String what) {
         if (!Float.isFinite(f)) throw new Bad(what + " is not finite");
         return f;
-    }
-
-    private static void writeVec(FriendlyByteBuf buf, Vec3d v) {
-        buf.writeFloat((float) v.x());
-        buf.writeFloat((float) v.y());
-        buf.writeFloat((float) v.z());
-    }
-
-    private static Vec3d readVec(FriendlyByteBuf buf) {
-        return new Vec3d(finite(buf.readFloat(), "vec"), finite(buf.readFloat(), "vec"),
-                finite(buf.readFloat(), "vec"));
     }
 
     // ---------------------------------------------------------------- handle

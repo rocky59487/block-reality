@@ -39,15 +39,16 @@ extern "C" {
  * error frames inside a BSI_CAPI_OK reply) */
 enum bsi_capi_status {
   BSI_CAPI_OK          = 0,   /* reply frame written to out, *outLen set        */
-  BSI_CAPI_NEED_BIGGER = 2,   /* outCap too small; *outNeeded set; request NOT consumed */
-  BSI_CAPI_PROTOCOL    = 4,   /* malformed frame (magic/length); nothing written */
-  BSI_CAPI_INVALID     = 5    /* h is NULL or closed                             */
+  BSI_CAPI_NEED_BIGGER = 2,   /* reply cached; *outNeeded set; retry identical bytes */
+  BSI_CAPI_PROTOCOL    = 4,   /* malformed/oversized frame or different pending request */
+  BSI_CAPI_INVALID     = 5    /* NULL handle or fatal preparation failure; close/reopen */
 };
 
 #define BSI_CAPI_FLAG_END_OF_RESPONSE (1u << 0)
 #define BSI_CAPI_FLAG_HAS_PAYLOAD     (1u << 1)
 #define BSI_CAPI_FLAG_BINARY_PAYLOAD  (1u << 2)
 #define BSI_CAPI_FRAME_PREFIX_BYTES   12
+#define BSI_CAPI_MAX_FRAME_BYTES      (256u * 1024u * 1024u)
 
 /* ABI generation of this library: == BSI_CAPI_ABI. A consumer refuses to use a
  * library whose value it does not know. */
@@ -64,10 +65,22 @@ BSI_CAPI uint32_t bsi_capi_abi_version(void);
  * On failure call bsi_capi_last_error(NULL) for the reason. */
 BSI_CAPI void* bsi_capi_open(const char* optionsJson);
 
-/* Send one request frame, receive one reply frame. Calls on one handle must be
- * serialised by the caller; different handles are independent. On NEED_BIGGER
- * the same request must be re-sent with a larger buffer (the host keeps no
- * partial state from the refused attempt). */
+/* Send one request frame, receive one reply frame. Serialise call, last_error
+ * and close on one handle; different handles are independent.
+ * NEED_BIGGER means the request MAY ALREADY HAVE EXECUTED: the host retains
+ * its full request bytes and encoded reply. Retry with byte-identical input
+ * (including flags/header/payload); retries copy the cached reply, never execute
+ * again. A different request returns PROTOCOL without discarding the pending
+ * reply or advancing the session. Successful delivery releases the cache;
+ * identical bytes after OK constitute a NEW call, not permanent id de-duplication.
+ * Non-OK writes no out bytes and sets *outLen=0. *outNeeded is the reply size for
+ * OK/NEED_BIGGER, otherwise zero (both length pointers are optional).
+ * Each request/reply frame is bounded by BSI_CAPI_MAX_FRAME_BYTES; pending
+ * storage is at most two such frames, excluding engine/writer working memory.
+ * Oversized input is refused before dispatch. Oversized output or preparation
+ * exceptions invalidate the handle: future calls return INVALID, close/reopen
+ * is required. close releases pending storage and must not race with calls.
+ * NULL out always probes, regardless of outCap. Never pass a freed handle. */
 BSI_CAPI int bsi_capi_call(void* h, const uint8_t* reqFrame, size_t reqLen,
                            uint8_t* out, size_t outCap, size_t* outLen, size_t* outNeeded);
 

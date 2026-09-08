@@ -324,7 +324,7 @@ struct BsiArenaHeader {            /* 128 B, LE */
 
 - **2026-09-02（併入兩倉主線後，host 實作前；全部加法，`CONTRACT_SHA256` 重釘、兩倉同步）**
   1. **進程內 C ABI `bsi_capi.h`**（T-A 的函式呼叫形式）：`bsi_capi_abi_version / open / call / close / last_error`；一次 `call` = 一個 T-A frame 進、一個出；
-     `NEED_BIGGER` 不消費請求。任何 host+engine 的共享庫建置都匯出這五個符號；消費者以 JNA / ctypes / FFM 綁定，零膠碼。ABI 尾端追加。
+     `NEED_BIGGER` 表示回覆已暫存、未交付（請求可能已執行），逐位相同重試只複製 cached reply，禁止再次執行。任何 host+engine 的共享庫建置都匯出這五個符號；消費者以 JNA / ctypes / FFM 綁定，零膠碼。ABI 尾端追加。
      這是消費者 D-044（jar 零可執行檔、不 spawn 子行程）在契約上的落點；T-B（sidecar 門鈴）降為 dev/CI 傳輸，C-2 仍要求三者逐位相同。
   2. **arena `reply` 區內容 = 一個 T-A frame**（12 B 前綴 + header + payload）；`sections[].offset` 相對 payload 起點；門鈴回覆 `replyLen` = frame 位元組數。
   3. **T-B′ 回覆行**在 `sections`（或錯誤框的 `message`/`at`）之後附 `"payloadBytes":N,"payloadB64":"…"`（N=0 時兩鍵仍出現，`payloadB64` 為空字串）；
@@ -381,3 +381,60 @@ struct BsiArenaHeader {            /* 128 B, LE */
       **只有第三層是無條件的。** 跨倉那層取決於 CI 有沒有真的去抓**對面的主線**：比對一個釘死的舊 commit
       會讓對面主線的單邊改動完全看不見。逐層的抓得到/抓不到見 `contract/README.md`；兩倉的實況與修法見
       `docs/ALIGNMENT_LEDGER.md` A12。**這條不改任何欄位**，只是不讓序言被讀成比實際更強的保證。
+
+### C ABI 重試澄清（2026-09-06，tectonic2 #27）
+
+每 handle 最多保留一個待交付 request/reply。NEED_BIGGER 的 outNeeded 固定；
+重試須含 flags、header、payload 全部 bytes 相同。待交付時不同 request 回
+PROTOCOL，保留原回覆、session 不前進。成功交付清空快取；成功後相同 request
+是新的呼叫，沒有跨呼叫永久去重。close 釋放快取，並須由 caller 與 call 序列化。
+request/reply 各最多 256 MiB（含 prefix），快取最多 512 MiB，不含 engine/writer
+工作記憶體；超限 request 在執行前拒絕。reply 超限或準備時發生例外使 handle
+失效（INVALID、須 close/reopen），不冒險重試可能已執行的動詞。
+這是 logical exactly-once delivery retry，不是一般 edit transaction 或 crash recovery。
+
+### 回收區段澄清與加法（2026-09-07，MC65B）
+
+1. `include` 各項獨立：stations-only 輸出全部有效構件的站位，按 member id、各構件 s 升序
+   串接，不隱式輸出 `members` / `memberBlocks`。需要父索引者要求 members+stations。
+2. `include:shells` 新增 `facetBlocks`（每筆 x/y/z 三個 i32，12 B），位於 facetSurfaces 後、
+   attrsEcho 前；由各 facets.blockFirst/blockCount 索引，即使零筆仍有區段。
+   不改既有記錄大小、欄位順序或舊區段內容。
+3. 本條取代 B.5 precision.storage 表格的「blocks.dc 以 f32」敘述：`blocks` 始終 24 B、
+   dc 是 f64；沒有 blocks:f32。f32 只適用整筆 stations（含 s/x/y/z，44 B）及
+   facetSurfaces（128 B）。members/facets 的位置、內力、DC 與 flags 保持原精度/判定。
+4. 回收欄位的有限數值不得 NaN/Infinity，唯 station.naY/naZ 用 NaN 表示缺少該截距。
+   f32 欄位若絕對值超出 FLT_MAX，host 回 INTERNAL，沒有部分 payload。
+   窄化為 IEEE binary32 round-to-nearest ties-to-even，保留 signed zero，允許次正規數/下溢。
+   此條不重新定義非 computed buckling.factor 的 NaN。
+5. storage 與 tier 是獨立控制。C12-f32-display 檔名雖含 display，兩個變體均為 commit，
+   只支持 f32 storage 驗收，不支持 bsi.precision.display 宣告。
+
+
+### 2026-09-08 · 梁樣本幾何加法
+
+新增能力 `bsi.readback.memberGeometry` 與 include `memberGeometry`（mask bit4）；
+需要同時 include members。缺能力先回 UNSUPPORTED；有能力但缺 members 回 PROTOCOL_ERROR，
+都在求解之前拒絕。舊 include 與 member160/station88 B 不變。
+新區段 `memberGeometry` 在 stations（若有）後、facets（若有）前；每筆與 members 同序同 id，
+筆數相等，零筆仍出區段。布局固定 168 B：id i32、reserved u32=0、origin/ex/ey/ez 各 f64[3]、
+faceY/faceZ 各 f64[4]；即使 storage=f32 也不窄化幾何。
+origin 為實際 i 節點世界公尺座標，ex/ey/ez 為求解用的右手正交單位局部軸。
+faceY={h,-h,0,0}、faceZ={0,0,b,-b}，h/b>0，單位 m，順序對應 stations.sigma 的
+TOP_Y/BOT_Y/PLUS_Z/MINUS_Z。樣本参考位置=station.xyz+ey*faceY[k]+ez*faceZ[k]。
+axisRot 已套到截面，不再套第二次。此四點是應力取樣參考位置，不是四角或孔洞截面外形。
+所有值必須有限，軸的內積與 ex×ey=ez 每個分量誤差≤1e-9；錯誤幾何、保留位、id/筆數/面序
+由 host 回 INTERNAL，消費者也須拒絕。新引擎可用新增 writer 函式傳入幾何；舊 writer、vtable
+與公開 CAPI 簽章不變。協商的新能力與 contract hash 是預期差異，未請求的 solve bytes 不變。
+
+
+## 2026-09-08 加法：stationIdentity
+
+include stationIdentity需要members+stations，以及cap bsi.readback.stationIdentity；缺cap先UNSUPPORTED，
+具備cap但缺依賴PROTOCOL_ERROR。未請求時所有原solve輸出保持。只在請求時取雙側集中力樣本。
+區段在stations(:f32)之後、memberGeometry之前，與stations逐筆對位；members ranges完整連續覆蓋。
+每筆16B LE：s:f64、side:i8(-1 LEFT/+1 RIGHT)、flags:u8(bit0 governing)、reserved:u16=0、reserved2:u32=0。
+永遠f64身份，s有限[0,1]且等於窄化前station.s；順序s遞增，同s最多LEFT/RIGHT兩筆。
+未知side/flags/reserved拒絕。每member最多一筆governing且s等於member.governingS；沒有則原生無匹配索引(-1)。
+舊member160/station88或44/geometry168不改；identity零筆時仍輸出已請求的區段。
+Java不得由f32位置重猜側或最大DC，flags/DC仍由原判定提供。f32世界座標未恢復為f64精度。

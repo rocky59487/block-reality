@@ -36,3 +36,6 @@ gradlew   text eol=lf
 *.zip     binary
 br-sidecar     binary
 br-sidecar.exe binary
+
+# BSI pins hash exact contract bytes on every checkout platform.
+contract/** text=auto eol=lf
