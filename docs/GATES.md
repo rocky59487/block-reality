@@ -1151,3 +1151,29 @@ ASan/UBSan零診斷（非LSan）、C6/C8/C12無assume，共8PASS/2SKIP。
 首跑synthetic buckling state誤寫及i9結果zip同名衝突留raw，未更動力學oracle。
 新contract hash b5ad59f1bfa94dfb428d1fac75ae5dcf0fe7327eec768419f17bd8947d27459b，52檔同步。
 下一段依先凍判準制度移除Java旧力學重生；native packaging、GAME_SWAP/#89與舊DC重判保留。
+
+## 2026-09-08 — MC65B Java 殼顯示遷移（實作前凍）
+
+對位 tectonic2 docs/specs/MC65B_JAVA_SHELL_DISPLAY.md。BSI 梁缺少局部截面框架，
+不允許 Java 猜軸/面或以面中心應力生角應力；梁另待契約加法。本段先接完整殼資料。
+
+新不可變顯示場只含 f64 幾何及 top4/bottom4 的 s1/s2/theta/vm。SI→mm/MPa 一次，
+Y-up 不交換軸/不加半格；每角取絕對值較大的 principal（平手 s1），畫面只做夾取後的
+純量插值。這不是中間點精確力學，不能送判定/崩塌；原精確 tensor 插值的顯示結論不沿用。
+BSI→snapshot→既有 ShellMesh/Forge renderer/HUD/packet 共用它；native 不建 ShellFieldSpec，
+不重算 Mohr/vM/DC。mapper 只接期待 revision 的 solve.response/ok，缺 shells 拒絕，
+有區段零筆合法；外部可變來源不能改 snapshot；不輸出假的 dcRaw。
+
+殼封包傳完整格集合、樣本/f64 與獨立 overloaded/governingTop；DC=1 可搭任一旗標，
+不修飾 DC。Forge channel protocol bump，舊 channel 拒絕；BSI 和 Sidecar wire 不改。
+Sidecar 舊 ShellFieldSpec 在相容入口一次取樣、原力學診斷保留；客戶端殼不再重生公式。
+梁舊公式與 MC64_FORWARD 其餘項、NATIVE/GAME_SWAP/#89 保持待辦。
+
+驗收：手工八角 fixture（角序/上下/單位/中心凸組合/夾取/峰值/不同法向拾取），
+resultants poison 不影響顯示；非有限/退化幾何拒絕與 immutable；真 DLL C6 F64/F32
+经 JNA→mapper→ShellMesh 逐欄換算，原八項 JNA 全執行。Forge 殼封包→ShellMesh 往返，
+旗標與 DC 獨立、超四格、缺 raw/field 保留，所有截短及非有限拒絕；完整 core/Forge 測試。
+隔離來源變異：unit/top/order/revision/verdict/finite/packet-flag/packet-blocks，
+各需正常測試具名 FAIL（編譯失敗不算）。數量首跑後 dated 登記，首跑失敗照存。
+raw base64+SHA、XML、來源 SHA 及 Git bytes manifest 放引擎 MC65B_JAVA_SHELL_DISPLAY 證據；
+不宣稱本輪 C++/i9 性能或真遊戲已驗收。下一單元凍梁框架加法，再完成梁與遊戲入口。
