@@ -1139,3 +1139,15 @@ Java float cast 位元一致；舊 blocks/members/facets D/C double 不縮窄。
 C1 checker 原固定順序漏列前段新 facetBlocks，修正為 facetSurfaces 後、attrsEcho 前，
 加入正例及錯序/重複負例；兩倉 contract 完整鏡像及同 commit 更新兩行 engine ref。
 任何首跑 FAIL 保留，數值 oracle 不依引擎輸出修訂。
+
+### 2026-09-08 — 真原生回收驗證結果
+
+InProcessRecoveryTest 三項全過：C8根部面應力±9,241,020 Pa、C6梁板自重差70,632 N與
+鏡像/旋轉不變性、殼框架及所有上下表面f32 round-trip；完整274=234PASS/40SKIP/0FAIL，
+原五項InProcessEngineTest也全部執行。所用DLL/source/contract hash與XML見引擎
+gate/evidence/MC65B_BSI_ADAPTER；Windows/Linux/i9新310checks/9變異DET×3，
+ASan/UBSan零診斷（非LSan）、C6/C8/C12無assume，共8PASS/2SKIP。
+契約C1的三個正反例全過，刪facetBlocks順序項的隔離checker變異完整三測試且具名一FAIL。
+首跑synthetic buckling state誤寫及i9結果zip同名衝突留raw，未更動力學oracle。
+新contract hash b5ad59f1bfa94dfb428d1fac75ae5dcf0fe7327eec768419f17bd8947d27459b，52檔同步。
+下一段依先凍判準制度移除Java旧力學重生；native packaging、GAME_SWAP/#89與舊DC重判保留。

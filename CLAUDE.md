@@ -38,7 +38,11 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 - **2026-09-07 BSI回收契約／codec**：facetBlocks、stations-only與f32布局已同步兩倉，hash59beed904d73…；
   Java facets/格索引/surfaces解碼與typed precision已接，binary區段範圍/有限值守門；
   271項=231PASS/40SKIP，真JNA五項全執行，七個Java變異具名咬合。首跑失敗見GATES.md。
-  引擎adapter的新stations/shells/f32尚待真C6/C8/C12與JNA力學腿，不能以codec完成冒充#89。
+- **2026-09-08 原生回收整合**：引擎已提供stations/shells/f32，真C6/C8/C12通過；
+  新增InProcessRecoveryTest 3/3要求新能力，與原InProcessEngineTest 5/5使用真DLL全執行。
+  Java274項=234PASS/40SKIP/0FAIL；殼幾何/格索引/上下面/f32直接由引擎提供。
+  契約52檔hash b5ad59f1bfa9…同步，完整證據在tectonic2 MC65B_BSI_ADAPTER。
+  下一段清償StressFieldSpec/ShellFieldSpec與顯示資料遷移；#89與Windows自足封裝仍未完成。
 - **還沒接**：**遊戲流程仍走 `SidecarClient`**（protocol 2 / FrameCore），`InProcessEngine` 尚未接進遊戲迴圈（#89）。
   「檔案在」不算「有」——見下面的三條鐵則第 2 條。
 - **不會做**：FrameCore 的 BSI 對數臂（D-045）。連帶 N22 差異帳改形為「單臂語料 + 封閉解」並**降一級**，
