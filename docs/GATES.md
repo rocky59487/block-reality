@@ -1263,3 +1263,20 @@ hash42a1b24c3c0b… 的 BSI 契約；不改求解器、舊 Sidecar wire、BSI by
 - raw stdout/stderr base64+SHA、XML 原字節與來源 SHA 留 evidence，manifest 驗 staged/committed bytes。
   本段不宣稱重跑 C++ 2690/i9 性能；GAME_SWAP/#89、MC64_FORWARD 全域判定與 NATIVE 封裝仍待辦。
 
+
+
+## 2026-09-08 首跑與能力降級
+
+首次 runner 指錯 Sidecar 路徑（sidecar/dist 而非 dist），Gradle 設定階段退出，未跑測試。
+正確路徑首跑 core299=286PASS/1FAIL/12SKIP；Forge62全過。唯一 FAIL 是新 JNA 測試
+額外要求 point load 一定產生重複站。追查 `core/mc/member_stations.h` 的 locations 去重，
+memberStations 每位置只取 memberScreenSideAt 選的一側；這是現有回收的真實限制，非 Java 丟資料。
+
+保留同一世界、原始測試與 raw，不改原生輸出。JNA 改釘目前沒有重複站且全部來源样本原樣到達；
+其結論降為「單側原生樣本完整轉發」，不得宣稱真原生雙側顯示已驗收。Java 手工雙側、f32 合併
+位置的保序、封包/表面切分腿仍必須過。NATIVE_DUAL_SIDE=MISS 保持未完成；後續需獨立凍
+opt-in 回收加法（含側資訊），避免默改既有 solve bytes。此次 MC65B 仍 active。
+
+當次計數先釘 core299 / Forge62；八個變異需各自完整執行 BsiBeamDisplayTest 8 或
+MemberPacketCodecTest 5，具名 assertion FAIL。新發現若增腿另 dated 留帳。
+
