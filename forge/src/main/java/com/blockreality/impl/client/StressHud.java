@@ -98,12 +98,15 @@ public final class StressHud {
             y += 12;
         }
         if (ClientStressState.truncated()) {
-            // The picture is incomplete; the governing element is guaranteed drawn,
-            // but "what you see" is not "all there is" and the HUD must say so (#42).
+            // Whole elements can be omitted by the delivery budget; counts remain explicit.
             g.drawString(mc.font, Component.translatable("br.hud.truncated",
                     ClientStressState.members().size(), ClientStressState.totalMembers(),
                     ClientStressState.shells().size(), ClientStressState.totalShells()),
                     x, y, 0xC8860D);
+            y += 12;
+        }
+        if (ClientStressState.governingOmitted()) {
+            g.drawString(mc.font, Component.translatable("br.hud.governing_omitted"), x, y, 0xC8860D);
             y += 12;
         }
         if (ClientStressState.partialMechanism()) {

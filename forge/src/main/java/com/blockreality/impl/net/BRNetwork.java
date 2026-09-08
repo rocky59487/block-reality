@@ -47,7 +47,8 @@ public final class BRNetwork {
     // "6": shell recovery samples and authoritative flags replace the reconstructed field.
     // "7": beam samples, full cells and governing station identity replace force reconstruction.
     // "8": precise station side identities. "9": f64 global values and supplied verdicts.
-    private static final String PROTOCOL = "9";
+    // "10": bounded whole-element delivery and explicit governing omission.
+    private static final String PROTOCOL = "10";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(BlockRealityMod.MOD_ID, "main"),

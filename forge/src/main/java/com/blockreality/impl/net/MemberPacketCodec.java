@@ -43,19 +43,22 @@ final class MemberPacketCodec {
         }
     }
 
-    static Entry read(FriendlyByteBuf b) {
+    static Entry read(FriendlyByteBuf b) { return read(b, new DisplayDelivery.ReadBudget()); }
+    static Entry read(FriendlyByteBuf b, DisplayDelivery.ReadBudget budget) {
         int id = b.readVarInt(); double length = finite(b), dc = finite(b); boolean overloaded = b.readBoolean();
         int ordinal = count(b.readUnsignedByte(), GoverningFibre.values().length - 1), governing = b.readVarInt();
         Optional<Double> position = optional(b);
         String section = b.readUtf(48), material = b.readUtf(48);
         EndForces endI = forces(b), endJ = forces(b);
         int nb = count(b.readVarInt(), MAX_ITEMS);
+        budget.blocks(nb);
         if (nb > b.readableBytes() / 3) throw new IllegalArgumentException("truncated beam blocks");
         List<BlockKey> blocks = new ArrayList<>(nb);
         for (int i = 0; i < nb; i++) blocks.add(new BlockKey(b.readVarInt(), b.readVarInt(), b.readVarInt()));
         boolean withheld = b.readBoolean(); Geometry g = null;
         if (b.readBoolean()) g = new Geometry(vec(b), vec(b), vec(b), vec(b), finite(b), finite(b));
         int ns = count(b.readVarInt(), MAX_ITEMS);
+        budget.stations(ns);
         if (ns > b.readableBytes() / 59) throw new IllegalArgumentException("truncated beam stations");
         List<StressStation> stations = new ArrayList<>(ns);
         for (int i = 0; i < ns; i++) {
