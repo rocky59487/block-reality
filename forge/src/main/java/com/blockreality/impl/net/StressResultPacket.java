@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 /**
  * The drawable half of an analysis, sent to the client.
  *
- * <p>Channel 9 carries immutable beam/shell samples, complete per-element cell lists,
+ * <p>Channel 10 carries immutable beam/shell samples, complete per-element cell lists,
  * independent verdict flags and beam diagnostic end forces. It carries no mechanical field.
  *
  * <h2>Decoding never throws — and never launders</h2>
@@ -41,17 +41,20 @@ import java.util.function.Supplier;
  *       state and logs why, which is the same fail-closed posture the engine wire has.
  * </ul>
  *
- * <p>Channel 9 forwards global and element flags independently of their f64 values.
+ * <p>Channel 10 forwards global and element flags independently of their f64 values.
  */
 public final class StressResultPacket {
 
-    /** Above this many members the rest are dropped — and the drop is logged, never silent. */
-    private static final int MAX_MEMBERS = 64;
-    /** Facets sent. A floor meshes into one facet per 2x2 block square, so this fills up
-     *  far faster than members do — and, like members, the drop is logged. */
-    private static final int MAX_SHELLS = 512;
+    /** Candidate caps are shared with the total byte/cell/station policy. Omission travels in the packet. */
+    private static final int MAX_MEMBERS = DisplayDelivery.MAX_MEMBERS;
+    /** Facet candidates, including the governing facet when present. */
+    private static final int MAX_SHELLS = DisplayDelivery.MAX_SHELLS;
 
 
+    private final DisplayDelivery delivery;
+    private final int governing;
+    private final String governingKind;
+    private final boolean governingOmitted;
     private final boolean valid;
     private final String invalidReason;
 
@@ -111,7 +114,12 @@ public final class StressResultPacket {
                                int totalMembers, int totalShells,
                                int truncatedBlocks,
                                Set<Integer> withheldMembers, Set<Integer> withheldShells,
-                               List<MemberSnapshot> members, List<ShellSnapshot> shells) {
+                               List<MemberSnapshot> members, List<ShellSnapshot> shells,
+                               int governing, String governingKind, boolean governingOmitted, DisplayDelivery delivery) {
+        this.delivery = delivery;
+        this.governing = governing;
+        this.governingKind = governingKind;
+        this.governingOmitted = governingOmitted;
         this.valid = valid;
         this.invalidReason = invalidReason;
         this.revision = revision;
@@ -139,7 +147,7 @@ public final class StressResultPacket {
 
     private static StressResultPacket invalid(String reason) {
         return new StressResultPacket(false, reason, 0, "", false, 0, false, 0, 0, 0, false,
-                BucklingState.UNKNOWN, null, 0, 0, 0, Set.of(), Set.of(), List.of(), List.of());
+                BucklingState.UNKNOWN, null, 0, 0, 0, Set.of(), Set.of(), List.of(), List.of(), -1, "", false, null);
     }
 
     /** A per-reason tally sized to this build of the enum, whatever the caller passed. */
@@ -159,12 +167,11 @@ public final class StressResultPacket {
                                         Set<Integer> withheldMembers, Set<Integer> withheldShells,
                                         int truncatedBlocks) {
         if (!r.ok()) return invalid("analysis failed: " + r.diagnostic());
-        List<MemberSnapshot> m = keepGoverning(r.members(), MAX_MEMBERS,
-                "member".equals(r.governingKind()) ? r.governing() : Integer.MIN_VALUE,
-                MemberSnapshot::id, "members");
-        List<ShellSnapshot> s = keepGoverning(r.shells(), MAX_SHELLS,
-                "shell".equals(r.governingKind()) ? r.governing() : Integer.MIN_VALUE,
-                ShellSnapshot::id, "plate facets");
+        DisplayDelivery delivery = DisplayDelivery.prepare(r,
+                withheldMembers == null ? Set.of() : withheldMembers, withheldShells == null ? Set.of() : withheldShells);
+        List<MemberSnapshot> m = delivery.members();
+        List<ShellSnapshot> s = delivery.shells();
+        boolean omitted = omitted(r.governingKind(), r.governing(), m, s);
         // The one place DISABLED_BY_SCALE can be said. The engine was asked not to run
         // the screen and answered accordingly; only this side knows the reason was size.
         BucklingState state = bucklingSkipped ? BucklingState.DISABLED_BY_SCALE : r.bucklingState();
@@ -178,32 +185,28 @@ public final class StressResultPacket {
                 r.islands(), r.singularIslands(),
                 r.bucklingFactor(), r.bucklingCritical(), state, byReason,
                 r.members().size(), r.shells().size(),
-                truncatedBlocks, withheldMembers, withheldShells, m, s);
+                truncatedBlocks, selectedWithheld(withheldMembers, m.stream().map(MemberSnapshot::id).toList()),
+                selectedWithheld(withheldShells, s.stream().map(ShellSnapshot::id).toList()),
+                m, s, r.governing(), r.governingKind(), omitted, delivery);
     }
 
-    /**
-     * Truncates to {@code max}, but never drops the governing element: the one number
-     * the HUD headlines must correspond to something the player can find drawn, or the
-     * overlay says "max D/C 1.31" while every visible element reads safe (#42).
-     */
-    private static <T> List<T> keepGoverning(List<T> all, int max, int governingId,
-                                             java.util.function.ToIntFunction<T> id, String what) {
-        if (all.size() <= max) return all;
-        BlockRealityMod.LOG.warn(
-                "stress overlay truncated: {} {} solved, {} sent — the rest are not drawn",
-                all.size(), what, max);
-        List<T> kept = new ArrayList<>(all.subList(0, max));
-        if (governingId != Integer.MIN_VALUE
-                && kept.stream().noneMatch(t -> id.applyAsInt(t) == governingId)) {
-            for (T t : all) {
-                if (id.applyAsInt(t) == governingId) {
-                    kept.set(max - 1, t);
-                    break;
-                }
-            }
-        }
-        return kept;
+    private static Set<Integer> selectedWithheld(Set<Integer> all, List<Integer> selected) {
+        if (all == null || all.isEmpty()) return Set.of();
+        Set<Integer> out = new java.util.HashSet<>();
+        for (int id : selected) if (all.contains(id)) out.add(id);
+        return out;
     }
+
+    private static boolean omitted(String kind, int id, List<MemberSnapshot> m, List<ShellSnapshot> s) {
+        return "member".equals(kind) ? m.stream().noneMatch(v -> v.id() == id)
+                : "shell".equals(kind) && s.stream().noneMatch(v -> v.id() == id);
+    }
+    public int governing() { return governing; }
+    public String governingKind() { return governingKind; }
+    public boolean governingOmitted() { return governingOmitted; }
+    /** A received summary remains analysis even if no complete element fits the display budget. */
+    public boolean hasSummary() { return valid && revision >= 0; }
+    public boolean allMechanism() { return singular && islands > 0 && singularIslands == islands; }
 
     /** False when decoding failed; the handler must drop the packet, not render it. */
     public boolean valid() { return valid; }
@@ -273,6 +276,7 @@ public final class StressResultPacket {
     // Shared beam/shell samples and independent global verdicts; no force reconstruction.
     public static void encode(StressResultPacket p, FriendlyByteBuf buf) {
         if (!p.valid) throw new IllegalArgumentException("cannot encode invalid analysis packet");
+        int start = buf.writerIndex();
         buf.writeVarLong(p.revision);
         buf.writeUtf(p.dimension, 256);
         buf.writeBoolean(p.singular);
@@ -291,15 +295,22 @@ public final class StressResultPacket {
         buf.writeVarInt(Math.max(0, p.totalShells));
         buf.writeVarInt(Math.min(p.members.size(), MAX_MEMBERS));
 
-        for (int i = 0; i < p.members.size() && i < MAX_MEMBERS; i++) {
+        if (p.delivery != null) p.delivery.writeMembers(buf);
+        else for (int i = 0; i < p.members.size() && i < MAX_MEMBERS; i++) {
             MemberPacketCodec.write(buf, p.members.get(i), p.withheldMembers.contains(p.members.get(i).id()));
         }
 
         buf.writeVarInt(Math.min(p.shells.size(), MAX_SHELLS));
-        for (int i = 0; i < p.shells.size() && i < MAX_SHELLS; i++) {
+        if (p.delivery != null) p.delivery.writeShells(buf);
+        else for (int i = 0; i < p.shells.size() && i < MAX_SHELLS; i++) {
             ShellSnapshot s = p.shells.get(i);
             ShellPacketCodec.write(buf, s, p.withheldShells.contains(s.id()));
         }
+        buf.writeByte("member".equals(p.governingKind) ? 1 : "shell".equals(p.governingKind) ? 2 : 0);
+        buf.writeVarInt(p.governing);
+        buf.writeBoolean(p.governingOmitted);
+        if (buf.writerIndex() - start > DisplayDelivery.MAX_PACKET_BYTES)
+            throw new IllegalStateException("display header exceeded reserved budget");
     }
 
     /**
@@ -338,6 +349,8 @@ public final class StressResultPacket {
     }
 
     private static StressResultPacket decodeStrict(FriendlyByteBuf buf) {
+        if (buf.readableBytes() > DisplayDelivery.MAX_PACKET_BYTES) throw new Bad("display frame budget exceeded");
+        var budget = new DisplayDelivery.ReadBudget();
         long revision = buf.readVarLong();
         if (revision < 0) throw new Bad("negative revision");
         String dimension = buf.readUtf(256);
@@ -369,23 +382,36 @@ public final class StressResultPacket {
         int totalMembers = count(buf.readVarInt(), Integer.MAX_VALUE, "totalMembers");
         int totalShells = count(buf.readVarInt(), Integer.MAX_VALUE, "totalShells");
         int nMembers = count(buf.readVarInt(), MAX_MEMBERS, "members");
+        if (nMembers > totalMembers || singularIslands > islands) throw new Bad("summary count contradiction");
 
         Set<Integer> withheldMembers = new java.util.LinkedHashSet<>();
         Set<Integer> withheldShells = new java.util.LinkedHashSet<>();
+        Set<Integer> memberIds = new java.util.HashSet<>(), shellIds = new java.util.HashSet<>();
         List<MemberSnapshot> members = new ArrayList<>(nMembers);
         for (int i = 0; i < nMembers; i++) {
-            MemberPacketCodec.Entry entry = MemberPacketCodec.read(buf);
+            MemberPacketCodec.Entry entry = MemberPacketCodec.read(buf, budget);
+            if (!memberIds.add(entry.member().id())) throw new Bad("duplicate member id");
             members.add(entry.member());
             if (entry.withheld()) withheldMembers.add(entry.member().id());
         }
 
         int nShells = count(buf.readVarInt(), MAX_SHELLS, "shells");
+        if (nShells > totalShells) throw new Bad("shell total smaller than sent count");
         List<ShellSnapshot> shells = new ArrayList<>(nShells);
         for (int i = 0; i < nShells; i++) {
-            ShellPacketCodec.Entry entry = ShellPacketCodec.read(buf);
+            ShellPacketCodec.Entry entry = ShellPacketCodec.read(buf, budget);
+            if (entry.shell().id() < 0 || !shellIds.add(entry.shell().id())) throw new Bad("invalid/duplicate shell id");
             shells.add(entry.shell());
             if (entry.withheld()) withheldShells.add(entry.shell().id());
         }
+
+        int kindCode = count(buf.readUnsignedByte(), 2, "governing kind");
+        String governingKind = kindCode == 1 ? "member" : kindCode == 2 ? "shell" : "";
+        int governing = buf.readVarInt();
+        boolean governingOmitted = buf.readBoolean();
+        if (governing < -1 || (kindCode == 0 ? governing != -1 : governing < 0)
+                || governingOmitted != omitted(governingKind, governing, members, shells))
+            throw new Bad("governing delivery contradiction");
 
         // Nothing was left out, yet something claims its input was cut. The server sets
         // both from one computation, so this cannot happen honestly — and a withheld
@@ -406,7 +432,8 @@ public final class StressResultPacket {
                 maxDc, overCapacity, islands, singularIslands,
                 bucklingFactor, bucklingCritical, bucklingState, unassignedByReason,
                 totalMembers, totalShells,
-                truncatedBlocks, withheldMembers, withheldShells, members, shells);
+                truncatedBlocks, withheldMembers, withheldShells, members, shells,
+                governing, governingKind, governingOmitted, null);
     }
 
     /** Out-of-range counts reject the packet: a count past the cap is not this schema. */

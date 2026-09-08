@@ -163,3 +163,14 @@ Forge與core共用Gradle契約資源規則；真原生→Forge封包已驗證，
 core316=304PASS/12SKIP、Forge71PASS，真JNA與十個具名變異通過；單處revision變異未逃逸照登。
 遊戲仍SidecarClient，真HUD/換裝未驗收；BSI混合屈曲state/screen明示拒絕。下一單元DISPLAY_DELIVERY，
 原DISPLAY_BAND仍依PE3/MC65B。引擎v1.3標籤未變、模組0.4.0-dev，沒有新效能宣稱。
+
+### 2026-09-08 DISPLAY_DELIVERY 現況
+
+channel10已整合完整元素交付：單包256KiB、總16384格/2048站、控制元素先保留，
+每更新至多64梁/512殼候選。元素payload只編碼一次，廣播共用；收端配置前守累積預算。
+控制元素本身超額時保留全域summary與原kind/id，明示未顯示，不裁它的格/站點。
+空展示不冒充未分析或全機構；HUD接了文字但未實跑Minecraft視窗。
+core316=304PASS/12SKIP、Forge80PASS，合計396登錄；十變異具名咬合、四語料DET3。
+small配置約55.9KB→71.8KB的代價照登；AMD耗時僅RECORDED_ONLY，沒有i9/FPS/速度勝出宣稱。
+原v1.3與契約54檔不變；下一單元NATIVE消費者封裝/解包競爭，再按依賴接GAME_SWAP。
+原DISPLAY_BAND仍依PE3/MC65B，v2/v3/v4與歷史失敗保持原線。

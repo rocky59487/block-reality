@@ -1403,3 +1403,13 @@ headless BSI→AnalysisResult→channel9保存獨立flags與f64；core316=304PAS
 十變異具名assertion FAIL；原REVISION單點變異9PASS不算咬合，改整鏈錯信reply revision才咬原stale oracle。
 Forge首70項為69PASS/1FAIL，原因缺契約資源；共用Gradle規則修復，正式輸出hash/schema逐位核對。
 原始輸出、XML與來源SHA見tectonic2 gate/evidence/MC64_FORWARD；未宣稱真遊戲換裝/屈曲求解/效能。
+
+## 2026-09-08 DISPLAY_DELIVERY
+
+docs/DISPLAY_DELIVERY.md先凍131e29b；基線量測後e58b1a8釘256KiB/16384格/2048站，實作後未移線。
+channel10完整元素交付、控制優先/超額明示、收端累積額度与配置守門；core316=304PASS/12SKIP、Forge80PASS。
+十條隔離變異各1test/1 AssertionFailedError/0error/0skip；真v1.3 DLL分析/回收/Forge packet與Sidecar28實跑。
+四固定語料三輪DET，dense由905978B到259973B；shell-heavy由1546682B到193342B（省略完整元素）。
+小語料為共享payload與守門增加配置：55.9KB→71.8KB；不稱全面效能改善。AMD時間只RECORDED_ONLY。
+資料量上限不代表整體求解/FPS上限；未做新i9/Linux/真HUD驗收，GAME_SWAP仍未換裝。
+原始stdout/stderr/XML、基線/後測、source hash與mutation compiler bytes見tectonic2 gate/evidence/DISPLAY_DELIVERY。

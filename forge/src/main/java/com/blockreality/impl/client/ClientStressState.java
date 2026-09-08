@@ -45,6 +45,7 @@ public final class ClientStressState {
     private static StressPalette palette = StressPalette.SIGNED_DEFAULT;
 
     private static long revision = -1;
+    private static boolean hasSummary, allMechanism, governingOmitted;
     /** The dimension the data belongs to; drawn only while the player is in it (#41). */
     private static String dimension = "";
     private static boolean singular;
@@ -109,7 +110,7 @@ public final class ClientStressState {
 
     /**
      * Some structure is at or past its linear buckling load — the SERVER's verdict,
-     * carried independently by channel9. The client does not compare the factor to a threshold.
+     * carried independently by channel10. The client does not compare the factor to a threshold.
      */
     public static boolean bucklingCritical() { return bucklingCriticalFlag; }
 
@@ -158,14 +159,16 @@ public final class ClientStressState {
 
     public static String engineDetail() { return engineDetail; }
 
-    public static boolean hasData() { return revision >= 0 && (!members.isEmpty() || !shells.isEmpty()); }
+    public static boolean hasData() { return hasSummary; }
+
+    public static boolean governingOmitted() { return governingOmitted; }
 
     /**
      * The world was solved and NOTHING is restrained: a mechanism verdict, which has a
-     * revision but no members or shells. Distinct from "no analysis yet" — the check
-     * must run before {@link #hasData}, which is false for both (#43).
+     * revision but no members or shells. Use the full island summary: an empty drawing
+     * can also mean whole elements exceeded the delivery budget.
      */
-    public static boolean mechanism() { return revision >= 0 && singular && members.isEmpty() && shells.isEmpty(); }
+    public static boolean mechanism() { return hasSummary && allMechanism; }
 
     /** The world has moved past what is on screen; the HUD labels it stale (INV-4). */
     public static boolean stale() { return hasData() && pendingRevision > revision; }
@@ -250,6 +253,9 @@ public final class ClientStressState {
             return;
         }
         revision = p.revision();
+        hasSummary = p.hasSummary();
+        allMechanism = p.allMechanism();
+        governingOmitted = p.governingOmitted();
         dimension = p.dimension();
         singular = p.singular();
         maxDc = p.maxDc();
@@ -293,6 +299,9 @@ public final class ClientStressState {
      */
     public static void clear() {
         revision = -1;
+        hasSummary = false;
+        allMechanism = false;
+        governingOmitted = false;
         dimension = "";
         singular = false;
         maxDc = 0;
@@ -327,7 +336,7 @@ public final class ClientStressState {
      * <p>The HUD has to say this differently from "nothing is holding anything up": with
      * ten buildings and one unsupported shed, nine sets of numbers on screen are real.
      */
-    public static boolean partialMechanism() { return singular && hasData(); }
+    public static boolean partialMechanism() { return singular && hasData() && !allMechanism; }
 
     public static void acceptStatus(EngineStatusPacket p) {
         engineStatus = p.status();

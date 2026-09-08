@@ -40,7 +40,8 @@ final class ShellPacketCodec {
         }
     }
 
-    static Entry read(FriendlyByteBuf buf) {
+    static Entry read(FriendlyByteBuf buf) { return read(buf, new DisplayDelivery.ReadBudget()); }
+    static Entry read(FriendlyByteBuf buf, DisplayDelivery.ReadBudget budget) {
         int id = buf.readVarInt(); String plate = buf.readUtf(48), material = buf.readUtf(48);
         double thickness = finite(buf), dc = finite(buf);
         boolean overloaded = buf.readBoolean();
@@ -50,6 +51,8 @@ final class ShellPacketCodec {
         if (fibre < 0 || fibre > 6) throw new IllegalArgumentException("unknown shell governing fibre");
         int count = buf.readVarInt();
         if (count < 0 || count > MAX_BLOCKS) throw new IllegalArgumentException("invalid shell block count");
+        budget.blocks(count);
+        if (count > buf.readableBytes() / 3) throw new IllegalArgumentException("truncated shell blocks");
         List<BlockKey> blocks = new ArrayList<>(count);
         for (int i = 0; i < count; i++) blocks.add(new BlockKey(buf.readVarInt(), buf.readVarInt(), buf.readVarInt()));
         boolean withheld = buf.readBoolean();
