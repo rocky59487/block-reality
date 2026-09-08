@@ -43,3 +43,11 @@ consumer bbb0a8a（Main 合入 264a00c）。本單元不改引擎求解核、BSI
 已發布 v1.3 原生資產可直接用於真 JNA，無需因純消費者變更重建相同 core。
 GAME_SWAP、真 Minecraft 視窗／HUD、display budget、jar 原生封裝仍各自待驗收；
 本單元最多驗證到 headless result→packet，加上既有 HUD 欄位使用的程式檢查。
+
+## 2026-09-08 變異適用性
+
+首輪 REVISION 只移除聚合入口的 revision 比對，9 項仍全部通過：既有梁／殼 mapper
+各自仍拒絕錯 revision。這是變異未逃逸，不記為咬合。原始結果保留。
+修訂為 REVISION_CHAIN：同時移除該比對、將兩個下游 mapper 的 expected 誤改為
+reply.revision，模擬整條鏈信任回覆而忘記呼叫端 revision。原 stale oracle 不改。
+其餘變異不改；failed AnalysisResult 不得形成有效展示封包，非法封包不得編碼成健康空回覆。
