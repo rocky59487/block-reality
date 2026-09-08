@@ -1208,3 +1208,12 @@ axisRot/F64與F32及平移，舊 core/API purity 回歸。Java 配對與框架�
 C++ Windows/Linux/i9 DET×3、ASan/UBSan（非LSan）及 host 布局/配對/finite 變異由配對引擎留證。
 暫計數首跑後 dated 登記；raw base64+SHA/XML/來源與 Git bytes manifest 隨引擎 evidence，
 不得把 stub 或 SKIP 當成真 native 通過。原殼/BSI/版本門檻與歷史 FAIL 保留。
+
+
+### 2026-09-08 梁幾何首跑照登
+
+Java 首次 PowerShell 拆開 -Dbr.sidecar，Gradle 未執行測試；第二次測試 fixture 漏 Decoded
+的 flags 參數，compileTestJava 失敗；第三次290項=277PASS/1FAIL/12SKIP，原生幾何
+Vec3d.equals 對 -0.0 與 +0.0 作位元判等，但契約未規定零符號。改幾何 oracle 為零容差
+分量比較（只允許數值相等，正負零視同）；F64/F32 幾何 raw bytes 逐位要求維持。
+原 fixture 與原始失敗保存，不改原生輸出、不改 1e-9 守門硬線。後續结果另留 evidence。
