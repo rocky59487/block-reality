@@ -1304,3 +1304,57 @@ surfaceTiles測試中將長度縮至2e-8 mm以放大座標缺陷（純顯示幾�
 2026-09-08 九臂收版：PATCH_COORDINATE的固定snap反例由surfaceTiles具名assertion FAIL咬合。
 該測試補了端點讀數，亦使UNIT/ORDER各由4增為5個FAIL；完整集合釘在mutation_counts.json。
 其餘FAIL數不變，core299/Forge62正常臂全過（12環境SKIP）；未移動原生單側MISS。
+
+
+## 2026-09-08 BSI雙側樣本身份（實作前凍結）
+
+# MC65B BSI 雙側樣本身份與消費鏈
+
+2026-09-08；引擎基準2992e77、消費者c04017d。先凍判準，版本仍1.2.0、MC65B active。
+
+## 契約加法（硬）
+
+- include stationIdentity / cap bsi.readback.stationIdentity / includeMask bit5(32)。必須同時
+  include members+stations；缺cap先UNSUPPORTED，有cap但缺父區段PROTOCOL_ERROR，求解前拒絕。
+- 新packed bsi_station_identity 16B：s:f64、side:i8(-1 LEFT/+1 RIGHT)、flags:u8（bit0 governing）、
+  reserved:u16=0、reserved2:u32=0。永遠f64，不隨storage=f32窄化；samples序號即身份索引。
+- 新區段stationIdentity在stations或stations:f32之後、memberGeometry之前。逐筆對齐stations；
+  members的stationFirst/Count完整連續覆蓋樣本，id遞增。已請求零樣本仍有零筆區段，未請求不輸出。
+  parent與站點舊layout/ABI/vtable/六個C匯出不改。舊include不切雙側，完整舊solve bytes保持。
+- opt-in只呼叫共同MemberStationRecovery；重合載重LEFT/RIGHT各一筆，平滑點單筆。
+  identity.s有限[0,1]、與pre-narrow station.s exact相同。Java對f32比較(float)identity.s，對f64 exact。
+  s遞增；同s最多兩筆且LEFT再RIGHT。不允許未知側、未知flag、reserved非零。
+- 每member governing bit最多一筆；為1者identity.s必須等於member.governingS。
+  來源governingIndex=-1則零bit，Java保留-1，不能重掃最大DC/猜同位置哪側。
+  原MemberDetail/flags/DC/容量判定完全不變；adapter只轉型，不重算力學。
+
+## Java／Forge（硬）
+
+- BsiStationIdentity不可變，BsiSections一次驗父/完整範圍/數量/精度對位/排序/旗標/保留欄位。
+- StressStation新增Optional<Identity(s,side)>，舊建構子保留並給empty。身份s始終f64；
+  BsiBeamDisplay用identity.s換xMm、用governing bit取索引，保留所有面中心/NA與原flags。
+  f32的世界xyz仍是舊窄化樣本，不宣稱恢復其精度；mm幾何也受double表示精度限制。
+- 既有BeamDisplayField/ribbon/NA/surface共用同一樣本，不另生成站位。channel8傳optional身份，
+  全站位/範圍上限與原端力診斷保留；舊peer由protocol版本拒絕，不靜默誤讀。
+
+## 硬驗收與邊界
+
+- 手工16B LE樣本、零筆、f64/f32、近點被f32合併但身份不同、左右序、governing=-1/左右索引；
+  非有限、非法值/reserved、對位/父/完整覆蓋/順序/主宰不一致均拒絕，不靠同式重打物理oracle。
+- 真原生C4固定端幾何＋自重＋正負集中力，對同一LiveState typed來源逐筆SI值與side/index；
+  原137 typed力學gate回歸，BSI新增只驗轉發。cap/依賴拒絕、零member及原單側仍有腿。
+- 真JNA原InProcessRecoveryTest固定端world(false,0)與中心點力不換，F64/F32加入opt-in，
+  保留原單側測試。新雙側必須到BsiBeamDisplay/ribbon與主宰樣本；手工數值不依端力公式。
+- Forge完整往返含身份、-1主宰、f32近點與NA缺值；所有截短/非法identity拒絕；channel8明確。
+- 新native/host gate Windows/Linux/i9 DET×3；Linux ASan/UBSan clean零診斷（非LSan）。
+  source變異LEGACY、SIDE、GOV，以及host PAIR、ORDER、VALIDATE、GOVERNING、LAYOUT，
+  正常編譯後必須有具名assertion FAIL；新Java ID_POSITION/ID_SIDE/ID_GOV/ID_VALIDATE/PACKET_ID同理。
+  新計數[暫]首跑後dated釘死，未釘前不宣稱。
+- 舊BSI回收310/geometry564、BSI core310/無assume語料、Linux host與3傳輸；
+  Windows/Linux48組舊完整solve基準/head逐位（3世界×8include×F64/F32），不把hello新cap當舊solve。
+  Java core/API purity/Forge全回歸；原137typed clean回歸，不宣稱本段重跑2690或效能。
+- contract全檔鏡像與新hash；引擎先commit，consumer ref同consumer實作commit更新。
+  原始stdout/stderr與XML/來源base64+SHA、manifest驗staged/committed bytes；首跑失敗照登。
+
+只有新BSI→真JNA→樣本/封包通過才標雙側消費鏈驗證；仍不是Minecraft真遊戲換裝。
+NATIVE/GAME_SWAP/#89、MC64_FORWARD、原41.7ms与Linux7FAIL、原v2/v3/v4欠項均保留。
