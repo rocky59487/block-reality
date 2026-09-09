@@ -54,8 +54,6 @@
   "br.hud.plate_dc": "D/C %s   表面 von Mises",
   "br.hud.plate_faces": "上表面 %s MPa   下表面 %s MPa",
   "br.hud.plate_recovered": "此邊界的支承彎矩經外推還原",
-  "br.hud.buckling": "挫屈  λ_cr %s",
-  "br.hud.buckling_critical": "挫屈  λ_cr %s — 已經失穩",
   "block.blockreality.steel_beam_150x300": "結構鋼 150x300",
   "block.blockreality.steel_beam_100x200": "結構鋼 100x200",
   "block.blockreality.concrete_beam": "實心混凝土",
@@ -66,8 +64,8 @@
   "br.load.not_structural": "請對準結構方塊。/br load 會在你注視的方塊上施加測試荷載。",
   "br.hud.model_incomplete": "%s 格不在載入範圍內——這個結構有一部分未判定",
   "br.buckling.computed": "挫屈臨界因子已計算",
-  "br.buckling.no_positive_eigenvalue": "已檢查挫屈：目前荷載下沒有會挫屈的模態",
-  "br.buckling.not_eligible": "挫屈未執行：沒有可執行的結構",
+  "br.buckling.no_positive_eigenvalue": "目前載重下未找到正的挫屈特徵值",
+  "br.buckling.not_eligible": "全域挫屈未完整評估：含不適用結構",
   "br.buckling.disabled_by_request": "未要求挫屈評估",
   "br.buckling.disabled_by_scale": "挫屈未評估（結構規模）",
   "br.buckling.unknown": "挫屈：回覆未說明狀態",
@@ -81,8 +79,10 @@
   "br.unassigned.unknown": "%s 格未納入，理由是這個版本不認得的代碼",
   "br.hud.focus_withheld": "未判定：這根構件延伸進未載入的區塊",
   "br.engine.platform": "此平台（%s）沒有隨附原生引擎，分析停用。",
-  "br.buckling.not_eligible_scale": "挫屈未評估（引擎自由度預算）",
-  "br.buckling.solver_failed": "挫屈計算失敗",
+  "br.buckling.not_eligible_scale": "全域挫屈未完整評估：引擎自由度預算",
+  "br.buckling.solver_failed": "全域挫屈計算失敗",
   "br.placement.axis": "結構軸向：%s",
-  "br.placement.hint": "放置面決定軸向；空手潛行右鍵切換 X/Y/Z。"
+  "br.placement.hint": "放置面決定軸向；空手潛行右鍵切換 X/Y/Z。",
+  "br.buckling.local_critical": "挫屈警示：已有結構達到線性臨界狀態",
+  "br.buckling.world_factor": "全域挫屈 λ_cr %s（線性臨界值）"
 }

@@ -14,6 +14,7 @@ import com.blockreality.core.render.ShellMesh;
 import com.blockreality.core.render.SectionDiagram;
 import com.blockreality.core.render.StressRibbon;
 import com.blockreality.core.render.StressRibbonBuilder;
+import com.blockreality.core.render.BucklingReadout;
 import com.blockreality.impl.BlockRealityMod;
 import com.blockreality.impl.net.AnalysisPendingPacket;
 import com.blockreality.core.engine.NativeGameRuntime;
@@ -76,6 +77,8 @@ public final class ClientStressState {
     private static int islands;
     private static int singularIslands;
     private static double bucklingFactor;
+    /** Format messages on result delivery, not on every rendered frame. */
+    private static List<BucklingReadout.Line> bucklingReadout = List.of();
     private static int totalMembers;
     private static int totalShells;
     private static List<StressRibbon> ribbons = List.of();
@@ -107,6 +110,8 @@ public final class ClientStressState {
     public static int singularIslands() { return singularIslands; }
 
     public static double bucklingFactor() { return bucklingFactor; }
+
+    public static List<BucklingReadout.Line> bucklingReadout() { return bucklingReadout; }
 
     /**
      * Some structure is at or past its linear buckling load — the SERVER's verdict,
@@ -265,6 +270,7 @@ public final class ClientStressState {
         bucklingFactor = p.bucklingFactor();
         bucklingCriticalFlag = p.bucklingCritical();
         bucklingStateValue = p.bucklingState();
+        bucklingReadout = BucklingReadout.lines(bucklingStateValue, bucklingFactor, bucklingCriticalFlag);
         int[] byReason = new int[UnassignedReason.values().length];
         for (UnassignedReason r : UnassignedReason.values()) {
             byReason[r.ordinal()] = p.unassignedCount(r);
@@ -315,6 +321,7 @@ public final class ClientStressState {
         islands = 0;
         singularIslands = 0;
         bucklingFactor = 0;
+        bucklingReadout = List.of();
         totalMembers = 0;
         totalShells = 0;
         members = List.of();

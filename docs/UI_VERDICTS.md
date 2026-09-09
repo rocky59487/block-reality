@@ -47,3 +47,10 @@ steel_beam_100x200[axis=y]，(35,199,0) 為 stone；只有原生自重與現有 
 incomplete 訊息，沒有世界因子。Java 不以公式判定此 fixture；若引擎未回 critical，
 這項 FAIL 照登，不調整長度找過線值。另驗 CURRENT/revision 與 3 solved/1 unrestrained
 的原混合場景；最後移除長柱使世界恢復。
+
+最終結果：core360/Forge85=445登錄、417PASS、28SKIP；兩個具名變異各一個 assertion FAIL。
+原 fixture 未改長度即回原生 critical + world not-eligible；真 server 十個 smoke 條件通過，
+members/section CURRENT 也執行，並實際記到十個 STALE status。結果見
+`../evidence/UI_VERDICTS/RESULTS.md`。沒有 Minecraft 視窗、沒有 N25 視覺完成宣稱。
+客户端在 result packet 到达时格式化 readout，render 只讀緩存，clear 同時清掉；
+最後再跑 Forge build/check 通過。這項是減少每幀重複格式化，沒有 FPS/零分配宣稱。

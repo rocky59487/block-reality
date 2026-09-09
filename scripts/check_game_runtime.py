@@ -23,13 +23,13 @@ ARMS = {
 }
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+def run_mutations(arms, description=__doc__):
+    parser = argparse.ArgumentParser(description=description)
     parser.add_argument("--out", required=True)
     out = Path(parser.parse_args().out).resolve()
     out.mkdir(parents=True, exist_ok=False)
     results = {}
-    for arm, (file, project, target, old, new, test) in ARMS.items():
+    for arm, (file, project, target, old, new, test) in arms.items():
         source = (ROOT / file).read_text(encoding="utf-8")
         if source.count(old) != 1:
             raise RuntimeError(f"{arm}: mutation anchor drift")
@@ -76,4 +76,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_mutations(ARMS)

@@ -1,0 +1,12 @@
+{
+  "HIDE_LOCAL": {
+    "registered": 1,
+    "failed": "refusedWorldKeepsTheSuppliedLocalCriticalWarning()",
+    "type": "org.opentest4j.AssertionFailedError"
+  },
+  "RECOMPUTE_FLAG": {
+    "registered": 1,
+    "failed": "neverDerivesCriticalFromTheDisplayedFactor()",
+    "type": "org.opentest4j.AssertionFailedError"
+  }
+}

@@ -5,6 +5,7 @@ import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.StressStation;
 import com.blockreality.api.UnassignedBlocks;
 import com.blockreality.core.engine.NativeGameRuntime;
+import com.blockreality.core.render.BucklingReadout;
 import com.blockreality.impl.server.StructureManager;
 import com.blockreality.impl.block.StructuralBlock;
 import com.mojang.brigadier.CommandDispatcher;
@@ -181,6 +182,7 @@ public final class BRCommand {
             line(src, "  last result     none yet", ChatFormatting.GRAY);
             return 1;
         }
+        showResultRevision(src, m, r);
         if (!r.ok()) {
             line(src, "  last result     FAILED — " + r.diagnostic(), ChatFormatting.RED);
         } else if (r.allSingular()) {
@@ -220,7 +222,7 @@ public final class BRCommand {
                 }
             }
             line(src, String.format(Locale.ROOT, "  structures      %d solved, %d unrestrained",
-                            r.islands(), r.singularIslands()),
+                            r.islands() - r.singularIslands(), r.singularIslands()),
                     r.singularIslands() > 0 ? ChatFormatting.YELLOW : ChatFormatting.GRAY);
             // The engine's own force balance, recomputed from geometry rather than read
             // back out of the load vector. It is here because a number that is only
@@ -228,19 +230,14 @@ public final class BRCommand {
             line(src, String.format(Locale.ROOT, "  equilibrium     residual %.3e",
                             r.equilibriumResidual()),
                     r.equilibriumResidual() > 1e-8 ? ChatFormatting.YELLOW : ChatFormatting.GRAY);
-            // Stability, reported next to strength and never folded into it. A slender
-            // column reaches its buckling load at a stress the D/C line calls comfortable.
-            // Absent means the structure carries no compression that could buckle it, which
-            // is a real state and not a missing number.
-            if (r.bucklingState().hasFactor()) {
-                line(src, String.format(Locale.ROOT,
-                                "  buckling        lambda_cr %.3f%s   (linear onset, an upper bound)",
-                                r.bucklingFactor(),
-                                r.bucklingCritical() ? "   ALREADY UNSTABLE" : ""),
-                        r.bucklingCritical() ? ChatFormatting.RED : ChatFormatting.GRAY);
-            } else {
-                line(src, "  buckling        not reported: " + r.bucklingState().wire(),
-                        ChatFormatting.GRAY);
+            for (var row : BucklingReadout.lines(r.bucklingState(), r.bucklingFactor(), r.bucklingCritical())) {
+                ChatFormatting colour = switch (row.tone()) {
+                    case CRITICAL -> ChatFormatting.RED;
+                    case UNEVALUATED -> ChatFormatting.YELLOW;
+                    case DETAIL -> ChatFormatting.GRAY;
+                };
+                src.sendSuccess(() -> Component.translatableWithFallback(row.key(), row.fallback(),
+                        row.arguments().toArray()).withStyle(colour), false);
             }
             // One line per reason. The old single line said "N blocks formed no element"
             // for every block in the list, and for a beam lying flat on the ground -- a
@@ -289,6 +286,7 @@ public final class BRCommand {
             line(src, "No usable analysis. Try /br status.", ChatFormatting.YELLOW);
             return 0;
         }
+        showResultRevision(src, managerFor(src), r);
         line(src, "members  " + r.members().size()
                 + "     plate facets  " + r.shells().size(), ChatFormatting.AQUA);
         StructureManager mgr = managerFor(src);
@@ -327,7 +325,7 @@ public final class BRCommand {
                             sh.id(), sh.plate(), sh.thicknessMm(), sh.dc(), sh.dcRaw(),
                             sh.edgeRecovered() ? ", edge recovered" : "",
                             sh.governingTopFace() ? "top" : "bottom", sh.peakMpa()),
-                    sh.dc() > 1.0 ? ChatFormatting.RED : ChatFormatting.GRAY);
+                    sh.overloaded() ? ChatFormatting.RED : ChatFormatting.GRAY);
         }
         return 1;
     }
@@ -345,6 +343,7 @@ public final class BRCommand {
             line(src, "No usable analysis. Try /br status.", ChatFormatting.YELLOW);
             return 0;
         }
+        showResultRevision(src, managerFor(src), r);
         var found = r.member(memberId);
         if (found.isEmpty()) {
             line(src, "No member #" + memberId + ". Try /br members.", ChatFormatting.YELLOW);
@@ -414,6 +413,13 @@ public final class BRCommand {
         m.resetEngine();
         line(src, "Engine reset; it will be started again on the next tick.", ChatFormatting.GREEN);
         return 1;
+    }
+
+    private static void showResultRevision(CommandSourceStack src, StructureManager manager, AnalysisResult result) {
+        boolean stale = manager.gate().isStale(result);
+        line(src, "  result revision " + result.revision().value()
+                + (stale ? "  STALE — world changed; values below describe the previous model" : "  CURRENT"),
+                stale ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY);
     }
 
     private static void line(CommandSourceStack src, String text, ChatFormatting colour) {
