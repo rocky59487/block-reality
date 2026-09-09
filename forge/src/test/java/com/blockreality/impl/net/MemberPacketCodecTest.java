@@ -11,7 +11,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MemberPacketCodecTest {
-    private static MemberSnapshot member(boolean verdict, boolean display) {
+    static MemberSnapshot member(boolean verdict, boolean display) {
         Vec3d origin=new Vec3d(29_999_000_500.,64500,-3500),ax=new Vec3d(1,0,0),ay=new Vec3d(0,1,0),az=new Vec3d(0,0,1);
         List<StressStation> samples=new ArrayList<>();
         for(int i=0;i<4;i++) {
@@ -27,7 +27,7 @@ class MemberPacketCodecTest {
                 new EndForces(-7,8,9,10000,11000,12000),EndForces.ZERO,blocks,samples,Optional.empty(),
                 display?Optional.of(field):Optional.empty(),verdict,Optional.of(1000.));
     }
-    private static FriendlyByteBuf bytes(MemberSnapshot m) {
+    static FriendlyByteBuf bytes(MemberSnapshot m) {
         var r=new AnalysisResult(new WorldRevision(19),true,false,"",1,4,"member",1,0,0,0,
                 BucklingState.DISABLED_BY_REQUEST,List.of(m),List.of(),List.of());
         var b=new FriendlyByteBuf(Unpooled.buffer());StressResultPacket.encode(StressResultPacket.of(r,"minecraft:overworld",false),b);return b;

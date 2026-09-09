@@ -13,7 +13,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ShellPacketCodecTest {
-    private static ShellSnapshot shell(boolean overloaded, boolean display, boolean raw) {
+    static ShellSnapshot shell(boolean overloaded, boolean display, boolean raw) {
         List<BlockKey> blocks = new ArrayList<>();
         for (int i=0;i<6;i++) blocks.add(new BlockKey(i,64,-7));
         List<ShellDisplayField.Surface> top = new ArrayList<>(), bottom = new ArrayList<>();
@@ -34,7 +34,7 @@ class ShellPacketCodecTest {
                 BucklingState.DISABLED_BY_REQUEST,List.of(),List.of(s),List.of());
         return StressResultPacket.of(result,"minecraft:overworld",false);
     }
-    private static FriendlyByteBuf bytes(ShellSnapshot s) {
+    static FriendlyByteBuf bytes(ShellSnapshot s) {
         var b = new FriendlyByteBuf(Unpooled.buffer()); StressResultPacket.encode(packet(s),b); return b;
     }
 
