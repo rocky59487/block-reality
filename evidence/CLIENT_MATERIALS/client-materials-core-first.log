@@ -1,0 +1,26 @@
+Starting a Gradle Daemon, 2 busy and 4 incompatible and 1 stopped Daemons could not be reused, use --status for details
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes
+> Task :core:compileTestJava
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses
+
+> Task :core:test
+
+ProductGeometryTest > anExplicitBindingWinsOverTheMaterialDefaultButAbsentBindingUsesTheDeclaredDefault() PASSED
+
+ProductGeometryTest > legacyMonolithSectionNamesNeverBecomeDimensionsAndPanelAliasesUseThickness() PASSED
+
+ProductGeometryTest > damagedOrAmbiguousDeclarationsRefuseWithoutFallbackDimensions() PASSED
+
+ProductGeometryTest > dimensionsComeFromTheDeclarationEvenWhenTheTokenSaysSomethingElse() PASSED
+
+ProductGeometryTest > catalogueExposesAllTenProductsIncludingTheUnplacedRebarDeclaration() PASSED
+
+BUILD SUCCESSFUL in 12s
+7 actionable tasks: 3 executed, 4 up-to-date

@@ -36,7 +36,7 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   native 工作若不返回，Java 不能強殺；cleanup 僅在 worker/daemon，D-044 崩潰代價仍成立。
 - 生產 SidecarClient/SidecarProcess/SidecarConfig/ShmRegion 已退到 test；NoSubprocess ALLOWED={}。
   預設 jar 無 exe、無 process launcher；Gradle 已拒絕 executable 封裝。
-- Windows core367/Forge92：459登錄、431PASS、28SKIP。包含18項 native 整合測試的登錄，
+- Windows core373/Forge95：468登錄、440PASS、28SKIP。包含18項 native 整合測試的登錄，
   不代表 Windows 已執行新原生庫。Linux 真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
   完整結果 `evidence/GAME_RUNTIME/RESULTS.md`，首敗保留、三故障臂具名咬合。
 - 全部失去支承時原生只回 SOLVE_FAILED；Java 保留拒絕，不能從 message 捏造 MECHANISM。
@@ -44,10 +44,12 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 - UI_VERDICTS 已使共用 HUD/命令讀出保留 local-critical，世界未完整評估時不捏造因子；
   命令列結果 revision 與 stale/current、修正 solved 數量，殼警示讀原生旗標。
   真 server 長柱/混合世界已驗到警示與拒絕並存及移除後消失；`evidence/UI_VERDICTS/RESULTS.md`。
-  N25 Minecraft 視窗仍未跑；不得把文字 readout 的測試當材質/布局驗收。
+  真 jar 已進 1.20.1/47.4.10 多人列表；尚未進世界，不算 N25 材質/布局驗收。
 - STATE_DELIVERY 已接 channel 11：來源/順序/revision 守門、登入/重生/跨維度快照補送、
   EMPTY/OFF/拒絕分流與舊展示清除。真 server 16 項、24 個 synthetic 玩家事件及 Linux
   native→封包→clock 已跑；`evidence/STATE_DELIVERY/RESULTS.md`。真 socket/client 時序仍待 N25。
+- CLIENT_MATERIALS CM-7 已從同一 SI 目錄提供角色/尺寸物品資訊，9 項資料/格式測試通過。
+  世界內基準畫面與材質模型未完成；Windows 安全性視窗待使用者處理。
 - 尚未完成：最新雙平台合格庫的正式 jar、持久 registry #86、
   材質方向/互動實測、舊 Java field/legacy codec 物理後處理退場、引擎 lifecycle/剛體姿態消費。
   #89 仍開放；零 Java 物理與 v1 基礎能力不能稱完成。

@@ -1,0 +1,23 @@
+{
+  "core": {
+    "tests": 373,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 27,
+    "passed": 346
+  },
+  "forge": {
+    "tests": 95,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 94
+  },
+  "combined": {
+    "tests": 468,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 28,
+    "passed": 440
+  }
+}
