@@ -44,3 +44,6 @@ tasks.register('bsiRetryGate', JavaExec) {
         args library, frames
     }
 }
+
+// Legacy protocol/formula models are shared by tests only.
+sourceSets.test.java.srcDir "src/testFixtures/java"

@@ -1,15 +1,15 @@
 package com.blockreality.core.protocol;
 
-import com.blockreality.api.AnalysisResult;
+import com.blockreality.testlegacy.AnalysisResult;
 import com.blockreality.api.BucklingState;
 import com.blockreality.api.EndForces;
 import com.blockreality.api.EngineCatalogue;
 import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.Fibre;
-import com.blockreality.api.MemberSnapshot;
-import com.blockreality.api.ShellFieldSpec;
-import com.blockreality.api.ShellSnapshot;
-import com.blockreality.api.StressFieldSpec;
+import com.blockreality.testlegacy.MemberSnapshot;
+import com.blockreality.testlegacy.ShellFieldSpec;
+import com.blockreality.testlegacy.ShellSnapshot;
+import com.blockreality.testlegacy.StressFieldSpec;
 import com.blockreality.api.StressStation;
 import com.blockreality.api.UnassignedBlocks;
 import com.blockreality.api.WorldRevision;

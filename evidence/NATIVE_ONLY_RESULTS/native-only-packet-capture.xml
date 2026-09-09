@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.net.NativeOnlyPacketGoldenTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-09T18:53:05" hostname="ROCKYLAPTOP" time="0.869">
+  <properties/>
+  <testcase name="fixedPacketsRemainByteIdenticalAcrossLegacyRemoval()" classname="com.blockreality.impl.net.NativeOnlyPacketGoldenTest" time="0.869">
+    <failure message="org.opentest4j.AssertionFailedError: pre-removal packet oracle must be frozen before implementation ==&gt; expected: &lt;[]&gt; but was: &lt;[7fec71532b6ebae06e3eaaef7579c88582297828fc6691d448649a26fb30241e, 7067a703995aacb07c2a6476be78c17edf5c57aa7ca17471816b6f57a872b2e6, 8ec2cb2977040be02875990e35f83944ebe958c0d188a64cd1f8b29b2ed98864, 55c4ba36772b13d58d2708400f40af893f2b2fd06300741fe0e262388d3e52f9, 4ddd7a03c1890cae71cccfa5719b1ab5debbb7678132dce3c7ccfc5866d3ce2d, 1ac66b341a73cd2585cda6b87f377bf6576bcb85b4d5eda102f8d56624520e77, d9d42af2a17424912bb256a62684fdf897073f547ed2993fd01f6aa104734036, e0812398fa2498bfb5f8d58e573ad6bd54623b0ac01587ffd09deec08193ead6, c358534acb0e7c3a25baa76e579b7ca2ed7aef92a985537598ccc26f369d777e, 76898a43a4735d56fcdb225d3a223eb86979bdcc515fdc8167c2fb75d09e747a, c81db1ce6d44a126a9833119cbc6b826b79e57b8dae8e34ae56e7541c751e1bd, fd9373c49c1c8464050f670d964cda3ef4774ee1595e7ab9b973e6f78e6137d2]&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: pre-removal packet oracle must be frozen before implementation ==&gt; expected: &lt;[]&gt; but was: &lt;[7fec71532b6ebae06e3eaaef7579c88582297828fc6691d448649a26fb30241e, 7067a703995aacb07c2a6476be78c17edf5c57aa7ca17471816b6f57a872b2e6, 8ec2cb2977040be02875990e35f83944ebe958c0d188a64cd1f8b29b2ed98864, 55c4ba36772b13d58d2708400f40af893f2b2fd06300741fe0e262388d3e52f9, 4ddd7a03c1890cae71cccfa5719b1ab5debbb7678132dce3c7ccfc5866d3ce2d, 1ac66b341a73cd2585cda6b87f377bf6576bcb85b4d5eda102f8d56624520e77, d9d42af2a17424912bb256a62684fdf897073f547ed2993fd01f6aa104734036, e0812398fa2498bfb5f8d58e573ad6bd54623b0ac01587ffd09deec08193ead6, c358534acb0e7c3a25baa76e579b7ca2ed7aef92a985537598ccc26f369d777e, 76898a43a4735d56fcdb225d3a223eb86979bdcc515fdc8167c2fb75d09e747a, c81db1ce6d44a126a9833119cbc6b826b79e57b8dae8e34ae56e7541c751e1bd, fd9373c49c1c8464050f670d964cda3ef4774ee1595e7ab9b973e6f78e6137d2]&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//com.blockreality.impl.net.NativeOnlyPacketGoldenTest.fixedPacketsRemainByteIdenticalAcrossLegacyRemoval(NativeOnlyPacketGoldenTest.java:23)
+	at java.base@17.0.18/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base@17.0.18/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.18/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <system-out><![CDATA[2026-09-10 02:53:06,359 Test worker WARN Advanced terminal features are not available in this environment
+NO-3 captured hashes: 7fec71532b6ebae06e3eaaef7579c88582297828fc6691d448649a26fb30241e,7067a703995aacb07c2a6476be78c17edf5c57aa7ca17471816b6f57a872b2e6,8ec2cb2977040be02875990e35f83944ebe958c0d188a64cd1f8b29b2ed98864,55c4ba36772b13d58d2708400f40af893f2b2fd06300741fe0e262388d3e52f9,4ddd7a03c1890cae71cccfa5719b1ab5debbb7678132dce3c7ccfc5866d3ce2d,1ac66b341a73cd2585cda6b87f377bf6576bcb85b4d5eda102f8d56624520e77,d9d42af2a17424912bb256a62684fdf897073f547ed2993fd01f6aa104734036,e0812398fa2498bfb5f8d58e573ad6bd54623b0ac01587ffd09deec08193ead6,c358534acb0e7c3a25baa76e579b7ca2ed7aef92a985537598ccc26f369d777e,76898a43a4735d56fcdb225d3a223eb86979bdcc515fdc8167c2fb75d09e747a,c81db1ce6d44a126a9833119cbc6b826b79e57b8dae8e34ae56e7541c751e1bd,fd9373c49c1c8464050f670d964cda3ef4774ee1595e7ab9b973e6f78e6137d2
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

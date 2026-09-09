@@ -1,0 +1,38 @@
+Starting a Gradle Daemon, 2 busy Daemons could not be reused, use --status for details
+> Task :api:compileJava
+> Task :api:processResources NO-SOURCE
+> Task :api:classes
+> Task :api:jar
+> Task :core:compileJava
+> Task :core:processResources
+> Task :core:classes
+> Task :core:compileTestJava
+> Task :core:processTestResources
+> Task :core:testClasses
+
+> Task :core:test
+
+NativeOnlyResultsTest > everyPublicSnapshotConstructorRequiresAnExplicitVerdict() PASSED
+
+NativeOnlyResultsTest > suppliedFlagsSurviveNumericValuesThatSuggestTheOppositeVerdict() PASSED
+
+NativeOnlyResultsTest > absentDisplayAndNeutralAxisCannotBeReconstructedFromForcesOrOppositeSigns() PASSED
+
+InProcessRecoveryTest > nativeOptInSidesAndGoverningIdentityReachDisplay() PASSED
+
+InProcessRecoveryTest > nativeShellFramesAndSurfaceStorageAreCoherent() PASSED
+
+InProcessRecoveryTest > nativeBeamSamplesAndPointLoadSidesReachTheSharedDisplay() PASSED
+
+InProcessRecoveryTest > cantileverFaceSignsAndStorageMatchClosedForm() PASSED
+
+InProcessRecoveryTest > nativeShellRecoveryFeedsTheSameDisplayAndPickingPath() PASSED
+
+InProcessRecoveryTest > coupledSlabWeightAndTransformsAreInvariant() PASSED
+
+InProcessRecoveryTest > unifiedAnalysisKeepsTheNativeShellFlagsAndSamples() PASSED
+
+InProcessRecoveryTest > memberGeometryUsesActualAxesRotatedSectionAndF64WorldPositions() PASSED
+
+BUILD SUCCESSFUL in 22s
+7 actionable tasks: 7 executed

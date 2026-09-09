@@ -1,7 +1,7 @@
 package com.blockreality.core;
 
 import com.blockreality.api.EndForces;
-import com.blockreality.api.StressFieldSpec;
+import com.blockreality.testlegacy.StressFieldSpec;
 import com.blockreality.api.geom.Vec3d;
 import org.junit.jupiter.api.Test;
 

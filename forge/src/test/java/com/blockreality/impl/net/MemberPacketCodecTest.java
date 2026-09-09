@@ -23,13 +23,15 @@ class MemberPacketCodecTest {
         }
         var field=new BeamDisplayField(origin,ax,ay,az,2000,200,100,samples);
         var blocks=new ArrayList<BlockKey>();for(int k=0;k<300;k++)blocks.add(new BlockKey(29_999_000+k,64,-3));
-        return new MemberSnapshot(4,"steel","rect",2000,1,GoverningFibre.TENSION,2,
-                new EndForces(-7,8,9,10000,11000,12000),EndForces.ZERO,blocks,samples,Optional.empty(),
-                display?Optional.of(field):Optional.empty(),verdict,Optional.of(1000.));
+        return new MemberSnapshot(
+                4, "steel", "rect", 2000, 1, GoverningFibre.TENSION, 2, new EndForces(-7,8,9,10000,11000,12000),
+                EndForces.ZERO, blocks, samples, display?Optional.of(field):Optional.empty(), verdict,
+                Optional.of(1000.));
     }
     static FriendlyByteBuf bytes(MemberSnapshot m) {
-        var r=new AnalysisResult(new WorldRevision(19),true,false,"",1,4,"member",1,0,0,0,
-                BucklingState.DISABLED_BY_REQUEST,List.of(m),List.of(),List.of());
+        var r=new AnalysisResult(
+                new WorldRevision(19), true, false, "", 1, 4, "member", 1, 0, 0, 0,
+                BucklingState.DISABLED_BY_REQUEST, List.of(m), List.of(), List.of(), false, false);
         var b=new FriendlyByteBuf(Unpooled.buffer());StressResultPacket.encode(StressResultPacket.of(r,"minecraft:overworld",false),b);return b;
     }
     @Test void fullPacketPreservesEverySampleCellFlagAndGoverningIndex() {
@@ -40,7 +42,7 @@ class MemberPacketCodecTest {
                 assertEquals(1,m.dc());assertEquals(flag,m.overloaded());assertEquals(2,m.governingStation());
                 assertEquals(source.governingPositionMm(),m.governingPositionMm());assertEquals(source.blocks(),m.blocks());
                 assertEquals(source.stations(),m.stations());assertEquals(source.endI(),m.endI());assertEquals(source.endJ(),m.endJ());
-                assertTrue(m.field().isEmpty());var f=m.display().orElseThrow();
+                assertTrue(com.blockreality.testfixtures.NativeSnapshotChecks.hasNoLegacyField(m));var f=m.display().orElseThrow();
                 assertEquals(source.display().orElseThrow().originMm(),f.originMm());
                 assertEquals(12,f.faceSigmaMpa(1000,0,BeamDisplayField.Side.FIRST));
                 assertEquals(22,f.faceSigmaMpa(1000,0,BeamDisplayField.Side.LAST));
@@ -84,13 +86,17 @@ class MemberPacketCodecTest {
         var m=member(true,false);
         var b=new FriendlyByteBuf(Unpooled.buffer());
         try {
-            var oversized=new MemberSnapshot(m.id(),m.material(),m.section(),m.lengthMm(),m.dc(),m.governingFibre(),-1,m.endI(),m.endJ(),
-                    Collections.nCopies(65537,new BlockKey(0,0,0)),m.stations(),Optional.empty(),Optional.empty(),true,Optional.empty());
+            var oversized=new MemberSnapshot(
+                    m.id(), m.material(), m.section(), m.lengthMm(), m.dc(), m.governingFibre(), -1, m.endI(),
+                    m.endJ(), Collections.nCopies(65537,new BlockKey(0,0,0)), m.stations(), Optional.empty(), true,
+                    Optional.empty());
             var tooManyBlocks=oversized;
             assertThrows(IllegalArgumentException.class,()->MemberPacketCodec.write(b,tooManyBlocks,false));
             b.clear();
-            oversized=new MemberSnapshot(m.id(),m.material(),m.section(),m.lengthMm(),m.dc(),m.governingFibre(),-1,m.endI(),m.endJ(),
-                    List.of(),Collections.nCopies(65537,m.stations().get(0)),Optional.empty(),Optional.empty(),true,Optional.empty());
+            oversized=new MemberSnapshot(
+                    m.id(), m.material(), m.section(), m.lengthMm(), m.dc(), m.governingFibre(), -1, m.endI(),
+                    m.endJ(), List.of(), Collections.nCopies(65537,m.stations().get(0)), Optional.empty(), true,
+                    Optional.empty());
             var tooManyStations=oversized;
             assertThrows(IllegalArgumentException.class,()->MemberPacketCodec.write(b,tooManyStations,false));
         } finally { b.release(); }
@@ -107,9 +113,8 @@ class MemberPacketCodecTest {
                     Optional.of(new StressStation.Identity(positions[k],sides[k]))));
         }
         var f=m.display().orElseThrow();
-        return new MemberSnapshot(m.id(),m.material(),m.section(),m.lengthMm(),m.dc(),m.governingFibre(),governing,
-                m.endI(),m.endJ(),m.blocks(),stations,Optional.empty(),Optional.of(new BeamDisplayField(
-                f.originMm(),f.ax(),f.ay(),f.az(),f.lengthMm(),f.halfYMm(),f.halfZMm(),stations)),true,Optional.of(1000.));
+        return new MemberSnapshot(m.id(), m.material(), m.section(), m.lengthMm(), m.dc(), m.governingFibre(), governing, m.endI(), m.endJ(), m.blocks(), stations, Optional.of(new BeamDisplayField(
+                f.originMm(),f.ax(),f.ay(),f.az(),f.lengthMm(),f.halfYMm(),f.halfZMm(),stations)), true, Optional.of(1000.));
     }
     @Test void exactIdentityAndMissingGoverningSurviveTheFullPacket() {
         for(int governing:new int[]{-1,1,2}) {

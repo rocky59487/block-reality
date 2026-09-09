@@ -26,12 +26,14 @@ class ShellPacketCodecTest {
         var f = new ShellDisplayField(List.of(new Vec3d(x,64500,500),new Vec3d(x+1000,64500,500),
                 new Vec3d(x+1000,64500,1500),new Vec3d(x,64500,1500)),
                 new Vec3d(1,0,0),new Vec3d(0,0,1),new Vec3d(0,-1,0),top,bottom);
-        return new ShellSnapshot(4,"slab","slab",200,1,raw ? .999 : Double.NaN,true,false,blocks,
-                Optional.empty(),display ? Optional.of(f) : Optional.empty(),overloaded,6);
+        return new ShellSnapshot(
+                4, "slab", "slab", 200, 1, raw ? .999 : Double.NaN, true, false, blocks,
+                display ? Optional.of(f) : Optional.empty(), overloaded, 6);
     }
     private static StressResultPacket packet(ShellSnapshot s) {
-        var result = new AnalysisResult(new WorldRevision(19),true,false,"",1,4,"shell",1,0,0,0,
-                BucklingState.DISABLED_BY_REQUEST,List.of(),List.of(s),List.of());
+        var result = new AnalysisResult(
+                new WorldRevision(19), true, false, "", 1, 4, "shell", 1, 0, 0, 0,
+                BucklingState.DISABLED_BY_REQUEST, List.of(), List.of(s), List.of(), false, false);
         return StressResultPacket.of(result,"minecraft:overworld",false);
     }
     static FriendlyByteBuf bytes(ShellSnapshot s) {
@@ -45,7 +47,7 @@ class ShellPacketCodecTest {
                 var out = StressResultPacket.decode(buf); assertTrue(out.valid(),out.invalidReason());
                 var s = out.shells().get(0); assertEquals(1,s.dc()); assertEquals(verdict,s.overloaded());
                 assertEquals(source.blocks(),s.blocks()); assertTrue(s.governingTopFace()); assertEquals(6,s.governingFibre());
-                assertTrue(s.rawDc().isEmpty()); assertTrue(s.field().isEmpty());
+                assertTrue(s.rawDc().isEmpty()); assertTrue(com.blockreality.testfixtures.NativeSnapshotChecks.hasNoLegacyField(s));
                 var f = s.display().orElseThrow(); var original = source.display().orElseThrow();
                 assertEquals(original.cornersMm(),f.cornersMm()); assertEquals(original.normal(),f.normal());
                 assertEquals(original.top(),f.top()); assertEquals(original.bottom(),f.bottom());

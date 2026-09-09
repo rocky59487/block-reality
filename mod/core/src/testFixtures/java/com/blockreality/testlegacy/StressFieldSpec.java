@@ -1,4 +1,8 @@
-package com.blockreality.api;
+package com.blockreality.testlegacy;
+
+import com.blockreality.api.*;
+
+// Test-only protocol-2 model. Never included in a production source set or jar.
 
 import com.blockreality.api.geom.Vec3d;
 
