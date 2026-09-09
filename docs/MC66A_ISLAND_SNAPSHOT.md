@@ -90,3 +90,26 @@ local rx，因此脫開的是global ry（全域index4）；測例卻固定global
 WS-projection 的既定獨立同物理oracle改直接呼叫已驗MC66A_SPARSE_LANE的
 buildMemberBucklingPencil/solveBucklingPencil，以單獨模型的線性解為參考，不經世界
 分組/投影入口；增加對照pencil確實建立的具名檢查。原1e-9相對誤差線與fixtures不改。
+
+### 2026-09-09 具名檢查固定（在固定驗證前獨立提交）
+
+Windows第二次harvest：clean427項全部PASS；15個具名變異均exit1、三跑逐位。
+完整順序/檢查名/FAIL集合釘在 gate/mc66a_world_counts.json，後續runner不准自動重釘。
+DROP變異刻意漏島導致提前返回：377項、3 FAIL；其餘臂427項。其餘FAIL數如下：
+- TEC_MUT_MC66A_WORLD_ANY_COMPUTED: 57 FAIL。
+- TEC_MUT_MC66A_WORLD_FACTOR_LEAK: 59 FAIL。
+- TEC_MUT_MC66A_WORLD_REFERENCE: 10 FAIL。
+- TEC_MUT_MC66A_WORLD_GRAVITY: 8 FAIL。
+- TEC_MUT_MC66A_WORLD_LOADS: 4 FAIL。
+- TEC_MUT_MC66A_WORLD_ACCOUNT_OPEN: 4 FAIL。
+- TEC_MUT_MC66A_WORLD_OUTPUT_EARLY: 11 FAIL。
+- TEC_MUT_MC66A_WORLD_REPEAT_INDEX: 19 FAIL。
+- TEC_MUT_MC66A_WORLD_AFTER_LOADS: 3 FAIL。
+- TEC_MUT_MC66A_WORLD_ALWAYSON: 7 FAIL。
+- TEC_MUT_MC66A_WORLD_STALE: 11 FAIL。
+- TEC_MUT_MC66A_WORLD_CRITICAL_GE: 1 FAIL。
+- TEC_MUT_MC66A_WORLD_CRITICAL_F32: 1 FAIL。
+- TEC_MUT_MC66A_WORLD_VERDICT_ALL: 3 FAIL。
+
+WORLD_LOADS現由四個獨立pencil對照lambda檢查咬合。原escape與第一個座標FAIL保留。
+固定驗證必須重新建立新目錄並逐名核對，不把harvest本身當最終驗收。
