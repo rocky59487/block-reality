@@ -43,3 +43,11 @@ check_bundle 真 ELF/PE 分支 PASS，零 Sidecar executable；原 native stagin
 本單元不完成 GAME_SWAP/N25 真世界 HUD/FPS、MC66 或 DISPLAY_BAND。
 Linux WSL 與 Windows 各自具名；macOS/i9 未执行不得宣稱。保留原 41.7ms FAIL、Linux7FAIL，
 v2/v3/v4 仍為長期目標；本單元驗收不自動发布新引擎版本。
+
+## 2026-09-09 身份欄位實測追記
+
+首次真 hello 驗收因把 buildSha 當成完整 40 字元而 FAIL；正式 v1.3 的 wire buildSha
+實際為 c90b448，release provenance/source archive 為完整 c90b448194b52b9c7b4a48dc049581d4b640d2d4。
+两條各驗其原格式：發布鏈仍須完整 commit 相等，wire 必須精確為 c90b448，且所載庫的全 SHA
+須等於已驗的正式庫。不以任意前綴放行其他庫；清單 engineVersion 使用實際七字元 buildSha。
+hello 的 threads 為引擎可用容量；本單元 open 與所有 solve 請求均明寫 numThreads=1。
