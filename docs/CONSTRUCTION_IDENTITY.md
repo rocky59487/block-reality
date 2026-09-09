@@ -59,3 +59,8 @@ data must not fall back to the old coverage-only format or overwrite the saved f
 This does not close #17 or #86: per-object native scheduling, damage, engine lifecycle events,
 reinstallation, client hover identity delivery and v1 packaging/performance still require evidence.
 The command is the first game-facing object inspection surface; no unverified client UI claim.
+
+2026-09-10 additive CI-6 acceptance, before command edits: object inspection is read-only and
+available wherever the existing read-only diagnostics are allowed. Native member ID 0 must be
+inspectable through `/br section 0`; the old parser minimum of 1 contradicts current native IDs.
+The real server fixture must exercise that command, without renumbering native results.
