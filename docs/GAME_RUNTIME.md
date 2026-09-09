@@ -52,3 +52,11 @@ GR-2 的同步測試用 barrier/future 證明「不等 native」，不把測試�
 #89 只有 GR-7/N25 實跑與發布 jar 接線證據齊備才可結案。
 Java 舊 StressFieldSpec/ShellFieldSpec/legacy codec 的移除另需使診斷改吃 samples；
 此單元先移除可執行的生產 Sidecar 路徑，不聲稱全倉零後處理已完成。
+
+## 執行登記
+
+首次 Forge：85 registered / 83 PASS / 1 FAIL / 1 SKIP。失敗是舊 BucklingPolicyTest
+要求 BRConfig 仍有 600-block 預設。依本規格與 D-040，遊戲已改送 per-island DOF 預算，
+因此該「當前預設」測試需改驗新路徑，舊兩個 policy 邊界測試仍留測試範圍。
+新預設 2400 DOF 是可配置的資源上限，**沒有已實測的耗時保證**；舊 sidecar 的 cost table
+不能移作新引擎性能依據，這項結論降為未驗。舊失敗 XML 保留，不把退場算作產品性能通過。
