@@ -1541,3 +1541,10 @@ CM-1..6/N25 remain unaccepted until their original installed-client/profile gate
 run. The installed jar and CM server remain untouched. No screenshot or synthetic
 delivery substitutes for Windows or native release qualification. CRP criteria
 are in docs/CLIENT_RENDER_PROBE.md, committed before probe code or launch.
+
+CRP third attempt collected16 real screenshots and passed45 coordinator checks.
+The first onboarding timeout and second probe-observation failure remain failed.
+Revision44 cached bootstrap and revision116 model refusal were observed over the
+actual socket. Direction models and1280px long-message readability visibly fail
+in the baseline. This permits supplemental source candidates, not CM/N25 acceptance.
+See evidence/CLIENT_RENDER_PROBE/RESULTS.md; no production engine/delivery edit.

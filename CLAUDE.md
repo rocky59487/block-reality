@@ -50,6 +50,9 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   native→封包→clock 已跑；`evidence/STATE_DELIVERY/RESULTS.md`。真 socket/client 時序仍待 N25。
 - CLIENT_MATERIALS CM-7 已從同一 SI 目錄提供角色/尺寸物品資訊，9 項資料/格式測試通過。
   世界內基準畫面與材質模型未完成；Windows 安全性視窗待使用者處理。
+- CLIENT_RENDER_PROBE 已取得隔離 Linux 真客戶端16張基準圖、45項讀數/尺寸守門通過。
+  登入即收到既有原生 revision44；未宣告目錄真拒絕並清除舊色面。原HUD長訊息截斷、
+  文字對比及方向模型缺口已實見；首兩次探針失敗保留。這只是補充，CM/N25仍待驗。
 - NATIVE_ONLY_RESULTS 已把舊 beam/shell 公式、JSON/shm codec 與數值推導 verdict 的相容 API
   移到 test/fixtures。正式快照只接受原生樣本/旗標；12 組封包 bytes 不變，Linux recovery/packet
   22 項無跳過通過。jar/class 常數池檢查與兩條可編譯故障臂通過，詳 `evidence/NATIVE_ONLY_RESULTS/RESULTS.md`。
