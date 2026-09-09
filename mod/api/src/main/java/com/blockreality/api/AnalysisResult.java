@@ -97,17 +97,6 @@ public record AnalysisResult(
                 shells, unassigned, overCapacity, bucklingCritical, List.of());
     }
 
-    /** Legacy Sidecar compatibility: that protocol supplies numbers without global flags. */
-    public AnalysisResult(WorldRevision revision, boolean ok, boolean singular, String diagnostic,
-                          double maxDc, int governing, String governingKind, int islands,
-                          int singularIslands, double equilibriumResidual, double bucklingFactor,
-                          BucklingState bucklingState, List<MemberSnapshot> members,
-                          List<ShellSnapshot> shells, List<UnassignedBlocks> unassigned) {
-        this(revision, ok, singular, diagnostic, maxDc, governing, governingKind, islands,
-                singularIslands, equilibriumResidual, bucklingFactor, bucklingState, members,
-                shells, unassigned, maxDc > 1.0, bucklingFactor > 0 && bucklingFactor <= 1.0);
-    }
-
     public AnalysisResult {
         members = List.copyOf(members);
         shells = List.copyOf(shells);
@@ -130,7 +119,7 @@ public record AnalysisResult(
     public boolean allSingular() { return ok && singular && !isUsable(); }
 
     /**
-     * The supplied global buckling verdict; only the legacy constructor compares a factor.
+     * The supplied global buckling verdict; never inferred from the factor.
      *
      * <p>Separate from {@code maxDc > 1} on purpose. They are different failures with
      * different causes: one is the material running out of strength, the other is the
@@ -141,7 +130,7 @@ public record AnalysisResult(
 
     public static AnalysisResult failed(WorldRevision rev, String why) {
         return new AnalysisResult(rev, false, false, why, 0, -1, "", 0, 0, 0, 0,
-                BucklingState.UNKNOWN, List.of(), List.of(), List.of());
+                BucklingState.UNKNOWN, List.of(), List.of(), List.of(), false, false);
     }
 
     /**

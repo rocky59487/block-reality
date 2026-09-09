@@ -1,6 +1,6 @@
 package com.blockreality.core.protocol;
 
-import com.blockreality.api.AnalysisResult;
+import com.blockreality.testlegacy.AnalysisResult;
 import com.blockreality.api.EngineCatalogue;
 import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.WorldRevision;

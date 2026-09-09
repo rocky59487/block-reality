@@ -1,0 +1,142 @@
+{
+  "native-only-packet-capture.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-only-packet-capture.log",
+    "rawSha256": "82f4adc1da1b3af178ebd661c2f6132396e919d7ad725720c55c44898d4b952d",
+    "rawBytes": 2278,
+    "storedSha256": "82f4adc1da1b3af178ebd661c2f6132396e919d7ad725720c55c44898d4b952d",
+    "storedBytes": 2278
+  },
+  "native-only-packet-capture.xml": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-only-packet-capture.xml",
+    "rawSha256": "8a8c911be2cea1c532359711cde2186b6f386dec7489e7cb2dcc96b7fa06e3ed",
+    "rawBytes": 4178,
+    "storedSha256": "8a8c911be2cea1c532359711cde2186b6f386dec7489e7cb2dcc96b7fa06e3ed",
+    "storedBytes": 4178
+  },
+  "native-only-core-compile-first.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-only-core-compile-first.log",
+    "rawSha256": "d795ef313e30ce314550f6a83f266d3bcba20e5c67f77ebc559dfcee66ce841b",
+    "rawBytes": 5308,
+    "storedSha256": "d795ef313e30ce314550f6a83f266d3bcba20e5c67f77ebc559dfcee66ce841b",
+    "storedBytes": 5308
+  },
+  "native-only-forge-compile-first.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-only-forge-compile-first.log",
+    "rawSha256": "01b72ee532d8654c559926fffc78d085b88c6753ed724c180d481724fd749a5e",
+    "rawBytes": 3046,
+    "storedSha256": "01b72ee532d8654c559926fffc78d085b88c6753ed724c180d481724fd749a5e",
+    "storedBytes": 3046
+  },
+  "native-only-core-first.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-only-core-first.log",
+    "rawSha256": "4a9f909f0d9a82d58f0e78aa8336fccc99f698456cd599842934eced77d873a9",
+    "rawBytes": 1756,
+    "storedSha256": "4a9f909f0d9a82d58f0e78aa8336fccc99f698456cd599842934eced77d873a9",
+    "storedBytes": 1756
+  },
+  "native-only-core-second.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-only-core-second.log",
+    "rawSha256": "9648028f1f54b6f42a8fea6e366d184c1348041e63a570364dd9bb9f04135c3e",
+    "rawBytes": 1767,
+    "storedSha256": "9648028f1f54b6f42a8fea6e366d184c1348041e63a570364dd9bb9f04135c3e",
+    "storedBytes": 1767
+  },
+  "native-only-core-third.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-only-core-third.log",
+    "rawSha256": "ace9a85cca47564b687691ba0ba16134a2290da54c334560982a11727d34537b",
+    "rawBytes": 30125,
+    "excerpt": true,
+    "storedSha256": "88059f392b6a0d3e9542c065391342d0bfe1445e996c2b8a3e4697570bbfb06e",
+    "storedBytes": 751
+  },
+  "native-only-core-full.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-only-core-full.log",
+    "rawSha256": "376e36697ec57c98a4c88c15887711f429ce95030d2bfeda4a940970ae39994d",
+    "rawBytes": 30547,
+    "excerpt": true,
+    "storedSha256": "e4581f4ff83dc7ed9b71e1803c96e5a16f8dcffc4397f768c0a1fb440e8b1224",
+    "storedBytes": 1046
+  },
+  "native-only-core-final.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-only-core-final.log",
+    "rawSha256": "41dab5fbdb6f810ef7c2dcab94b5c7486a0afbc86efccaf468a4fc18e153cfec",
+    "rawBytes": 30404,
+    "excerpt": true,
+    "storedSha256": "42784d1d3245ad50e50164bd963dbcdc8d70dedfe6387acd581e03b1065d54a8",
+    "storedBytes": 1024
+  },
+  "native-only-forge-first.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-only-forge-first.log",
+    "rawSha256": "ded6b1c16be6e2d23c9c9f5cd5e8efada15fbab359c5af4c95d210d4686c9a28",
+    "rawBytes": 8454,
+    "excerpt": true,
+    "storedSha256": "3b5a79267b32d58378680308d003f7234685a1d7576ec7e2106619b44037ba62",
+    "storedBytes": 640
+  },
+  "native-only-forge-gate-first.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-only-forge-gate-first.log",
+    "rawSha256": "77a5c5a9b0c86b2766ba684d7da04296106c77ae173d095a3bea2474a178e26f",
+    "rawBytes": 1305,
+    "storedSha256": "77a5c5a9b0c86b2766ba684d7da04296106c77ae173d095a3bea2474a178e26f",
+    "storedBytes": 1305
+  },
+  "native-only-forge-final.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-only-forge-final.log",
+    "rawSha256": "ba75189b352674760718b9fad71d93be647c7d836de75743a5fe92db619784b4",
+    "rawBytes": 9106,
+    "excerpt": true,
+    "storedSha256": "98a4544be45dbc733d1da45eac543886fe999dfae5d5490d4a4a9eb3716b1f78",
+    "storedBytes": 646
+  },
+  "native-only-old-jar-rejected.json": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-only-old-jar-rejected.json",
+    "rawSha256": "8e285e7e181a916c96a4c96a9c5f541a9af8ba7051c1b9636e5bce8eee07874b",
+    "rawBytes": 2169,
+    "storedSha256": "8e285e7e181a916c96a4c96a9c5f541a9af8ba7051c1b9636e5bce8eee07874b",
+    "storedBytes": 2169
+  },
+  "native-only-docs.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-only-docs.log",
+    "rawSha256": "f970fc4a861452e0fff1ad86b2bcfeb9051841c70cb0309b5d40f5703d190018",
+    "rawBytes": 118,
+    "storedSha256": "f970fc4a861452e0fff1ad86b2bcfeb9051841c70cb0309b5d40f5703d190018",
+    "storedBytes": 118
+  },
+  "br-native-only-packet-first.log": {
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-native-only-packet-first.log",
+    "rawSha256": "0ff1a2c36df7c520290613bcb4a9b0ff10c182677e71795d65e27e2904a4de1e",
+    "rawBytes": 2433,
+    "storedSha256": "0ff1a2c36df7c520290613bcb4a9b0ff10c182677e71795d65e27e2904a4de1e",
+    "storedBytes": 2433
+  },
+  "br-native-only-recovery-first.log": {
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-native-only-recovery-first.log",
+    "rawSha256": "99a089726c9c7ce5e916b31b2d8c11d594d5b84658f797ef80b0833beefb5751",
+    "rawBytes": 1397,
+    "storedSha256": "99a089726c9c7ce5e916b31b2d8c11d594d5b84658f797ef80b0833beefb5751",
+    "storedBytes": 1397
+  },
+  "linux-packet": {
+    "xmlDirectory": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-native-only\\forge\\build\\test-results\\test",
+    "counts": {
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "linux-recovery": {
+    "xmlDirectory": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-native-only\\mod\\core\\build\\test-results\\test",
+    "counts": {
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "developmentJar": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\forge\\build\\libs\\blockreality-0.4.0-dev.jar",
+    "sha256": "0381a9e2e0d1336bdff421981d7b4cde98c26c9e06d350d4adfb26c48a1e8489",
+    "bytes": 392072
+  }
+}

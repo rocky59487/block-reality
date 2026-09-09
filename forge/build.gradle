@@ -214,3 +214,20 @@ tasks.named('jar') {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
+
+// Test-only compatibility fixtures; never part of main resources or the shipped jar.
+sourceSets.test.java.srcDir "../mod/core/src/testFixtures/java"
+
+// Inspect the actual reobfuscated artifact, including dormant bytecode references.
+tasks.register('checkNativeOnlyJar', Exec) {
+    dependsOn 'reobfJar'
+    workingDir rootProject.file('..')
+    doFirst {
+        commandLine 'python3', 'scripts/check_native_only_jar.py',
+                tasks.named('jar').get().archiveFile.get().asFile.absolutePath,
+                '--mutation-checks', '--javac',
+                javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(17) }
+                        .get().executablePath.asFile.absolutePath
+    }
+}
+tasks.named('check') { dependsOn 'checkNativeOnlyJar' }
