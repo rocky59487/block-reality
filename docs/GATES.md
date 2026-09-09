@@ -1473,3 +1473,15 @@ WR 判準由 `cd4c1b3` 先凍。首跑真 server 的遠端 chunk 已不可讀，
 原圖及拒絕理由都能保存/重開。最終 Windows 505 登錄/477 PASS/28 SKIP；兩條具名可編譯故障臂咬住 ID 重用及 schema bypass。
 真 server 保存原生 OFF、拆分/合併/重建、跨 chunk 卸載/重啟/恢復、原生多元素對一物件證據。
 這是遊戲身份與建造譜系，不是引擎抽取、damage、剛體或 v1 完成；详 evidence/CONSTRUCTION_IDENTITY。
+
+### 2026-09-10 MODULE_PIPELINE_PROFILE：模組階段成本基線
+
+`5d9a078` 先凍預設 OFF、有界記錄器與 A49/F576/M832，各 10 次暖身/40 次量測。
+三場景首跑全保留、14 項功能門通過；所有時間依原分級為 Recorded，沒有事後補性能勝負線。
+M832 背景 worker p95 65.627 ms、含引擎的原生呼叫 p95 48.566 ms、apply p95 1.611 ms；
+兩次 native call/resolve，nested stages 互相重疊，不相加/相減成引擎 CPU 時間或 FPS。
+832 格混合結果的 display packet 已截取為 259753 B，明示 omission；不假稱所有元素都送到。
+512 登錄/483 PASS/29 SKIP，Linux 指定18項無跳過；真大回覆擴容與記錄開關前後樣本一致。
+原 counted BsiRetryGate fixture 此機未備，本輪不冒稱又驗到 solve vtable 一次；其原證據保留。
+單一共享開發機的首批基線未驗統計穩定性、真玩家網路、FPS、save/容量上界或 edit storm。
+原 41.7 ms FAIL/Linux 紅帳與 v1 高性能/封裝/物理展示全部門檻不降，詳 evidence/MODULE_PIPELINE_PROFILE。

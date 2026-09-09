@@ -46,7 +46,7 @@ class BrPermissionsTest {
     void privilegedSubcommandsAreAllPresent() {
         // The commands the audit called out by name (#45): scan, load, unload, resolve
         // — plus reset, which was already gated. Each must be in the table AND above 0.
-        for (String cmd : new String[] { "scan", "load", "unload", "resolve", "reset" }) {
+        for (String cmd : new String[] { "scan", "load", "unload", "resolve", "reset", "profile" }) {
             assertTrue(BrPermissions.literals().contains(cmd), cmd + " missing from table");
             assertTrue(BrPermissions.required(cmd) >= BrPermissions.LEVEL_OP,
                     cmd + " must require op");

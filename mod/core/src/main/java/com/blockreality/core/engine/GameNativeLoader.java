@@ -2,6 +2,7 @@ package com.blockreality.core.engine;
 
 import com.blockreality.api.AnalysisResult;
 import com.blockreality.core.bsi.BsiHeaders;
+import com.blockreality.core.diagnostics.PipelineProfile;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
@@ -10,6 +11,11 @@ public final class GameNativeLoader {
     private GameNativeLoader() { }
 
     public static NativeGameRuntime.Session open(String configured, Path root, int threads, Consumer<String> log) {
+        return open(configured, root, threads, log, PipelineProfile.disabled());
+    }
+
+    public static NativeGameRuntime.Session open(String configured, Path root, int threads, Consumer<String> log,
+                                                PipelineProfile profile) {
         EngineLocator.Located located = EngineLocator.locateFromSystem(configured, root, null);
         if (located.source() == EngineLocator.Source.NONE) {
             Path bundled = BundledNatives.ensure(root, BundledNatives.class::getResourceAsStream,
@@ -22,7 +28,7 @@ public final class GameNativeLoader {
         catch (java.io.IOException e) { throw new java.io.UncheckedIOException("cannot fingerprint native engine", e); }
         log.accept("native engine source=" + located.source() + " path=" + located.path().toAbsolutePath()
                 + " fileSha256=" + sha256);
-        InProcessEngine engine = InProcessEngine.open(located.path(), threads);
+        InProcessEngine engine = InProcessEngine.open(located.path(), threads, profile);
         try {
             if (engine.status() != InProcessEngine.Status.READY)
                 throw new IllegalStateException("native handshake refused: " + engine.disabledReason());

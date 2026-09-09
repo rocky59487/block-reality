@@ -36,7 +36,7 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   native 工作若不返回，Java 不能強殺；cleanup 僅在 worker/daemon，D-044 崩潰代價仍成立。
 - 生產 SidecarClient/SidecarProcess/SidecarConfig/ShmRegion 已退到 test；NoSubprocess ALLOWED={}。
   預設 jar 無 exe、無 process launcher；Gradle 已拒絕 executable 封裝。
-- Windows core398/Forge107：505登錄、477PASS、28SKIP。包含18項 native 整合測試的登錄，
+- Windows core405/Forge107：512登錄、483PASS、29SKIP。包含19項 native 整合測試的登錄，
   不代表 Windows 已執行新原生庫。Linux 真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
   完整結果 `evidence/GAME_RUNTIME/RESULTS.md`，首敗保留、三故障臂具名咬合。
 - 全部失去支承時原生只回 SOLVE_FAILED；Java 保留拒絕，不能從 message 捏造 MECHANISM。
@@ -61,6 +61,10 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   worker 依 metadata epoch 發布，OFF 仍可分組；`/br object` 以原生格清單提供精確 revision 的預覽連結。
   真 server 放置/拆分/重建/卸載/重啟已驗；詳 `evidence/CONSTRUCTION_IDENTITY/RESULTS.md`。
   分組只管理遊戲物件，不抽取物理元素；損傷、獨立區域排程與客戶端 hover identity 仍未完成。
+- MODULE_PIPELINE_PROFILE 已接預設 OFF、有界樣本的 `/br profile start|stop|show`。
+  真 Linux server 的 A49/F576/M832 各 10 次暖身、40 次量測完成，14 項功能檢查通過。
+  M832 背景分析 p95 65.6 ms、apply 1.6 ms；含原生工作，不是 FPS 或 v1 高性能資格。
+  詳 `evidence/MODULE_PIPELINE_PROFILE/RESULTS.md`；量測啟停不改 world/result revision。
 - 尚未完成：最新雙平台合格庫的正式 jar、獨立區域排程 #86、
   材質方向/互動實測、效能量測、引擎 lifecycle/剛體姿態消費。
   #89 仍開放；既有公式已退出出貨來源，v1 全部基礎能力仍未完成。

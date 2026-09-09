@@ -62,6 +62,7 @@ public final class BrPermissions {
         m.put("load", LEVEL_OP);
         m.put("unload", LEVEL_OP);
         m.put("reset", LEVEL_OP);
+        m.put("profile", LEVEL_OP);
         LITERALS = Map.copyOf(m);
     }
 
