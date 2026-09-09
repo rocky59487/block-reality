@@ -55,3 +55,10 @@ sd.eulerBernoulli OR md.eulerBernoulli 時 Asy=Asz=0，其他幾何/容量不變
 拒絕oracle保存在Git歷史/首次回歸輸出，dated改為成功映射且必須有物理差異。
 新故障 TEC_MUT_BSI_BUCKLING_EB_SHARED 將設定污染共用斷面，必須被兩材料腿抓到。
 這是 BSI 已有 opt-in 欄位的新增支援，不修改 ABI/預設求解、不宣稱MC全部材料語意已完成。
+
+
+## 2026-09-09 首次 C++ 輸格
+
+首輪833 checks為825PASS/8FAIL；失敗全部在新增短梁位移oracle。診斷顯示MC節點在格中心
+(x+0.5,y+0.5,z+0.5)，測試以整數格址尋找節點而讀不到位移，得到NaN。修正測試的
+節點定位，不改原fixture、解析公式或1e-9線。首版/診斷版來源與raw輸出各自保留。
