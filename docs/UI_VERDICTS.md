@@ -34,3 +34,16 @@
 
 空模型/停用通知、EngineStatusPacket 的 dimension/revision、長文字 HUD 佈局、
 方向材質/滑鼠互動與 N25 真客戶端列後續；不混成這個警示單元已通過的能力。
+
+## 執行紀錄與真伺服器 fixture
+
+首次 core readout3/3；首次 Forge 的 LangKeysTest.noDeadKeys 抓到退場後仍在的
+br.hud.buckling/br.hud.buckling_critical。保留 XML/log，刪除兩語言這兩個舊鍵，
+新共用 readout 的鍵由既有 source 掃描與 placeholder gate 繼續檢查。
+
+UV-6 真 server 在原 GAME_RUNTIME 混合場景旁增加 (35,200..249,0) 的50格
+steel_beam_100x200[axis=y]，(35,199,0) 為 stone；只有原生自重與現有 eigen。
+固定期望：3 members/12 facets/1 unrestrained，同時有 local-critical 警示及 world
+incomplete 訊息，沒有世界因子。Java 不以公式判定此 fixture；若引擎未回 critical，
+這項 FAIL 照登，不調整長度找過線值。另驗 CURRENT/revision 與 3 solved/1 unrestrained
+的原混合場景；最後移除長柱使世界恢復。
