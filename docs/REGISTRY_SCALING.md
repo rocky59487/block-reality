@@ -53,3 +53,34 @@ Document expected sparse ONE split/merge lineage, rather than weakening identity
 Actual main-thread save (compression/fsync), full server edit storms, chunk scan,
 large-world native analysis, memory retention across long histories, rendering,
 per-object scheduling and v1 performance qualification remain separate pending work.
+
+## RS-2 optimization target — frozen after initial baseline observations
+
+Baseline source `c5876c3`; first D131072/ONE warmup capture 787.447232 ms,
+reconcile 9178.324904 ms, decode 1444.289351 ms. A single thread dump caught
+`ImmutableCollections$MapN.probe` from `Graph`'s `Map.copyOf`. That diagnostic
+attachment is part of fork 1's recorded workload; no samples will be discarded.
+The remaining baseline forks continue on their archived, unmodified source.
+
+Replace the registry's coordinate-keyed immutable Map/Set copies with defensive
+hash-backed snapshots, preserving unmodifiable views and null rejection. The graph
+may wrap a privately owned, fully validated map without another copy. Do not change
+BlockKey equality/hash, persistent encoding, identity algorithm, core API signatures,
+coverage indexing, world/thread authority or any other production path.
+
+Compare all 60 measured samples per fixture/pattern, nearest-rank p95. A timing
+loss is explicit; passing a jar build or identity oracle cannot erase it:
+
+* D131072, both patterns: capture and reconcile p95 <= 25% of baseline p95.
+* Every other fixture/pattern: capture/reconcile p95 <= max(1.25 times baseline,
+  baseline + 1 ms). Record all eight stages; other stage p95 uses this same budget.
+* Capture allocated-byte p95 <= 1.6 times baseline (hash buckets/nodes trade memory
+  for collision resistance). Total allocated bytes of all measured stages per
+  iteration p95 <= 1.10 times baseline. Report allocation losses within these budgets too.
+* Every paired encoded digest and behavioral oracle must match; repeated source-map
+  mutation, all collection mutation routes and captured destruction after publication
+  must be rejected or remain independent. A defensive-copy-removal fault must compile
+  and fail a named mutation-isolation assertion.
+
+These relative budgets qualify only this registry optimization on this host. They
+are not the v1 frame/tick budget, and O(n) snapshot/save work remains O(n).
