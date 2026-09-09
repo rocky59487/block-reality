@@ -38,3 +38,8 @@ SWAP_YZ → GameWorldSnapshotTest.preservesDeclaredAxesRotationJointAndSiValues�
 DROP_GROUND → GameWorldSnapshotTest.includesAllSixObservedContactsOnceInCanonicalOrder。
 首次 unit 啟動在 compileTestJava 發現測試少傳 BsiFrame.decode 的 length，引數已修；
 沒有測試執行，不計作故障臂或產品 FAIL。
+
+首次真原生：18 registered / 17 PASS / 1 FAIL / 0 SKIP。新測試以 Optional.equals 比較
+兩個 BeamDisplayField，該 class 沒有 value equality，所以比較了物件身分。改為逐欄比較
+origin/axes/length/half extents/stations；原 GI-5 的幾何與數值相等判準不變，沒有放寬容差。
+保留首跑 XML；原生庫與 fixture 不變。
