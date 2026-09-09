@@ -1519,3 +1519,14 @@ RS final `0736baa` passes the unchanged 64 timing and 16 allocation budgets with
 in their original evidence. Final Windows 490 PASS/29 SKIP; Linux selected45 PASS,
 zero skips. The declared memory losses remain visible. No v1 FPS/tick/performance
 or engine capability gate is lowered. See evidence/REGISTRY_SCALING/RESULTS.md.
+
+
+### 2026-09-10 SAVE_COMPRESSION
+
+`201e081` froze compression latency/size/allocation and compatibility criteria
+before `4e9e927` changed the writer. All 900 paired payloads, 36 timing and 36
+allocation budgets, and every 1.50x file-size limit pass on the first candidate.
+The unchanged SP baseline remains Recorded, not retroactively assigned a pass/fail.
+Size grows about18% at131K cells; synchronous save still blocks for tens to over
+100ms. No v1 tick/FPS, native or visual gate is lowered. Linux full Forge109 PASS,
+zero skips; Windows108 PASS/1 SKIP. See evidence/SAVE_COMPRESSION/RESULTS.md.

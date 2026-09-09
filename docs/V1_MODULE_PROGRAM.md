@@ -104,3 +104,13 @@ REGISTRY_SAVE_PROFILE 已完成 Windows/NTFS 與 WSL/ext4 的真 SavedData adapt
 共同種子、READY/PENDING64、各三個 JVM fork，共900次/720量測樣本，跨六fork資料一致。
 131K READY 完整存檔 p95 Windows260 ms、Linux202 ms，僅 Recorded，仍是同步成本。
 詳 `../evidence/REGISTRY_SAVE_PROFILE/RESULTS.md`；不能代替 live server tick、全世界存檔或 FPS。
+
+
+SAVE_COMPRESSION 已完成固定SP對照，900次內容一致、36條時間/36條配置及所有檔案大小
+預算全過。131K READY p95 Windows260→96.5 ms、Linux202→83.3 ms，檔案增大約18%。
+仍同步完成 gzip/fsync/atomic replace 後才清 dirty，不把100ms級呼叫當作v1 tick資格。
+詳 `../evidence/SAVE_COMPRESSION/RESULTS.md`；沒有引擎或遊戲時序改動。
+
+本輪再核對兩倉正式主分支：均為契約 `4977f57308e6…`；開發模組為 `4b11cc738790…`。
+最新整合分支 #116/#117 保留開發契約與本地真庫證據；合併 Main 前須與引擎交付對齊，
+不能先讓兩倉正式契約漂移。Linux 視覺補充環境規劃中，原 Windows 安裝版驗收仍待安全性視窗。
