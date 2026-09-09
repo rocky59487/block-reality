@@ -1485,3 +1485,11 @@ M832 背景 worker p95 65.627 ms、含引擎的原生呼叫 p95 48.566 ms、appl
 原 counted BsiRetryGate fixture 此機未備，本輪不冒稱又驗到 solve vtable 一次；其原證據保留。
 單一共享開發機的首批基線未驗統計穩定性、真玩家網路、FPS、save/容量上界或 edit storm。
 原 41.7 ms FAIL/Linux 紅帳與 v1 高性能/封裝/物理展示全部門檻不降，詳 evidence/MODULE_PIPELINE_PROFILE。
+
+### 2026-09-10 REGISTRY_SCALING：不可變 entry 的驗收範圍
+
+`a04b538` 先凍四種容量/分布、兩種編輯、三個 JVM fork；`51c5d69` 根據原始首批快照
+787 ms/分組 9178 ms 先凍相對性能與配置預算。首次候選測試抓到 Java 17 的 wrapped
+HashMap entry 陣列可改值；沿同一路徑也抓到既有 Graph wrapped TreeMap 的可寫 entry。
+保留兩份首敗，先補凍 ordered record/range views 的不可变出口再改儲存；這是修正範圍擴展，
+原性能/配置預算、identity/bytes 不變，未降低門檻。最終效能結論待完整比較，不能提前稱過門。

@@ -84,3 +84,15 @@ loss is explicit; passing a jar build or identity oracle cannot erase it:
 
 These relative budgets qualify only this registry optimization on this host. They
 are not the v1 frame/tick budget, and O(n) snapshot/save work remains O(n).
+
+### Immutable entry follow-up, before changing ordered record storage
+
+The first candidate's generator-based entry array exposed mutable HashMap entries on
+Temurin 17.0.18; the original Graph's wrapped TreeMap has the same escape. Both named
+first failures are retained. RS-3's immutable graph requirement therefore includes
+the ordered record map and its descending/head/tail/submap views. Keep its public
+NavigableMap API, order, values and encoded bytes; use privately owned ordered
+storage whose entries are intrinsically detached and immutable, then forbid all
+map mutations. The relative timing/allocation budgets above are unchanged; added
+ordered-storage costs must be reported. This expands storage scope from coordinate
+maps to record views for correctness, without relaxing any prior gate.
