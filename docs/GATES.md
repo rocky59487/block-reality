@@ -1446,3 +1446,10 @@ core334=322PASS/12SKIP，Forge80PASS；合計414登錄/402PASS/12SKIP，真JNA15
 首次 Forge 85 項中的 1 FAIL 正是舊預設檢查，保留原 XML，再讓當前預設門改驗 DOF wire。
 N24-a2 SidecarProcess 生產豁免隨遊戲切換移除；原實作移至 test source，不在新 jar。
 N25 真 server/client、最新 Win/Linux 原生資產與 v1 性能/倒塌/剛體資格仍按原線待驗。
+
+### 2026-09-10 GAME_RUNTIME 全機構回覆界線
+
+第二次真 server 支承移除已使 revision 前進，原生返回 SOLVE_FAILED/no solved island；
+smoke 原預期 MECHANISM，仍判 FAIL，原檔保留。不得把引擎診斷 message 轉成 Java 機構判定。
+後續只驗新 revision 撤銷舊結果並明示拒絕，這條降為傳輸/生命週期驗證；全機構 typed 展示
+仍未完成。混合世界的 singular 計數另驗，不把它移作全機構證據。詳見 GAME_RUNTIME.md。

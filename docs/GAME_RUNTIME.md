@@ -60,3 +60,27 @@ Java 舊 StressFieldSpec/ShellFieldSpec/legacy codec 的移除另需使診斷改
 因此該「當前預設」測試需改驗新路徑，舊兩個 policy 邊界測試仍留測試範圍。
 新預設 2400 DOF 是可配置的資源上限，**沒有已實測的耗時保證**；舊 sidecar 的 cost table
 不能移作新引擎性能依據，這項結論降為未驗。舊失敗 XML 保留，不把退場算作產品性能通過。
+
+首次 Linux server 已到 Done，BSI/JNA 真鋼懸臂回報 1 member / D/C 0.0264。
+移除唯一石頭支承後，revision 仍為 1、舊結果未撤銷：確認原事件只關注結構方塊，
+漏掉地面改變。此為模組缺陷，GR-5/GR-7 原判準已涵蓋；補地面放置/拆除/鄰域/爆炸通知。
+保存 `game-runtime-server-first.json`，停止原 server 後再把修正的模組重建驗證，未修改引擎。
+
+第二次 server：支承移除後 revision 由成功懸臂的值前進至 9，回覆為
+`FAILED — BSI analysis: SOLVE_FAILED: no solved island`。地面通知已生效，但 smoke
+原先預期 `MECHANISM`，因此第二次仍 FAIL，原 JSON 保留。原生回覆只有錯誤 code/message；
+契約明定 message 不是分流契約，Java 不得據字串推斷機構或捏造 island 結果。
+此項降為「新 revision 明示原生拒絕且撤銷舊成功結果」的傳輸驗證；全機構的 typed
+結果展示仍未驗收。後續 smoke 依 SOLVE_FAILED 與 revision 檢查這條較窄結論，
+另外用已支承梁柱板加漂浮梁驗原生 mixed-world 的正式 singular 計數。
+
+故障臂固定具名（執行前補凍）：
+
+| arm | 唯一變更 | 固定 oracle |
+|---|---|---|
+| OFF_LOAD | runtime 建構時 off 仍呼叫 factory | NativeGameRuntimeTest.offNeverCallsTheLoader |
+| CLOSE_IGNORED | requestClose 不設 closing、不增 generation | NativeGameRuntimeTest.closeRevokesBlockedResultsWithoutClosingAnActiveNativeCall |
+| UNDECLARED_Y | Axis.UNDECLARED.wire 回傳 Y | PlacementAxisTest.undeclaredLegacyBlocksNeverInventAWorldAxis |
+
+每臂只覆蓋隔離 classpath 中一個 class；必須成功編譯且該 oracle 產生唯一
+AssertionFailedError。不得把編譯錯誤、其他測試失敗、SKIP 或 timeout 記成咬合。
