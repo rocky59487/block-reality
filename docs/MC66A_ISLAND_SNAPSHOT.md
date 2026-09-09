@@ -82,3 +82,11 @@ local rx，因此脫開的是global ry（全域index4）；測例卻固定global
 校正為固定global ry；釋放條件、荷載、材料、lambda相對1e-9硬線均不改。
 這是建立原定「穩定且具端私有DOF」測例的座標校正，不把原機構改判computed。
 首輪源碼、raw stdout/stderr與SHA連同校正後具名檢查入MC66A_WORLD證據。
+
+### 2026-09-09 獨立對照入口補強（不改判線）
+
+423項首輪變異harvest中 WORLD_LOADS 刪除投影模型的UDL/point load仍exit0：
+單獨構造模型卻也走solveWorldBuckling，使錯誤入口同時污染兩邊。原raw與源碼保留。
+WS-projection 的既定獨立同物理oracle改直接呼叫已驗MC66A_SPARSE_LANE的
+buildMemberBucklingPencil/solveBucklingPencil，以單獨模型的線性解為參考，不經世界
+分組/投影入口；增加對照pencil確實建立的具名檢查。原1e-9相對誤差線與fixtures不改。
