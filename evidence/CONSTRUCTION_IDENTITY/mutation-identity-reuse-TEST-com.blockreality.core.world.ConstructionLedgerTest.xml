@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.world.ConstructionLedgerTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-09T20:38:31" hostname="ROCKYLAPTOP" time="0.099">
+  <properties/>
+  <testcase name="fullDestructionAndSameTickReplacementCannotResurrectIdentityEvenAfterPendingSave()" classname="com.blockreality.core.world.ConstructionLedgerTest" time="0.099">
+    <failure message="org.opentest4j.AssertionFailedError: expected: not equal but was: &lt;1&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: not equal but was: &lt;1&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertNotEquals.failEqual(AssertNotEquals.java:277)
+	at app//org.junit.jupiter.api.AssertNotEquals.assertNotEquals(AssertNotEquals.java:119)
+	at app//org.junit.jupiter.api.AssertNotEquals.assertNotEquals(AssertNotEquals.java:111)
+	at app//org.junit.jupiter.api.Assertions.assertNotEquals(Assertions.java:2121)
+	at app//com.blockreality.core.world.ConstructionLedgerTest.fullDestructionAndSameTickReplacementCannotResurrectIdentityEvenAfterPendingSave(ConstructionLedgerTest.java:86)
+	at java.base@17.0.18/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base@17.0.18/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.18/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

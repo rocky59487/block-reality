@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.world.ConstructionLedgerTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-09T20:44:11" hostname="ROCKYLAPTOP" time="0.337">
+  <properties/>
+  <testcase name="cellAndEpochBoundsRefuseWithoutEvictionOrWraparound()" classname="com.blockreality.core.world.ConstructionLedgerTest" time="0.337">
+    <failure message="java.lang.IllegalArgumentException: invalid construction registry data" type="java.lang.IllegalArgumentException">java.lang.IllegalArgumentException: invalid construction registry data
+	at com.blockreality.core.world.ConstructionLedger.invalid(ConstructionLedger.java:170)
+	at com.blockreality.core.world.ConstructionCodec.decode(ConstructionCodec.java:67)
+	at com.blockreality.core.world.ConstructionLedger.decode(ConstructionLedger.java:165)
+	at com.blockreality.core.world.ConstructionLedgerTest.cellAndEpochBoundsRefuseWithoutEvictionOrWraparound(ConstructionLedgerTest.java:126)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

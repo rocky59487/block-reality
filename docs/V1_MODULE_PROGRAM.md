@@ -55,7 +55,7 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 ## 現況
 
 GAME_INPUT 已在 #106，GAME_RUNTIME 已接 Forge 採集與真正原生迴圈；Linux server 混合
-梁柱板/機構與地面變更/重設已驗，Windows core383/Forge104=459PASS/28SKIP。
+梁柱板/機構與地面變更/重設已驗，Windows core398/Forge107=477PASS/28SKIP。
 判準及證據見 `GAME_RUNTIME.md`、`../evidence/GAME_RUNTIME/RESULTS.md`。
 全未支承原生只回 SOLVE_FAILED，typed 機構展示未完成；客戶端、最新雙平台 native jar、
 持久世界及倒塌動態仍待完成。沒有新遊戲版本發布。
@@ -70,10 +70,16 @@ CLIENT_MATERIALS 已完成 CM-7 宣告尺寸/角色資訊資料路徑；真 jar 
 NATIVE_ONLY_RESULTS 已將舊 field 公式、codec、比值推導判定的建構子移到測試專用區；
 正式 jar/class 常數池檢查、兩條可編譯故障臂、12 組封包雜湊與 Linux 原生 22 項通過。
 詳 `../evidence/NATIVE_ONLY_RESULTS/RESULTS.md`。
-下一步仍是真客戶端補送/旅行時序、持久 registry、材質與互動。
+下一步仍是真客戶端補送/旅行時序、獨立區域排程、材質與互動。
 
 WORLD_REGISTRY 已完成已知格持久索引、有界容量/損壞拒絕與完整輸入守門。真 Linux 原生
 49 格梁跨 chunk 卸載/重啟/載回後封包逐位相同；只有支承觀測缺失也會等待。
 Minecraft FULL 可讀性轉移有分批監測，apply 前重查整個範圍。現階段缺一部分仍延後
-整個維度，持久物件 identity、fused regions、獨立排程、damage/lineage 未完成；#86/#17 保持開放。
+整個維度；獨立排程與引擎 damage/lifecycle 未完成，#86/#17 保持開放。
 證據與首敗見 `../evidence/WORLD_REGISTRY/RESULTS.md`。
+
+CONSTRUCTION_IDENTITY 已接永久 namespace/單調 ID、產品/宣告軸分組、拆分/合併與完整重建
+譜系；保存 pending edits、重啟與卸載不丟身份，OFF 也可更新。`/br object <pos>` 唯讀顯示
+身份與原生 preview links，`/br section 0` 可讀原生零號元素。這不承擔 FE 抽取、斷裂或
+剛體物理；引擎 events、重新安裝與客戶端 identity 封包仍待交付。詳
+`../evidence/CONSTRUCTION_IDENTITY/RESULTS.md`；#17 的身份部分推進，未整題關閉。

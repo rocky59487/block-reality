@@ -1,6 +1,8 @@
 package com.blockreality.impl.server;
 
 import com.blockreality.core.world.WorldCellIndex;
+import com.blockreality.core.world.ConstructionDeclaration;
+import com.blockreality.core.world.ConstructionLedger;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -19,6 +21,42 @@ class WorldIndexDataTest {
         return WorldIndexData.open(new DimensionDataStorage(folder.toFile(), DataFixers.getDataFixer()), folder);
     }
     private Path file(Path folder) { return folder.resolve(WorldIndexData.NAME + ".dat"); }
+
+    private static final ConstructionDeclaration X = new ConstructionDeclaration("steel","steel_rect_200x400",0);
+    private static void settle(WorldIndexData data) {
+        assertTrue(data.publishObjects(ConstructionLedger.reconcile(data.objects().work())));
+        assertTrue(data.objectsReady());
+    }
+
+    @Test void legacyCoverageMigratesWithoutForgettingUnloadedUnknownDeclarations() {
+        var index = new WorldCellIndex(); index.add(new com.blockreality.api.geom.BlockKey(0,200,8));
+        index.add(new com.blockreality.api.geom.BlockKey(16,200,8));
+        CompoundTag old = new CompoundTag();old.putByteArray("coverage",index.encode());
+        var data = WorldIndexData.load(old);assertEquals("PENDING_DECLARATIONS",data.objectStatus());
+        data.observe(new BlockPos(0,200,8),X);assertEquals(2,data.size());assertFalse(data.objectsReady());
+        var restored = WorldIndexData.load(data.save(new CompoundTag()));
+        assertEquals(data.objects().graph().namespace(),restored.objects().graph().namespace());
+        assertEquals("PENDING_DECLARATIONS",restored.objectStatus());
+        restored.observe(new BlockPos(16,200,8),X);settle(restored);assertEquals(2,restored.objects().graph().activeCount());
+    }
+    @Test void savedPendingReplacementRetiresOriginalIdentityAfterReload() {
+        var data=open(root);var pos=new BlockPos(1,200,8);data.observe(pos,X);settle(data);
+        var id=data.objects().graph().owners().get(WorldIndexData.key(pos));
+        data.remove(pos);data.observe(pos,X);data.save(file(root).toFile());
+        var restored=open(root);assertEquals("PENDING",restored.objectStatus());settle(restored);
+        assertNotEquals(id,restored.objects().graph().owners().get(WorldIndexData.key(pos)));
+        restored.save(file(root).toFile());assertTrue(open(root).objectsReady());
+    }
+    @Test void unknownObjectSchemaCannotFallBackToCoverageOrOverwriteFile() throws Exception {
+        var good=open(root);good.observe(new BlockPos(1,200,8),X);settle(good);
+        CompoundTag data=good.save(new CompoundTag());data.putInt("objectsFormat",2);
+        CompoundTag rootTag=new CompoundTag();rootTag.put("data",data);net.minecraft.nbt.NbtUtils.addCurrentDataVersion(rootTag);
+        net.minecraft.nbt.NbtIo.writeCompressed(rootTag,file(root).toFile());
+        byte[] original=Files.readAllBytes(file(root));var refused=open(root);
+        assertFalse(refused.failure().isEmpty());refused.setDirty();refused.save(file(root).toFile());
+        assertArrayEquals(original,Files.readAllBytes(file(root)));
+        assertThrows(IllegalArgumentException.class,()->WorldIndexData.load(data));
+    }
 
     @Test void actualSavedDataSurvivesReloadWithDimensionSeparation() throws Exception {
         Path other = root.resolve("DIM-1/data");

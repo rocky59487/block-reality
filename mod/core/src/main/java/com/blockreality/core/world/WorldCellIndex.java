@@ -26,6 +26,7 @@ public final class WorldCellIndex {
     public boolean contains(BlockKey pos) { return cells.contains(pos); }
     public boolean refused() { return capacityExceeded; }
     public long generation() { return generation; }
+    public List<BlockKey> cellsInChunk(int x, int z) { return List.copyOf(chunks.getOrDefault(chunk(x, z), Set.of())); }
     public List<BlockKey> cells() {
         if (snapshot == null) snapshot = List.copyOf(cells);
         return snapshot;

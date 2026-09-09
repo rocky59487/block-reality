@@ -6,6 +6,8 @@ import com.blockreality.api.StressStation;
 import com.blockreality.api.UnassignedBlocks;
 import com.blockreality.core.engine.NativeGameRuntime;
 import com.blockreality.core.render.BucklingReadout;
+import com.blockreality.core.world.ArtifactAnalysisLinks;
+import com.blockreality.api.geom.BlockKey;
 import com.blockreality.impl.server.StructureManager;
 import com.blockreality.impl.block.StructuralBlock;
 import com.mojang.brigadier.CommandDispatcher;
@@ -14,6 +16,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -60,8 +63,10 @@ public final class BRCommand {
         d.register(Commands.literal("br")
                 .then(lit("status").executes(c -> status(c.getSource())))
                 .then(lit("members").executes(c -> members(c.getSource())))
+                .then(lit("object").then(Commands.argument("pos", BlockPosArgument.blockPos())
+                        .executes(c -> object(c.getSource(), BlockPosArgument.getBlockPos(c, "pos")))))
                 .then(lit("section")
-                        .then(Commands.argument("member", IntegerArgumentType.integer(1))
+                        .then(Commands.argument("member", IntegerArgumentType.integer(0))
                                 .executes(c -> section(c.getSource(),
                                         IntegerArgumentType.getInteger(c, "member")))))
                 .then(lit("resolve")
@@ -330,6 +335,36 @@ public final class BRCommand {
                     sh.overloaded() ? ChatFormatting.RED : ChatFormatting.GRAY);
         }
         return 1;
+    }
+
+    /** Reads saved object geometry without loading the target chunk. Native IDs are preview links. */
+    private static int object(CommandSourceStack src, BlockPos pos) {
+        var manager = managerFor(src); var ledger = manager.constructionObjects(); var graph = ledger.graph();
+        Long id = graph.owners().get(new BlockKey(pos.getX(), pos.getY(), pos.getZ()));
+        if (id == null) {
+            line(src, "No published object at " + pos.toShortString() + " — registry " + manager.objectStatus(), ChatFormatting.YELLOW);
+            return 0;
+        }
+        var artifact = graph.records().get(id); var declaration = artifact.declaration();
+        line(src, "object " + graph.key(id) + "  " + manager.objectStatus(), ChatFormatting.AQUA);
+        line(src, "  declaration " + declaration.role() + " " + declaration.material() + "/" + declaration.section()
+                + " axis=" + (declaration.axis() < 0 ? "not applicable/undeclared" : "XYZ".charAt(declaration.axis())), ChatFormatting.GRAY);
+        line(src, "  cells " + artifact.cells().size() + "  graph epoch " + ledger.completedEpoch()
+                + "  observation epoch " + ledger.epoch(), ChatFormatting.GRAY);
+        line(src, "  parents " + boundedIds(artifact.parents()), ChatFormatting.GRAY);
+        var links = manager.objectsReady()
+                ? ArtifactAnalysisLinks.of(ledger, id, manager.latest(), manager.gate().current()) : java.util.Optional.<ArtifactAnalysisLinks>empty();
+        if (links.isEmpty()) {
+            line(src, "  native links unavailable/stale", ChatFormatting.YELLOW);
+        } else {
+            line(src, "  native preview " + manager.dimension().location() + " source=" + manager.analysisSourceId()
+                    + " revision=" + links.get().revision().value(), ChatFormatting.GRAY);
+            line(src, "  members " + boundedIds(links.get().members()) + "  shells " + boundedIds(links.get().shells()), ChatFormatting.GRAY);
+        }
+        return 1;
+    }
+    private static String boundedIds(java.util.List<? extends Number> ids) {
+        return ids.size() <= 16 ? ids.toString() : ids.subList(0, 16) + " … (" + ids.size() + " total)";
     }
 
     /**

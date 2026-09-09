@@ -62,6 +62,22 @@ public class StructuralBlock extends Block {
                 ? state.setValue(AXIS, state.getValue(AXIS).quarterTurn()) : state;
     }
 
+    @Override public void onPlace(BlockState state, net.minecraft.world.level.Level level,
+            net.minecraft.core.BlockPos pos, BlockState old, boolean moving) {
+        super.onPlace(state, level, pos, old, moving);
+        if (level instanceof net.minecraft.server.level.ServerLevel server
+                && !level.captureBlockSnapshots && !level.restoringBlockSnapshots)
+            com.blockreality.impl.server.StructureManager.observedStructure(server, pos, state);
+    }
+
+    @Override public void onRemove(BlockState state, net.minecraft.world.level.Level level,
+            net.minecraft.core.BlockPos pos, BlockState next, boolean moving) {
+        if (state.getBlock() != next.getBlock() && level instanceof net.minecraft.server.level.ServerLevel server
+                && !level.captureBlockSnapshots && !level.restoringBlockSnapshots)
+            com.blockreality.impl.server.StructureManager.removedStructure(server, pos);
+        super.onRemove(state, level, pos, next, moving);
+    }
+
     @Override public net.minecraft.world.InteractionResult use(BlockState state, net.minecraft.world.level.Level level,
             net.minecraft.core.BlockPos pos, net.minecraft.world.entity.player.Player player,
             net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hit) {
@@ -70,7 +86,7 @@ public class StructuralBlock extends Block {
         if (!level.isClientSide && level instanceof net.minecraft.server.level.ServerLevel server) {
             Axis axis = state.getValue(AXIS).next();
             if (level.setBlock(pos, state.setValue(AXIS, axis), 3)) {
-                com.blockreality.impl.server.StructureManager.of(server).requestResolve();
+                com.blockreality.impl.server.StructureManager.observedStructure(server, pos, state.setValue(AXIS, axis));
                 player.displayClientMessage(net.minecraft.network.chat.Component.translatable("br.placement.axis", axis.name()), true);
             }
         }

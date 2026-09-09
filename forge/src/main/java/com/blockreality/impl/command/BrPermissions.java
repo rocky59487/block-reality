@@ -48,7 +48,7 @@ public final class BrPermissions {
 
     /** The literals that are deliberately open to everyone. Everything else must be OP. */
     public static final Set<String> READ_ONLY_WHITELIST =
-            Set.of("status", "members", "section", "loads");
+            Set.of("status", "members", "section", "loads", "object");
 
     static {
         Map<String, Integer> m = new TreeMap<>();
@@ -56,6 +56,7 @@ public final class BrPermissions {
         m.put("members", LEVEL_ALL);
         m.put("section", LEVEL_ALL);
         m.put("loads", LEVEL_ALL);
+        m.put("object", LEVEL_ALL);
         m.put("resolve", LEVEL_OP);
         m.put("scan", LEVEL_OP);
         m.put("load", LEVEL_OP);
