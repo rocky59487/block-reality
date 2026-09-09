@@ -31,3 +31,10 @@ ID 只取 `bsi.vocab.declare` 回覆（契約 vocab.response）；不假設宣�
 
 真引擎不可用可 SKIP，但須逐項列出；不視為已驗遊戲換裝。GI-5 使用現有開發庫而非發布資產，
 不新增效能/雙平台聲稱。此單元不改判準 N25，也不把舊 Sidecar 測試當新入口證據。
+
+GI-6 固定反例（執行前）：每臂只跑具名一項，1 registered/1 FAIL，且需有 AssertionFailedError。
+ID_ORDER → BsiVocabularyTest.usesReturnedIdsInsteadOfDeclarationOrder；
+SWAP_YZ → GameWorldSnapshotTest.preservesDeclaredAxesRotationJointAndSiValues；
+DROP_GROUND → GameWorldSnapshotTest.includesAllSixObservedContactsOnceInCanonicalOrder。
+首次 unit 啟動在 compileTestJava 發現測試少傳 BsiFrame.decode 的 length，引數已修；
+沒有測試執行，不計作故障臂或產品 FAIL。
