@@ -15,6 +15,11 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.util.zip.Deflater;
+import java.util.zip.GZIPOutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.file.*;
 import java.util.function.Consumer;
@@ -142,7 +147,7 @@ class WorldIndexData extends SavedData implements Iterable<BlockPos> {
             temporary = Files.createTempFile(target.toAbsolutePath().getParent(), NAME + "-", ".tmp");
             CompoundTag root = new CompoundTag(); root.put("data", save(new CompoundTag()));
             NbtUtils.addCurrentDataVersion(root);
-            NbtIo.writeCompressed(root, temporary.toFile());
+            writeCompressed(root, temporary);
             try (FileChannel channel = FileChannel.open(temporary, StandardOpenOption.WRITE)) { channel.force(true); }
             replace(temporary, target);
             setDirty(false); writeFailure = "";
@@ -151,6 +156,20 @@ class WorldIndexData extends SavedData implements Iterable<BlockPos> {
             com.blockreality.impl.BlockRealityMod.LOG.error(writeFailure, e);
         } finally {
             if (temporary != null) try { Files.deleteIfExists(temporary); } catch (IOException ignored) { }
+        }
+    }
+    // Vanilla NBT/gzip framing, with less compression work before synchronous persistence.
+    void writeCompressed(CompoundTag root, Path temporary) throws IOException {
+        try (OutputStream file = Files.newOutputStream(temporary);
+             var gzip = new RegistryGzip(file);
+             var output = new DataOutputStream(new BufferedOutputStream(gzip))) {
+            NbtIo.write(root, output);
+        }
+    }
+    private static final class RegistryGzip extends GZIPOutputStream {
+        RegistryGzip(OutputStream output) throws IOException {
+            super(output, 32768);
+            def.setLevel(Deflater.BEST_SPEED);
         }
     }
     // A named I/O seam also permits a real disk failure test; no unsafe non-atomic fallback.

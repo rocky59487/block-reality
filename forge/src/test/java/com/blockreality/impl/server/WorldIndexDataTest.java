@@ -28,6 +28,47 @@ class WorldIndexDataTest {
         assertTrue(data.objectsReady());
     }
 
+    @Test void gzipWriterReadsLegacyCompressionAndPreservesPendingMetadataForVanilla() throws Exception {
+        var data=WorldIndexData.fresh();var pos=new BlockPos(1,200,8);
+        data.observe(pos,X);settle(data);data.remove(pos);data.observe(pos,X);
+        var expected=data.save(new CompoundTag());var legacy=new CompoundTag();legacy.put("data",expected);
+        net.minecraft.nbt.NbtUtils.addCurrentDataVersion(legacy);
+        net.minecraft.nbt.NbtIo.writeCompressed(legacy,file(root).toFile());
+        var loaded=open(root);assertTrue(loaded.objects().pending());loaded.setDirty();
+        loaded.save(file(root).toFile());assertFalse(loaded.isDirty());assertTrue(loaded.failure().isEmpty());
+        var vanilla=net.minecraft.nbt.NbtIo.readCompressed(file(root).toFile());
+        assertEquals(legacy.getInt("DataVersion"),vanilla.getInt("DataVersion"));
+        assertEquals(expected,vanilla.getCompound("data"));
+        var restored=open(root);assertTrue(restored.objects().pending());
+        assertEquals(data.objects().graph().namespace(),restored.objects().graph().namespace());
+        assertEquals(data.objects().epoch(),restored.objects().epoch());
+        assertEquals(data.objects().work().destroyed(),restored.objects().work().destroyed());
+    }
+
+    @Test void failedCompressedWritePreservesOriginalFileAndAllowsExactRetry() throws Exception {
+        var good=open(root);good.observe(new BlockPos(1,200,8),X);settle(good);good.save(file(root).toFile());
+        byte[] before=Files.readAllBytes(file(root));
+        var failing=new WorldIndexData(WorldCellIndex.decode(good.index().encode()),"") {
+            boolean first=true;
+            @Override void writeCompressed(CompoundTag tag,Path temporary) throws IOException {
+                if (first) {
+                    first=false;Files.write(temporary,new byte[]{0x1f,(byte)0x8b,8});
+                    throw new IOException("SC injected partial gzip write failure");
+                }
+                super.writeCompressed(tag,temporary);
+            }
+        };
+        failing.observe(new BlockPos(16,200,8),X);
+        var expected=failing.save(new CompoundTag());
+        failing.save(file(root).toFile());
+        assertArrayEquals(before,Files.readAllBytes(file(root)));assertTrue(failing.isDirty());
+        assertFalse(failing.failure().isEmpty());
+        try(var files=Files.list(root)){assertEquals(1,files.count());}
+        failing.save(file(root).toFile());assertFalse(failing.isDirty());assertTrue(failing.failure().isEmpty());
+        assertEquals(expected,open(root).save(new CompoundTag()));
+        try(var files=Files.list(root)){assertEquals(1,files.count());}
+    }
+
     @Test void legacyCoverageMigratesWithoutForgettingUnloadedUnknownDeclarations() {
         var index = new WorldCellIndex(); index.add(new com.blockreality.api.geom.BlockKey(0,200,8));
         index.add(new com.blockreality.api.geom.BlockKey(16,200,8));
