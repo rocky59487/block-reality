@@ -85,7 +85,7 @@ public final class WorldCellIndex {
         if (encoding == null) {
             ByteBuffer b = ByteBuffer.allocate(16 + cells.size() * 12 + 32);
             b.putInt(MAGIC).putInt(VERSION).putInt(cells.size()).putInt(capacityExceeded ? 1 : 0);
-            for (BlockKey p : cells) b.putInt(p.x()).putInt(p.y()).putInt(p.z());
+            for (BlockKey p : cells()) b.putInt(p.x()).putInt(p.y()).putInt(p.z());
             b.put(digest(b.array(), b.position()));
             encoding = b.array();
         }
