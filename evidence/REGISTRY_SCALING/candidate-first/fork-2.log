@@ -1,0 +1,16 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava UP-TO-DATE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:compileRegistryProfileJava UP-TO-DATE
+> Task :core:processRegistryProfileResources NO-SOURCE
+> Task :core:registryProfileClasses UP-TO-DATE
+> Task :core:registryScaling
+
+BUILD SUCCESSFUL in 42s
+6 actionable tasks: 1 executed, 5 up-to-date

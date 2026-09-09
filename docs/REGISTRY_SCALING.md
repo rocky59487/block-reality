@@ -1,0 +1,164 @@
+# REGISTRY_SCALING (RS) — frozen before measurement and optimization
+
+2026-09-10. Parent #115 / `07004ff`. Module only; engine sources and the live
+CLIENT_MATERIALS server/client remain untouched. MP measured at most 832 cells;
+its numbers cannot qualify the 131072-cell registry limit.
+
+## Baseline protocol — Recorded
+
+Run the actual core `WorldCellIndex`, `ConstructionLedger` and codec on the same
+Ryzen 9 8940HX host, Ubuntu-22.04 WSL, Java 17, fixed 2 GiB initial/maximum heap.
+Record JVM/kernel/CPU, source commit and hashes, heap/GC and current-thread allocated
+bytes (if supported; unavailable is not zero). This is an isolated Java harness,
+not a Minecraft tick, disk save, native solve, socket or client/FPS benchmark.
+
+Use dense concrete monolith declarations (`concrete_rect_400x600`, initial axis 0)
+at origin (4096,128,0), in canonical x/y/z order. Shapes are 32x4x32 = 4096,
+64x8x64 = 32768, and 128x8x128 = 131072 cells. Also run 131072 sparse X-axis steel
+cells: 1024 independent 128-cell beams, origin (4096,128,0), row z=2*r for r=0..1023.
+This preserves both dense and sparse coordinate/hash distributions. No fixture reduction.
+
+For each shape, independently measure two edit patterns on a ready ledger:
+
+* ONE: toggle the first cell's declared axis between 0 and 2, without replacing it.
+* BURST64: remove and replace the first 64 canonical cells with their original
+  declaration in the same batch; coverage is removed/re-added too.
+
+Measure edit, immutable work capture, pure reconciliation, publication, coverage
+position snapshot, coverage encoding, object encoding, and object decoding separately.
+Keep the initial population/reconciliation costs, then 5 warmup iterations and 20
+measured iterations per pattern, in 3 fresh JVM forks, retaining every raw sample.
+Record whether coverage snapshot is cold or reused. Read allocated-byte counters
+outside each timed span. Keep GC/heap observations outside stage timing. Do not force GC,
+choose the fastest fork, discard slow samples or silently retry a failed fixture.
+An individual fork may be terminated after 20 minutes; retain partial output and
+report incomplete work as FAIL, never a successful benchmark.
+
+Use a fixed namespace per fixture/pattern/fork so baseline and candidate encodings
+can be compared exactly. After every iteration check counts, expected epoch,
+publication readiness, immutable captured input after a subsequent edit, exact
+codec round trip and the canonical encoded SHA-256. Keep a result digest per
+iteration; candidate digests must equal baseline for the same fork/fixture/pattern.
+Document expected sparse ONE split/merge lineage, rather than weakening identity rules.
+
+## Gates
+
+| Gate | Required evidence |
+|---|---|
+| RS-1 | Complete fixed baseline/raw output, first failures and source/runtime identity. All initial timings are Recorded, without a retroactive performance threshold. |
+| RS-2 | Only after the baseline identifies a cost, commit an optimization target and comparison budgets before editing production code. Include worker and allocation regressions, not just caller latency. |
+| RS-3 | Immutable work/graph inputs and stale-publication rules remain valid during concurrent edits; bounds, null refusal, split/merge/rebuild identity, deterministic save bytes, corrupt-save refusal and no eviction all remain enforced. Add a named regression oracle and a compiled behavioral fault arm for any changed ownership boundary. |
+| RS-4 | Repeat all fixed cases on the candidate, compare every digest, keep baseline and candidate raw data and report every budget loss. No Java mechanics/native changes. Full module/Forge checks, packet goldens and ordinary jar audit remain required. |
+
+Actual main-thread save (compression/fsync), full server edit storms, chunk scan,
+large-world native analysis, memory retention across long histories, rendering,
+per-object scheduling and v1 performance qualification remain separate pending work.
+
+## RS-2 optimization target — frozen after initial baseline observations
+
+Baseline source `c5876c3`; first D131072/ONE warmup capture 787.447232 ms,
+reconcile 9178.324904 ms, decode 1444.289351 ms. A single thread dump caught
+`ImmutableCollections$MapN.probe` from `Graph`'s `Map.copyOf`. That diagnostic
+attachment is part of fork 1's recorded workload; no samples will be discarded.
+The remaining baseline forks continue on their archived, unmodified source.
+
+Replace the registry's coordinate-keyed immutable Map/Set copies with defensive
+hash-backed snapshots, preserving unmodifiable views and null rejection. The graph
+may wrap a privately owned, fully validated map without another copy. Do not change
+BlockKey equality/hash, persistent encoding, identity algorithm, core API signatures,
+coverage indexing, world/thread authority or any other production path.
+
+Compare all 60 measured samples per fixture/pattern, nearest-rank p95. A timing
+loss is explicit; passing a jar build or identity oracle cannot erase it:
+
+* D131072, both patterns: capture and reconcile p95 <= 25% of baseline p95.
+* Every other fixture/pattern: capture/reconcile p95 <= max(1.25 times baseline,
+  baseline + 1 ms). Record all eight stages; other stage p95 uses this same budget.
+* Capture allocated-byte p95 <= 1.6 times baseline (hash buckets/nodes trade memory
+  for collision resistance). Total allocated bytes of all measured stages per
+  iteration p95 <= 1.10 times baseline. Report allocation losses within these budgets too.
+* Every paired encoded digest and behavioral oracle must match; repeated source-map
+  mutation, all collection mutation routes and captured destruction after publication
+  must be rejected or remain independent. A defensive-copy-removal fault must compile
+  and fail a named mutation-isolation assertion.
+
+These relative budgets qualify only this registry optimization on this host. They
+are not the v1 frame/tick budget, and O(n) snapshot/save work remains O(n).
+
+### Immutable entry follow-up, before changing ordered record storage
+
+The first candidate's generator-based entry array exposed mutable HashMap entries on
+Temurin 17.0.18; the original Graph's wrapped TreeMap has the same escape. Both named
+first failures are retained. RS-3's immutable graph requirement therefore includes
+the ordered record map and its descending/head/tail/submap views. Keep its public
+NavigableMap API, order, values and encoded bytes; use privately owned ordered
+storage whose entries are intrinsically detached and immutable, then forbid all
+map mutations. The relative timing/allocation budgets above are unchanged; added
+ordered-storage costs must be reported. This expands storage scope from coordinate
+maps to record views for correctness, without relaxing any prior gate.
+
+## First complete candidate: two timing losses; serializer follow-up frozen
+
+All three baseline forks and all three `8d613c0` candidate forks completed. All 600
+warmup/measured digests match; 36 selected Linux registry/native/lifecycle tests pass
+without skips. The first candidate nevertheless FAILS the unchanged relative budgets:
+D4096/ONE object encoding p95 4.427358 ms > 3.803510 ms budget, and D131072/BURST64
+coverage encoding 4.130830 ms > 3.560641 ms budget. Raw files remain in
+`evidence/REGISTRY_SCALING/{baseline,candidate-first,comparison-first}`. Neither
+encoder's measured allocation size changed; these observations alone do not isolate
+why their latency increased. The large capture/reconcile improvement does not erase
+the two losses. SP remains held before its first measurement.
+
+Before the next production edit, extend optimization scope to the object serializer:
+pre-encode each distinct declaration with the existing modified-UTF representation,
+allocate one exactly sized final byte array, and hash its body without copying it.
+Keep format/version, order, null/invalid-data behavior, body length limit, caller-owned
+output and all bytes identical. Freeze a golden covering all catalogue declarations,
+axes, lineage, pending destruction and modified-UTF failure text on the current
+encoder before replacing it. Keep the decoder and coverage encoder unchanged.
+
+The same original baseline, scenes, three forks, 600 paired digests, and every
+timing/allocation budget apply to the new candidate. Preserve the first failed
+candidate; do not increase warmups, change JVM heap, select a faster fork or change
+the line to turn an observed loss into a pass. Any continued loss stays explicit.
+
+## Serializer candidate: coverage-only losses; unchanged-geometry cache frozen
+
+`bd9053d` completes all three forks with all 600 digests identical and 37 selected
+Linux tests passing without skips. Object encoding passes, but coverage encoding
+still FAILS: D131072/ONE 4.240746 ms > 4.129652 ms, F131072/ONE
+3.777959 ms > 3.269339 ms. Preserve `candidate-serialized` and
+`comparison-serialized`; the unit is not yet a performance pass.
+
+Before editing WorldCellIndex, freeze reuse of its canonical encoding while coverage
+is unchanged. All geometry/refusal changes invalidate the cache. Public `encode()`
+must always return a caller-owned array, including repeated reads and after decode;
+mutating any returned array must never affect the index or later encodings. Retain
+at most one encoded coverage array per index, bounded by MAX_BYTES (1572912 bytes).
+The first encode after a change may allocate an extra defensive copy; report this
+cost and retained-memory tradeoff. Format, hashes, ordering, capacity/refusal rules,
+generation and chunk observation semantics stay unchanged. A compiled invalidation
+removal must fail a named behavioral oracle. Keep all original performance budgets,
+forks/scenes/warmups and baseline; no sample substitution. SP still has not started.
+
+## Cached candidate: cold traversal loss; canonical snapshot reuse frozen
+
+`d1457a7` completes three forks and all 600 payload pairs match. All 45 selected
+Linux registry/native/lifecycle tests pass without skips. One timing budget still
+FAILS: D32768/BURST64 coverage encoding 2.146288 ms > 2.039887 ms. Keep
+`candidate-cached` and `comparison-cached`. Unchanged-coverage encoding passes;
+the cold path now allocates an additional caller-owned clone as declared. At
+D131072/BURST64 coverage encode allocation p95 is 3146688 B vs 1573760 B baseline;
+total iteration allocation still passes the original budget.
+
+Before the next edit, reuse the existing canonical `cells()` list snapshot when
+encoding coverage instead of traversing the same TreeSet again. This is the same
+ordered, immutable snapshot already shared with readers. When encoding precedes
+any reader after a geometry change, creating this snapshot costs an additional
+bounded list of at most MAX_CELLS references; it remains cached until the next
+change. Report this retention and cold-call cost, and do not move work outside the
+measured operations. The existing RS coverage_snapshot stage already constructs
+this snapshot; all stages, first-call behavior, bytes, ownership/invalidation,
+original forks/scenes and every budget stay unchanged. No benchmark-only branch.
+SP remains an independent Recorded adapter baseline and must run after RS timing
+JVMs finish; its results cannot make a failed RS timing gate pass.

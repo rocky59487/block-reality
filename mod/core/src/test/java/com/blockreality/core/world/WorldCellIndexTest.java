@@ -8,6 +8,18 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class WorldCellIndexTest {
+    @Test void encodedSnapshotsAreCallerOwnedAndInvalidateAfterCoverageEdits() {
+        var index=new WorldCellIndex();var a=new BlockKey(0,0,0);var b=new BlockKey(1,0,0);
+        index.add(a);byte[] first=index.encode(), repeated=index.encode(), expected=first.clone();
+        assertNotSame(first,repeated);assertArrayEquals(first,repeated);
+        first[0]^=1;repeated[4]^=1;assertArrayEquals(expected,index.encode());
+        index.add(b);assertEquals(List.of(a,b),WorldCellIndex.decode(index.encode()).cells());
+        index.remove(a);assertEquals(List.of(b),WorldCellIndex.decode(index.encode()).cells());
+        index.replaceChunk(0,0,List.of(a));assertEquals(List.of(a),WorldCellIndex.decode(index.encode()).cells());
+        byte[] saved=index.encode();var restored=WorldCellIndex.decode(saved);saved[0]^=1;
+        byte[] loaded=restored.encode();loaded[0]^=1;assertArrayEquals(expected,restored.encode());
+        index.replaceChunk(0,0,List.of());assertTrue(WorldCellIndex.decode(index.encode()).cells().isEmpty());
+    }
     @Test void oppositeObservationOrdersAndReloadHaveIdenticalBytes() {
         var west = List.of(new BlockKey(-17, -64, -1), new BlockKey(-18, 300, -1));
         var east = List.of(new BlockKey(16, 200, 0), new BlockKey(17, 200, 0));

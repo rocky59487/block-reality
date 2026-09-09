@@ -36,7 +36,7 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   native 工作若不返回，Java 不能強殺；cleanup 僅在 worker/daemon，D-044 崩潰代價仍成立。
 - 生產 SidecarClient/SidecarProcess/SidecarConfig/ShmRegion 已退到 test；NoSubprocess ALLOWED={}。
   預設 jar 無 exe、無 process launcher；Gradle 已拒絕 executable 封裝。
-- Windows core405/Forge107：512登錄、483PASS、29SKIP。包含19項 native 整合測試的登錄，
+- Windows core412/Forge107：519登錄、490PASS、29SKIP。包含19項 native 整合測試的登錄，
   不代表 Windows 已執行新原生庫。Linux 真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
   完整結果 `evidence/GAME_RUNTIME/RESULTS.md`，首敗保留、三故障臂具名咬合。
 - 全部失去支承時原生只回 SOLVE_FAILED；Java 保留拒絕，不能從 message 捏造 MECHANISM。
@@ -68,6 +68,12 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 - 尚未完成：最新雙平台合格庫的正式 jar、獨立區域排程 #86、
   材質方向/互動實測、效能量測、引擎 lifecycle/剛體姿態消費。
   #89 仍開放；既有公式已退出出貨來源，v1 全部基礎能力仍未完成。
+- REGISTRY_SCALING 的原始基線與四版候選都已保存；最終 `0736baa` 通過原定相對性能與
+  配置預算，600 份 bytes 一致。131K/ONE capture p95 714→6.0 ms、reconcile 9522→283 ms；
+  快照配置增加 42.9%，冷編碼多一份獨立陣列，原始三版性能輸格不覆寫。
+  Windows 490 PASS/29 SKIP、Linux 指定45項無跳過；詳 `evidence/REGISTRY_SCALING/RESULTS.md`。
+  這不代表 FPS 或 v1 高性能；SavedData adapter 雙平台900次/720樣本已完成且資料一致。
+  131K READY 同步存檔 p95 Windows260 ms、Linux202 ms，時間僅 Recorded，仍須改善。
 - 上游模組 #107 的文件已整合，對位引擎 #39 frame_v2；來源見 `docs/MC66A_FRAME_V2.md`。
   不在本工作改引擎，也不把缺 TECTONIC2_TOKEN 而跳過的 CI native steps 說成已驗。
 

@@ -1,0 +1,179 @@
+23231:
+2026-09-10 05:29:07
+Full thread dump OpenJDK 64-Bit Server VM (17.0.20+8-1-22.04-Ubuntu mixed mode, sharing):
+
+Threads class SMR info:
+_java_thread_list=0x00007ea3e8001cf0, length=12, elements={
+0x00007ea4780182c0, 0x00007ea478651ab0, 0x00007ea478652e90, 0x00007ea47865aeb0,
+0x00007ea47865c260, 0x00007ea47865d670, 0x00007ea47865f000, 0x00007ea478660530,
+0x00007ea4786619a0, 0x00007ea478669520, 0x00007ea47866cd00, 0x00007ea3e8000ea0
+}
+
+"main" #1 prio=5 os_prio=0 cpu=75332.88ms elapsed=75.58s tid=0x00007ea4780182c0 nid=0x5ac0 runnable  [0x00007ea47d9fd000]
+   java.lang.Thread.State: RUNNABLE
+	at java.util.ImmutableCollections$MapN.probe(java.base@17.0.20/ImmutableCollections.java:1332)
+	at java.util.ImmutableCollections$MapN.<init>(java.base@17.0.20/ImmutableCollections.java:1187)
+	at java.util.Map.ofEntries(java.base@17.0.20/Map.java:1668)
+	at java.util.Map.copyOf(java.base@17.0.20/Map.java:1734)
+	at com.blockreality.core.world.ConstructionLedger$Graph.<init>(ConstructionLedger.java:44)
+	at com.blockreality.core.world.ConstructionLedger.rebuild(ConstructionLedger.java:163)
+	at com.blockreality.core.world.ConstructionLedger.reconcile(ConstructionLedger.java:116)
+	at com.blockreality.core.world.RegistryScaling.lambda$run$4(RegistryScaling.java:77)
+	at com.blockreality.core.world.RegistryScaling$$Lambda$48/0x00007ea400034450.get(Unknown Source)
+	at com.blockreality.core.world.RegistryScaling.measure(RegistryScaling.java:114)
+	at com.blockreality.core.world.RegistryScaling.run(RegistryScaling.java:77)
+	at com.blockreality.core.world.RegistryScaling.main(RegistryScaling.java:30)
+
+"Reference Handler" #2 daemon prio=10 os_prio=0 cpu=0.40ms elapsed=75.52s tid=0x00007ea478651ab0 nid=0x5aca waiting on condition  [0x00007ea44c614000]
+   java.lang.Thread.State: RUNNABLE
+	at java.lang.ref.Reference.waitForReferencePendingList(java.base@17.0.20/Native Method)
+	at java.lang.ref.Reference.processPendingReferences(java.base@17.0.20/Reference.java:253)
+	at java.lang.ref.Reference$ReferenceHandler.run(java.base@17.0.20/Reference.java:215)
+
+"Finalizer" #3 daemon prio=8 os_prio=0 cpu=0.44ms elapsed=75.52s tid=0x00007ea478652e90 nid=0x5acb in Object.wait()  [0x00007ea44c514000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait(java.base@17.0.20/Native Method)
+	- waiting on <0x0000000087500af8> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(java.base@17.0.20/ReferenceQueue.java:155)
+	- locked <0x0000000087500af8> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(java.base@17.0.20/ReferenceQueue.java:176)
+	at java.lang.ref.Finalizer$FinalizerThread.run(java.base@17.0.20/Finalizer.java:172)
+
+"Signal Dispatcher" #4 daemon prio=9 os_prio=0 cpu=0.51ms elapsed=75.52s tid=0x00007ea47865aeb0 nid=0x5acc waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Service Thread" #5 daemon prio=9 os_prio=0 cpu=0.62ms elapsed=75.52s tid=0x00007ea47865c260 nid=0x5acd runnable  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Monitor Deflation Thread" #6 daemon prio=9 os_prio=0 cpu=6.19ms elapsed=75.52s tid=0x00007ea47865d670 nid=0x5ace runnable  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"C2 CompilerThread0" #7 daemon prio=9 os_prio=0 cpu=468.22ms elapsed=75.52s tid=0x00007ea47865f000 nid=0x5acf waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+   No compile task
+
+"C1 CompilerThread0" #17 daemon prio=9 os_prio=0 cpu=110.04ms elapsed=75.52s tid=0x00007ea478660530 nid=0x5ad0 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+   No compile task
+
+"Sweeper thread" #22 daemon prio=9 os_prio=0 cpu=0.14ms elapsed=75.52s tid=0x00007ea4786619a0 nid=0x5ad1 runnable  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Notification Thread" #23 daemon prio=9 os_prio=0 cpu=0.14ms elapsed=75.52s tid=0x00007ea478669520 nid=0x5ad2 runnable  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Common-Cleaner" #24 daemon prio=8 os_prio=0 cpu=0.39ms elapsed=75.52s tid=0x00007ea47866cd00 nid=0x5ad4 in Object.wait()  [0x00007ea3febfd000]
+   java.lang.Thread.State: TIMED_WAITING (on object monitor)
+	at java.lang.Object.wait(java.base@17.0.20/Native Method)
+	- waiting on <0x00000000875014d8> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(java.base@17.0.20/ReferenceQueue.java:155)
+	- locked <0x00000000875014d8> (a java.lang.ref.ReferenceQueue$Lock)
+	at jdk.internal.ref.CleanerImpl.run(java.base@17.0.20/CleanerImpl.java:140)
+	at java.lang.Thread.run(java.base@17.0.20/Thread.java:840)
+	at jdk.internal.misc.InnocuousThread.run(java.base@17.0.20/InnocuousThread.java:162)
+
+"Attach Listener" #25 daemon prio=9 os_prio=0 cpu=1.03ms elapsed=0.10s tid=0x00007ea3e8000ea0 nid=0x5b74 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"G1 Refine#21" os_prio=0 cpu=0.51ms elapsed=10.84s tid=0x00007ea324000d60 nid=0x5b33 runnable  
+
+"G1 Refine#20" os_prio=0 cpu=0.90ms elapsed=10.84s tid=0x00007ea320000d60 nid=0x5b32 runnable  
+
+"G1 Refine#19" os_prio=0 cpu=0.88ms elapsed=10.84s tid=0x00007ea32c000d60 nid=0x5b31 runnable  
+
+"G1 Refine#18" os_prio=0 cpu=1.21ms elapsed=10.85s tid=0x00007ea328000d60 nid=0x5b30 runnable  
+
+"G1 Refine#17" os_prio=0 cpu=1.61ms elapsed=10.85s tid=0x00007ea334000d60 nid=0x5b2f runnable  
+
+"G1 Refine#16" os_prio=0 cpu=2.04ms elapsed=43.60s tid=0x00007ea330000d60 nid=0x5b19 runnable  
+
+"G1 Refine#15" os_prio=0 cpu=2.40ms elapsed=43.60s tid=0x00007ea33c000d60 nid=0x5b18 runnable  
+
+"G1 Refine#14" os_prio=0 cpu=2.82ms elapsed=43.60s tid=0x00007ea338000d60 nid=0x5b17 runnable  
+
+"G1 Refine#13" os_prio=0 cpu=3.39ms elapsed=43.60s tid=0x00007ea3cc1ba760 nid=0x5b16 runnable  
+
+"G1 Refine#12" os_prio=0 cpu=3.58ms elapsed=43.60s tid=0x00007ea340000d60 nid=0x5b15 runnable  
+
+"G1 Refine#11" os_prio=0 cpu=4.18ms elapsed=66.29s tid=0x00007ea3c0082d40 nid=0x5b03 runnable  
+
+"G1 Refine#10" os_prio=0 cpu=4.63ms elapsed=66.29s tid=0x00007ea34c000d60 nid=0x5b02 runnable  
+
+"G1 Refine#9" os_prio=0 cpu=5.17ms elapsed=69.64s tid=0x00007ea348000d60 nid=0x5b01 runnable  
+
+"G1 Refine#8" os_prio=0 cpu=5.75ms elapsed=69.64s tid=0x00007ea3ac0017e0 nid=0x5b00 runnable  
+
+"G1 Refine#7" os_prio=0 cpu=6.12ms elapsed=70.84s tid=0x00007ea3a80fbef0 nid=0x5aff runnable  
+
+"G1 Refine#6" os_prio=0 cpu=7.44ms elapsed=72.67s tid=0x00007ea3b40051a0 nid=0x5afe runnable  
+
+"G1 Refine#5" os_prio=0 cpu=7.85ms elapsed=72.67s tid=0x00007ea3b023b460 nid=0x5afd runnable  
+
+"G1 Refine#4" os_prio=0 cpu=8.60ms elapsed=72.67s tid=0x00007ea3bc38acb0 nid=0x5afc runnable  
+
+"G1 Refine#3" os_prio=0 cpu=9.82ms elapsed=72.67s tid=0x00007ea3b80e7a90 nid=0x5afb runnable  
+
+"G1 Refine#2" os_prio=0 cpu=11.35ms elapsed=72.67s tid=0x00007ea3c40dacc0 nid=0x5afa runnable  
+
+"G1 Refine#1" os_prio=0 cpu=25.97ms elapsed=72.67s tid=0x00007ea448015cd0 nid=0x5af9 runnable  
+
+"GC Thread#22" os_prio=0 cpu=79.95ms elapsed=74.85s tid=0x00007ea3f80162e0 nid=0x5af4 runnable  
+
+"GC Thread#21" os_prio=0 cpu=79.32ms elapsed=74.85s tid=0x00007ea3f8015860 nid=0x5af3 runnable  
+
+"GC Thread#20" os_prio=0 cpu=77.12ms elapsed=74.85s tid=0x00007ea3f8014de0 nid=0x5af2 runnable  
+
+"GC Thread#19" os_prio=0 cpu=78.48ms elapsed=74.85s tid=0x00007ea3f8014360 nid=0x5af1 runnable  
+
+"GC Thread#18" os_prio=0 cpu=79.14ms elapsed=74.85s tid=0x00007ea3f80138e0 nid=0x5af0 runnable  
+
+"GC Thread#17" os_prio=0 cpu=78.68ms elapsed=74.85s tid=0x00007ea3f8012e60 nid=0x5aef runnable  
+
+"GC Thread#16" os_prio=0 cpu=80.46ms elapsed=74.85s tid=0x00007ea3f80123e0 nid=0x5aee runnable  
+
+"GC Thread#15" os_prio=0 cpu=78.79ms elapsed=74.85s tid=0x00007ea3f8011960 nid=0x5aed runnable  
+
+"GC Thread#14" os_prio=0 cpu=78.69ms elapsed=74.85s tid=0x00007ea3f8010ee0 nid=0x5aec runnable  
+
+"GC Thread#13" os_prio=0 cpu=78.98ms elapsed=74.85s tid=0x00007ea3f8010460 nid=0x5aeb runnable  
+
+"GC Thread#12" os_prio=0 cpu=79.20ms elapsed=74.85s tid=0x00007ea3f800f9e0 nid=0x5aea runnable  
+
+"GC Thread#11" os_prio=0 cpu=80.53ms elapsed=74.85s tid=0x00007ea3f800ef60 nid=0x5ae9 runnable  
+
+"GC Thread#10" os_prio=0 cpu=80.49ms elapsed=74.85s tid=0x00007ea3f800e500 nid=0x5ae8 runnable  
+
+"GC Thread#9" os_prio=0 cpu=78.86ms elapsed=74.85s tid=0x00007ea3f800dac0 nid=0x5ae7 runnable  
+
+"GC Thread#8" os_prio=0 cpu=80.24ms elapsed=74.85s tid=0x00007ea3f800d080 nid=0x5ae6 runnable  
+
+"GC Thread#7" os_prio=0 cpu=80.57ms elapsed=74.85s tid=0x00007ea3f800c640 nid=0x5ae5 runnable  
+
+"GC Thread#6" os_prio=0 cpu=80.06ms elapsed=74.85s tid=0x00007ea3f800bc00 nid=0x5ae4 runnable  
+
+"GC Thread#5" os_prio=0 cpu=79.93ms elapsed=74.85s tid=0x00007ea3f800b1c0 nid=0x5ae3 runnable  
+
+"GC Thread#4" os_prio=0 cpu=79.33ms elapsed=74.85s tid=0x00007ea3f800a7b0 nid=0x5ae2 runnable  
+
+"GC Thread#3" os_prio=0 cpu=78.44ms elapsed=74.85s tid=0x00007ea3f8009da0 nid=0x5ae1 runnable  
+
+"GC Thread#2" os_prio=0 cpu=79.50ms elapsed=74.85s tid=0x00007ea3f8009550 nid=0x5ae0 runnable  
+
+"GC Thread#1" os_prio=0 cpu=80.24ms elapsed=74.85s tid=0x00007ea3f8008e30 nid=0x5adf runnable  
+
+"VM Periodic Task Thread" os_prio=0 cpu=32.07ms elapsed=75.52s tid=0x00007ea47866ae60 nid=0x5ad3 waiting on condition  
+
+"VM Thread" os_prio=0 cpu=33.24ms elapsed=75.53s tid=0x00007ea47864dae0 nid=0x5ac9 runnable  
+
+"G1 Service" os_prio=0 cpu=10.55ms elapsed=75.54s tid=0x00007ea47861eb70 nid=0x5ac8 runnable  
+
+"G1 Refine#0" os_prio=0 cpu=160.93ms elapsed=75.54s tid=0x00007ea47861dc70 nid=0x5ac7 runnable  
+
+"G1 Conc#0" os_prio=0 cpu=0.15ms elapsed=75.57s tid=0x00007ea47806a290 nid=0x5ac6 runnable  
+
+"G1 Main Marker" os_prio=0 cpu=0.16ms elapsed=75.57s tid=0x00007ea478069300 nid=0x5ac5 runnable  
+
+"GC Thread#0" os_prio=0 cpu=79.04ms elapsed=75.58s tid=0x00007ea478057c80 nid=0x5ac4 runnable  
+
+JNI global refs: 20, weak refs: 0
+

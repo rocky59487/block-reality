@@ -21,6 +21,7 @@ public final class WorldCellIndex {
     private boolean capacityExceeded;
     private long generation;
     private List<BlockKey> snapshot;
+    private byte[] encoding;
 
     public int size() { return cells.size(); }
     public boolean contains(BlockKey pos) { return cells.contains(pos); }
@@ -81,11 +82,15 @@ public final class WorldCellIndex {
     }
 
     public byte[] encode() {
-        ByteBuffer b = ByteBuffer.allocate(16 + cells.size() * 12 + 32);
-        b.putInt(MAGIC).putInt(VERSION).putInt(cells.size()).putInt(capacityExceeded ? 1 : 0);
-        for (BlockKey p : cells) b.putInt(p.x()).putInt(p.y()).putInt(p.z());
-        b.put(digest(b.array(), b.position()));
-        return b.array();
+        if (encoding == null) {
+            ByteBuffer b = ByteBuffer.allocate(16 + cells.size() * 12 + 32);
+            b.putInt(MAGIC).putInt(VERSION).putInt(cells.size()).putInt(capacityExceeded ? 1 : 0);
+            for (BlockKey p : cells()) b.putInt(p.x()).putInt(p.y()).putInt(p.z());
+            b.put(digest(b.array(), b.position()));
+            encoding = b.array();
+        }
+        // SavedData and other callers own their arrays; the private cached bytes never escape.
+        return encoding.clone();
     }
 
     public static WorldCellIndex decode(byte[] bytes) {
@@ -129,7 +134,7 @@ public final class WorldCellIndex {
         observationSnapshot = null;
     }
     private void refuse() { capacityExceeded = true; changed(); }
-    private void changed() { generation++; snapshot = null; }
+    private void changed() { generation++; snapshot = null; encoding = null; }
     private static long chunk(BlockKey p) { return chunk(p.x() >> 4, p.z() >> 4); }
     private static long chunk(int x, int z) { return ((long) x << 32) | (z & 0xffffffffL); }
     private static void validate(BlockKey p) {

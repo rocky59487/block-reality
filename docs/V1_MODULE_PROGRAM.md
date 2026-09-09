@@ -55,7 +55,7 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 ## 現況
 
 GAME_INPUT 已在 #106，GAME_RUNTIME 已接 Forge 採集與真正原生迴圈；Linux server 混合
-梁柱板/機構與地面變更/重設已驗，Windows core405/Forge107=483PASS/29SKIP。
+梁柱板/機構與地面變更/重設已驗，Windows core412/Forge107=490PASS/29SKIP。
 判準及證據見 `GAME_RUNTIME.md`、`../evidence/GAME_RUNTIME/RESULTS.md`。
 全未支承原生只回 SOLVE_FAILED，typed 機構展示未完成；客戶端、最新雙平台 native jar、
 持久世界及倒塌動態仍待完成。沒有新遊戲版本發布。
@@ -84,7 +84,23 @@ CONSTRUCTION_IDENTITY 已接永久 namespace/單調 ID、產品/宣告軸分組�
 剛體物理；引擎 events、重新安裝與客戶端 identity 封包仍待交付。詳
 `../evidence/CONSTRUCTION_IDENTITY/RESULTS.md`；#17 的身份部分推進，未整題關閉。
 
+再次對照 #12/#17：目前身份是對已觀測世界的 metadata 批次發布，**尚不是施工交易**。
+#12 要求確認時材料帳、全部方塊、artifact/ownership 與單次 worldRevision 一起原子提交，
+另需重送去重、衝突拒絕、任一步故障回滾及 inverse undo。這些還沒有正式遊戲路徑與整合門；
+不能以身份保存/分組測試代替。施工邊界/接頭、延長既有 piece 的規則，也須在該交易入口
+明確化；觀測式分組與原生預覽連結不能直接授權破壞、掉落、損傷或材料產出。
+
 MODULE_PIPELINE_PROFILE 已將 metadata/gather/queue/BSI/解碼/封包/apply 分別量測，預設不收資料。
 A49/F576/M832 三場景各 40 次實跑，數字只作 Recorded 基線；M832 原生呼叫占主要成本，
 不能把背景 65.6 ms p95 說成 client frame time。尚未量 FPS、真玩家 socket、存檔或 registry 上界。
 詳 `../evidence/MODULE_PIPELINE_PROFILE/RESULTS.md`；未以小場景改寫 v1 效能目標。
+
+REGISTRY_SCALING 已完成原始基線與四版候選對照；`0736baa` 通過原定64條時間與16條
+配置預算，600份 payload 一致。131K/ONE 快照 p95 714→6.0 ms、背景分組9522→283 ms，
+增加的快照/冷編碼配置與前三版輸格都保留，詳 `../evidence/REGISTRY_SCALING/RESULTS.md`。
+此結論只涵蓋登錄資料路徑，仍非 live tick/FPS 或 v1 資格。
+
+REGISTRY_SAVE_PROFILE 已完成 Windows/NTFS 與 WSL/ext4 的真 SavedData adapter 量測：
+共同種子、READY/PENDING64、各三個 JVM fork，共900次/720量測樣本，跨六fork資料一致。
+131K READY 完整存檔 p95 Windows260 ms、Linux202 ms，僅 Recorded，仍是同步成本。
+詳 `../evidence/REGISTRY_SAVE_PROFILE/RESULTS.md`；不能代替 live server tick、全世界存檔或 FPS。

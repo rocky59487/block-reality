@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.render.StressPaletteTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-09-09T21:37:48" hostname="ROCKYLAPTOP" time="0.004">
+  <properties/>
+  <testcase name="the material lens carries no magnitude: it is flat by construction" classname="com.blockreality.core.render.StressPaletteTest" time="0.0"/>
+  <testcase name="every shipped material gets its own colour, so the lens says something" classname="com.blockreality.core.render.StressPaletteTest" time="0.0"/>
+  <testcase name="teachingPaletteKeepsItsOwnTokens()" classname="com.blockreality.core.render.StressPaletteTest" time="0.001"/>
+  <testcase name="saturationRisesWithMagnitude()" classname="com.blockreality.core.render.StressPaletteTest" time="0.0"/>
+  <testcase name="the material legend names exactly the materials the lens can colour" classname="com.blockreality.core.render.StressPaletteTest" time="0.001"/>
+  <testcase name="magnitudeMapsLinearlySoAFigureCanBeReadAgainstItsLegend()" classname="com.blockreality.core.render.StressPaletteTest" time="0.0"/>
+  <testcase name="tensionIsBlueAndCompressionIsRed()" classname="com.blockreality.core.render.StressPaletteTest" time="0.0"/>
+  <testcase name="equalAndOppositeStressesGiveDistinctColours()" classname="com.blockreality.core.render.StressPaletteTest" time="0.0"/>
+  <testcase name="utilisationRampIsColdThenAmberThenFlatVermilion()" classname="com.blockreality.core.render.StressPaletteTest" time="0.0"/>
+  <testcase name="linearLightInterpolationKeepsTheMidpointOutOfTheMud()" classname="com.blockreality.core.render.StressPaletteTest" time="0.001"/>
+  <testcase name="failureRedIsNotTheSameAsCompressionRed()" classname="com.blockreality.core.render.StressPaletteTest" time="0.0"/>
+  <testcase name="an unknown token gets its OWN colour, not another material's" classname="com.blockreality.core.render.StressPaletteTest" time="0.0"/>
+  <testcase name="degenerateInputsGiveNeutralRatherThanNaN()" classname="com.blockreality.core.render.StressPaletteTest" time="0.0"/>
+  <testcase name="zeroStressIsNeutral()" classname="com.blockreality.core.render.StressPaletteTest" time="0.0"/>
+  <testcase name="hatchGivesANonColourChannel()" classname="com.blockreality.core.render.StressPaletteTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -9,6 +9,19 @@ import static com.blockreality.core.world.ConstructionLedgerTest.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ConstructionCodecTest {
+    @Test void encoderPreservesCatalogueLineageAndModifiedUtfGolden() throws Exception {
+        byte[] expected;
+        try (var in=getClass().getResourceAsStream("/construction-codec-v1.bin")) {
+            assertNotNull(in,"pre-optimization codec golden must exist");expected=in.readAllBytes();
+        }
+        var fixture=ConstructionCodecGolden.fixture();byte[] encoded=fixture.encode();
+        assertArrayEquals(expected,encoded);
+        var restored=ConstructionLedger.decode(encoded);
+        assertArrayEquals(expected,restored.encode());assertEquals(fixture.failure(),restored.failure());
+        assertEquals(fixture.graph().records(),restored.graph().records());
+        assertEquals(fixture.work().destroyed(),restored.work().destroyed());
+        encoded[0]^=1;assertArrayEquals(expected,fixture.encode(),"returned arrays are caller-owned");
+    }
     @Test void corruptionTruncationAndTrailingDataAlwaysRefuse() {
         byte[] valid = beam().encode();
         for (int i=0;i<valid.length;i++) {

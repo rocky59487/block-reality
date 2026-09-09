@@ -2,6 +2,7 @@ package com.blockreality.core.world;
 
 import com.blockreality.api.geom.BlockKey;
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -13,25 +14,44 @@ final class ConstructionCodec {
     private ConstructionCodec() { }
     static byte[] encode(ConstructionLedger ledger) {
         try {
-            var bytes = new ByteArrayOutputStream(); var out = new DataOutputStream(bytes);
-            out.writeInt(MAGIC); out.writeInt(VERSION);
+            var failureBytes = new ByteArrayOutputStream();
+            new DataOutputStream(failureBytes).writeUTF(ledger.failure);
+            byte[] failure = failureBytes.toByteArray();
             var graph = ledger.graph();
-            out.writeLong(graph.namespace().getMostSignificantBits()); out.writeLong(graph.namespace().getLeastSignificantBits());
-            out.writeLong(ledger.epoch); out.writeLong(ledger.completedEpoch); out.writeLong(graph.nextId());
-            out.writeUTF(ledger.failure);
-            out.writeInt(ledger.cells.size());
-            for (BlockKey p : sorted(ledger.cells.keySet())) { pos(out, p); declaration(out, ledger.cells.get(p)); }
-            out.writeInt(ledger.destroyed.size()); for (BlockKey p : sorted(ledger.destroyed)) pos(out, p);
-            out.writeInt(graph.records().size());
-            for (var a : graph.records().values()) {
-                out.writeLong(a.id()); declaration(out, a.declaration());
-                out.writeInt(a.parents().size()); for (long parent : a.parents()) out.writeLong(parent);
-                out.writeInt(a.cells().size()); for (BlockKey p : a.cells()) pos(out, p);
+            var declarations = new HashMap<ConstructionDeclaration, byte[]>();
+            long bodySize = 48L + failure.length + 12L + 12L * (ledger.cells.size() + ledger.destroyed.size());
+            for (var declaration : ledger.cells.values()) bodySize += declarationBytes(declarations, declaration).length;
+            for (var artifact : graph.records().values()) {
+                bodySize += 16L + declarationBytes(declarations, artifact.declaration()).length
+                        + 8L * artifact.parents().size() + 12L * artifact.cells().size();
             }
-            out.flush(); byte[] body = bytes.toByteArray();
-            if (body.length > MAX_BYTES - 32) throw ConstructionLedger.invalid();
-            bytes.write(hash(body)); return bytes.toByteArray();
+            if (bodySize > MAX_BYTES - 32) throw ConstructionLedger.invalid();
+            // One final array: no geometric stream growth or full-body checksum copy.
+            var out = ByteBuffer.allocate((int) bodySize + 32);
+            out.putInt(MAGIC).putInt(VERSION);
+            out.putLong(graph.namespace().getMostSignificantBits()).putLong(graph.namespace().getLeastSignificantBits());
+            out.putLong(ledger.epoch).putLong(ledger.completedEpoch).putLong(graph.nextId());
+            out.put(failure).putInt(ledger.cells.size());
+            for (BlockKey pos : sorted(ledger.cells.keySet())) { pos(out, pos); out.put(declarations.get(ledger.cells.get(pos))); }
+            out.putInt(ledger.destroyed.size()); for (BlockKey pos : sorted(ledger.destroyed)) pos(out, pos);
+            out.putInt(graph.records().size());
+            for (var artifact : graph.records().values()) {
+                out.putLong(artifact.id()).put(declarations.get(artifact.declaration()));
+                out.putInt(artifact.parents().size()); for (long parent : artifact.parents()) out.putLong(parent);
+                out.putInt(artifact.cells().size()); for (BlockKey pos : artifact.cells()) pos(out, pos);
+            }
+            if (out.position() != bodySize) throw ConstructionLedger.invalid();
+            out.put(hash(out.array(), out.position())); return out.array();
         } catch (IOException impossible) { throw new UncheckedIOException(impossible); }
+    }
+    private static byte[] declarationBytes(Map<ConstructionDeclaration, byte[]> cache, ConstructionDeclaration declaration) throws IOException {
+        byte[] encoded = cache.get(declaration);
+        if (encoded == null) {
+            var bytes = new ByteArrayOutputStream();
+            declaration(new DataOutputStream(bytes), declaration);
+            encoded = bytes.toByteArray(); cache.put(declaration, encoded);
+        }
+        return encoded;
     }
     static ConstructionLedger decode(byte[] bytes) {
         if (bytes.length < 94 || bytes.length > MAX_BYTES) throw ConstructionLedger.invalid();
@@ -74,7 +94,7 @@ final class ConstructionCodec {
         } catch (IOException e) { throw ConstructionLedger.invalid(); }
     }
     private static List<BlockKey> sorted(Collection<BlockKey> cells) { return cells.stream().sorted(ConstructionLedger.ORDER).toList(); }
-    private static void pos(DataOutputStream out, BlockKey p) throws IOException { out.writeInt(p.x()); out.writeInt(p.y()); out.writeInt(p.z()); }
+    private static void pos(ByteBuffer out, BlockKey p) { out.putInt(p.x()).putInt(p.y()).putInt(p.z()); }
     private static BlockKey ordered(DataInputStream in, BlockKey previous) throws IOException {
         BlockKey p = new BlockKey(in.readInt(), in.readInt(), in.readInt()); ConstructionLedger.validatePosition(p);
         if (previous != null && ConstructionLedger.ORDER.compare(previous, p) >= 0) throw ConstructionLedger.invalid();
@@ -89,8 +109,12 @@ final class ConstructionCodec {
     private static int count(DataInputStream in, int limit) throws IOException {
         int n = in.readInt(); if (n < 0 || n > limit) throw ConstructionLedger.invalid(); return n;
     }
-    private static byte[] hash(byte[] data) {
-        try { return MessageDigest.getInstance("SHA-256").digest(data); }
+    private static byte[] hash(byte[] data) { return hash(data, data.length); }
+    private static byte[] hash(byte[] data, int length) {
+        try {
+            var digest = MessageDigest.getInstance("SHA-256");
+            digest.update(data, 0, length); return digest.digest();
+        }
         catch (NoSuchAlgorithmException impossible) { throw new AssertionError(impossible); }
     }
 }

@@ -18,6 +18,12 @@ FORBIDDEN = (
     "com/blockreality/core/sidecar/SidecarClient", "com/blockreality/core/sidecar/SidecarProcess",
     "com/blockreality/core/sidecar/SidecarConfig", "com/blockreality/core/sidecar/ShmRegion",
     "com/blockreality/testlegacy/", "com/blockreality/testfixtures/",
+    "com/blockreality/core/world/RegistryScaling",
+    "com/blockreality/impl/server/RegistrySaveProfile",
+    "com/blockreality/impl/server/ConstructionProbe",
+    "com/blockreality/impl/server/WorldRegistryProbe",
+    "com/blockreality/impl/server/PipelineProbe",
+    "com/blockreality/impl/net/StateDeliveryProbe",
 )
 REQUIRED = {"com/blockreality/api/" + name + ".class"
             for name in ("AnalysisResult", "MemberSnapshot", "ShellSnapshot")}

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.world.ConstructionCodecTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-09T22:47:32" hostname="rockylaptop" time="0.041">
+  <properties/>
+  <testcase name="encoderPreservesCatalogueLineageAndModifiedUtfGolden()" classname="com.blockreality.core.world.ConstructionCodecTest" time="0.016"/>
+  <testcase name="resignedUnknownSchemaAndInvalidEpochCounterAndCountsStillRefuse()" classname="com.blockreality.core.world.ConstructionCodecTest" time="0.005"/>
+  <testcase name="corruptionTruncationAndTrailingDataAlwaysRefuse()" classname="com.blockreality.core.world.ConstructionCodecTest" time="0.017"/>
+  <testcase name="duplicateIdsOwnershipAndOrphanParentsRefuseEvenWithValidChecksum()" classname="com.blockreality.core.world.ConstructionCodecTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

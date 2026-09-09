@@ -1485,3 +1485,37 @@ M832 背景 worker p95 65.627 ms、含引擎的原生呼叫 p95 48.566 ms、appl
 原 counted BsiRetryGate fixture 此機未備，本輪不冒稱又驗到 solve vtable 一次；其原證據保留。
 單一共享開發機的首批基線未驗統計穩定性、真玩家網路、FPS、save/容量上界或 edit storm。
 原 41.7 ms FAIL/Linux 紅帳與 v1 高性能/封裝/物理展示全部門檻不降，詳 evidence/MODULE_PIPELINE_PROFILE。
+
+### 2026-09-10 REGISTRY_SCALING：不可變 entry 的驗收範圍
+
+`a04b538` 先凍四種容量/分布、兩種編輯、三個 JVM fork；`51c5d69` 根據原始首批快照
+787 ms/分組 9178 ms 先凍相對性能與配置預算。首次候選測試抓到 Java 17 的 wrapped
+HashMap entry 陣列可改值；沿同一路徑也抓到既有 Graph wrapped TreeMap 的可寫 entry。
+保留兩份首敗，先補凍 ordered record/range views 的不可变出口再改儲存；這是修正範圍擴展，
+原性能/配置預算、identity/bytes 不變，未降低門檻。最終效能結論待完整比較，不能提前稱過門。
+
+RS 首次完整對照：600 份 bytes 雜湊一致、Linux 指定36項無跳過通過，但 D4096/ONE
+object encode 4.427358 ms 超過 3.803510 ms，D131072/BURST64 coverage encode
+4.130830 ms 超過 3.560641 ms；兩條性能門仍判 FAIL。完整首批保存，不靠主流程加速抵銷。
+先加凍 codec 的精確配置/宣告 bytes 重用及舊版 golden，再改序列化；原 baseline、場景、
+fork 數、暖身與每條預算一律不動。新版若仍輸，照登；SP 尚未開始量測。
+
+RS serializer 候選 `bd9053d`：600 份 bytes 仍一致、Linux 37項無跳過；object encode 已過門，
+但 coverage ONE 在 D131072 為 4.240746 > 4.129652 ms，在 F131072 為
+3.777959 > 3.269339 ms，兩條仍 FAIL。先凍不變 coverage 的有界編碼 cache、所有變更失效
+與 caller-owned 回傳/故障臂，再改索引；原性能線不移，額外首次配置與保留記憶體照登。
+
+
+RS cached candidate `d1457a7`: 600 payload pairs match and 45 selected Linux tests
+pass without skips. D32768/BURST64 coverage encode still FAILS its original budget
+(2.146288 > 2.039887 ms). Preserve the complete third run. Before further code
+changes, freeze reuse of the existing canonical list snapshot during encoding,
+including its bounded retention and extra cold-call allocation when no prior reader
+requested the list. No scene, warmup, fork, percentile or budget is changed.
+
+
+RS final `0736baa` passes the unchanged 64 timing and 16 allocation budgets with
+600 identical payload pairs. All three failed predecessor candidates remain failed
+in their original evidence. Final Windows 490 PASS/29 SKIP; Linux selected45 PASS,
+zero skips. The declared memory losses remain visible. No v1 FPS/tick/performance
+or engine capability gate is lowered. See evidence/REGISTRY_SCALING/RESULTS.md.
