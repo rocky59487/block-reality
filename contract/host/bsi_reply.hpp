@@ -47,7 +47,7 @@ public:
 
     // Validate consistency for a solve reply and lay out the payload. On a
     // violation returns false with `why` (=> INTERNAL). partial: status partial.
-    bool finalizeSolve(std::string& why);
+    bool finalizeSolve(std::string& why, uint8_t requestedMode = BSI_BUCK_NONE);
     bool finalizeDeclare(std::string& why);
 
     // After finalize: the payload bytes, the section table, and header material.

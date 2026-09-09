@@ -40,4 +40,14 @@ class GlobalVerdictPacketTest {
             assertFalse(trip(result(bad,false,0,false)).valid());assertFalse(trip(result(0,false,bad,false)).valid());
         }
     }
+    @Test void incompleteWorldSummaryRetainsComputedIslandCritical() {
+        for(var state:List.of(BucklingState.NOT_ELIGIBLE, BucklingState.NOT_ELIGIBLE_SCALE, BucklingState.SOLVER_FAILED)) {
+            var r=new AnalysisResult(new WorldRevision(41),true,false,"",.5,-1,"",2,0,0,0,state,
+                    List.of(),List.of(),List.of(),false,true,List.of(
+                    new IslandBuckling(0,IslandBuckling.Kind.EIGEN,BucklingState.COMPUTED,.5),
+                    new IslandBuckling(1,IslandBuckling.Kind.EIGEN,state,Double.NaN)));
+            var p=trip(r);assertTrue(p.valid(),p.invalidReason());assertEquals(state,p.bucklingState());
+            assertEquals(0,p.bucklingFactor());assertTrue(p.bucklingCritical());
+        }
+    }
 }

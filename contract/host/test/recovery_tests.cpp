@@ -63,6 +63,7 @@ struct Fixture {
         w.blocks(b, 2);
         const double zero[3] = {}; w.equilibrium(zero, zero, 0); w.quality(0, 0, 1, 0, 0);
         w.diag(8, recovery ? 2 : 0, recovery ? 2 : 0, 2, 0, 0);
+        for (int id = 0; id < 2; ++id) w.buckling(id, BSI_BSTATE_DISABLED, BSI_BUCK_NONE, std::nan(""));
         if (!recovery) return;
         w.member(&members[0], xyz, 2, stations, 2);
         w.member(&members[1], xyz + 6, 1, stations + 2, 1);

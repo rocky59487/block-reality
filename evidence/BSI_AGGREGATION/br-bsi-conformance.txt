@@ -1,0 +1,13 @@
+contract hash OK: 91e64576fd24... (52 files)
+engine tectonic/1.3.0  capabilities ['bsi.core', 'bsi.precision.f32', 'bsi.readback.memberGeometry', 'bsi.readback.members', 'bsi.readback.shells', 'bsi.readback.stationIdentity', 'bsi.readback.stations']  transports ['capi']
+[C-10] C10-buckling-closed-forms            SKIP   (requires bsi.buckling.eigen)
+[C-11] C11-fail-closed                      PASS
+[C-12] C12-f32-display                      PASS
+[C-13] C13-extensions                       SKIP   (requires bsi.section.custom)
+[C-4 ] C4-cantilever-selfweight             PASS
+[C-4 ] C4-fixedfixed-pointload              PASS
+[C-5 ] C5-floating-beam-mechanism           PASS
+[C-6 ] C6-slab-on-beam                      PASS
+[C-7 ] C7-overloaded-flag                   PASS
+[C-8 ] C8-sign-cantilever-top-tension       PASS
+summary: executed=8 skipped=2 hard_red=0 stale_account=0

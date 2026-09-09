@@ -438,3 +438,23 @@ include stationIdentity需要members+stations，以及cap bsi.readback.stationId
 未知side/flags/reserved拒絕。每member最多一筆governing且s等於member.governingS；沒有則原生無匹配索引(-1)。
 舊member160/station88或44/geometry168不改；identity零筆時仍輸出已請求的區段。
 Java不得由f32位置重猜側或最大DC，flags/DC仍由原判定提供。f32世界座標未恢復為f64精度。
+
+## 2026-09-09 修訂：完整每島挫屈與世界摘要
+
+`buckling` 區段必須恰 `diag.islands` 筆，id 恰為 `[0, islands)`、升序、無重複。
+每筆 kind 必須等於請求模式（none=0/eigen=1/screen=2），不得混用。
+none 時所有島為 disabled-by-request/none/NaN；active 模式不得夾入 disabled。
+computed 的 factor 必須有限且嚴格大於零，其餘 state 必須 NaN；reserved 永為零。
+非法 state/kind、缺島、重複、越界或矛盾因子由 host 回 INTERNAL，不輸出半份 payload。
+
+世界 header.state 的優先序為 solver-failed > not-eligible > not-eligible-scale >
+computed > no-positive-eigenvalue。這取代原 host「任一 computed 即世界 computed」
+及「否則取首島」的未完整實作。computed+no-positive 可 computed；任何拒絕/失敗
+不得被成功島掩蓋。空集合在 none 時 disabled-by-request，其他模式為 not-eligible。
+世界數值摘要僅在 computed 時取 computed 島的最小 factor；其他世界態無 factor。
+
+各島記錄完整保留；世界拒絕不抹去其他 computed 島已定案的 block bit2 / member
+stability。消費者不得以世界態清除局部 Critical，也不得重新比較 lambda 與 1。
+消費者可驗證集合與 header 聚合一致，顯示逐島資料與世界摘要，但不重算力學。
+本修訂無新增 capability 或記錄布局；仍須能力 gate 才能宣告 eigen。舊合法 none
+回覆 bytes 維持（契約握手 hash 為預期差異）。判準 MC66A_BSI_AGGREGATION。

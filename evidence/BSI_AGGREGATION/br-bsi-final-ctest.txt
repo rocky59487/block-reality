@@ -1,0 +1,16 @@
+Internal ctest changing into directory: /home/rocky/br-bsi-aggregation-host
+Test project /home/rocky/br-bsi-aggregation-host
+    Start 1: buckling_tests
+1/5 Test #1: buckling_tests ...................   Passed    0.00 sec
+    Start 2: recovery_tests
+2/5 Test #2: recovery_tests ...................   Passed    0.00 sec
+    Start 3: retry_tests
+3/5 Test #3: retry_tests ......................   Passed    0.03 sec
+    Start 4: host_tests
+4/5 Test #4: host_tests .......................   Passed    0.00 sec
+    Start 5: capi_stub_abi
+5/5 Test #5: capi_stub_abi ....................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =   0.05 sec

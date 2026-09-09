@@ -1,0 +1,9 @@
+{
+  "docs\\MC66A_BSI_AGGREGATION.md": "db3dfee7f1900ed6a75fb50ddc5a868377c465c74994e3ae163a4630a14d39d2",
+  "docs\\MC66A_BSI_HOST_COUNTS.json": "f39cf122ce860ae1a5804102466f375d168bbe7b9c9164eaa6b193d42e6d3c6d",
+  "docs\\MC66A_BSI_JAVA_COUNTS.json": "09ee890fa7b303694e9b45c026c7acf5a5654771abe2dbf73f6bb83d4a8cdaa0",
+  "scripts\\check_buckling_host.py": "2f94af2ae491f592650e9c322d5fd7ed7b7d2d3211afede5b571ae3feab167fd",
+  "scripts\\check_buckling_java.py": "017865eb0884be3553973acdcf8ad080ac47f8759fd276e30821f9c8f34b9d00",
+  "scripts\\check_buckling_native.py": "c1371a0c9372ed2dfc5d7557005be719c53ccdefd571247e72c1b3ed60d77f6f",
+  "mod\\core\\src\\main\\java\\com\\blockreality\\core\\bsi\\BsiAnalysisResult.java": "75674378f6e7b5973594fe42e0208e2d3841901e8836eb0ab27e6afa09f53d13"
+}

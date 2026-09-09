@@ -1,0 +1,13 @@
+Test project C:/Users/wmc02/Desktop/block-reality/build/bsi-aggregation-host
+    Start 1: buckling_tests
+1/4 Test #1: buckling_tests ...................   Passed    0.04 sec
+    Start 2: recovery_tests
+2/4 Test #2: recovery_tests ...................   Passed    0.04 sec
+    Start 3: retry_tests
+3/4 Test #3: retry_tests ......................   Passed    0.07 sec
+    Start 4: host_tests
+4/4 Test #4: host_tests .......................   Passed    0.07 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =   0.24 sec

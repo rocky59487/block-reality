@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstring>
 #include <map>
+#include <set>
 
 namespace bsi {
 
@@ -137,8 +138,17 @@ std::string ReplyBuilder::bucklingState(uint8_t requestedMode) const {
     static const char* names[] = {"computed", "no-positive-eigenvalue", "not-eligible", "not-eligible-scale", "disabled-by-request", "solver-failed"};
     if (requestedMode == BSI_BUCK_NONE) return "disabled-by-request";
     if (buckling_.empty()) return "not-eligible";
+#ifdef BSI_TEST_BUCKLING_ANY_COMPUTED
     for (const auto& b : buckling_) if (b.state == BSI_BSTATE_COMPUTED) return "computed";
-    uint8_t s = buckling_[0].state;
+#endif
+    // Complete-world precedence, independent of write order. Validation occurs
+    // before this header is emitted; never hide an unevaluated or failed island.
+    static const int rank[] = {1, 0, 3, 2, -1, 4};
+    uint8_t s = BSI_BSTATE_NO_POSITIVE;
+    for (const auto& b : buckling_) {
+        if (b.state >= 6) return "solver-failed";
+        if (rank[b.state] > rank[s]) s = b.state;
+    }
     return s < 6 ? names[s] : "solver-failed";
 }
 
@@ -170,7 +180,7 @@ bool ReplyBuilder::finalizeDeclare(std::string& why) {
     return true;
 }
 
-bool ReplyBuilder::finalizeSolve(std::string& why) {
+bool ReplyBuilder::finalizeSolve(std::string& why, uint8_t requestedMode) {
     payload_.clear(); sections_.clear(); why.clear();
     if (blocksTwice_) { why = "blocks written twice"; return false; }
     if (!haveBlocks_) { why = "engine wrote no blocks section"; return false; }
@@ -178,6 +188,32 @@ bool ReplyBuilder::finalizeSolve(std::string& why) {
     if (!haveEq_) { why = "engine wrote no equilibrium"; return false; }
     if (!haveQuality_) { why = "engine wrote no quality"; return false; }
     if (!haveDiag_) { why = "engine wrote no diag"; return false; }
+    if (requestedMode > BSI_BUCK_SCREEN) { why = "invalid requested buckling mode"; return false; }
+#ifndef BSI_TEST_BUCKLING_COLLECTION
+    if (buckling_.size() != islands_) { why = "incomplete buckling island collection"; return false; }
+    std::set<int32_t> bucklingIds;
+#endif
+    for (const auto& b : buckling_) {
+#ifndef BSI_TEST_BUCKLING_COLLECTION
+        if (b.island < 0 || uint32_t(b.island) >= islands_ || !bucklingIds.insert(b.island).second) {
+            why = "invalid or duplicate buckling island"; return false;
+        }
+#endif
+        if (b.state > BSI_BSTATE_SOLVER_FAILED) { why = "invalid buckling state"; return false; }
+#ifndef BSI_TEST_BUCKLING_KIND
+        if (b.kind != requestedMode) { why = "buckling kind disagrees with request"; return false; }
+#endif
+#ifndef BSI_TEST_BUCKLING_DISABLED
+        if ((b.state == BSI_BSTATE_DISABLED) != (requestedMode == BSI_BUCK_NONE)) {
+            why = "buckling disabled state disagrees with request"; return false;
+        }
+#endif
+#ifndef BSI_TEST_BUCKLING_FACTOR
+        if (b.state == BSI_BSTATE_COMPUTED ? !(std::isfinite(b.factor) && b.factor > 0) : !std::isnan(b.factor)) {
+            why = "invalid buckling factor for state"; return false;
+        }
+#endif
+    }
     // Validate every emitted recovery value before producing any section.
     const bool f32 = storage_ == BSI_STORAGE_F32;
     if (include_ & kIncMembers) for (const auto& m : members_v_)
@@ -237,7 +273,9 @@ bool ReplyBuilder::finalizeSolve(std::string& why) {
     if (unassignedKind != unassignedCells.size()) { why = "ownerKind=unassigned count " + std::to_string(unassignedKind) + " != unassigned listing " + std::to_string(unassignedCells.size()); return false; }
     std::sort(warnings_.begin(), warnings_.end(), [](const WarningCount& a, const WarningCount& b) { return a.code < b.code; });
     sortUnassigned(unassigned_);
+#ifndef BSI_TEST_BUCKLING_ORDER
     std::sort(buckling_.begin(), buckling_.end(), [](const Buckling& a, const Buckling& b) { return a.island < b.island; });
+#endif
 
     // ---- layout, fixed order ----
 #ifdef BSI_TEST_RECOVERY_NARROW_DC

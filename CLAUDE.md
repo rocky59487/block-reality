@@ -26,6 +26,14 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 
 ### 現況（v0.4 進行中）
 
+**最新接續（2026-09-09）**：MC66A_BSI_AGGREGATION已本地驗證，共同host五態/完整島集合、
+Java IslandBuckling與混合世界摘要已接；世界拒絕不清除局部Critical。契約52檔91e64576fd24…。
+Windows/Linux宿主417checks與六變異、Java四變異；Windows413登錄389PASS/24SKIP，
+Linux JNA相關14PASS，原生語料8PASS/2SKIP。詳細 evidence/BSI_AGGREGATION/RESULTS.md。
+下一步為opt-in BSI/frame_v2接LiveState.lastBuckling；尚不宣告eigen，遊戲仍SidecarClient。
+下方dated數字是各單元當時的記錄，最新規劃以docs/MC66A_PROGRESS.md為準。
+
+
 - **已落地**：`contract/`（BSI v1 + 共用 host，逐位鏡像 tectonic2）；Java 側 `mod/core/.../bsi/`（frame/header/codec）
   與 `.../engine/`（`InProcessEngine` + JNA 綁定）；N19–N24 判準已凍；CI 跑契約、打包、跨倉漂移。
 - **2026-09-04 量到的整合現況**（Linux 箱，RECORDED）：契約逐位、pin 自洽；`InProcessEngineTest` **首次在 CI 之外**對本機建的 `libbsi_tectonic.so` 跑，

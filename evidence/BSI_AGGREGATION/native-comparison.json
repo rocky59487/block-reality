@@ -1,0 +1,38 @@
+{
+  "replies": {
+    "C5-floating-beam-mechanism.json-f64": [
+      "87657080ad88db7c342dd538fb435eb3293c99275fc13ec3f594b0ff6aaf1d53",
+      "e36a12b6161b0817b5bdae3bf3659fe7be8c9a01603da7ad21a56f81f18ab4da",
+      "a9f13a03bbba8d31b9d6f115988c6ea31ee16b88a9d9f5afa5f643ab46b1aedf"
+    ],
+    "C5-floating-beam-mechanism.json-f32": [
+      "87657080ad88db7c342dd538fb435eb3293c99275fc13ec3f594b0ff6aaf1d53",
+      "e36a12b6161b0817b5bdae3bf3659fe7be8c9a01603da7ad21a56f81f18ab4da",
+      "ed35f26bbec1f43572660b5c4a008488c4ac2196cd840d4e4a6aec27804c7192"
+    ],
+    "C6-slab-on-beam.json-f64": [
+      "4d205591fabc79eaf712ca59bc7681831aa6b376616d0197008745df04b9d26d",
+      "ef34692315901c184fa40440377b5b84ced9a22f92aade2ab3bb717b58fdd3fc",
+      "283764741590034f24aa0030b89686e989f6dc2f4699c80a6b0fbdd9f2539e30"
+    ],
+    "C6-slab-on-beam.json-f32": [
+      "4d205591fabc79eaf712ca59bc7681831aa6b376616d0197008745df04b9d26d",
+      "ef34692315901c184fa40440377b5b84ced9a22f92aade2ab3bb717b58fdd3fc",
+      "6412b2f36aff53f17f46013844fff2ef147f3d0a2db82fb622ea36c1a7796aa6"
+    ],
+    "C8-sign-cantilever-top-tension.json-f64": [
+      "87657080ad88db7c342dd538fb435eb3293c99275fc13ec3f594b0ff6aaf1d53",
+      "f18afbed974f86c20c0a4b277bfd43615e0642862b011014dd8f60bcb1234533",
+      "cd78537ac9c0f6028c786841367498cf7109204128b1d62a2893c89724099e5f"
+    ],
+    "C8-sign-cantilever-top-tension.json-f32": [
+      "87657080ad88db7c342dd538fb435eb3293c99275fc13ec3f594b0ff6aaf1d53",
+      "f18afbed974f86c20c0a4b277bfd43615e0642862b011014dd8f60bcb1234533",
+      "67dfbf23c5c89dfd9de50285f770fb8cd435e8180338f19602c06f899e2707ea"
+    ]
+  },
+  "beforeLibrary": "2cb072275e41960f67f3481ba827d15d772aec7439f161dcf4c07cb21ff003df",
+  "afterLibrary": "a568fca1c3b768bae1b5cc3003f1b02970f711ae7736afeb320ddbcd5df67b45",
+  "beforeContract": "4977f57308e6520a6df1903013d757a62546e20809d57a9cf0bc6009ee3b3253",
+  "afterContract": "91e64576fd2497e990706402ebfca07fe4285e1e331e45b493b99b499c0e286d"
+}

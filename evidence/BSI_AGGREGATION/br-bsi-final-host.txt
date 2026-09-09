@@ -1,0 +1,7 @@
+clean: 417 checks / 0 FAIL / DET3
+ANY_COMPUTED: 417 checks / 108 FAIL / DET3
+COLLECTION: 417 checks / 6 FAIL / DET3
+KIND: 417 checks / 3 FAIL / DET3
+FACTOR: 417 checks / 20 FAIL / DET3
+ORDER: 417 checks / 126 FAIL / DET3
+DISABLED: 417 checks / 2 FAIL / DET3

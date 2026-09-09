@@ -122,7 +122,7 @@ int s_solve(bsi_engine* e, const bsi_solve_options* o, const bsi_load* loads, ui
     if (m != "no_equilibrium") bsi_writer_equilibrium(w, z, z, 0.0);
     bsi_writer_quality(w, 0.0, 0, 1, 0, 0);
     if (m == "bit2_missing") bsi_writer_buckling(w, 0, BSI_BSTATE_COMPUTED, BSI_BUCK_EIGEN, 0.5);
-    else if (m != "bit2_orphan") bsi_writer_buckling(w, 0, BSI_BSTATE_DISABLED, BSI_BUCK_NONE, std::nan(""));
+    else if (m != "bit2_orphan" && !memberXyz.empty()) bsi_writer_buckling(w, 0, BSI_BSTATE_DISABLED, BSI_BUCK_NONE, std::nan(""));
     bsi_writer_diag(w, memberXyz.empty() ? 0 : 2, memberXyz.empty() ? 0 : 1, 0, memberXyz.empty() ? 0 : 1, 0, 0);
     return BSI_OK;
 }

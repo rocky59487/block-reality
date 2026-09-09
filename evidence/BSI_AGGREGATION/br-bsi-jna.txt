@@ -1,0 +1,44 @@
+Starting a Gradle Daemon (subsequent builds will be faster)
+> Task :api:compileJava
+> Task :api:processResources NO-SOURCE
+> Task :api:classes
+> Task :api:jar
+> Task :core:compileJava
+> Task :core:processResources
+> Task :core:classes
+> Task :core:compileTestJava
+> Task :core:processTestResources NO-SOURCE
+> Task :core:testClasses
+
+> Task :core:test
+
+BsiAnalysisNativeTest > realCommitResultsShareNativeFlagsSamplesAndLifecycle() PASSED
+
+InProcessEngineTest > thisBuildKnowsWhichContractItSpeaks() PASSED
+
+InProcessEngineTest > aCantileverUnderItsOwnWeightComesBackWithTheClosedFormReaction() PASSED
+
+InProcessEngineTest > aForeignContractHashIsRefusedAndNothingElseIsSent() PASSED
+
+InProcessEngineTest > anEngineThatIsNotOneIsRefusedWithAReason() PASSED
+
+InProcessEngineTest > openOptionsStayInsideWhatTheContractAccepts() PASSED
+
+InProcessRecoveryTest > nativeOptInSidesAndGoverningIdentityReachDisplay() PASSED
+
+InProcessRecoveryTest > nativeShellFramesAndSurfaceStorageAreCoherent() PASSED
+
+InProcessRecoveryTest > nativeBeamSamplesAndPointLoadSidesReachTheSharedDisplay() PASSED
+
+InProcessRecoveryTest > cantileverFaceSignsAndStorageMatchClosedForm() PASSED
+
+InProcessRecoveryTest > nativeShellRecoveryFeedsTheSameDisplayAndPickingPath() PASSED
+
+InProcessRecoveryTest > coupledSlabWeightAndTransformsAreInvariant() PASSED
+
+InProcessRecoveryTest > unifiedAnalysisKeepsTheNativeShellFlagsAndSamples() PASSED
+
+InProcessRecoveryTest > memberGeometryUsesActualAxesRotatedSectionAndF64WorldPositions() PASSED
+
+BUILD SUCCESSFUL in 11s
+6 actionable tasks: 6 executed

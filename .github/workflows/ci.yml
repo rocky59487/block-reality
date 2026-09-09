@@ -177,6 +177,11 @@ jobs:
       - name: the host's own suite
         run: ./build/host/host_tests
 
+      - name: complete buckling aggregation and named fault gates
+        run: |
+          python3 scripts/check_buckling_host.py --build build/host \
+              --out build/buckling-aggregation --expected docs/MC66A_BSI_HOST_COUNTS.json
+
       # C-1/C-2/C-9: the same corpus through every transport and through the in-process C
       # ABI, and the replies must be BITWISE identical across all of them. The C ABI leg is
       # the one the mod takes, so a divergence there is a divergence in shipping code.

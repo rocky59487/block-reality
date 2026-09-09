@@ -54,6 +54,8 @@ import java.util.Optional;
  *                      once (N18)
  * @param overCapacity supplied global capacity flag, independent of the numeric summary
  * @param bucklingCritical supplied global stability flag, independent of the factor
+ * @param bucklingIslands complete native per-island readback, or empty for legacy callers;
+ *                        a refused world has no global factor but retains computed island factors
  * @param unassigned  blocks this solve produced no element result for, grouped by reason.
  *                    The reasons are NOT interchangeable and the game side does have to
  *                    tell them apart: a plate block that closed no facet is a modelling
@@ -80,7 +82,20 @@ public record AnalysisResult(
         List<ShellSnapshot> shells,
         List<UnassignedBlocks> unassigned,
         boolean overCapacity,
-        boolean bucklingCritical) {
+        boolean bucklingCritical,
+        List<IslandBuckling> bucklingIslands) {
+
+    /** Existing callers with supplied global flags have no per-island readback. */
+    public AnalysisResult(WorldRevision revision, boolean ok, boolean singular, String diagnostic,
+                          double maxDc, int governing, String governingKind, int islands,
+                          int singularIslands, double equilibriumResidual, double bucklingFactor,
+                          BucklingState bucklingState, List<MemberSnapshot> members,
+                          List<ShellSnapshot> shells, List<UnassignedBlocks> unassigned,
+                          boolean overCapacity, boolean bucklingCritical) {
+        this(revision, ok, singular, diagnostic, maxDc, governing, governingKind, islands,
+                singularIslands, equilibriumResidual, bucklingFactor, bucklingState, members,
+                shells, unassigned, overCapacity, bucklingCritical, List.of());
+    }
 
     /** Legacy Sidecar compatibility: that protocol supplies numbers without global flags. */
     public AnalysisResult(WorldRevision revision, boolean ok, boolean singular, String diagnostic,
@@ -97,6 +112,7 @@ public record AnalysisResult(
         members = List.copyOf(members);
         shells = List.copyOf(shells);
         unassigned = List.copyOf(unassigned);
+        bucklingIslands = List.copyOf(bucklingIslands);
         bucklingState = bucklingState == null ? BucklingState.UNKNOWN : bucklingState;
         diagnostic = diagnostic == null ? "" : diagnostic;
         governingKind = governingKind == null ? "" : governingKind;
