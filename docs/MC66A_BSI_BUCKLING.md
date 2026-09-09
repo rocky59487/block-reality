@@ -71,3 +71,11 @@ sd.eulerBernoulli OR md.eulerBernoulli 時 Asy=Asz=0，其他幾何/容量不變
 EB_IGNORE 的物理故障移到新 BSI buckling 解析短梁 gate；不再以舊拒絕臂作其證據。
 新 C10 原語料實跑PASS，無assume；9PASS/1SKIP(C13 custom)。新增budget非法值與未知
 進階選項的PROTOCOL_ERROR腿，缺mode不改原schema預設語意。
+
+
+## 2026-09-09 SCHEMA_UNKNOWN 真反例
+
+更新後邊界334 checks有9FAIL：三輪各subdiv/maxIter/tol被巢狀schema默默接受。
+原schema缺additionalProperties=false；依原凍結的未知選項拒絕硬線補上，未擴充ABI。
+首輪原始輸出、schema開放版原生庫SHA與來源保留作SCHEMA_UNKNOWN反例；這是實際漏驗，
+不是預期能力遷移。其餘325項已過；完整334固定結論待新schema重建後驗證。
