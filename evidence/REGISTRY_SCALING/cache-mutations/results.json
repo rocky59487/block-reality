@@ -1,0 +1,46 @@
+[
+  {
+    "arm": "aliased-capture",
+    "exit": 1,
+    "behavioral_oracle": [
+      {
+        "test": "workSnapshotDoesNotAliasCallerCollections()",
+        "failure": "org.opentest4j.AssertionFailedError"
+      }
+    ],
+    "pass": true
+  },
+  {
+    "arm": "mutable-entry",
+    "exit": 1,
+    "behavioral_oracle": [
+      {
+        "test": "workAndGraphViewsRejectEveryMutableEntryPoint()",
+        "failure": "org.opentest4j.AssertionFailedError"
+      }
+    ],
+    "pass": true
+  },
+  {
+    "arm": "mutable-record-view",
+    "exit": 1,
+    "behavioral_oracle": [
+      {
+        "test": "graphRecordsAndRangeViewsNeverExposeMutableEntries()",
+        "failure": "org.opentest4j.AssertionFailedError"
+      }
+    ],
+    "pass": true
+  },
+  {
+    "arm": "stale-coverage-cache",
+    "exit": 1,
+    "behavioral_oracle": [
+      {
+        "test": "encodedSnapshotsAreCallerOwnedAndInvalidateAfterCoverageEdits()",
+        "failure": "org.opentest4j.AssertionFailedError"
+      }
+    ],
+    "pass": true
+  }
+]

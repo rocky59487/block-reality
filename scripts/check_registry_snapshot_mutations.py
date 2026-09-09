@@ -28,7 +28,11 @@ def main():
         ('mutable-record-view', 'mod', 'core/src/main/java/com/blockreality/core/world/ConstructionLedger.java',
          'new ConcurrentSkipListMap<>(records)', 'new TreeMap<>(records)',
          ':core:test', '*ConstructionSnapshotTest.graphRecordsAndRangeViewsNeverExposeMutableEntries',
-         'core/build/test-results/test', 'graphRecordsAndRangeViewsNeverExposeMutableEntries()')]
+         'core/build/test-results/test', 'graphRecordsAndRangeViewsNeverExposeMutableEntries()'),
+        ('stale-coverage-cache', 'mod', 'core/src/main/java/com/blockreality/core/world/WorldCellIndex.java',
+         'snapshot = null; encoding = null;', 'snapshot = null;',
+         ':core:test', '*WorldCellIndexTest.encodedSnapshotsAreCallerOwnedAndInvalidateAfterCoverageEdits',
+         'core/build/test-results/test', 'encodedSnapshotsAreCallerOwnedAndInvalidateAfterCoverageEdits()')]
     results = []
     (root / 'build').mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='rs-mutants-', dir=root / 'build') as temporary:
