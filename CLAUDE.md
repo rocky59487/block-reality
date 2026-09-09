@@ -174,3 +174,11 @@ core316=304PASS/12SKIP、Forge80PASS，合計396登錄；十變異具名咬合�
 small配置約55.9KB→71.8KB的代價照登；AMD耗時僅RECORDED_ONLY，沒有i9/FPS/速度勝出宣稱。
 原v1.3與契約54檔不變；下一單元NATIVE消費者封裝/解包競爭，再按依賴接GAME_SWAP。
 原DISPLAY_BAND仍依PE3/MC65B，v2/v3/v4與歷史失敗保持原線。
+
+### 2026-09-09 NATIVE消費者封裝
+
+正式v1.3 Windows/Linux原庫已進同一0.4.0-dev jar，來源鏈/解包前契約/版本隔離/兩JVM競爭
+與真BSI 24frames×3各平台逐位驗證。core327=315PASS/12SKIP、Forge80PASS，
+407登錄/395PASS/12SKIP；實際InProcessEngineTest5+InProcessRecoveryTest8=13項真JNA，
+舊Sidecar28項仍執行。十Java變異及來源/打包反例有完整證據；使用docs/NATIVE_PACKAGING.md。
+遊戲仍走SidecarClient，未做GAME_SWAP/N25 HUD/FPS；勿刪最後相容入口。下一段為引擎MC66a。

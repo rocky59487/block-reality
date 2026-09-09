@@ -1413,3 +1413,17 @@ channel10完整元素交付、控制優先/超額明示、收端累積額度与�
 小語料為共享payload與守門增加配置：55.9KB→71.8KB；不稱全面效能改善。AMD時間只RECORDED_ONLY。
 資料量上限不代表整體求解/FPS上限；未做新i9/Linux/真HUD驗收，GAME_SWAP仍未換裝。
 原始stdout/stderr/XML、基線/後測、source hash與mutation compiler bytes見tectonic2 gate/evidence/DISPLAY_DELIVERY。
+
+## 2026-09-09 NATIVE消費者封裝（判準先凍）
+
+判準docs/NATIVE_CONSUMER.md由fcbb9e4先凍；七字元hello身份2e0ad2f、精確授權例外76b8021
+先記首敗再改。真v1.3 Windows/Linux庫已封同一jar；根checksum、來源3761檔、provenance/SDK
+與每份原bytes核對。兩平台CAPI→JNA各24回應×3逐位、兩JVM真競爭、真ACL/POSIX拒絕、
+缺/壞pin與損壞/超長/中斷/版本並存全執行。13真JNA/28舊Sidecar；core327=315PASS/12SKIP、
+Forge80PASS、合計407登錄/395PASS/12SKIP。十Java變異、十來源鏈破壞及四guard移除、
+六Gradle破壞、九jar注入；首次7FAIL、driver/來源inventory/hello/授權首敗及未咬cleanup變異
+全保存於配對引擎gate/evidence/NATIVE_CONSUMER。N24 Windows半邊已有真bytes腿，macOS仍無實機。
+舊anOlderLibraryIsRemovedButNothingElseIs由本次凍結改為保存其他版本，原測試bytes保留；
+既有≥64KiB規則只對兩份精確hash的授權全文開例外，不泛放行license目錄。
+WSL首次/tmp輸出後續無法讀回，最終改persistent ext4全重跑保存218檔；不冒充Linux全Java回歸。
+舊41.7ms/Linux7FAIL保留，遊戲迴圈尚未換裝；這是封裝本地驗收，不是v2/v4或遊戲發布。

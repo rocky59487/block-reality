@@ -167,23 +167,29 @@ tasks.register('bundleEngines') {
             }
             def doc = new groovy.json.JsonSlurper().parse(prov)
             def pin = new File(project.projectDir, '../contract/CONTRACT_SHA256').text.trim().split()[0].toLowerCase()
+            def platforms = new HashSet<String>()
+            if (doc.contractSha256 != pin) throw new GradleException('provenance contract pin mismatch')
             doc.libraries.each { lib ->
+                if (!(lib.os in ['windows', 'linux', 'macos']) || !(lib.arch in ['x86_64', 'aarch64']) ||
+                        lib.platform != "${lib.os}-${lib.arch}" || !platforms.add(lib.platform) ||
+                        !(lib.file ==~ /[A-Za-z0-9][A-Za-z0-9_.-]*/) ||
+                        !(lib.sha256 ==~ /[0-9a-f]{64}/) || !(lib.engineVersion ==~ /\S+/)) {
+                    throw new GradleException('invalid or duplicate native provenance entry')
+                }
                 def f = new File(new File(natSrc, lib.platform), lib.file)
                 if (!f.isFile()) {
                     throw new GradleException("provenance.json lists ${lib.platform}/${lib.file}, " +
                             "which is not in ${natSrc}")
                 }
-                def md = java.security.MessageDigest.getInstance('SHA-256')
-                f.withInputStream { ins ->
-                    byte[] buf = new byte[65536]
-                    int n
-                    while ((n = ins.read(buf)) > 0) md.update(buf, 0, n)
-                }
-                def hex = md.digest().collect { String.format('%02x', it) }.join('')
+                // Validate the exact bytes subsequently written; do not reopen the source
+                // after hashing and leave a hash/copy race in the manifest's identity.
+                byte[] nativeBytes = f.bytes
+                def hex = java.security.MessageDigest.getInstance('SHA-256').digest(nativeBytes)
+                        .collect { String.format('%02x', it) }.join('')
                 // The provenance was written from a copy; this is the copy going into the
                 // jar. They must be the same bytes, or the manifest describes a file the
                 // player never receives.
-                if (hex != lib.sha256) {
+                if (hex != lib.sha256 || nativeBytes.length != lib.size) {
                     throw new GradleException("${lib.platform}/${lib.file} is ${hex.take(12)}… " +
                             "but provenance.json recorded ${lib.sha256.take(12)}… — the staging " +
                             'directory changed under the build')
@@ -194,8 +200,8 @@ tasks.register('bundleEngines') {
                 }
                 def pdir = new File(dest, lib.platform)
                 pdir.mkdirs()
-                new File(pdir, lib.file).bytes = f.bytes
-                natLines << "${lib.os} ${lib.arch} ${lib.file} ${hex} ${f.length()} ${lib.engineVersion} ${lib.contractSha256}"
+                new File(pdir, lib.file).bytes = nativeBytes
+                natLines << "${lib.os} ${lib.arch} ${lib.file} ${hex} ${nativeBytes.length} ${lib.engineVersion} ${lib.contractSha256}"
             }
             if (natLines.isEmpty()) {
                 throw new GradleException("-PbrNativesDir=${brNativesDir} was asked for and " +
@@ -221,6 +227,13 @@ tasks.register('bundleEngines') {
         def tp = new File(meta, 'third_party')
         tp.mkdirs()
         file('../third_party').listFiles()?.each { f -> new File(tp, f.name).bytes = f.bytes }
+        if (natSrc != null) {
+            copy { from new File(natSrc, 'licenses'); into new File(tp, 'native-release') }
+            def receipt = new File(meta, 'native-release')
+            receipt.mkdirs()
+            new File(receipt, 'provenance.json').bytes = new File(natSrc, 'provenance.json').bytes
+            copy { from new File(natSrc, 'release'); into receipt }
+        }
 
         if (!natLines.isEmpty()) {
             new File(dest, 'natives.manifest').setText(

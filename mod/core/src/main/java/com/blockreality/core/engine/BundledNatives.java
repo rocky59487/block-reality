@@ -1,9 +1,11 @@
 package com.blockreality.core.engine;
 
 import com.blockreality.core.sidecar.BundledEngine;
+import com.blockreality.core.bsi.BsiContract;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
@@ -11,11 +13,11 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HexFormat;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -56,6 +58,7 @@ public final class BundledNatives {
 
     /** Where the forge build writes the natives manifest. */
     public static final String MANIFEST = DIR + "natives.manifest";
+    private static final int MAX_MANIFEST_BYTES = 65536;
 
     private BundledNatives() {}
 
@@ -73,7 +76,7 @@ public final class BundledNatives {
         /** Resource path inside the jar. */
         public String resource() { return DIR + os + "-" + arch + "/" + fileName; }
 
-        /** First 16 hex characters of the hash — the unpack directory's name. */
+        /** Abbreviated hash for diagnostics only; never a cache identity. */
         public String shortHash() { return sha256.substring(0, 16); }
 
         public String platform() { return os + "-" + arch; }
@@ -88,6 +91,7 @@ public final class BundledNatives {
      */
     public static List<Entry> parse(String manifest) {
         List<Entry> out = new ArrayList<>();
+        var platforms = new HashSet<String>();
         int lineNo = 0;
         for (String raw : manifest.split("\n")) {
             lineNo++;
@@ -124,6 +128,9 @@ public final class BundledNatives {
             }
             if (size <= 0) {
                 throw new IllegalArgumentException("natives manifest line " + lineNo + ": size " + size);
+            }
+            if (!platforms.add(f[0] + "-" + f[1])) {
+                throw new IllegalArgumentException("natives manifest line " + lineNo + ": duplicate platform");
             }
             out.add(new Entry(f[0], f[1], f[2], f[3].toLowerCase(Locale.ROOT), size, f[5],
                     f[6].toLowerCase(Locale.ROOT)));
@@ -169,7 +176,7 @@ public final class BundledNatives {
 
     /** Where this entry's library belongs under {@code root}. */
     public static Path targetFor(Path root, Entry e) {
-        return root.resolve("lib").resolve(e.shortHash()).resolve(e.fileName());
+        return root.resolve("lib").resolve(e.platform()).resolve(e.sha256()).resolve(e.fileName());
     }
 
     /**
@@ -191,7 +198,9 @@ public final class BundledNatives {
                 log.accept("no engine library bundled in this build");
                 return Optional.empty();
             }
-            entries = parse(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+            byte[] bytes = in.readNBytes(MAX_MANIFEST_BYTES + 1);
+            if (bytes.length > MAX_MANIFEST_BYTES) throw new IOException("natives manifest exceeds 64 KiB");
+            entries = parse(new String(bytes, StandardCharsets.UTF_8));
         } catch (IOException | RuntimeException e) {
             log.accept("bundled natives manifest unreadable: " + e);
             return Optional.empty();
@@ -205,6 +214,11 @@ public final class BundledNatives {
             return Optional.empty();
         }
         Entry e = picked.get();
+        // Check even an existing cache before returning a path the caller might load.
+        if (!BsiContract.available() || !e.contractSha256().equals(BsiContract.sha256())) {
+            log.accept("bundled engine contract " + e.contractSha256() + " != mod contract " + BsiContract.sha256());
+            return Optional.empty();
+        }
 
         try {
             Path target = targetFor(root, e);
@@ -230,7 +244,8 @@ public final class BundledNatives {
             log.accept("unpacked the bundled engine library to " + target + " (" + e.size()
                     + " bytes, engine " + e.engineVersion() + ", contract " + e.contractSha256().substring(0, 12)
                     + "\u2026)");
-            prune(root, e, log);
+            // Other versions may be between extraction and Native.load in another JVM.
+            // Cache retention is intentional; launch must not delete their libraries.
             return Optional.of(target);
         } catch (IOException | RuntimeException ex) {
             log.accept("could not unpack the bundled engine library: " + ex);
@@ -260,20 +275,32 @@ public final class BundledNatives {
 
     static void copyVerified(BundledEngine.Loader loader, Entry e, Path dest) throws IOException {
         MessageDigest md = digest();
-        long written;
+        long written = 0;
+        boolean verified = false;
         try (InputStream raw = loader.open(e.resource())) {
             if (raw == null) {
                 throw new IOException("manifest lists " + e.resource() + " but the jar does not carry it");
             }
-            try (DigestInputStream in = new DigestInputStream(raw, md)) {
-                written = Files.copy(in, dest, StandardCopyOption.REPLACE_EXISTING);
+            try (OutputStream out = Files.newOutputStream(dest)) {
+                byte[] buffer = new byte[65536];
+                while (written < e.size()) {
+                    int n = raw.read(buffer, 0, (int) Math.min(buffer.length, e.size() - written));
+                    if (n < 0) break;
+                    if (n == 0) continue;
+                    out.write(buffer, 0, n); md.update(buffer, 0, n); written += n;
+                }
+                if (written == e.size() && raw.read() != -1) {
+                    throw new IOException("bundled " + e.fileName() + " exceeds manifest size " + e.size());
+                }
             }
-        }
-        String got = HexFormat.of().formatHex(md.digest());
-        if (written != e.size() || !got.equals(e.sha256())) {
-            Files.deleteIfExists(dest);
-            throw new IOException("bundled " + e.fileName() + " is " + written + " bytes / " + got
-                    + ", manifest says " + e.size() + " / " + e.sha256());
+            String got = HexFormat.of().formatHex(md.digest());
+            if (written != e.size() || !got.equals(e.sha256())) {
+                throw new IOException("bundled " + e.fileName() + " is " + written + " bytes / " + got
+                        + ", manifest says " + e.size() + " / " + e.sha256());
+            }
+            verified = true;
+        } finally {
+            if (!verified) Files.deleteIfExists(dest);
         }
     }
 
@@ -316,38 +343,6 @@ public final class BundledNatives {
 
     private static void move(Path tmp, Path target, Entry e) throws IOException {
         move(tmp, target, e, BundledNatives::atomicReplace);
-    }
-
-    /**
-     * Removes libraries this build did not ship.
-     *
-     * <p>Only directories under {@code lib/} whose name is 16 hex digits are touched. A library
-     * still mapped by a running JVM cannot be deleted on Windows; that is expected, and the
-     * failure is swallowed so the next launch tries again rather than the unpack failing.
-     */
-    static void prune(Path root, Entry keep, Consumer<String> log) {
-        Path lib = root.resolve("lib");
-        try (var dirs = Files.list(lib)) {
-            dirs.filter(Files::isDirectory)
-                .filter(d -> d.getFileName().toString().length() == 16)
-                .filter(d -> d.getFileName().toString().chars().allMatch(BundledNatives::isHex))
-                .filter(d -> !d.getFileName().toString().equals(keep.shortHash()))
-                .forEach(d -> {
-                    try (var files = Files.list(d)) {
-                        for (Path f : files.toList()) Files.deleteIfExists(f);
-                    } catch (IOException ignored) {
-                        // Still mapped by a running process: leave it, try next launch.
-                    }
-                    try {
-                        Files.deleteIfExists(d);
-                        log.accept("removed a superseded engine library: " + d.getFileName());
-                    } catch (IOException ignored) {
-                        // ditto
-                    }
-                });
-        } catch (IOException ignored) {
-            // The directory may not exist yet on the very first launch.
-        }
     }
 
     static String sha256(Path p) throws IOException {
