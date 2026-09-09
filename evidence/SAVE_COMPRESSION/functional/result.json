@@ -1,0 +1,7 @@
+{
+  "iterations": 900,
+  "measured_samples": 720,
+  "canonical_payloads_matched_across_six_forks": 150,
+  "functional_pass": true,
+  "timing_classification": "Recorded"
+}
