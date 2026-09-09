@@ -43,3 +43,18 @@ capability、不換遊戲入口、不重發 v1.3。下一單元才接 LiveState 
   漏每島保存四種源碼變異具名失敗。先 harvest 記錄名單，再獨立提交固定結果。
 - 正常 host 三跑 bytes 相同才稱 DET3；保留首跑失敗，環境缺依賴不算通過或變異命中。
   不宣稱本輪已驗 native eigen、三箱求解、C10、i9、FPS、N16/N18 或 GAME_SWAP。
+
+## 2026-09-09 固定具名結果（正式重跑前獨立提交）
+
+Windows/Linux host harvest 同為417項；正常0FAIL，六變異依序
+ANY_COMPUTED=108、COLLECTION=6、KIND=3、FACTOR=20、ORDER=126、DISABLED=2 FAIL，
+每臂DET3。固定名單 MC66A_BSI_HOST_COUNTS.json；Java補齊空集合後14項，
+FLATTEN=3、FACTOR_LEAK=2、CLEAR_CRITICAL=1、DROP_ISLANDS=3 FAIL，
+固定名單 MC66A_BSI_JAVA_COUNTS.json。後續 runner 以 --expected 比對，不自動重釘。
+
+首輪環境失敗：Windows 通用 host CMake 未設 BSI_STATIC，writer 定義被標 dllimport；
+補旗標後完整預設目標又在動態 stub 找不到 writer 符號。這兩次不是數值失敗，
+也不算 gate PASS。改建本輪需要的 static host/CAPI 測試目標，四套通過；Linux五套通過。
+Windows 長存工作樹另有歷史CRLF，整個contract按既有 .gitattributes 正規化LF，
+之後才鏡像/重新建庫。首份Windows hash d81aa3d8不是提交身份；最終以CONTRACT_SHA256為準。
+實際原契約為51檔，新版52檔；舊對位文件的54檔為過期計數。

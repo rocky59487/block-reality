@@ -1,0 +1,91 @@
+{
+  "FLATTEN": {
+    "checks": [
+      "unsupportedOrContradictoryBucklingIsNotFlattened()",
+      "missingSectionsAndOwnersAreRefused()",
+      "malformedIslandCollectionsAndFactorsFailClosed()",
+      "allHomogeneousStatesRetainTheirMeaning()",
+      "allBlocksContributeEvenWhenTheLastOneIsClear()",
+      "globalFlagsAreIndependentOfNumericThresholds()",
+      "all125MixedWorldsPreserveEveryIslandAndGlobalRefusals()",
+      "malformedValuesNeverBecomeHealthyDefaults()",
+      "computedWorldUsesSmallestSuppliedFactorAndChecksHeader()",
+      "stalePartialAndErrorRepliesCannotReuseSuccessfulFlags()",
+      "refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds()",
+      "incompleteQualityOrDisplayCannotBecomeCommitResults()",
+      "emptyCollectionsDistinguishDisabledFromUnevaluated()",
+      "legacyConstructorRetainsItsDistinctBoundaryConvention()"
+    ],
+    "failed": [
+      "all125MixedWorldsPreserveEveryIslandAndGlobalRefusals()",
+      "computedWorldUsesSmallestSuppliedFactorAndChecksHeader()",
+      "refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds()"
+    ]
+  },
+  "FACTOR_LEAK": {
+    "checks": [
+      "unsupportedOrContradictoryBucklingIsNotFlattened()",
+      "missingSectionsAndOwnersAreRefused()",
+      "malformedIslandCollectionsAndFactorsFailClosed()",
+      "allHomogeneousStatesRetainTheirMeaning()",
+      "allBlocksContributeEvenWhenTheLastOneIsClear()",
+      "globalFlagsAreIndependentOfNumericThresholds()",
+      "all125MixedWorldsPreserveEveryIslandAndGlobalRefusals()",
+      "malformedValuesNeverBecomeHealthyDefaults()",
+      "computedWorldUsesSmallestSuppliedFactorAndChecksHeader()",
+      "stalePartialAndErrorRepliesCannotReuseSuccessfulFlags()",
+      "refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds()",
+      "incompleteQualityOrDisplayCannotBecomeCommitResults()",
+      "emptyCollectionsDistinguishDisabledFromUnevaluated()",
+      "legacyConstructorRetainsItsDistinctBoundaryConvention()"
+    ],
+    "failed": [
+      "all125MixedWorldsPreserveEveryIslandAndGlobalRefusals()",
+      "refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds()"
+    ]
+  },
+  "CLEAR_CRITICAL": {
+    "checks": [
+      "unsupportedOrContradictoryBucklingIsNotFlattened()",
+      "missingSectionsAndOwnersAreRefused()",
+      "malformedIslandCollectionsAndFactorsFailClosed()",
+      "allHomogeneousStatesRetainTheirMeaning()",
+      "allBlocksContributeEvenWhenTheLastOneIsClear()",
+      "globalFlagsAreIndependentOfNumericThresholds()",
+      "all125MixedWorldsPreserveEveryIslandAndGlobalRefusals()",
+      "malformedValuesNeverBecomeHealthyDefaults()",
+      "computedWorldUsesSmallestSuppliedFactorAndChecksHeader()",
+      "stalePartialAndErrorRepliesCannotReuseSuccessfulFlags()",
+      "refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds()",
+      "incompleteQualityOrDisplayCannotBecomeCommitResults()",
+      "emptyCollectionsDistinguishDisabledFromUnevaluated()",
+      "legacyConstructorRetainsItsDistinctBoundaryConvention()"
+    ],
+    "failed": [
+      "refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds()"
+    ]
+  },
+  "DROP_ISLANDS": {
+    "checks": [
+      "unsupportedOrContradictoryBucklingIsNotFlattened()",
+      "missingSectionsAndOwnersAreRefused()",
+      "malformedIslandCollectionsAndFactorsFailClosed()",
+      "allHomogeneousStatesRetainTheirMeaning()",
+      "allBlocksContributeEvenWhenTheLastOneIsClear()",
+      "globalFlagsAreIndependentOfNumericThresholds()",
+      "all125MixedWorldsPreserveEveryIslandAndGlobalRefusals()",
+      "malformedValuesNeverBecomeHealthyDefaults()",
+      "computedWorldUsesSmallestSuppliedFactorAndChecksHeader()",
+      "stalePartialAndErrorRepliesCannotReuseSuccessfulFlags()",
+      "refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds()",
+      "incompleteQualityOrDisplayCannotBecomeCommitResults()",
+      "emptyCollectionsDistinguishDisabledFromUnevaluated()",
+      "legacyConstructorRetainsItsDistinctBoundaryConvention()"
+    ],
+    "failed": [
+      "all125MixedWorldsPreserveEveryIslandAndGlobalRefusals()",
+      "computedWorldUsesSmallestSuppliedFactorAndChecksHeader()",
+      "refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds()"
+    ]
+  }
+}
