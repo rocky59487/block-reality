@@ -202,7 +202,7 @@
         "selfWeight": {"type": "boolean", "default": true},
         "gravity": {"$ref": "#/$defs/vec3", "default": [0, -9.80665, 0]},
         "loads": {"type": "integer", "minimum": 0, "maximum": 1048576},
-        "buckling": {"type": "object", "properties": {"mode": {"$ref": "#/x-enums/bucklingMode"}, "budgetDof": {"type": "integer"}, "K": {"type": "number", "exclusiveMinimum": 0, "maximum": 100}}},
+        "buckling": {"type": "object", "additionalProperties": false, "properties": {"mode": {"$ref": "#/x-enums/bucklingMode"}, "budgetDof": {"type": "integer", "minimum": 0, "maximum": 2147483647}, "K": {"type": "number", "exclusiveMinimum": 0, "maximum": 100}}},
         "precision": {"type": "object", "properties": {
           "tier": {"$ref": "#/x-enums/tier"}, "targetRel": {"type": "number", "exclusiveMinimum": 0},
           "storage": {"$ref": "#/x-enums/storage"}, "warmStart": {"type": "boolean"}, "maxTimeMs": {"type": "integer", "minimum": 0}}},

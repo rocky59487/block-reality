@@ -116,11 +116,18 @@ public final class InProcessEngine implements AutoCloseable {
     public AnalysisResult analyze(WorldRevision expected, boolean selfWeight, double[] gravity,
             List<BsiRecords.Load> loads, Integer numThreads, Map<Integer,String> materials,
             Map<Integer,String> sections, BsiHeaders.Storage storage) {
+        return analyze(expected, selfWeight, gravity, loads, numThreads, materials, sections, storage, null);
+    }
+
+    /** Opt-in same-solve eigen analysis; existing calls keep buckling disabled. */
+    public AnalysisResult analyze(WorldRevision expected, boolean selfWeight, double[] gravity,
+            List<BsiRecords.Load> loads, Integer numThreads, Map<Integer,String> materials,
+            Map<Integer,String> sections, BsiHeaders.Storage storage, BsiHeaders.EigenBuckling buckling) {
         if (status != Status.READY || !worldDeclared || expected.value() != revision)
             return AnalysisResult.failed(expected, "BSI analysis: no matching declared world");
         var precision = new BsiHeaders.Precision(BsiHeaders.Tier.COMMIT, storage);
         return BsiAnalysisResult.decode(solve(selfWeight, gravity, loads, numThreads,
-                BsiAnalysisResult.INCLUDE, precision), expected, materials, sections, precision);
+                BsiAnalysisResult.INCLUDE, precision, buckling), expected, materials, sections, precision);
     }
 
     /** One solve. Returns the reply (which may be an error frame) or null when the engine is off. */
@@ -132,10 +139,16 @@ public final class InProcessEngine implements AutoCloseable {
     /** Explicit storage/tier request; the engine's capability gate owns any refusal. */
     public BsiResponse solve(boolean selfWeight, double[] gravity, List<BsiRecords.Load> loads,
                              Integer numThreads, List<String> include, BsiHeaders.Precision precision) {
+        return solve(selfWeight, gravity, loads, numThreads, include, precision, null);
+    }
+
+    public BsiResponse solve(boolean selfWeight, double[] gravity, List<BsiRecords.Load> loads,
+                             Integer numThreads, List<String> include, BsiHeaders.Precision precision,
+                             BsiHeaders.EigenBuckling buckling) {
         if (status != Status.READY) return null;
         byte[] payload = loads == null || loads.isEmpty() ? null : BsiRecords.encodeLoads(loads);
         int n = payload == null ? 0 : payload.length / BsiRecords.LOAD_BYTES;
-        return send(BsiHeaders.solve(nextId(), revision, selfWeight, gravity, n, numThreads, include, precision), payload);
+        return send(BsiHeaders.solve(nextId(), revision, selfWeight, gravity, n, numThreads, include, precision, buckling), payload);
     }
 
     private boolean ok(BsiResponse r) {

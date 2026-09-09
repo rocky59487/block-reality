@@ -24,6 +24,11 @@ public final class BsiHeaders {
         public Precision { Objects.requireNonNull(tier, "tier"); Objects.requireNonNull(storage, "storage"); }
     }
 
+    /** ABI 1 eigen uses the engine's fixed solver defaults. Zero selects its DOF budget. */
+    public record EigenBuckling(int budgetDof) {
+        public EigenBuckling { if (budgetDof < 0) throw new IllegalArgumentException("negative buckling budget"); }
+    }
+
     private static JsonWriter base(String id, String method, long revision) {
         return new JsonWriter().beginObj()
                 .kv("bsi", BsiContract.MAJOR).kv("kind", "request")
@@ -62,12 +67,20 @@ public final class BsiHeaders {
 
     public static String solve(String id, long revision, boolean selfWeight, double[] gravity,
                                int loads, Integer numThreads, List<String> include, Precision precision) {
+        return solve(id, revision, selfWeight, gravity, loads, numThreads, include, precision, null);
+    }
+
+    public static String solve(String id, long revision, boolean selfWeight, double[] gravity,
+                               int loads, Integer numThreads, List<String> include, Precision precision,
+                               EigenBuckling buckling) {
         JsonWriter w = base(id, "bsi.solve", revision);
         w.key("body").beginObj().kv("selfWeight", selfWeight);
         if (gravity != null) {
             w.key("gravity").beginArr().val(gravity[0]).val(gravity[1]).val(gravity[2]).endArr();
         }
         if (loads > 0) w.kv("loads", loads);
+        if (buckling != null) w.key("buckling").beginObj().kv("mode", "eigen")
+                .kv("budgetDof", buckling.budgetDof()).endObj();
         if (numThreads != null) w.kv("numThreads", numThreads.intValue());
         if (precision != null) w.key("precision").beginObj()
                 .kv("tier", precision.tier().name().toLowerCase(Locale.ROOT))
