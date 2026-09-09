@@ -1493,3 +1493,9 @@ M832 背景 worker p95 65.627 ms、含引擎的原生呼叫 p95 48.566 ms、appl
 HashMap entry 陣列可改值；沿同一路徑也抓到既有 Graph wrapped TreeMap 的可寫 entry。
 保留兩份首敗，先補凍 ordered record/range views 的不可变出口再改儲存；這是修正範圍擴展，
 原性能/配置預算、identity/bytes 不變，未降低門檻。最終效能結論待完整比較，不能提前稱過門。
+
+RS 首次完整對照：600 份 bytes 雜湊一致、Linux 指定36項無跳過通過，但 D4096/ONE
+object encode 4.427358 ms 超過 3.803510 ms，D131072/BURST64 coverage encode
+4.130830 ms 超過 3.560641 ms；兩條性能門仍判 FAIL。完整首批保存，不靠主流程加速抵銷。
+先加凍 codec 的精確配置/宣告 bytes 重用及舊版 golden，再改序列化；原 baseline、場景、
+fork 數、暖身與每條預算一律不動。新版若仍輸，照登；SP 尚未開始量測。

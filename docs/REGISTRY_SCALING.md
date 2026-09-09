@@ -96,3 +96,28 @@ storage whose entries are intrinsically detached and immutable, then forbid all
 map mutations. The relative timing/allocation budgets above are unchanged; added
 ordered-storage costs must be reported. This expands storage scope from coordinate
 maps to record views for correctness, without relaxing any prior gate.
+
+## First complete candidate: two timing losses; serializer follow-up frozen
+
+All three baseline forks and all three `8d613c0` candidate forks completed. All 600
+warmup/measured digests match; 36 selected Linux registry/native/lifecycle tests pass
+without skips. The first candidate nevertheless FAILS the unchanged relative budgets:
+D4096/ONE object encoding p95 4.427358 ms > 3.803510 ms budget, and D131072/BURST64
+coverage encoding 4.130830 ms > 3.560641 ms budget. Raw files remain in
+`evidence/REGISTRY_SCALING/{baseline,candidate-first,comparison-first}`. Neither
+encoder's measured allocation size changed; these observations alone do not isolate
+why their latency increased. The large capture/reconcile improvement does not erase
+the two losses. SP remains held before its first measurement.
+
+Before the next production edit, extend optimization scope to the object serializer:
+pre-encode each distinct declaration with the existing modified-UTF representation,
+allocate one exactly sized final byte array, and hash its body without copying it.
+Keep format/version, order, null/invalid-data behavior, body length limit, caller-owned
+output and all bytes identical. Freeze a golden covering all catalogue declarations,
+axes, lineage, pending destruction and modified-UTF failure text on the current
+encoder before replacing it. Keep the decoder and coverage encoder unchanged.
+
+The same original baseline, scenes, three forks, 600 paired digests, and every
+timing/allocation budget apply to the new candidate. Preserve the first failed
+candidate; do not increase warmups, change JVM heap, select a faster fork or change
+the line to turn an observed loss into a pass. Any continued loss stays explicit.
