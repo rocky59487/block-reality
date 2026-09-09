@@ -1,0 +1,39 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes
+> Task :core:compileTestJava
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses
+
+> Task :core:test
+
+ConstructionCodecTest > encoderPreservesCatalogueLineageAndModifiedUtfGolden() PASSED
+
+ConstructionCodecTest > resignedUnknownSchemaAndInvalidEpochCounterAndCountsStillRefuse() PASSED
+
+ConstructionCodecTest > corruptionTruncationAndTrailingDataAlwaysRefuse() PASSED
+
+ConstructionCodecTest > duplicateIdsOwnershipAndOrphanParentsRefuseEvenWithValidChecksum() PASSED
+
+WorldCellIndexTest > coverageIncludesOnlyActualGroundBordersWithoutInventingDiagonalContacts() PASSED
+
+WorldCellIndexTest > oppositeObservationOrdersAndReloadHaveIdenticalBytes() PASSED
+
+WorldCellIndexTest > emptyReconciliationOnlyRemovesItsOwnChunkAndSnapshotsStayImmutable() PASSED
+
+WorldCellIndexTest > encodedSnapshotsAreCallerOwnedAndInvalidateAfterCoverageEdits() PASSED
+
+WorldCellIndexTest > capacityFailureDoesNotEvictAndSurvivesRestart() PASSED
+
+WorldCellIndexTest > invalidChunkObservationsAreAtomic() PASSED
+
+WorldCellIndexTest > damagedChecksumsAndEveryTruncationFailClosed() PASSED
+
+WorldCellIndexTest > validDigestCannotAuthorizeUnknownSchemaDuplicatesOrderingOrOutOfWorldCells() PASSED
+
+BUILD SUCCESSFUL in 2s
+7 actionable tasks: 3 executed, 4 up-to-date

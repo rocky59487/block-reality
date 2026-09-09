@@ -140,3 +140,25 @@ cost and retained-memory tradeoff. Format, hashes, ordering, capacity/refusal ru
 generation and chunk observation semantics stay unchanged. A compiled invalidation
 removal must fail a named behavioral oracle. Keep all original performance budgets,
 forks/scenes/warmups and baseline; no sample substitution. SP still has not started.
+
+## Cached candidate: cold traversal loss; canonical snapshot reuse frozen
+
+`d1457a7` completes three forks and all 600 payload pairs match. All 45 selected
+Linux registry/native/lifecycle tests pass without skips. One timing budget still
+FAILS: D32768/BURST64 coverage encoding 2.146288 ms > 2.039887 ms. Keep
+`candidate-cached` and `comparison-cached`. Unchanged-coverage encoding passes;
+the cold path now allocates an additional caller-owned clone as declared. At
+D131072/BURST64 coverage encode allocation p95 is 3146688 B vs 1573760 B baseline;
+total iteration allocation still passes the original budget.
+
+Before the next edit, reuse the existing canonical `cells()` list snapshot when
+encoding coverage instead of traversing the same TreeSet again. This is the same
+ordered, immutable snapshot already shared with readers. When encoding precedes
+any reader after a geometry change, creating this snapshot costs an additional
+bounded list of at most MAX_CELLS references; it remains cached until the next
+change. Report this retention and cold-call cost, and do not move work outside the
+measured operations. The existing RS coverage_snapshot stage already constructs
+this snapshot; all stages, first-call behavior, bytes, ownership/invalidation,
+original forks/scenes and every budget stay unchanged. No benchmark-only branch.
+SP remains an independent Recorded adapter baseline and must run after RS timing
+JVMs finish; its results cannot make a failed RS timing gate pass.

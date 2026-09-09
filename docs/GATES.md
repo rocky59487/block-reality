@@ -1504,3 +1504,11 @@ RS serializer 候選 `bd9053d`：600 份 bytes 仍一致、Linux 37項無跳過�
 但 coverage ONE 在 D131072 為 4.240746 > 4.129652 ms，在 F131072 為
 3.777959 > 3.269339 ms，兩條仍 FAIL。先凍不變 coverage 的有界編碼 cache、所有變更失效
 與 caller-owned 回傳/故障臂，再改索引；原性能線不移，額外首次配置與保留記憶體照登。
+
+
+RS cached candidate `d1457a7`: 600 payload pairs match and 45 selected Linux tests
+pass without skips. D32768/BURST64 coverage encode still FAILS its original budget
+(2.146288 > 2.039887 ms). Preserve the complete third run. Before further code
+changes, freeze reuse of the existing canonical list snapshot during encoding,
+including its bounded retention and extra cold-call allocation when no prior reader
+requested the list. No scene, warmup, fork, percentile or budget is changed.
