@@ -84,6 +84,12 @@ CONSTRUCTION_IDENTITY 已接永久 namespace/單調 ID、產品/宣告軸分組�
 剛體物理；引擎 events、重新安裝與客戶端 identity 封包仍待交付。詳
 `../evidence/CONSTRUCTION_IDENTITY/RESULTS.md`；#17 的身份部分推進，未整題關閉。
 
+再次對照 #12/#17：目前身份是對已觀測世界的 metadata 批次發布，**尚不是施工交易**。
+#12 要求確認時材料帳、全部方塊、artifact/ownership 與單次 worldRevision 一起原子提交，
+另需重送去重、衝突拒絕、任一步故障回滾及 inverse undo。這些還沒有正式遊戲路徑與整合門；
+不能以身份保存/分組測試代替。施工邊界/接頭、延長既有 piece 的規則，也須在該交易入口
+明確化；觀測式分組與原生預覽連結不能直接授權破壞、掉落、損傷或材料產出。
+
 MODULE_PIPELINE_PROFILE 已將 metadata/gather/queue/BSI/解碼/封包/apply 分別量測，預設不收資料。
 A49/F576/M832 三場景各 40 次實跑，數字只作 Recorded 基線；M832 原生呼叫占主要成本，
 不能把背景 65.6 ms p95 說成 client frame time。尚未量 FPS、真玩家 socket、存檔或 registry 上界。
@@ -92,3 +98,7 @@ A49/F576/M832 三場景各 40 次實跑，數字只作 Recorded 基線；M832 �
 REGISTRY_SCALING 已針對 4K/32K/131K 密集座標與 131K 長梁凍結量測，定位大世界
 不可變 Map 的成本；候選快照改善與 entry 寫入出口修正已有身份/存檔回歸證據。
 完整三 fork 效能對照仍待完成，詳 `../evidence/REGISTRY_SCALING/RESULTS.md`。
+
+REGISTRY_SAVE_PROFILE 已先凍 Windows/NTFS 與 WSL/ext4 的真 SavedData adapter 量測，
+使用共同種子、READY/PENDING64、三個 JVM fork；程式已編譯，執行排在 RS 時序量測之後。
+這仍是資料介面的成本，不能代替 live server tick、全世界存檔或 client FPS。
