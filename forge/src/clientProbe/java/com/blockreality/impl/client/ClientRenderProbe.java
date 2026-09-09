@@ -108,7 +108,7 @@ public final class ClientRenderProbe {
             reload.join();
             if (mc.player == null || mc.level == null || mc.screen != null || mc.getOverlay() != null
                     || announcedRevision() != pending.get("worldRevision").getAsLong()
-                    || !String.valueOf(ClientStressState.notice()).equals(pending.get("kind").getAsString())
+                    || !stateKind().equals(pending.get("kind").getAsString())
                     || mc.getWindow().getWidth() != pending.get("width").getAsInt()
                     || mc.getWindow().getHeight() != pending.get("height").getAsInt()) { warmFrames = 0; return; }
             if (++warmFrames < 40) return;
@@ -131,13 +131,21 @@ public final class ClientRenderProbe {
         var field = ClientStressState.class.getDeclaredField("pendingRevision");
         field.setAccessible(true); return field.getLong(null);
     }
+    private static String stateKind() {
+        // Production clears the notice when accepting a result. Observe the actual
+        // summary flag as well; a null notice by itself does not mean RESULT.
+        var notice = ClientStressState.notice();
+        return notice != null ? notice.name() : ClientStressState.hasData() ? "RESULT" : "NONE";
+    }
     private static JsonObject state(Minecraft mc) throws ReflectiveOperationException {
         JsonObject result = new JsonObject();
         result.addProperty("connected", mc.player != null && mc.level != null);
         result.addProperty("screen", mc.screen == null ? "none" : mc.screen.getClass().getSimpleName());
         result.addProperty("worldRevision", announcedRevision());
         result.addProperty("resultRevision", ClientStressState.revision());
-        result.addProperty("kind", String.valueOf(ClientStressState.notice()));
+        result.addProperty("kind", stateKind());
+        result.addProperty("notice", String.valueOf(ClientStressState.notice()));
+        result.addProperty("hasData", ClientStressState.hasData());
         result.addProperty("stale", ClientStressState.stale());
         result.addProperty("members", ClientStressState.totalMembers());
         result.addProperty("shells", ClientStressState.totalShells());

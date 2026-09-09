@@ -13,3 +13,11 @@ This is ordinary test-profile setup, not a security/authentication permission.
 Use a new output directory and keep the original logs and failed capture record.
 The existing native server fixture remains unchanged, so cached bootstrap still
 requires the pre-join result with no structure edit or resolve.
+
+The second client connected and observed revision 44/result 44, 2 members,
+12 shells, max D/C 0.7597396436387274 and stale=false. Its coordinator still failed:
+the probe incorrectly expected `ClientStressState.notice()` to remain RESULT,
+but production deliberately clears that notice after accepting a summary. Fix
+only the probe to report RESULT when the actual notice is null **and** hasData is
+true; record both underlying fields. No production delivery/state is changed.
+Preserve the second raw state and failed events before another client attempt.
