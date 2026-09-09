@@ -1,10 +1,11 @@
 package com.blockreality.core.engine;
 
+import com.blockreality.core.sidecar.BundledEngine;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -30,22 +31,16 @@ public final class EngineLocator {
 
     /** {@code linux-x86_64}, {@code windows-x86_64}, {@code macos-aarch64} … as the manifest spells it. */
     public static String platform() {
-        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
-        String arch = System.getProperty("os.arch", "").toLowerCase(Locale.ROOT);
-        String o = os.contains("win") ? "windows" : os.contains("mac") || os.contains("darwin") ? "macos" : os.contains("linux") ? "linux" : "unknown";
-        String a = switch (arch) {
-            case "amd64", "x86_64" -> "x86_64";
-            case "aarch64", "arm64" -> "aarch64";
-            default -> arch.isEmpty() ? "unknown" : arch;
-        };
-        return o + "-" + a;
+        String os = BundledEngine.normaliseOs(System.getProperty("os.name"));
+        String arch = BundledEngine.normaliseArch(System.getProperty("os.arch"));
+        return (os == null ? "unknown" : os) + "-" + (arch == null ? "unknown" : arch);
     }
 
     /** The file name a native library takes on this platform. */
     public static String libraryFileName(String base) {
-        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
-        if (os.contains("win")) return base + ".dll";
-        if (os.contains("mac") || os.contains("darwin")) return "lib" + base + ".dylib";
+        String os = BundledEngine.normaliseOs(System.getProperty("os.name"));
+        if ("windows".equals(os)) return base + ".dll";
+        if ("macos".equals(os)) return "lib" + base + ".dylib";
         return "lib" + base + ".so";
     }
 

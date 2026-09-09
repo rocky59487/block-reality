@@ -39,8 +39,10 @@ public final class BsiContract {
     private static String load() {
         try (InputStream in = BsiContract.class.getResourceAsStream(RESOURCE)) {
             if (in == null) return null;
-            String s = new String(in.readAllBytes(), StandardCharsets.UTF_8).trim();
-            return s.length() == 64 ? s : null;
+            byte[] bytes = in.readNBytes(67);
+            if (bytes.length > 66) return null;
+            String s = new String(bytes, StandardCharsets.UTF_8).trim();
+            return s.matches("[0-9a-f]{64}") ? s : null;
         } catch (IOException e) {
             return null;
         }
