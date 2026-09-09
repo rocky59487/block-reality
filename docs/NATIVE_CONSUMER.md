@@ -51,3 +51,12 @@ v2/v3/v4 仍為長期目標；本單元驗收不自動发布新引擎版本。
 两條各驗其原格式：發布鏈仍須完整 commit 相等，wire 必須精確為 c90b448，且所載庫的全 SHA
 須等於已驗的正式庫。不以任意前綴放行其他庫；清單 engineVersion 使用實際七字元 buildSha。
 hello 的 threads 為引擎可用容量；本單元 open 與所有 solve 請求均明寫 numThreads=1。
+
+## 2026-09-09 授權檔尺寸首敗追記
+
+check_bundle 原「未列在引擎清單且 ≥64KiB 一律拒絕」把正式套件的 Ubuntu-GCC.txt
+（兩個平台各一份）判為 FAIL。原線/首次輸出保留。不能刪除應隨庫交付的授權全文來洗綠。
+新增例外僅允許正式 release 已驗 bytes 的兩個精確 META-INF/third_party/native-release/
+<linux-x86_64 或 windows-x86_64>/licenses/Ubuntu-GCC.txt 路徑；大小與 SHA256 釘在
+check_bundle.py，且須和正式已核對的資產一致。不得泛免除 META-INF 或 license 目錄。
+對登錄文字改一 byte 與另放 ≥64KiB 未登錄文字均必須 FAIL；其餘舊封裝反例維持。
