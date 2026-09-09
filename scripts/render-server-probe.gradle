@@ -1,0 +1,10 @@
+// Explicit isolated server only; client probe sources are never added here.
+allprojects { afterEvaluate { p ->
+    if (p.plugins.hasPlugin('net.minecraftforge.gradle')) {
+        p.sourceSets.main.java.srcDir('src/renderServerProbe/java')
+        p.minecraft.runs.server {
+            jvmArgs '-Xms512m', '-Xmx2g'
+            args '--nogui'
+        }
+    }
+} }

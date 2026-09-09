@@ -42,3 +42,12 @@ JSON 存在或 unit test 通過冒充 CM-4..6。動態損傷材質與引擎剛�
   把虛構預設尺寸拿去展示。顯示失敗不影響物品放置或原生 binding。
 - 可重現資料測試要改相同 token 的宣告數值、交換非方形尺寸、刪除宣告及注入
   錯誤角色/尺寸，證明讀數來源與拒絕路徑。資料測試不算真畫面通過。
+
+## Supplemental preparation amendment
+
+The installed Windows baseline remains blocked by its security dialog. As recorded
+in GATES.md and CLIENT_RENDER_PROBE.md, an isolated real Linux development-client
+baseline may precede source-level material/HUD candidate edits. This changes the
+preparation order only; those candidates are supplemental, and CM-1..6/N25 retain
+their original installed-client/profile requirements. The Windows jar and existing
+CM server stay intact for their own before/after comparison.
