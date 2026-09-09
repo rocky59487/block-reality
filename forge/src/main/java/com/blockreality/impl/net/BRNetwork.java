@@ -1,7 +1,7 @@
 package com.blockreality.impl.net;
 
 import com.blockreality.api.AnalysisResult;
-import com.blockreality.core.sidecar.SidecarClient;
+import com.blockreality.core.engine.NativeGameRuntime;
 import com.blockreality.impl.BlockRealityMod;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -100,7 +100,7 @@ public final class BRNetwork {
         }
     }
 
-    public static void sendEngineStatus(ServerLevel level, SidecarClient.Status status, String detail) {
+    public static void sendEngineStatus(ServerLevel level, NativeGameRuntime.Status status, String detail) {
         EngineStatusPacket packet = new EngineStatusPacket(status.name(), detail);
         for (ServerPlayer player : level.players()) {
             CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);

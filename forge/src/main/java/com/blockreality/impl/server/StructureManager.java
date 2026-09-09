@@ -5,15 +5,16 @@ import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.core.RevisionGate;
-import com.blockreality.core.protocol.SolveRequest;
+import com.blockreality.core.engine.GameWorldSnapshot;
+import com.blockreality.core.engine.NativeGameRuntime;
+import com.blockreality.core.engine.GameNativeLoader;
+import com.blockreality.core.bsi.BsiHeaders;
+import com.blockreality.core.bsi.BsiRecords;
 import com.blockreality.core.protocol.Truncation;
-import com.blockreality.core.sidecar.SidecarClient;
-import com.blockreality.core.sidecar.SidecarConfig;
 import com.blockreality.impl.BRConfig;
 import com.blockreality.impl.BlockRealityMod;
 import com.blockreality.impl.block.StructuralBlock;
 import com.blockreality.impl.net.BRNetwork;
-import com.blockreality.impl.net.EngineStatusPacket;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -33,7 +34,6 @@ import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,7 +71,11 @@ public final class StructureManager {
 
     private final ResourceKey<Level> dimension;
     private final RevisionGate gate = new RevisionGate();
-    private final SidecarClient sidecar;
+    private final NativeGameRuntime engine;
+    private volatile String engineDetails = "native engine not loaded yet";
+    private final AtomicBoolean cleanupStarted = new AtomicBoolean();
+    private boolean enabledLastTick;
+    private long probedRevision = -1;
 
     private final Set<BlockPos> structural = ConcurrentHashMap.newKeySet();
     /**
@@ -93,7 +97,7 @@ public final class StructureManager {
     private boolean probeWithoutLoads;
     /** The reply now arriving is that probe: use it to drop loads, do not draw it. */
     private final AtomicBoolean probeInFlight = new AtomicBoolean(false);
-    /** Whether the LAST dispatched request skipped the buckling screen (size policy). */
+    /** Whether the last request explicitly disabled the native eigen analysis. */
     private boolean lastBucklingSkipped;
     private boolean dirty;
     private int ticksSinceSolve;
@@ -110,7 +114,10 @@ public final class StructureManager {
 
     // ---- the in-progress gather; all main-thread ----
     private final GatherCycle<BlockPos> cycle = new GatherCycle<>();
-    private SolveRequest.Builder cycleBuilder;
+    private List<GameWorldSnapshot.Cell> cycleCells;
+    private Set<BlockKey> cycleGround;
+    private List<BlockKey> cycleUndeclared;
+    private record Gathered(GameWorldSnapshot world, String diagnostic) { }
     private Set<BlockKey> cycleIncluded;
     private List<BlockPos> cycleStale;
     /** Tracked blocks this cycle could not read, because their chunk is not loaded. */
@@ -127,31 +134,25 @@ public final class StructureManager {
     /** Last revision the clients were told about, result or pending signal (INV-4). */
     private long lastAnnouncedRevision = -1;
 
-    private final SidecarLocator.Result location;
+    private static boolean enabled() {
+        return BRConfig.INSTANCE.analysisEnabled.get() && BRConfig.INSTANCE.mode.get() == BRConfig.EngineMode.INPROCESS;
+    }
 
     private StructureManager(ResourceKey<Level> dimension) {
         this.dimension = dimension;
-        // The master switch has to reach the UNPACK, not only the solve. Its guard lives
-        // in the tick loop, while the search — and therefore writing 4 MB of native
-        // executable to disk — happened here, in the constructor. A server admin who
-        // turned analysis off to avoid exactly that got it anyway, and the disclosure
-        // written for CurseForge and Modrinth says the switch covers it.
-        this.location = BRConfig.INSTANCE.analysisEnabled.get()
-                ? SidecarLocator.locate()
-                : new SidecarLocator.Result(java.util.Optional.empty(),
-                        List.of("analysis is disabled in this world's server config; "
-                                + "nothing was unpacked and no engine was started"));
-        BlockRealityMod.LOG.info("[{}] {}", dimension.location(), SidecarLocator.describe(location));
-
-        // A path is still handed over when nothing was found, so the client reports
-        // "binary not found: <path>" rather than a bare null. It never starts.
-        Path exe = location.found().orElse(Path.of("br-sidecar"));
-        this.sidecar = new SidecarClient(
-                new SidecarConfig(exe, BRConfig.INSTANCE.requestTimeoutMs.get(), 4, 2000),
-                msg -> BlockRealityMod.LOG.info("[{}] {}", dimension.location(), msg));
+        enabledLastTick = enabled();
+        java.util.function.Consumer<String> log = message -> {
+            engineDetails = message;
+            BlockRealityMod.LOG.info("[{}] {}", dimension.location(), message);
+        };
+        this.engine = new NativeGameRuntime(enabledLastTick,
+                () -> GameNativeLoader.open(BRConfig.INSTANCE.enginePath.get(),
+                        net.minecraftforge.fml.loading.FMLPaths.GAMEDIR.get().resolve("blockreality/engine"),
+                        BRConfig.INSTANCE.numThreads.get(), log),
+                BRConfig.INSTANCE.requestTimeoutMs.get(), log);
     }
 
-    public SidecarLocator.Result engineLocation() { return location; }
+    public String engineLocation() { return engineDetails; }
 
     public ResourceKey<Level> dimension() { return dimension; }
 
@@ -168,15 +169,7 @@ public final class StructureManager {
 
     /** Clears a disabled engine so the next tick tries again, for {@code /br reset}. */
     public void resetEngine() {
-        // ...including the unpack, which cached its failures for the life of the JVM: a
-        // player whose antivirus quarantined the engine once had to restart the game after
-        // adding an exclusion, and nothing said so.
-        SidecarLocator.forgetBundled();
-        // Off the server thread: reset() takes the client's conversation lock, and a
-        // wedged solve holds that lock for up to the request timeout (CONC-2).
-        if (!AnalysisExecutor.submit(sidecar::reset)) {
-            sidecar.reset();
-        }
+        engine.requestReset(enabled());
         requestResolve();
     }
 
@@ -270,10 +263,10 @@ public final class StructureManager {
     /** Tracked blocks the gather could not read that touched what it did send. */
     public int truncatedBlocks() { return truncationFace.size(); }
 
-    public SidecarClient.Status engineStatus() { return sidecar.status(); }
+    public NativeGameRuntime.Status engineStatus() { return engine.state().status(); }
 
-    /** Which wire the engine conversation uses: {@code "shm"} or {@code "json"}. */
-    public String engineTransport() { return sidecar.transport(); }
+    /** The native transport selected for the game session. */
+    public String engineTransport() { return "BSI/JNA in-process"; }
 
     /** Glasses affordance: toggle the configured downward test load on one block. */
     public boolean toggleLoad(BlockPos pos) {
@@ -327,7 +320,9 @@ public final class StructureManager {
     @SubscribeEvent
     public static void onPlace(BlockEvent.EntityPlaceEvent e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
-        if (!(e.getPlacedBlock().getBlock() instanceof StructuralBlock)) return;
+        if (!(e.getPlacedBlock().getBlock() instanceof StructuralBlock)) {
+            groundChanged(level, e.getPos()); return;
+        }
         StructureManager m = of(level);
         m.structural.add(e.getPos().immutable());
         m.markDirty();
@@ -349,11 +344,27 @@ public final class StructureManager {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBreak(BlockEvent.BreakEvent e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
-        if (!(e.getState().getBlock() instanceof StructuralBlock)) return;
+        if (!(e.getState().getBlock() instanceof StructuralBlock)) {
+            groundChanged(level, e.getPos()); return;
+        }
         StructureManager m = of(level);
         m.structural.remove(e.getPos().immutable());
         m.loaded.remove(e.getPos().immutable());
         m.markDirty();
+    }
+
+    /** Ground edits change the declared world even when no structural cell was placed or removed. */
+    private static void groundChanged(ServerLevel level, BlockPos pos) {
+        StructureManager manager = BY_DIMENSION.get(level.dimension());
+        if (manager == null) return;
+        for (net.minecraft.core.Direction face : net.minecraft.core.Direction.values()) {
+            if (manager.structural.contains(pos.relative(face))) { manager.markDirty(); return; }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onNeighbourChange(BlockEvent.NeighborNotifyEvent e) {
+        if (e.getLevel() instanceof ServerLevel level) groundChanged(level, e.getPos());
     }
 
     /**
@@ -377,6 +388,7 @@ public final class StructureManager {
         if (m == null) return;
         boolean touched = false;
         for (BlockPos pos : e.getAffectedBlocks()) {
+            groundChanged(level, pos);
             if (!(level.getBlockState(pos).getBlock() instanceof StructuralBlock)) continue;
             BlockPos at = pos.immutable();
             m.structural.remove(at);
@@ -409,20 +421,16 @@ public final class StructureManager {
     public static void onLevelUnload(LevelEvent.Unload e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
         StructureManager m = BY_DIMENSION.remove(level.dimension());
-        if (m != null) m.closeSidecarAsync();
+        if (m != null) m.closeEngineAsync();
     }
 
-    /**
-     * Closes the engine conversation off the server thread. close() waits for an
-     * in-flight solve (they share the client's lock) and then for process exit — up to
-     * seconds against a wedged sidecar, which the server thread must not eat (CONC-9).
-     * Queued on the analysis pool; if the pool is already gone (server stopping), the
-     * pool has been drained first, so the inline fallback is uncontended.
-     */
-    private void closeSidecarAsync() {
-        if (!AnalysisExecutor.submit(sidecar::close)) {
-            sidecar.close();
-        }
+    /** Invalidate now; even a wedged native call can only hold a daemon cleanup thread. */
+    private void closeEngineAsync() {
+        engine.requestClose();
+        if (!cleanupStarted.compareAndSet(false, true)) return;
+        Thread cleanup = new Thread(engine::closeWhenIdle, "br-native-close");
+        cleanup.setDaemon(true);
+        cleanup.start();
     }
 
     @SubscribeEvent
@@ -433,23 +441,32 @@ public final class StructureManager {
         if (m != null) m.tick(level);
     }
 
-    /**
-     * Ordered shutdown (CONC-8): stop the pool FIRST and wait for it to drain, so no
-     * background solve can race the closes; THEN close every sidecar, uncontended.
-     * The old order closed the clients while their solves were still running, which
-     * manufactured exactly the close-versus-solve window the per-client lock now has
-     * to absorb.
-     */
     public static void shutdownAll() {
-        AnalysisExecutor.shutdown();
-        for (StructureManager m : BY_DIMENSION.values()) m.sidecar.close();
+        for (StructureManager m : BY_DIMENSION.values()) m.closeEngineAsync();
         BY_DIMENSION.clear();
+        AnalysisExecutor.shutdown();
     }
 
     // ------------------------------------------------------------------- loop
     private void tick(ServerLevel level) {
         ticksSinceSolve++;
-        if (!BRConfig.INSTANCE.analysisEnabled.get()) return;
+        boolean on = enabled();
+        if (on != enabledLastTick) {
+            enabledLastTick = on;
+            engine.requestReset(on);
+            requestResolve();
+            if (!on) {
+                Thread cleanup = new Thread(engine::closeWhenIdle, "br-native-disable");
+                cleanup.setDaemon(true); cleanup.start();
+                BRNetwork.sendEngineStatus(level, engineStatus(), "analysis is off");
+            }
+        }
+        if (!on || engine.closed()) return;
+        if (engine.pollTimeout()) {
+            gate.bump();
+            latest = AnalysisResult.failed(gate.current(), engine.state().detail());
+            BRNetwork.sendEngineStatus(level, engineStatus(), engine.state().detail());
+        }
 
         long currentRevision = gate.current().value();
 
@@ -461,7 +478,7 @@ public final class StructureManager {
             lastAnnouncedRevision = currentRevision;
         }
 
-        if (inFlight.get()) return;
+        if (inFlight.get() || engineStatus() == NativeGameRuntime.Status.DISABLED) return;
 
         long tickStart = System.nanoTime();
 
@@ -485,7 +502,9 @@ public final class StructureManager {
 
     private void beginCycle(long revision) {
         dirty = false;
-        cycleBuilder = SolveRequest.builder(gate.current());
+        cycleCells = new ArrayList<>();
+        cycleGround = new HashSet<>();
+        cycleUndeclared = new ArrayList<>();
         cycleIncluded = new HashSet<>();
         cycleStale = new ArrayList<>();
         cycleSkipped = new ArrayList<>();
@@ -517,81 +536,64 @@ public final class StructureManager {
             return;
         }
         BlockKey key = new BlockKey(pos.getX(), pos.getY(), pos.getZ());
-        cycleBuilder.block(key, sb.materialToken(), sb.sectionToken(), isSupported(level, pos));
+        StructuralBlock.Axis axis = state.getValue(StructuralBlock.AXIS);
+        if (axis == StructuralBlock.Axis.UNDECLARED) { cycleUndeclared.add(key); return; }
+        cycleCells.add(GameWorldSnapshot.Cell.of(key, sb.materialToken(), sb.sectionToken(), axis.wire()));
         cycleIncluded.add(key);
+        for (net.minecraft.core.Direction face : net.minecraft.core.Direction.values()) {
+            BlockPos neighbour = pos.relative(face);
+            BlockKey at = new BlockKey(neighbour.getX(), neighbour.getY(), neighbour.getZ());
+            if (!level.isLoaded(neighbour)) { cycleSkipped.add(at); continue; }
+            BlockState observed = level.getBlockState(neighbour);
+            if (!(observed.getBlock() instanceof StructuralBlock) && !observed.isAir()
+                    && observed.isFaceSturdy(level, neighbour, face.getOpposite())) cycleGround.add(at);
+        }
     }
 
     /** Completes the request: stale removal, then the loads that may travel (#38). */
-    private SolveRequest finishCycle() {
+    private Gathered finishCycle() {
         cycleStale.forEach(structural::remove);
         cycleStale.forEach(loaded::remove);
-
-        Map<BlockKey, double[]> loadsByKey = new HashMap<>();
-        Map<BlockKey, BlockPos> posOf = new HashMap<>();
-        for (Map.Entry<BlockPos, double[]> e : loaded.entrySet()) {
-            BlockKey k = new BlockKey(e.getKey().getX(), e.getKey().getY(), e.getKey().getZ());
-            loadsByKey.put(k, e.getValue());
-            posOf.put(k, e.getKey());
+        List<BsiRecords.Load> forces = new ArrayList<>();
+        for (var entry : loaded.entrySet()) {
+            BlockPos p = entry.getKey();
+            if (!structural.contains(p)) { loaded.remove(p); continue; }
+            if (!probeWithoutLoads && cycleIncluded.contains(new BlockKey(p.getX(), p.getY(), p.getZ()))) {
+                double[] f = entry.getValue();
+                forces.add(new BsiRecords.Load(p.getX(), p.getY(), p.getZ(), f[0], f[1], f[2]));
+            }
         }
-        Set<BlockKey> tracked = new HashSet<>();
-        for (BlockPos p : structural) {
-            tracked.add(new BlockKey(p.getX(), p.getY(), p.getZ()));
-        }
-        // Loads travel only with blocks that are IN this request; the rest wait or die
-        // with their block. The rule lives in SnapshotLoads, where JUnit can reach it.
-        //
-        // ...unless this is the recovery probe, which deliberately carries none of them.
-        List<BlockKey> staleLoads = probeWithoutLoads
-                ? SnapshotLoads.append(cycleBuilder, Map.of(), cycleIncluded, tracked)
-                : SnapshotLoads.append(cycleBuilder, loadsByKey, cycleIncluded, tracked);
-        for (BlockKey k : staleLoads) {
-            BlockPos p = posOf.get(k);
-            if (p != null) loaded.remove(p);
-        }
-
-        // The buckling screen is skipped, loudly, above the configured size — the
-        // eigensolve is cubic and a silent multi-second stall reads as a hang. The
-        // decision is remembered so the result packet can tell the HUD to SAY it:
-        // a factor of 0 alone cannot distinguish "skipped" from "no positive mode"
-        // (the wire conflation is on record in V04_PLAN §2.6).
-        boolean buckle = BucklingPolicy.enabled(cycleBuilder.blockCount(),
-                BRConfig.INSTANCE.bucklingBlockLimit.get());
-        cycleBuilder.buckling(buckle);
-        lastBucklingSkipped = !buckle;
-
-        // Which of the blocks we could not read were touching what we did send (N14-b).
-        // A skipped block far from everything in the request is a different structure
-        // that happens to be unloaded, not a truncation of this one — the distinction is
-        // the reason this is an intersection rather than a count, and the reason analysis
-        // does not switch itself off on every world bigger than the loaded radius.
+        lastBucklingSkipped = !BRConfig.INSTANCE.bucklingEnabled.get();
         truncationFace = Truncation.face(cycleSkipped, cycleIncluded);
-        if (!truncationFace.isEmpty()) {
-            BlockRealityMod.LOG.debug("[{}] request truncated at {} block(s), e.g. {}",
-                    dimension.location(), truncationFace.size(),
-                    Truncation.examples(truncationFace, 3));
-        }
-
-        SolveRequest request = cycleBuilder.build();
-        cycleBuilder = null;
-        cycleIncluded = null;
-        cycleStale = null;
-        cycleSkipped = null;
-        return request;
+        String diagnostic = cycleUndeclared.isEmpty() ? "" : "undeclared placement axis at "
+                + cycleUndeclared.get(0) + " (" + cycleUndeclared.size()
+                + " blocks); sneak-right-click with an empty hand to declare X/Y/Z";
+        GameWorldSnapshot snapshot = diagnostic.isEmpty()
+                ? new GameWorldSnapshot(gate.current(), cycleCells, List.copyOf(cycleGround), forces)
+                : new GameWorldSnapshot(gate.current(), List.of(), List.of(), List.of());
+        cycleCells = null; cycleGround = null; cycleUndeclared = null;
+        cycleIncluded = null; cycleStale = null; cycleSkipped = null;
+        return new Gathered(snapshot, diagnostic);
     }
 
-    private void dispatch(ServerLevel level, SolveRequest request) {
+    private void dispatch(ServerLevel level, Gathered request) {
         ticksSinceSolve = 0;
         inFlight.set(true);
         probeInFlight.set(probeWithoutLoads);
         probeWithoutLoads = false;
 
         MinecraftServer server = level.getServer();
+        Integer threads = BRConfig.INSTANCE.numThreads.get();
+        BsiHeaders.EigenBuckling buckling = BRConfig.INSTANCE.bucklingEnabled.get()
+                ? new BsiHeaders.EigenBuckling(BRConfig.INSTANCE.bucklingDofBudget.get()) : null;
         boolean accepted = AnalysisExecutor.submit(() -> SolveDispatch.run(
-                () -> sidecar.solve(request),
+                () -> request.diagnostic().isEmpty()
+                        ? engine.analyze(request.world(), threads, buckling)
+                        : AnalysisResult.failed(request.world().revision(), request.diagnostic()),
                 result -> server.execute(() -> {
                     // A stopped server runs execute() INLINE on this background thread
                     // (CONC-6). Touch nothing but the flag: the world is going away.
-                    if (server.isStopped()) {
+                    if (server.isStopped() || engine.closed() || BY_DIMENSION.get(dimension) != this) {
                         inFlight.set(false);
                         return;
                     }
@@ -614,36 +616,11 @@ public final class StructureManager {
 
 
     /**
-     * Demo support rule: a structural block resting on something solid that is not itself
-     * structural is held by the ground.
-     *
-     * <p>This is deliberately crude and deliberately temporary — MEMBER_SEMANTICS Q6
-     * (what counts as ground contact, and with what fixity) is still open. Encoding a
-     * guess here and letting it spread through the codebase is how a placeholder becomes
-     * a permanent decision nobody remembers making.
-     */
-    private static boolean isSupported(ServerLevel level, BlockPos pos) {
-        BlockPos below = pos.below();
-        BlockState under = level.getBlockState(below);
-        if (under.isAir()) return false;
-        if (under.getBlock() instanceof StructuralBlock) return false;
-        // isSolidRender was the old test, and it asks a question about VISUAL OCCLUSION:
-        // whether the block fills its cube for the light and culling passes. Carrying
-        // load and blocking sight are different properties, and the nine structural
-        // blocks happen not to tell them apart, so nothing was visibly wrong. Barriers
-        // and glass are where they part company — a barrier occludes nothing and would
-        // have been refused as ground; tinted glass occludes everything and would have
-        // been accepted. isFaceSturdy asks the question actually meant: is the top face
-        // of that block something a thing can stand on.
-        return under.isFaceSturdy(level, below, net.minecraft.core.Direction.UP);
-    }
-
-    /**
      * Applies a finished analysis, on the main thread.
      *
      * <p>A stale or failed result changes nothing at all. That is the single most
      * important rule on this side of the boundary: analysis failure must never mutate the
-     * world, because a mod that demolishes a build when its helper process crashes is a
+     * world, because a mod that demolishes a build when its analysis fails is a
      * mod nobody will install twice.
      *
      * <p>What reaches the wire is decided by the gate, not assumed (#53): the broadcast
@@ -653,6 +630,8 @@ public final class StructureManager {
      * {@code /br status} and travels no further.
      */
     private void apply(ServerLevel level, AnalysisResult result) {
+        if (engine.closed()) return;
+        if (gate.isStale(result)) { probeInFlight.set(false); dirty = true; return; }
         if (probeInFlight.getAndSet(false) && result.ok()) {
             // A STALE probe drops nothing (A-5 follow-up, v0.3a review §3-6): the player
             // edited while it solved, so it is a picture of an old world — a load it
@@ -686,23 +665,13 @@ public final class StructureManager {
             // reason to leave a stale set lying where the next reader will find it.
             withheldMembers = Set.of();
             withheldShells = Set.of();
-            // When there is no engine AND the cause is the one thing a player cannot fix
-            // — no bundled build for their platform — say THAT, in their language, not a
-            // log line (v0.3b review §2-7). Every other diagnostic passes unchanged.
-            String detail = location.found().isEmpty()
-                    ? SidecarLocator.platformReason()
-                            .map(p -> EngineStatusPacket.PLATFORM_PREFIX + p)
-                            .orElse(result.diagnostic())
-                    : result.diagnostic();
-            BRNetwork.sendEngineStatus(level, sidecar.status(), detail);
-            // A failure used to leave `dirty` false, so the dimension went quiet until the
-            // player next edited a block: one engine timeout and analysis was over for the
-            // session (DF-03). Retrying is throttled by minTicksBetweenSolves and bounded
-            // by the client's own restart budget, so "keep trying" cannot become a spin.
-            dirty = true;
-            // ...and if loads are in play, the very next request finds out whether one of
-            // them is the reason (A-5).
-            if (!result.ok() && !loaded.isEmpty()) probeWithoutLoads = true;
+            BRNetwork.sendEngineStatus(level, engineStatus(), result.diagnostic());
+            dirty = false;
+            // At most one unloaded-force probe per revision, and only after a real native refusal.
+            if (!result.ok() && !loaded.isEmpty() && engineStatus() == NativeGameRuntime.Status.READY
+                    && probedRevision != result.revision().value()) {
+                probedRevision = result.revision().value(); probeWithoutLoads = true; dirty = true;
+            }
             return;
         }
         if (gate.isStale(result)) {

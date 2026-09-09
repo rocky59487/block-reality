@@ -92,10 +92,9 @@ public final class AnalysisExecutor {
     }
 
     /**
-     * Stops the pool and waits briefly for in-flight work to unwind. Interrupting first
-     * matters: a solve blocked on the sidecar's reply queue wakes on interrupt, fails
-     * the request, and lets the thread exit — so the wait is bounded by cleanup, not by
-     * the request timeout.
+     * Stops the pool and waits at most three seconds for workers. A native call may ignore
+     * interruption; its daemon worker and cleanup must finish if and when that call returns.
+     * StructureManager has already revoked those results before entering this method.
      */
     public static synchronized void shutdown() {
         if (pool == null) return;

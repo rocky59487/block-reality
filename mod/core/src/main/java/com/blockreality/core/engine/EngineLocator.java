@@ -58,9 +58,9 @@ public final class EngineLocator {
      */
     public static Located locate(String configured, String property, String environment, Path overrideDir, Path bundled) {
         List<Located> candidates = new ArrayList<>();
-        if (configured != null && !configured.isBlank()) candidates.add(new Located(Path.of(configured.trim()), Source.CONFIG));
-        if (property != null && !property.isBlank()) candidates.add(new Located(Path.of(property.trim()), Source.SYSTEM_PROPERTY));
-        if (environment != null && !environment.isBlank()) candidates.add(new Located(Path.of(environment.trim()), Source.ENVIRONMENT));
+        if (configured != null && !configured.isBlank()) return explicit(configured, Source.CONFIG);
+        if (property != null && !property.isBlank()) return explicit(property, Source.SYSTEM_PROPERTY);
+        if (environment != null && !environment.isBlank()) return explicit(environment, Source.ENVIRONMENT);
         if (overrideDir != null) {
             findInDirectory(overrideDir.resolve(platform())).ifPresent(p -> candidates.add(new Located(p, Source.OVERRIDE_DIRECTORY)));
         }
@@ -70,6 +70,13 @@ public final class EngineLocator {
             if (Files.isRegularFile(c.path()) && Files.isReadable(c.path())) return c;
         }
         return new Located(null, Source.NONE);
+    }
+
+    private static Located explicit(String text, Source source) {
+        Path path = Path.of(text.trim());
+        if (!Files.isRegularFile(path) || !Files.isReadable(path))
+            throw new IllegalArgumentException(source + " native library is not readable: " + path);
+        return new Located(path, source);
     }
 
     /** The same ordering with the property and environment read from this JVM. */

@@ -84,3 +84,27 @@ Java 舊 StressFieldSpec/ShellFieldSpec/legacy codec 的移除另需使診斷改
 
 每臂只覆蓋隔離 classpath 中一個 class；必須成功編譯且該 oracle 產生唯一
 AssertionFailedError。不得把編譯錯誤、其他測試失敗、SKIP 或 timeout 記成咬合。
+
+最終 Windows core357/Forge85：442 registered / 414 PASS / 28 SKIP；三個故障臂各
+1 registered / 1 指定 assertion FAIL。Linux server 最終重跑七個場景全部通過較窄的
+模組輸送/狀態條件；混合模型為 2 members / 12 plate facets / 1 unrestrained。
+原始指令回覆、首敗、log 摘錄與來源 hash 見 `../evidence/GAME_RUNTIME/RESULTS.md`。
+`br status` 目前把 islands 總數標成 solved（4 應為 3），且重算期間沒有列結果 revision；
+這兩項真實 UI 缺口保留給下一單元，不把本次 RCON 當 N25 客戶端驗收。
+
+## 開發版操作與遷移
+
+- 仍為 0.4.0-dev；預設 `gradlew build` 的 jar 不含原生庫。
+  `-PbrNativesDir=<staging>` 才打入有 provenance 的庫；舊 `-PbrEngineDir` 除 `none` 外會拒絕。
+  第一次 Windows 反例因未引用 PowerShell 參數而變成 task-not-found，屬呼叫錯誤，不是門檻通過；
+  引用 `'-PbrEngineDir=../dist'` 重跑後由 GAME_RUNTIME 明確拒絕，兩份 log 都保留。
+- `BR_ENGINE` 指向已交付且契約相符的 DLL/SO，或在世界 `serverconfig/blockreality-server.toml`
+  設 `engine.enginePath`。`engine.mode="OFF"` 或 `analysisEnabled=false` 可在選庫前停用。
+  `run.bat` / `run.sh` 已移除拷貝 sidecar 的舊流程；使用 `/br status` 看選庫結果與診斷。
+- 舊 `sidecarPath` / `bucklingBlockLimit` 不再用於遊戲；`bucklingDofBudget=2400` 是暫定
+  per-island 資源上限，未有相應性能承諾。正式 v1.3 庫契約較舊，不能硬繞握手。
+- 新方塊以點擊面的軸向放置；空手潛行右鍵切換 X/Y/Z。舊存檔方塊未宣告時，整輪明示拒絕。
+  指令放置可用 `blockreality:steel_beam[axis=x]`，之後 `/br scan` 採入。
+  任意六面相鄰的非結構 sturdy 面為觀測 ground；結果/固定度全部由引擎定案。
+- `/br reset` 撤銷舊 session 結果，等舊 native 返回後重新載入。native timeout 不能強制終止。
+  僅 Linux 隔離 dedicated server 已實跑；沒有聲稱滑鼠互動/材質方向或 Windows 新庫已驗。

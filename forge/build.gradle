@@ -35,11 +35,9 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            // Optional. The mod also finds the engine through the config file, the
-            // BR_SIDECAR environment variable, the game directory, or PATH — see
-            // SidecarLocator. Absent everywhere just means analysis is off.
-            if (System.getenv('BR_SIDECAR')) {
-                property 'br.sidecar', System.getenv('BR_SIDECAR')
+            // Development override; GameNativeLoader resolves the library lazily on a worker.
+            if (System.getenv('BR_ENGINE')) {
+                property 'br.engine', System.getenv('BR_ENGINE')
             }
             mods { blockreality { source sourceSets.main } }
         }
@@ -78,47 +76,20 @@ apply from: rootProject.file('../gradle/contract-resources.gradle')
 
 // ---------------------------------------------------------------- bundled engine
 //
-// The analysis engine travels INSIDE the jar and unpacks itself on first use (D-027).
-// On CurseForge and Modrinth a mod is one jar dropped into mods/; an engine the player
-// has to fetch and place separately is not a distribution, and the installer scripts that
-// made it bearable cannot run at all when the jar arrives through a launcher.
-//
-// Nothing is downloaded, here or at runtime. These are bytes that scripts/package.sh has
-// already built and gated, copied in with their SHA-256 recorded beside them; the runtime
-// refuses anything whose hash does not match (BundledEngine).
-//
-//   -PbrEngineDir=<dir>    where to take br-sidecar / br-sidecar.exe from
-//   -PbrEngineDir=none     build a jar with no engine in it
-//
-// A jar built with no engine is a legitimate outcome, not a failure: it is the normal
-// development flow, and the mod still finds an engine through sidecarPath, -Dbr.sidecar,
-// BR_SIDECAR, the game directory or PATH. What must never happen is a jar that SAYS it
-// carries an engine and does not, which is why the manifest is generated from the files
-// actually copied rather than written ahead of them.
-//
-// TWO SHAPES, ONE TASK (D-044). The engine is moving from an EXECUTABLE the mod starts as a
-// child process to a LIBRARY the mod loads in-process, because a jar containing a program
-// does not pass distribution review. Both shapes are built by this one task and never by
-// two, because the task DELETES ITS WHOLE OUTPUT DIRECTORY first — a second task writing
-// into the same place would have its work thrown away or, worse, would ship both engines
-// (which is the 2.4 MB -> 4.5 MB bug this deletion was added to fix).
-//
-//   -PbrEngineDir=<dir>     sidecar executables (br-sidecar, br-sidecar.exe). Default ../dist.
-//   -PbrNativesDir=<dir>    engine libraries, laid out by scripts/stage_natives.py as
-//                           <os>-<arch>/<file> plus provenance.json. Default none.
-//
-// A jar must carry ONE of them. Shipping both would mean whichever the runtime picked, the
-// other travelled for nothing, and "which engine is this jar" would have two answers.
-def brEngineDir = project.findProperty('brEngineDir') ?: '../dist'
+// Only shared libraries enter the game jar (D-044, GAME_RUNTIME GR-6).
+// -PbrNativesDir=<dir> consumes staged <os>-<arch>/<file> plus provenance.json.
+// Default none makes a development jar; config/-Dbr.engine/BR_ENGINE may supply a library.
+// Legacy scripts may still pass -PbrEngineDir=none. An executable directory is rejected.
+if ((project.findProperty('brEngineDir') ?: 'none') != 'none') {
+    throw new GradleException('GAME_RUNTIME: executable engine packaging is retired; use -PbrNativesDir or none')
+}
 def brNativesDir = project.findProperty('brNativesDir') ?: 'none'
 def brEngineOut = layout.buildDirectory.dir('generated/engine').get().asFile
 
 tasks.register('bundleEngines') {
-    description = 'Copies the built engine (executable or library) into the jar, with a hash manifest.'
+    description = 'Copies staged native libraries into the jar with provenance and a hash manifest.'
     group = 'build'
-    def src = brEngineDir == 'none' ? null : file(brEngineDir)
     def natSrc = brNativesDir == 'none' ? null : file(brNativesDir)
-    if (src != null) inputs.files(fileTree(src) { include 'br-sidecar', 'br-sidecar.exe' })
     if (natSrc != null) inputs.files(fileTree(natSrc))
     outputs.dir(brEngineOut)
     doLast {
@@ -133,24 +104,6 @@ tasks.register('bundleEngines') {
         // see BundledEngine.DIR. Changing it here means changing it there.
         def dest = new File(brEngineOut, 'blockreality-engine')
         dest.mkdirs()
-        def lines = []
-        // (file name, os, arch). Only x86-64 binaries are built today; a platform with no
-        // entry gets a clear "nothing shipped for you" at runtime rather than a binary for
-        // the wrong architecture.
-        [['br-sidecar.exe', 'windows', 'x86_64'], ['br-sidecar', 'linux', 'x86_64']].each { name, os, arch ->
-            if (src == null) return
-            def f = new File(src, name)
-            if (!f.isFile()) return
-            def md = java.security.MessageDigest.getInstance('SHA-256')
-            f.withInputStream { ins ->
-                byte[] buf = new byte[65536]
-                int n
-                while ((n = ins.read(buf)) > 0) md.update(buf, 0, n)
-            }
-            def hex = md.digest().collect { String.format('%02x', it) }.join('')
-            new File(dest, name).bytes = f.bytes
-            lines << "${os} ${arch} ${name} ${hex} ${f.length()}"
-        }
         // ---------------------------------------------------------------- the library shape
         //
         // Everything here is filled in from provenance.json, which scripts/stage_natives.py
@@ -210,11 +163,6 @@ tasks.register('bundleEngines') {
                         'failure, not a quiet development build; pass none to mean none.')
             }
         }
-        if (!lines.isEmpty() && !natLines.isEmpty()) {
-            throw new GradleException('this build carries BOTH a sidecar executable and an ' +
-                    'engine library. Pass -PbrEngineDir=none when passing -PbrNativesDir, so ' +
-                    '"which engine is this jar" has one answer.')
-        }
 
         // Apache-2.0 4(a) and 4(d) are about the ARTEFACT, not the repository: a
         // recipient of the jar must get the licence and the NOTICE with it. Both files
@@ -241,13 +189,8 @@ tasks.register('bundleEngines') {
                     "# os arch file sha256 size engineVersion contractSha256\n"
                             + natLines.join('\n') + '\n', 'UTF-8')
             logger.lifecycle("bundleEngines: ${natLines.size()} engine library/libraries from ${natSrc}")
-        } else if (lines.isEmpty()) {
-            logger.lifecycle("bundleEngines: no engine found in ${src ?: 'none'} — " +
-                    'building a jar without one (development build)')
         } else {
-            new File(dest, 'engine.manifest').setText(
-                    "# os arch file sha256 size\n" + lines.join('\n') + '\n', 'UTF-8')
-            logger.lifecycle("bundleEngines: ${lines.size()} engine(s) from ${src}")
+            logger.lifecycle('bundleEngines: no native library requested (development build)')
         }
     }
 }
