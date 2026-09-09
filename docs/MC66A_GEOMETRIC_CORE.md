@@ -62,3 +62,13 @@ binary SHA、三跑輸出與判決一起保存。暫未釘定的 check 名單只
 本輪不重打包 native，不以 v1.3 的舊二進位宣稱此新核已進入 Minecraft。
 
 ## 修訂紀錄
+
+### 2026-09-09 首跑名單釘定
+
+Windows 首輪 138 PASS；補強同一凍結範圍內的四項映射原子性後為 142 PASS。
+沒有改動數值判線。gate/mc66a_geometric_counts.json 凍每個 check 的名字/順序，
+十個 arm（clean + 九變異）均 DET3，clean 0 FAIL；依 runner 次序變異 FAIL 數
+12、12、5、24、6、4、6、18、2。所有變異必須命中所列具名 FAIL。
+先前 138 項產物保留為 harvest，最後能力驗證僅認 142 項固定名單及對應來源。
+Linux 啟動曾選到無 Python 的 docker-desktop，再選到無 g++ 的 Ubuntu；
+均未執行 gate，不記作測試 FAIL/通過；C++ 平台使用 Ubuntu-22.04。
