@@ -39,3 +39,19 @@ Windows/Linux/i9 同 build DET3，Linux ASan/UBSan（非 LSan）；host既有測
 真 native C10 / 三傳輸、原 WORLD/lane 與相關 BSI 回歸按觸及面執行。
 原始 stdout/stderr base64+SHA、binary/source SHA、disk/index/HEAD 核對；兩倉 contract
 逐位相同、pin 與 consumer engine ref 同步 commit。未知結果不以 SKIP 或前版 PASS 補上。
+
+
+## 2026-09-09 C10 前置：材料 Euler–Bernoulli 映射（實作前追加）
+
+讀取真 C10 發現其材料 eulerBernoulli=true 仍被 adapter 拒絕。原先將 C10 視為只差
+eigen接線的範圍估計不足，不能以替換語料/assume繞過；本段增加明確前置。
+新增 MaterialDef 預設 false 的欄位，沿唯一 buildSection(sd,md,axisRot,sp) 決定
+sd.eulerBernoulli OR md.eulerBernoulli 時 Asy=Asz=0，其他幾何/容量不變。
+禁止改寫共用 SectionDef；同一斷面供兩材料使用、顯式/預設section、旋轉軸與舊section旗標
+必須各自正確。adapter將契約材料旗標轉發；frame_v2原section旗標与未請求行為不變。
+獨立 oracle：同短懸臂端橫力，EB 位移 PL^3/(3EI)，Timo再加 PL/(G As)。
+按實际求解值檢查 <=1e-9 相對誤差，不能只測Asy屬性；共用斷面無污染按解析兩解對照。
+既有 TEC_MUT_BSI_CORE_EB_IGNORE 保留具名故障並改為「忽略材料旗標」；原 CORE-EB
+拒絕oracle保存在Git歷史/首次回歸輸出，dated改為成功映射且必須有物理差異。
+新故障 TEC_MUT_BSI_BUCKLING_EB_SHARED 將設定污染共用斷面，必須被兩材料腿抓到。
+這是 BSI 已有 opt-in 欄位的新增支援，不修改 ABI/預設求解、不宣稱MC全部材料語意已完成。
