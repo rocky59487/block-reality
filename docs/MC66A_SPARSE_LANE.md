@@ -101,3 +101,15 @@ delta、殘差、dense誤差、seed反例、線性機構FAIL線均不變。
 只放行刻意近臨界的輔助驗證矩陣，不把該因子用於原結構求解。
 這仍是浮點正定性檢查，不是帶捨入誤差界的形式化區間證明。
 新增檢查原始info區分負定/未完成/正常，seed與NO_SHIFT_CHECK仍須咬。
+
+### 2026-09-09 check 名單釘死（實作 harvest 後、固定驗證前）
+
+正常579項、2376DOF門架10項；13變異各自固定完整名單與FAIL集合，
+權威 gate/mc66a_lane_counts.json，消費者鏡像 docs/MC66A_SPARSE_LANE_COUNTS.json。
+NOSUB32、LOAD_MESH12、RELEASE_DROP19、RELEASE_LOCAL3、NOCOUPLE28、
+N_CLIP3、SCALE_OPEN2、INPUT_OPEN3、OUTPUT_EARLY26、NOFILTER_NEG3、
+CONV_LIE2、NO_SHIFT_CHECK34、NO_RESEED12 項FAIL；釋放拒絕/無因子分支的
+檢查數分別458/571，其餘579。這些是命中的FAIL項數，不是變異數或能力數。
+首輪Windows完整harvest正常0FAIL，13變異均exit1且DET3；固定驗證將以
+此名單重建三箱。效能只記錄assembly/lane時間、symbolic1次、numeric次數，
+K/Kg和Krylov持有的純量記憶體；明確排除因子、網格、工作区，不冒充RSS/峰值。
