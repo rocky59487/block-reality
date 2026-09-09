@@ -87,3 +87,12 @@ Linux原host500 checks首次411PASS/89FAIL：共同fixture宣告兩島卻沒有�
 被新的完整性驗證拒絕而連帶失去回收section。retry/host/ABI三套仍PASS。
 fixture補兩筆disabled/none/NaN，所有回收數值、binary32 oracle、500個斷言與門檻原樣保留；
 不得放寬宿主完整性來遷就不完整fixture。首次source/raw照留，payload摘要正當隨完整記錄變動。
+
+
+## 2026-09-09 固定名稱與 FAIL 集合
+
+Windows/Linux首輪一致833正常checks，12變異的精確FAIL集合固定於gate/bsi_buckling_counts.json。
+AGG113、IDS4、KIND5、FACTOR8、ORDER503、CRITICAL1、SNAPSHOT16、STATE1、BUDGET2、
+FLAGS4、EB_IGNORE4、EB_SHARED8；每臂三次stdout/stderr/exit逐位相同。
+Java八變異AGG/FACTOR/CRITICAL/KIND/RESERVED/MIN/IDS/REQUEST各自正常編譯且有具名JUnit失敗。
+新邊界334與真C10九語料已通過；固定後需重跑最終契約pin與完整回歸，前版測試不冒充最终來源。
