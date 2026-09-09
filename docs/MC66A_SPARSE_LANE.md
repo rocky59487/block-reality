@@ -83,3 +83,21 @@ N_CLIP、SCALE_OPEN、INPUT_OPEN、OUTPUT_EARLY、NOFILTER_NEG、CONV_LIE、
 NO_SHIFT_CHECK、NO_RESEED；必要時拆多條，中央登錄，每条必须具名命中。
 
 ## 修訂紀錄
+
+### 2026-09-09 shifted Cholesky 與機構門檻的適用性
+
+首輪2376DOF門架原樣 FAIL：10項中 sparse/dense、殘差及shift完成三項失敗；
+300步、75次數值分解後仍 SolverFailed。原始三次輸出與源碼保存在
+gate/evidence/MC66A_LANE_SHIFT，Linux首次亦照登三處誤導縮排編譯失敗。
+同一門架獨立 dsygv λ=0.63431627762810405；delta=1e-8 時 dense dposv
+Cholesky成功、既有 sn.spd=false；delta=1e-6/1e-4兩者成功。
+sn.spd 同時包含真正的 dpotrf 失敗與原線性機構用的相對pivot floor=1e-12。
+近臨界shift刻意接近奇異，不能把原結構機構門檻當作 Cholesky 的數學符號。
+
+在修改 sn 核前獨立凍結此追加：原 spd 與 pivotFloorCheck 完全保留；
+DP/FP32共同新增每panel原始 potrf info 診斷（未執行為-1，成功0），不改運算序。
+shift驗證需所有panel info=0、所有因子有限且正對角；原彈性K仍必須通過原spd。
+delta、殘差、dense誤差、seed反例、線性機構FAIL線均不變。
+只放行刻意近臨界的輔助驗證矩陣，不把該因子用於原結構求解。
+這仍是浮點正定性檢查，不是帶捨入誤差界的形式化區間證明。
+新增檢查原始info區分負定/未完成/正常，seed與NO_SHIFT_CHECK仍須咬。
