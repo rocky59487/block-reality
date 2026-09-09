@@ -72,3 +72,13 @@ WORLD_AFTER_LOADS、WORLD_ALWAYSON、WORLD_STALE、WORLD_CRITICAL_GE、WORLD_CRI
 WORLD_VERDICT_ALL。每條必須實際exit1且固定FAIL集合；缺少DLL/崩潰不算變異命中。
 
 ## 修訂
+
+### 2026-09-09 首輪釋放端測例校正（原失敗保留）
+
+Windows/Linux 首輪均364 checks / 363 PASS / 1 FAIL，三跑逐位；原 FAIL
+`WS-project 3 lambda` 保留。該Y軸柱 local x=global Y，release[9] 是端j的
+local rx，因此脫開的是global ry（全域index4）；測例卻固定global rx（index3），
+留下零剛度的global ry，獨立單島與世界投影都正確回mechanism。
+校正為固定global ry；釋放條件、荷載、材料、lambda相對1e-9硬線均不改。
+這是建立原定「穩定且具端私有DOF」測例的座標校正，不把原機構改判computed。
+首輪源碼、raw stdout/stderr與SHA連同校正後具名檢查入MC66A_WORLD證據。
