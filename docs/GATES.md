@@ -1530,3 +1530,14 @@ The unchanged SP baseline remains Recorded, not retroactively assigned a pass/fa
 Size grows about18% at131K cells; synchronous save still blocks for tens to over
 100ms. No v1 tick/FPS, native or visual gate is lowered. Linux full Forge109 PASS,
 zero skips; Windows108 PASS/1 SKIP. See evidence/SAVE_COMPRESSION/RESULTS.md.
+
+### 2026-09-10 CLIENT_RENDER_PROBE: explicit supplemental visual workflow
+
+The installed Windows client still has a security permission dialog. A separate
+Linux development client/software renderer may provide a real baseline before
+source-level material/HUD edits. This changes CM's preparation order, not its
+acceptance: resulting visuals are downgraded to supplemental candidates, and
+CM-1..6/N25 remain unaccepted until their original installed-client/profile gates
+run. The installed jar and CM server remain untouched. No screenshot or synthetic
+delivery substitutes for Windows or native release qualification. CRP criteria
+are in docs/CLIENT_RENDER_PROBE.md, committed before probe code or launch.
