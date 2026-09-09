@@ -113,6 +113,87 @@ class BsiAnalysisResultTest {
         byte[] b=f.payload().clone();ByteBuffer.wrap(b).order(ByteOrder.LITTLE_ENDIAN).putDouble(104,0);
         failed(decode(new Fixture(f.header(),b)),"computed zero");
     }
+    // Fixed independent truth table: computed, no-positive, refused, scale, failed.
+    private static final int[][] TRUTH = {{0,0,2,3,4},{0,1,2,3,4},{2,2,2,2,4},{3,3,2,3,4},{4,4,4,4,4}};
+    private static final int[] ACTIVE = {0,1,2,3,5};
+    private static Fixture summary(Fixture f,int oldState,int state) {
+        return header(f,"\"state\":\""+STATES.get(oldState)+"\"","\"state\":\""+STATES.get(state)+"\"");
+    }
+    @Test void all125MixedWorldsPreserveEveryIslandAndGlobalRefusals() {
+        for(int a=0;a<5;a++)for(int b=0;b<5;b++)for(int c=0;c<5;c++) {
+            int[] states={ACTIVE[a],ACTIVE[b],ACTIVE[c]};int expected=ACTIVE[TRUTH[TRUTH[a][b]][c]];
+            var f=summary(fixture(.5,0,.75,states),states[0],expected);
+            var r=decode(f);assertTrue(r.ok(),a+"/"+b+"/"+c+": "+r.diagnostic());
+            assertEquals(STATES.get(expected),r.bucklingState().wire());
+            assertEquals(expected==0?.75:0,r.bucklingFactor());
+            assertEquals(3,r.bucklingIslands().size());
+            for(int id=0;id<3;id++) {
+                var island=r.bucklingIslands().get(id);assertEquals(id,island.island());
+                assertEquals(IslandBuckling.Kind.EIGEN,island.kind());
+                assertEquals(STATES.get(states[id]),island.state().wire());
+                if(states[id]==0)assertEquals(.75,island.factor());else assertTrue(Double.isNaN(island.factor()));
+            }
+            assertThrows(UnsupportedOperationException.class,()->r.bucklingIslands().clear());
+        }
+    }
+    @Test void refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds() {
+        for(int refused:new int[]{2,3,5}) {
+            // Intentionally factor > 1 beside supplied true bit: consumer must forward.
+            var r=decode(summary(fixture(.5,4,2,0,refused),0,refused));
+            assertTrue(r.ok(),r.diagnostic());assertTrue(r.bucklingCritical());
+            assertEquals(0,r.bucklingFactor());assertEquals(2,r.bucklingIslands().get(0).factor());
+            failed(decode(fixture(.5,4,2,refused,0)),"critical attached to refused island");
+        }
+    }
+    @Test void computedWorldUsesSmallestSuppliedFactorAndChecksHeader() {
+        var f=fixture(.5,0,2,0,1,0);byte[] raw=f.payload().clone();
+        ByteBuffer.wrap(raw).order(ByteOrder.LITTLE_ENDIAN).putDouble(136,.125);
+        var r=decode(new Fixture(f.header(),raw));assertTrue(r.ok(),r.diagnostic());
+        assertEquals(.125,r.bucklingFactor());assertEquals(2,r.bucklingIslands().get(0).factor());
+        failed(decode(summary(f,0,5)),"forged failure header");
+        failed(decode(fixture(.5,0,2,0,5)),"forged computed header hides failure");
+    }
+    @Test void malformedIslandCollectionsAndFactorsFailClosed() {
+        var f=fixture(.5,0,.5,0,0);
+        for(int id:new int[]{-1,0,2}) {
+            byte[] raw=f.payload().clone();ByteBuffer.wrap(raw).order(ByteOrder.LITTLE_ENDIAN).putInt(112,id);
+            failed(decode(new Fixture(f.header(),raw)),"bad island "+id);
+        }
+        byte[] reversed=f.payload().clone();var b=ByteBuffer.wrap(reversed).order(ByteOrder.LITTLE_ENDIAN);
+        b.putInt(96,1).putInt(112,0);failed(decode(new Fixture(f.header(),reversed)),"noncanonical order");
+        failed(decode(header(f,"\"islands\":2","\"islands\":3")),"missing island");
+        for(int offset:new int[]{101,102,116,117}) {
+            byte[] raw=f.payload().clone();raw[offset]=(byte)255;failed(decode(new Fixture(f.header(),raw)),"kind/state/reserved");
+        }
+        for(double x:new double[]{0,-1,Double.NaN,Double.POSITIVE_INFINITY}) {
+            byte[] raw=f.payload().clone();ByteBuffer.wrap(raw).order(ByteOrder.LITTLE_ENDIAN).putDouble(120,x);
+            failed(decode(new Fixture(f.header(),raw)),"invalid computed factor");
+        }
+        var refused=fixture(.5,0,0,5);
+        byte[] raw=refused.payload().clone();ByteBuffer.wrap(raw).order(ByteOrder.LITTLE_ENDIAN).putDouble(104,0);
+        failed(decode(new Fixture(refused.header(),raw)),"refused factor");
+        failed(decode(fixture(.5,0,.5,0,4)),"active with disabled");
+        failed(decode(fixture(.5,0,.5,4,1)),"disabled with active");
+    }
+    @Test void emptyCollectionsDistinguishDisabledFromUnevaluated() {
+        byte[] raw=new byte[72];raw[68]=1;
+        var dir=new ArrayList<String>();
+        dir.add("{\"name\":\"blocks\",\"offset\":0,\"bytes\":0,\"count\":0}");
+        dir.add("{\"name\":\"equilibrium\",\"offset\":0,\"bytes\":56,\"count\":1}");
+        dir.add("{\"name\":\"quality\",\"offset\":56,\"bytes\":16,\"count\":1}");
+        for(String name:List.of("buckling","members","memberBlocks","stations","stationIdentity",
+                "memberGeometry","facets","facetSurfaces","facetBlocks"))
+            dir.add("{\"name\":\""+name+"\",\"offset\":72,\"bytes\":0,\"count\":0}");
+        for(String mode:List.of("none","eigen")) {
+            String state=mode.equals("none")?"disabled-by-request":"not-eligible";
+            var f=new Fixture("{\"kind\":\"response\",\"method\":\"bsi.solve\",\"status\":\"ok\",\"revision\":17,"
+                    +"\"diag\":{\"blocks\":0,\"members\":0,\"facets\":0,\"islands\":0,\"singularIslands\":0},"
+                    +"\"buckling\":{\"kind\":\""+mode+"\",\"state\":\""+state+"\"},"
+                    +"\"unassigned\":[],\"sections\":["+String.join(",",dir)+"]}",raw);
+            var r=decode(f);assertTrue(r.ok(),r.diagnostic());assertEquals(state,r.bucklingState().wire());
+            assertEquals(0,r.bucklingFactor());assertTrue(r.bucklingIslands().isEmpty());
+        }
+    }
     @Test void legacyConstructorRetainsItsDistinctBoundaryConvention() {
         var legacy=new AnalysisResult(new WorldRevision(17),true,false,"",1,7,"member",1,0,0,1,
                 BucklingState.COMPUTED,List.of(),List.of(),List.of());

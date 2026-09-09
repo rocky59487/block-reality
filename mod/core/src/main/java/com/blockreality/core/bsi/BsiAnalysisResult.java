@@ -10,6 +10,9 @@ import java.util.*;
 public final class BsiAnalysisResult {
     private BsiAnalysisResult() { }
     public static final List<String> INCLUDE = List.of("members", "memberGeometry", "stations", "stationIdentity", "shells");
+    private static final List<BucklingState> BUCKLING_STATES = List.of(BucklingState.COMPUTED,
+            BucklingState.NO_POSITIVE_EIGENVALUE, BucklingState.NOT_ELIGIBLE,
+            BucklingState.NOT_ELIGIBLE_SCALE, BucklingState.DISABLED_BY_REQUEST, BucklingState.SOLVER_FAILED);
 
     /** A rejected/stale/incomplete reply produces an empty failed result at the expected revision. */
     @Nonnull public static AnalysisResult decode(BsiResponse reply, @Nonnull WorldRevision expected,
@@ -76,7 +79,9 @@ public final class BsiAnalysisResult {
         require(unassignedCount == blocks.stream().filter(BsiResponse.BlockResult::unassigned).count(), "unassigned count mismatch");
         return new AnalysisResult(expected, true, singular > 0, singular == 0 ? "" : singular + " mechanism island(s)",
                 maxDc, governing, kind, islands, singular, eq.residual(), snapshot.factor(), snapshot.state(), beams, shells,
-                unassigned, overloaded, critical);
+                unassigned, overloaded, critical, snapshot.islands().stream().map(row ->
+                        new IslandBuckling(row.island(), row.kind() == 0 ? IslandBuckling.Kind.NONE : IslandBuckling.Kind.EIGEN,
+                                BUCKLING_STATES.get(row.state()), row.factor())).toList());
     }
 
     private static List<UnassignedBlocks> unassigned(JsonValue h) {
