@@ -79,3 +79,11 @@ EB_IGNORE 的物理故障移到新 BSI buckling 解析短梁 gate；不再以舊
 原schema缺additionalProperties=false；依原凍結的未知選項拒絕硬線補上，未擴充ABI。
 首輪原始輸出、schema開放版原生庫SHA與來源保留作SCHEMA_UNKNOWN反例；這是實際漏驗，
 不是預期能力遷移。其餘325項已過；完整334固定結論待新schema重建後驗證。
+
+
+## 2026-09-09 舊 recovery fixture 完整性
+
+Linux原host500 checks首次411PASS/89FAIL：共同fixture宣告兩島卻沒有任何buckling記錄，
+被新的完整性驗證拒絕而連帶失去回收section。retry/host/ABI三套仍PASS。
+fixture補兩筆disabled/none/NaN，所有回收數值、binary32 oracle、500個斷言與門檻原樣保留；
+不得放寬宿主完整性來遷就不完整fixture。首次source/raw照留，payload摘要正當隨完整記錄變動。
