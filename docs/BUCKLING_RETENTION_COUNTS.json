@@ -1,0 +1,46 @@
+{
+  "DROP_ISLANDS": {
+    "checks": [
+      "unsupportedOrContradictoryBucklingIsNotFlattened()",
+      "missingSectionsAndOwnersAreRefused()",
+      "malformedIslandCollectionsAndFactorsFailClosed()",
+      "allHomogeneousStatesRetainTheirMeaning()",
+      "allBlocksContributeEvenWhenTheLastOneIsClear()",
+      "globalFlagsAreIndependentOfNumericThresholds()",
+      "all125MixedWorldsPreserveEveryIslandAndGlobalRefusals()",
+      "malformedValuesNeverBecomeHealthyDefaults()",
+      "computedWorldUsesSmallestSuppliedFactorAndChecksHeader()",
+      "stalePartialAndErrorRepliesCannotReuseSuccessfulFlags()",
+      "refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds()",
+      "incompleteQualityOrDisplayCannotBecomeCommitResults()",
+      "emptyCollectionsDistinguishDisabledFromUnevaluated()",
+      "legacyConstructorRetainsItsDistinctBoundaryConvention()"
+    ],
+    "failed": [
+      "all125MixedWorldsPreserveEveryIslandAndGlobalRefusals()",
+      "computedWorldUsesSmallestSuppliedFactorAndChecksHeader()",
+      "refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds()"
+    ]
+  },
+  "WRONG_ID": {
+    "checks": [
+      "unsupportedOrContradictoryBucklingIsNotFlattened()",
+      "missingSectionsAndOwnersAreRefused()",
+      "malformedIslandCollectionsAndFactorsFailClosed()",
+      "allHomogeneousStatesRetainTheirMeaning()",
+      "allBlocksContributeEvenWhenTheLastOneIsClear()",
+      "globalFlagsAreIndependentOfNumericThresholds()",
+      "all125MixedWorldsPreserveEveryIslandAndGlobalRefusals()",
+      "malformedValuesNeverBecomeHealthyDefaults()",
+      "computedWorldUsesSmallestSuppliedFactorAndChecksHeader()",
+      "stalePartialAndErrorRepliesCannotReuseSuccessfulFlags()",
+      "refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds()",
+      "incompleteQualityOrDisplayCannotBecomeCommitResults()",
+      "emptyCollectionsDistinguishDisabledFromUnevaluated()",
+      "legacyConstructorRetainsItsDistinctBoundaryConvention()"
+    ],
+    "failed": [
+      "all125MixedWorldsPreserveEveryIslandAndGlobalRefusals()"
+    ]
+  }
+}
