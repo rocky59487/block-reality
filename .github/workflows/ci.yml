@@ -96,6 +96,15 @@ jobs:
           chmod +x forge/gradlew
           cd forge && ./gradlew --no-daemon build
 
+      # Compile opt-in measurement drivers without running hardware benchmarks or
+      # adding their classes to the ordinary source sets/jar.
+      - name: compile core registry profile driver
+        working-directory: mod
+        run: ./gradlew --no-daemon -I ../scripts/registry-scaling.gradle :core:compileRegistryProfileJava
+      - name: compile Forge registry save profile driver
+        working-directory: forge
+        run: ./gradlew --no-daemon -I ../scripts/registry-save-profile.gradle compileRegistrySaveProfileJava
+
       # Runs LAST because it reads gradle's JUnit XML, which only exists once both
       # suites have run. Every check count quoted in a document is compared against
       # what the suites actually printed — the defect this closes reached the public
