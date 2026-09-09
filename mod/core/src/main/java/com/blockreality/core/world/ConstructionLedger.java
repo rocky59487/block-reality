@@ -2,6 +2,7 @@ package com.blockreality.core.world;
 
 import com.blockreality.api.geom.BlockKey;
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /** Main-thread declarations and publication; immutable work/graph objects can cross to a worker. */
 public final class ConstructionLedger {
@@ -20,7 +21,9 @@ public final class ConstructionLedger {
         private final Map<BlockKey, Long> owners;
         Graph(UUID namespace, long nextId, Map<Long, Artifact> records) {
             this.namespace = Objects.requireNonNull(namespace); this.nextId = nextId;
-            this.records = Collections.unmodifiableNavigableMap(new TreeMap<>(records));
+            // Detached immutable entries also protect generator-based arrays and
+            // navigable range views on Java 17. No writer retains this private copy.
+            this.records = Collections.unmodifiableNavigableMap(new ConcurrentSkipListMap<>(records));
             var owners = new HashMap<BlockKey, Long>();
             long references = 0;
             if (nextId != records.size() + 1L || records.size() > MAX_RECORDS) throw invalid();
@@ -41,7 +44,10 @@ public final class ConstructionLedger {
                 }
             }
             if (references > MAX_PARENTS || owners.size() > WorldCellIndex.MAX_CELLS) throw invalid();
-            this.owners = Map.copyOf(owners);
+            // This validated map is privately owned. Map.copyOf uses a linear-probing
+            // table on Java 17; dense coordinate hashes make both creation and reads
+            // pathological at registry capacity (REGISTRY_SCALING baseline).
+            this.owners = freezeOwned(owners);
         }
         public UUID namespace() { return namespace; }
         public long nextId() { return nextId; }
@@ -53,10 +59,43 @@ public final class ConstructionLedger {
     public record Work(long epoch, Map<BlockKey, ConstructionDeclaration> cells, Set<BlockKey> destroyed, Graph graph) {
         public Work {
             if (epoch < 0 || cells.size() > WorldCellIndex.MAX_CELLS || destroyed.size() > WorldCellIndex.MAX_CELLS) throw invalid();
-            cells = Map.copyOf(cells); destroyed = Set.copyOf(destroyed);
+            var captured = new HashMap<>(cells);
+            captured.forEach((pos, declaration) -> { Objects.requireNonNull(pos); Objects.requireNonNull(declaration); });
+            cells = freezeOwned(captured);
+            var removed = new HashSet<>(destroyed);
+            removed.forEach(Objects::requireNonNull);
+            destroyed = Collections.unmodifiableSet(removed);
         }
     }
     public record Completion(long epoch, Graph graph, String failure) { }
+
+    /** The supplied map must be privately owned and never mutated after this call. */
+    private static <V> Map<BlockKey, V> freezeOwned(Map<BlockKey, V> owned) {
+        // On supported Java 17 builds, UnmodifiableEntrySet.toArray(IntFunction)
+        // can expose mutable backing entries. Supply detached entries on every
+        // iteration route; arrays/streams/spliterators then cannot escape ownership.
+        return Collections.unmodifiableMap(new AbstractMap<>() {
+            @Override public V get(Object key) { return owned.get(key); }
+            @Override public boolean containsKey(Object key) { return owned.containsKey(key); }
+            @Override public int size() { return owned.size(); }
+            @Override public Set<BlockKey> keySet() { return Collections.unmodifiableSet(owned.keySet()); }
+            @Override public Collection<V> values() { return Collections.unmodifiableCollection(owned.values()); }
+            @Override public Set<Entry<BlockKey, V>> entrySet() {
+                return new AbstractSet<>() {
+                    @Override public int size() { return owned.size(); }
+                    @Override public Iterator<Entry<BlockKey, V>> iterator() {
+                        var iterator = owned.entrySet().iterator();
+                        return new Iterator<>() {
+                            @Override public boolean hasNext() { return iterator.hasNext(); }
+                            @Override public Entry<BlockKey, V> next() {
+                                var entry = iterator.next(); return Map.entry(entry.getKey(), entry.getValue());
+                            }
+                        };
+                    }
+                };
+            }
+        });
+    }
 
     final Map<BlockKey, ConstructionDeclaration> cells = new HashMap<>();
     final Set<BlockKey> destroyed = new HashSet<>();

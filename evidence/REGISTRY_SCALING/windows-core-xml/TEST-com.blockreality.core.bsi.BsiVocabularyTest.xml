@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.bsi.BsiVocabularyTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-09T21:37:47" hostname="ROCKYLAPTOP" time="0.007">
+  <properties/>
+  <testcase name="refusesRepliesForAnotherSessionRequestOrRevision()" classname="com.blockreality.core.bsi.BsiVocabularyTest" time="0.002"/>
+  <testcase name="usesReturnedIdsInsteadOfDeclarationOrder()" classname="com.blockreality.core.bsi.BsiVocabularyTest" time="0.003"/>
+  <testcase name="refusesMalformedAndAmbiguousIdentityTables()" classname="com.blockreality.core.bsi.BsiVocabularyTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

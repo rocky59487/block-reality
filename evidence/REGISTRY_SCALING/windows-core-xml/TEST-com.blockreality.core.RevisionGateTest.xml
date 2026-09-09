@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.RevisionGateTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-09T21:37:47" hostname="ROCKYLAPTOP" time="0.004">
+  <properties/>
+  <testcase name="oneMechanismDoesNotBlankTheWholeWorld()" classname="com.blockreality.core.RevisionGateTest" time="0.001"/>
+  <testcase name="aResultForASupersededWorldNeverCommits()" classname="com.blockreality.core.RevisionGateTest" time="0.001"/>
+  <testcase name="revisionsAreMonotonic()" classname="com.blockreality.core.RevisionGateTest" time="0.0"/>
+  <testcase name="currentResultCommits()" classname="com.blockreality.core.RevisionGateTest" time="0.001"/>
+  <testcase name="staleResultsAreStillDrawableButLabelled()" classname="com.blockreality.core.RevisionGateTest" time="0.0"/>
+  <testcase name="aMechanismNeitherCommitsNorDrawsAsAStressField()" classname="com.blockreality.core.RevisionGateTest" time="0.0"/>
+  <testcase name="engineFailureDrawsNothing()" classname="com.blockreality.core.RevisionGateTest" time="0.0"/>
+  <testcase name="aWorldOfNothingButMechanismsHasNothingToDraw()" classname="com.blockreality.core.RevisionGateTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

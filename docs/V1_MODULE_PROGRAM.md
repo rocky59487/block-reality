@@ -55,7 +55,7 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 ## 現況
 
 GAME_INPUT 已在 #106，GAME_RUNTIME 已接 Forge 採集與真正原生迴圈；Linux server 混合
-梁柱板/機構與地面變更/重設已驗，Windows core405/Forge107=483PASS/29SKIP。
+梁柱板/機構與地面變更/重設已驗，Windows core410/Forge107=488PASS/29SKIP。
 判準及證據見 `GAME_RUNTIME.md`、`../evidence/GAME_RUNTIME/RESULTS.md`。
 全未支承原生只回 SOLVE_FAILED，typed 機構展示未完成；客戶端、最新雙平台 native jar、
 持久世界及倒塌動態仍待完成。沒有新遊戲版本發布。
@@ -88,3 +88,7 @@ MODULE_PIPELINE_PROFILE 已將 metadata/gather/queue/BSI/解碼/封包/apply 分
 A49/F576/M832 三場景各 40 次實跑，數字只作 Recorded 基線；M832 原生呼叫占主要成本，
 不能把背景 65.6 ms p95 說成 client frame time。尚未量 FPS、真玩家 socket、存檔或 registry 上界。
 詳 `../evidence/MODULE_PIPELINE_PROFILE/RESULTS.md`；未以小場景改寫 v1 效能目標。
+
+REGISTRY_SCALING 已針對 4K/32K/131K 密集座標與 131K 長梁凍結量測，定位大世界
+不可變 Map 的成本；候選快照改善與 entry 寫入出口修正已有身份/存檔回歸證據。
+完整三 fork 效能對照仍待完成，詳 `../evidence/REGISTRY_SCALING/RESULTS.md`。

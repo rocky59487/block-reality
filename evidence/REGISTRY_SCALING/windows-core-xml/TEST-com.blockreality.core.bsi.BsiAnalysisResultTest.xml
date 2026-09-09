@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.bsi.BsiAnalysisResultTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2026-09-09T21:37:47" hostname="ROCKYLAPTOP" time="0.085">
+  <properties/>
+  <testcase name="unsupportedOrContradictoryBucklingIsNotFlattened()" classname="com.blockreality.core.bsi.BsiAnalysisResultTest" time="0.027"/>
+  <testcase name="missingSectionsAndOwnersAreRefused()" classname="com.blockreality.core.bsi.BsiAnalysisResultTest" time="0.001"/>
+  <testcase name="malformedIslandCollectionsAndFactorsFailClosed()" classname="com.blockreality.core.bsi.BsiAnalysisResultTest" time="0.003"/>
+  <testcase name="allHomogeneousStatesRetainTheirMeaning()" classname="com.blockreality.core.bsi.BsiAnalysisResultTest" time="0.009"/>
+  <testcase name="allBlocksContributeEvenWhenTheLastOneIsClear()" classname="com.blockreality.core.bsi.BsiAnalysisResultTest" time="0.0"/>
+  <testcase name="globalFlagsAreIndependentOfNumericThresholds()" classname="com.blockreality.core.bsi.BsiAnalysisResultTest" time="0.001"/>
+  <testcase name="all125MixedWorldsPreserveEveryIslandAndGlobalRefusals()" classname="com.blockreality.core.bsi.BsiAnalysisResultTest" time="0.028"/>
+  <testcase name="malformedValuesNeverBecomeHealthyDefaults()" classname="com.blockreality.core.bsi.BsiAnalysisResultTest" time="0.001"/>
+  <testcase name="computedWorldUsesSmallestSuppliedFactorAndChecksHeader()" classname="com.blockreality.core.bsi.BsiAnalysisResultTest" time="0.0"/>
+  <testcase name="stalePartialAndErrorRepliesCannotReuseSuccessfulFlags()" classname="com.blockreality.core.bsi.BsiAnalysisResultTest" time="0.006"/>
+  <testcase name="refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds()" classname="com.blockreality.core.bsi.BsiAnalysisResultTest" time="0.001"/>
+  <testcase name="incompleteQualityOrDisplayCannotBecomeCommitResults()" classname="com.blockreality.core.bsi.BsiAnalysisResultTest" time="0.0"/>
+  <testcase name="emptyCollectionsDistinguishDisabledFromUnevaluated()" classname="com.blockreality.core.bsi.BsiAnalysisResultTest" time="0.004"/>
+  <testcase name="legacyConstructorRetainsItsDistinctBoundaryConvention()" classname="com.blockreality.core.bsi.BsiAnalysisResultTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

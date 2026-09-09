@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.world.ConstructionSnapshotTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-09T21:41:26" hostname="ROCKYLAPTOP" time="0.04">
+  <properties/>
+  <testcase name="workAndGraphViewsRejectEveryMutableEntryPoint()" classname="com.blockreality.core.world.ConstructionSnapshotTest" time="0.04">
+    <failure message="org.opentest4j.AssertionFailedError: Expected java.lang.UnsupportedOperationException to be thrown, but nothing was thrown." type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: Expected java.lang.UnsupportedOperationException to be thrown, but nothing was thrown.
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+	at app//org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:73)
+	at app//org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:35)
+	at app//org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3115)
+	at app//com.blockreality.core.world.ConstructionSnapshotTest.assertReadOnly(ConstructionSnapshotTest.java:66)
+	at app//com.blockreality.core.world.ConstructionSnapshotTest.workAndGraphViewsRejectEveryMutableEntryPoint(ConstructionSnapshotTest.java:24)
+	at java.base@17.0.18/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base@17.0.18/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.18/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
