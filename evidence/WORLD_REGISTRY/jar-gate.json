@@ -1,0 +1,22 @@
+{
+  "classes": 176,
+  "errors": [],
+  "sha256": "d5387a18f94e9f9d3f6219dbc28ffaf726b7003bfb6c0d617f59e8243c368f29",
+  "mutations": [
+    {
+      "arm": "bundled-legacy",
+      "compileExit": 0,
+      "refused": [
+        "forbidden entry: com/blockreality/testlegacy/Forbidden.class",
+        "forbidden constant: com/blockreality/testlegacy/Forbidden.class -> com/blockreality/testlegacy/"
+      ]
+    },
+    {
+      "arm": "dormant-reference",
+      "compileExit": 0,
+      "refused": [
+        "forbidden constant: com/blockreality/impl/ResurrectedReference.class -> com/blockreality/testlegacy/"
+      ]
+    }
+  ]
+}

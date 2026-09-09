@@ -1,0 +1,610 @@
+{
+  "commands": [
+    {
+      "phase": "prepare",
+      "command": "forceload add 4096 0",
+      "response": "Marked chunk [256, 0] in minecraft:overworld to be force loaded\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "forceload add 4144 0",
+      "response": "Marked chunk [259, 0] in minecraft:overworld to be force loaded\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "setblock 4103 200 8 minecraft:stone",
+      "response": "Changed the block at 4103, 200, 8\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "fill 4104 200 8 4152 200 8 blockreality:steel_beam[axis=x]",
+      "response": "Successfully filled 49 block(s)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "execute positioned 4104 200 8 run br scan 8",
+      "response": "Scanned 17x17 chunks: 49 structural blocks now tracked (49 total).\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          IDLE\n  native engine not loaded yet\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        PENDING\n  last result     none yet\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br_registry_probe",
+      "response": "WR cells=49 index=c6605d647133c88074758d662dbdcf789f44ce81653a5e1581e65e0ab9d23450 bootstrap=RESULT payload=true detail= native=3550de307d4911e0efeeaabd53cdd700cf80ee678d8c39d7ed0de2e9aa21aea7\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "forceload remove 4144 0",
+      "response": "Unmarked chunk [259, 0] in minecraft:overworld for force loading\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    }
+  ],
+  "gates": [
+    {
+      "name": "WR-9 complete native baseline",
+      "pass": true
+    },
+    {
+      "name": "WR-8 current bootstrap carries cached result",
+      "pass": true
+    },
+    {
+      "name": "WR-9 unloading retains 49 cells and defers new result: Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        1   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 1  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n",
+      "pass": false
+    }
+  ],
+  "index": "c6605d647133c88074758d662dbdcf789f44ce81653a5e1581e65e0ab9d23450",
+  "native": "3550de307d4911e0efeeaabd53cdd700cf80ee678d8c39d7ed0de2e9aa21aea7"
+}

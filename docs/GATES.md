@@ -1453,3 +1453,12 @@ N25 真 server/client、最新 Win/Linux 原生資產與 v1 性能/倒塌/剛體
 smoke 原預期 MECHANISM，仍判 FAIL，原檔保留。不得把引擎診斷 message 轉成 Java 機構判定。
 後續只驗新 revision 撤銷舊結果並明示拒絕，這條降為傳輸/生命週期驗證；全機構 typed 展示
 仍未完成。混合世界的 singular 計數另驗，不把它移作全機構證據。詳見 GAME_RUNTIME.md。
+
+### 2026-09-10 WORLD_REGISTRY：已知格持久化與完整輸入
+
+WR 判準由 `cd4c1b3` 先凍。首跑真 server 的遠端 chunk 已不可讀，但 Forge Unload 事件
+尚未送出，結果仍為 CURRENT；55 秒首敗保留，沒有放寬等待條件。增加每 tick 至多
+256 個必要 chunk 的可讀性檢查，apply 前重查完整範圍後，同場景卸載/重啟/載回通過。
+13 項真 server gates、487 登錄/459 PASS/28 SKIP、两條可編譯行為故障臂與 jar gate 已驗。
+這只完成已知格索引與整維度延後；#86 物件/區域排程、#17 identity/lineage 未完成，
+效能仍待量測。N14 舊消費端守門保留，未把資料完整性測試當作高性能或 v1 資格。

@@ -36,7 +36,7 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   native 工作若不返回，Java 不能強殺；cleanup 僅在 worker/daemon，D-044 崩潰代價仍成立。
 - 生產 SidecarClient/SidecarProcess/SidecarConfig/ShmRegion 已退到 test；NoSubprocess ALLOWED={}。
   預設 jar 無 exe、無 process launcher；Gradle 已拒絕 executable 封裝。
-- Windows core376/Forge96：472登錄、444PASS、28SKIP。包含18項 native 整合測試的登錄，
+- Windows core383/Forge104：487登錄、459PASS、28SKIP。包含18項 native 整合測試的登錄，
   不代表 Windows 已執行新原生庫。Linux 真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
   完整結果 `evidence/GAME_RUNTIME/RESULTS.md`，首敗保留、三故障臂具名咬合。
 - 全部失去支承時原生只回 SOLVE_FAILED；Java 保留拒絕，不能從 message 捏造 MECHANISM。
@@ -53,6 +53,10 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 - NATIVE_ONLY_RESULTS 已把舊 beam/shell 公式、JSON/shm codec 與數值推導 verdict 的相容 API
   移到 test/fixtures。正式快照只接受原生樣本/旗標；12 組封包 bytes 不變，Linux recovery/packet
   22 項無跳過通過。jar/class 常數池檢查與兩條可編譯故障臂通過，詳 `evidence/NATIVE_ONLY_RESULTS/RESULTS.md`。
+- WORLD_REGISTRY 已持久保存已知結構格，容量/損壞拒絕、原子寫入；缺少結構或支承觀測
+  時延後整個維度請求。真 server 卸載/重啟/載回的 49 格梁結果封包逐位恢復；首跑抓到
+  FULL 可讀性早於 Unload 事件消失，已補分批監測與 apply 完整性重查。
+  這是已知格索引，**尚非**持久物件、區域排程或損傷譜系；詳 `evidence/WORLD_REGISTRY/RESULTS.md`。
 - 尚未完成：最新雙平台合格庫的正式 jar、持久 registry #86、
   材質方向/互動實測、效能量測、引擎 lifecycle/剛體姿態消費。
   #89 仍開放；既有公式已退出出貨來源，v1 全部基礎能力仍未完成。

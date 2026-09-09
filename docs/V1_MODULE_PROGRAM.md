@@ -55,7 +55,7 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 ## 現況
 
 GAME_INPUT 已在 #106，GAME_RUNTIME 已接 Forge 採集與真正原生迴圈；Linux server 混合
-梁柱板/機構與地面變更/重設已驗，Windows core376/Forge96=444PASS/28SKIP。
+梁柱板/機構與地面變更/重設已驗，Windows core383/Forge104=459PASS/28SKIP。
 判準及證據見 `GAME_RUNTIME.md`、`../evidence/GAME_RUNTIME/RESULTS.md`。
 全未支承原生只回 SOLVE_FAILED，typed 機構展示未完成；客戶端、最新雙平台 native jar、
 持久世界及倒塌動態仍待完成。沒有新遊戲版本發布。
@@ -71,3 +71,9 @@ NATIVE_ONLY_RESULTS 已將舊 field 公式、codec、比值推導判定的建構
 正式 jar/class 常數池檢查、兩條可編譯故障臂、12 組封包雜湊與 Linux 原生 22 項通過。
 詳 `../evidence/NATIVE_ONLY_RESULTS/RESULTS.md`。
 下一步仍是真客戶端補送/旅行時序、持久 registry、材質與互動。
+
+WORLD_REGISTRY 已完成已知格持久索引、有界容量/損壞拒絕與完整輸入守門。真 Linux 原生
+49 格梁跨 chunk 卸載/重啟/載回後封包逐位相同；只有支承觀測缺失也會等待。
+Minecraft FULL 可讀性轉移有分批監測，apply 前重查整個範圍。現階段缺一部分仍延後
+整個維度，持久物件 identity、fused regions、獨立排程、damage/lineage 未完成；#86/#17 保持開放。
+證據與首敗見 `../evidence/WORLD_REGISTRY/RESULTS.md`。

@@ -77,7 +77,7 @@ public final class StressHud {
             String key = switch (notice) {
                 case EMPTY -> "br.hud.empty";
                 case OFF -> "br.hud.off";
-                case PENDING -> "br.hud.pending";
+                case PENDING -> ClientStressState.engineDetail().isEmpty() ? "br.hud.pending" : "br.hud.input_waiting";
                 case MODEL_REFUSED -> "br.hud.model_refused";
                 default -> "br.hud.engine_unavailable";
             };
@@ -88,6 +88,11 @@ public final class StressHud {
             };
             g.drawString(mc.font, Component.translatable(key, ClientStressState.engineDetail()), x, y, colour);
             return;
+        }
+        if (notice == com.blockreality.impl.net.AnalysisUpdatePacket.Kind.PENDING
+                && !ClientStressState.engineDetail().isEmpty()) {
+            g.drawString(mc.font, Component.translatable("br.hud.input_waiting"), x, y, 0xC8A24A);
+            y += 12;
         }
         // Stale is a label, not a blank: the numbers are real, for a world that has
         // since changed. Saying so is the display track's half of invariant 5 (INV-4).

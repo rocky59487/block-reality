@@ -96,5 +96,6 @@
   "br.product.member": "放置軸宣告構件方向。",
   "br.product.monolith": "整格均為材料本體。",
   "br.product.panel": "放置軸不代表板法向。",
-  "br.product.unavailable": "無法讀取宣告尺寸"
+  "br.product.unavailable": "無法讀取宣告尺寸",
+  "br.hud.input_waiting": "等待結構與支承區塊載入"
 }
