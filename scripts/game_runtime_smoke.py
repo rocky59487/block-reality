@@ -13,6 +13,7 @@ def main():
     parser.add_argument("--config", required=True)
     parser.add_argument("--out", required=True)
     parser.add_argument("--stop-only", action="store_true")
+    parser.add_argument("--check-readouts", action="store_true", help="also run the frozen UI_VERDICTS server cases")
     args = parser.parse_args()
     props = dict(line.split("=", 1) for line in Path(args.config).read_text().splitlines()
                  if line and not line.startswith("#") and "=" in line)
@@ -43,6 +44,10 @@ def main():
     def revision(reply):
         return int(re.search(r"revision\s+(\d+)", reply).group(1))
 
+    def current(reply):
+        match = re.search(r"result revision (\d+)  CURRENT", reply)
+        return match is not None and int(match.group(1)) == revision(reply)
+
     if not client.connect():
         raise RuntimeError("local smoke server is not accepting RCON")
     try:
@@ -50,6 +55,7 @@ def main():
             command("stop")
             return
         command("forceload add -16 -16 48 32")
+        command("fill 35 199 0 35 251 0 minecraft:air")
         command("fill -2 198 -2 36 215 15 minecraft:air")
         command("execute positioned 0 200 0 run br scan 2")
         command("br status")
@@ -85,6 +91,22 @@ def main():
         wait_for("declared model recovers", lambda s: "2 members," in s and "FAILED" not in s)
         command("br reset")
         wait_for("native session reset", lambda s: "engine          READY" in s and "2 members," in s)
+        if args.check_readouts:
+            wait_for("mixed readout reports solved and current revision", lambda s:
+                     current(s) and "3 solved, 1 unrestrained" in s)
+            assert "CURRENT" in command("br members")
+            assert "CURRENT" in command("br section 1")
+            command("setblock 35 199 0 minecraft:stone")
+            command("fill 35 200 0 35 249 0 blockreality:steel_beam_100x200[axis=y]")
+            command("execute positioned 0 200 0 run br scan 2")
+            wait_for("native local critical remains visible in refused world", lambda s:
+                     current(s) and "3 members, 12 plate facets" in s and "1 unrestrained" in s
+                     and "BUCKLING: linear onset reached in a structure" in s
+                     and "World buckling incomplete:" in s and "World buckling λ_cr" not in s)
+            command("fill 35 199 0 35 251 0 minecraft:air")
+            command("execute positioned 0 200 0 run br scan 2")
+            wait_for("removing critical column clears warning", lambda s:
+                     current(s) and "2 members, 12 plate facets" in s and "BUCKLING:" not in s)
     finally:
         client.close()
 

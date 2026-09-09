@@ -1,0 +1,30 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava UP-TO-DATE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:compileGameRuntimeMutation
+> Task :core:compileTestJava UP-TO-DATE
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses UP-TO-DATE
+
+> Task :core:gameRuntimeMutation FAILED
+
+BucklingReadoutTest > neverDerivesCriticalFromTheDisplayedFactor() FAILED
+    org.opentest4j.AssertionFailedError at BucklingReadoutTest.java:21
+8 actionable tasks: 2 executed, 6 up-to-date
+
+1 test completed, 1 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:gameRuntimeMutation'.
+> There were failing tests. See the results at: file:///C:/Users/wmc02/Desktop/block-reality/build/ui-verdicts-mutations/RECOMPUTE_FLAG/results/
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 2s

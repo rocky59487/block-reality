@@ -1,6 +1,5 @@
 package com.blockreality.impl.client;
 
-import com.blockreality.api.BucklingState;
 import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.UnassignedReason;
@@ -77,6 +76,12 @@ public final class StressHud {
                     ClientStressState.engineDetail()), x, y, 0xFF6B6B);
             return;
         }
+        // Stale is a label, not a blank: the numbers are real, for a world that has
+        // since changed. Saying so is the display track's half of invariant 5 (INV-4).
+        if (ClientStressState.stale()) {
+            g.drawString(mc.font, Component.translatable("br.hud.stale"), x, y, 0xC8860D);
+            y += 12;
+        }
         // Mechanism BEFORE the no-data return: both states have empty member lists, so
         // checking hasData first made this branch unreachable and told the player who
         // built an unrestrained structure "No analysis yet" — the opposite of the one
@@ -90,12 +95,6 @@ public final class StressHud {
         if (!ClientStressState.hasData()) {
             g.drawString(mc.font, Component.translatable("br.hud.no_data"), x, y, 0xAAAAAA);
             return;
-        }
-        // Stale is a label, not a blank: the numbers are real, for a world that has
-        // since changed. Saying so is the display track's half of invariant 5 (INV-4).
-        if (ClientStressState.stale()) {
-            g.drawString(mc.font, Component.translatable("br.hud.stale"), x, y, 0xC8860D);
-            y += 12;
         }
         if (ClientStressState.truncated()) {
             // Whole elements can be omitted by the delivery budget; counts remain explicit.
@@ -135,20 +134,14 @@ public final class StressHud {
         // Stability is a SEPARATE answer from strength and is printed as one. A slender
         // column reaches its buckling load at a stress the D/C line calls comfortable, so a
         // player who only ever sees D/C is being told the safe half of the story.
-        BucklingState bs = ClientStressState.bucklingState();
-        if (bs.hasFactor()) {
-            boolean crit = ClientStressState.bucklingCritical();
-            g.drawString(mc.font, Component.translatable(
-                    crit ? "br.hud.buckling_critical" : "br.hud.buckling",
-                    String.format(Locale.ROOT, "%.2f", ClientStressState.bucklingFactor())),
-                    x, y, crit ? 0xFF6B6B : 0xAAAAAA);
-            y += 11;
-        } else if (bs != BucklingState.UNKNOWN) {
-            // Every non-COMPUTED state gets a line, not just the one the old boolean could
-            // express. A blank here reads as "stable", which is a claim nobody made: the
-            // screen may have been skipped for size, refused, run on nothing, or run and
-            // found nothing, and those are four different things to know (N18-a).
-            g.drawString(mc.font, Component.translatable(bs.translationKey()), x, y, 0xC8A24A);
+        for (var row : ClientStressState.bucklingReadout()) {
+            int colour = switch (row.tone()) {
+                case CRITICAL -> 0xFF6B6B;
+                case UNEVALUATED -> 0xC8A24A;
+                case DETAIL -> 0xAAAAAA;
+            };
+            g.drawString(mc.font, Component.translatableWithFallback(row.key(), row.fallback(),
+                    row.arguments().toArray()), x, y, colour);
             y += 11;
         }
         // Blocks that reached the server and came back in no element. Silence here was the
