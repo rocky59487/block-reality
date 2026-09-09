@@ -62,3 +62,12 @@ sd.eulerBernoulli OR md.eulerBernoulli 時 Asy=Asz=0，其他幾何/容量不變
 首輪833 checks為825PASS/8FAIL；失敗全部在新增短梁位移oracle。診斷顯示MC節點在格中心
 (x+0.5,y+0.5,z+0.5)，測試以整數格址尋找節點而讀不到位移，得到NaN。修正測試的
 節點定位，不改原fixture、解析公式或1e-9線。首版/診斷版來源與raw輸出各自保留。
+
+
+## 2026-09-09 舊 BSI 邊界 gate 能力遷移
+
+舊 runner 首跑310 checks有15FAIL：三輪各CAPS、EIGEN、EB、EB重宣告、EB回收比較。
+舊線預期eigen/EB拒絕；本段已新增支援，依前凍條文更新這些能力預期，原輸出/source保留。
+EB_IGNORE 的物理故障移到新 BSI buckling 解析短梁 gate；不再以舊拒絕臂作其證據。
+新 C10 原語料實跑PASS，無assume；9PASS/1SKIP(C13 custom)。新增budget非法值與未知
+進階選項的PROTOCOL_ERROR腿，缺mode不改原schema預設語意。
