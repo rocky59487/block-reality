@@ -5,13 +5,11 @@ import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.UnassignedReason;
 import com.blockreality.api.ScanMode;
 import com.blockreality.api.StressStation;
-import com.blockreality.api.render.Rgb;
 import com.blockreality.api.render.StressPalette;
 import com.blockreality.core.render.SectionDiagram;
 import com.blockreality.impl.BRContent;
 import com.blockreality.impl.BlockRealityMod;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -45,13 +43,6 @@ public final class StressHud {
 
     private StressHud() { }
 
-    private static final int PAD = 6;
-    private static final int SWATCH = 8;
-
-    /** Section diagram box, pixels. */
-    private static final int DIA_W = 96;
-    private static final int DIA_H = 56;
-
     @SubscribeEvent
     public static void onRenderOverlay(RenderGuiOverlayEvent.Post event) {
         if (event.getOverlay() != VanillaGuiOverlay.HOTBAR.type()) return;
@@ -61,15 +52,17 @@ public final class StressHud {
         if (!mc.player.getMainHandItem().is(BRContent.STRESS_GLASSES.get())
                 && !mc.player.getOffhandItem().is(BRContent.STRESS_GLASSES.get())) return;
 
-        GuiGraphics g = event.getGuiGraphics();
-        int x = PAD;
-        int y = PAD;
+        HudPanel panel = new HudPanel(mc);
+        populate(panel);
+        panel.render(event.getGuiGraphics());
+    }
 
+    private static void populate(HudPanel panel) {
         ScanMode mode = ClientStressState.mode();
-        g.drawString(mc.font, Component.translatable("br.hud.mode",
-                Component.translatable("br.scan.mode." + mode.name().toLowerCase(Locale.ROOT))),
-                x, y, 0xFFFFFF);
-        y += 12;
+        panel.line(Component.translatable("br.hud.mode",
+                Component.translatable("br.scan.mode." + mode.name().toLowerCase(Locale.ROOT)))
+                .withStyle(net.minecraft.ChatFormatting.BOLD), HudPanel.PRIMARY);
+        panel.gap();
 
         var notice = ClientStressState.notice();
         if (notice != null && (notice != com.blockreality.impl.net.AnalysisUpdatePacket.Kind.PENDING
@@ -82,23 +75,21 @@ public final class StressHud {
                 default -> "br.hud.engine_unavailable";
             };
             int colour = switch (notice) {
-                case ENGINE_UNAVAILABLE -> 0xFF6B6B;
-                case MODEL_REFUSED -> 0xC8A24A;
-                default -> 0xAAAAAA;
+                case ENGINE_UNAVAILABLE -> HudPanel.CRITICAL;
+                case MODEL_REFUSED -> HudPanel.WARNING;
+                default -> HudPanel.DETAIL;
             };
-            g.drawString(mc.font, Component.translatable(key, ClientStressState.engineDetail()), x, y, colour);
+            panel.line(Component.translatable(key, ClientStressState.engineDetail()), colour);
             return;
         }
         if (notice == com.blockreality.impl.net.AnalysisUpdatePacket.Kind.PENDING
                 && !ClientStressState.engineDetail().isEmpty()) {
-            g.drawString(mc.font, Component.translatable("br.hud.input_waiting"), x, y, 0xC8A24A);
-            y += 12;
+            panel.line(Component.translatable("br.hud.input_waiting"), HudPanel.WARNING);
         }
         // Stale is a label, not a blank: the numbers are real, for a world that has
         // since changed. Saying so is the display track's half of invariant 5 (INV-4).
         if (ClientStressState.stale()) {
-            g.drawString(mc.font, Component.translatable("br.hud.stale"), x, y, 0xC8860D);
-            y += 12;
+            panel.line(Component.translatable("br.hud.stale"), HudPanel.WARNING);
         }
         // Mechanism BEFORE the no-data return: both states have empty member lists, so
         // checking hasData first made this branch unreachable and told the player who
@@ -107,72 +98,61 @@ public final class StressHud {
         if (ClientStressState.mechanism()) {
             // Not a failure and not a safe structure: nothing is holding it up, so there
             // are no stresses. Reporting "0 MPa" here would be a lie.
-            g.drawString(mc.font, Component.translatable("br.hud.mechanism"), x, y, 0xFFCC00);
+            panel.line(Component.translatable("br.hud.mechanism"), HudPanel.MECHANISM);
             return;
         }
         if (!ClientStressState.hasData()) {
-            g.drawString(mc.font, Component.translatable("br.hud.no_data"), x, y, 0xAAAAAA);
+            panel.line(Component.translatable("br.hud.no_data"), HudPanel.DETAIL);
             return;
         }
         if (ClientStressState.totalMembers() == 0 && ClientStressState.totalShells() == 0) {
-            g.drawString(mc.font, Component.translatable("br.hud.no_elements"), x, y, 0xC8A24A);
-            y += 12;
+            panel.line(Component.translatable("br.hud.no_elements"), HudPanel.WARNING);
             for (UnassignedReason reason : UnassignedReason.values()) {
                 int count = ClientStressState.unassignedCount(reason);
                 if (count > 0) {
-                    g.drawString(mc.font, Component.translatable(reason.translationKey(), count), x, y, 0xAAAAAA);
-                    y += 11;
+                    panel.line(Component.translatable(reason.translationKey(), count), HudPanel.DETAIL);
                 }
             }
             return;
         }
         if (ClientStressState.truncated()) {
             // Whole elements can be omitted by the delivery budget; counts remain explicit.
-            g.drawString(mc.font, Component.translatable("br.hud.truncated",
+            panel.line(Component.translatable("br.hud.truncated",
                     ClientStressState.members().size(), ClientStressState.totalMembers(),
-                    ClientStressState.shells().size(), ClientStressState.totalShells()),
-                    x, y, 0xC8860D);
-            y += 12;
+                    ClientStressState.shells().size(), ClientStressState.totalShells()), HudPanel.WARNING);
         }
         if (ClientStressState.governingOmitted()) {
-            g.drawString(mc.font, Component.translatable("br.hud.governing_omitted"), x, y, 0xC8860D);
-            y += 12;
+            panel.line(Component.translatable("br.hud.governing_omitted"), HudPanel.WARNING);
         }
         if (ClientStressState.partialMechanism()) {
             // Some structure in the world is unrestrained and others are not. Returning
             // here — as this did before the engine started solving each building
             // separately — blanked the overlay for every sound building in sight.
-            g.drawString(mc.font, Component.translatable("br.hud.island_mechanism",
-                    ClientStressState.singularIslands(), ClientStressState.islands()),
-                    x, y, 0xFFCC00);
-            y += 12;
+            panel.line(Component.translatable("br.hud.island_mechanism",
+                    ClientStressState.singularIslands(), ClientStressState.islands()), HudPanel.MECHANISM);
         }
 
-        // Red is the SERVER's over-capacity verdict, not a float comparison here (#55).
-        g.drawString(mc.font, Component.translatable("br.hud.maxdc",
-                String.format(Locale.ROOT, "%.3f", ClientStressState.maxDc())), x, y,
-                ClientStressState.overCapacity() ? 0xFF6B6B : 0xFFFFFF);
-        y += 12;
-        g.drawString(mc.font, Component.translatable("br.hud.members",
-                ClientStressState.members().size()), x, y, 0xAAAAAA);
-        y += 11;
-        if (!ClientStressState.shells().isEmpty()) {
-            g.drawString(mc.font, Component.translatable("br.hud.plates",
-                    ClientStressState.shells().size()), x, y, 0xAAAAAA);
-            y += 11;
-        }
         // Stability is a SEPARATE answer from strength and is printed as one. A slender
         // column reaches its buckling load at a stress the D/C line calls comfortable, so a
         // player who only ever sees D/C is being told the safe half of the story.
         for (var row : ClientStressState.bucklingReadout()) {
             int colour = switch (row.tone()) {
-                case CRITICAL -> 0xFF6B6B;
-                case UNEVALUATED -> 0xC8A24A;
-                case DETAIL -> 0xAAAAAA;
+                case CRITICAL -> HudPanel.CRITICAL;
+                case UNEVALUATED -> HudPanel.WARNING;
+                case DETAIL -> HudPanel.DETAIL;
             };
-            g.drawString(mc.font, Component.translatableWithFallback(row.key(), row.fallback(),
-                    row.arguments().toArray()), x, y, colour);
-            y += 11;
+            panel.line(Component.translatableWithFallback(row.key(), row.fallback(),
+                    row.arguments().toArray()), colour);
+        }
+        panel.gap();
+        // Red is the SERVER's over-capacity verdict, not a float comparison here (#55).
+        panel.line(Component.translatable("br.hud.maxdc",
+                String.format(Locale.ROOT, "%.3f", ClientStressState.maxDc())).withStyle(net.minecraft.ChatFormatting.BOLD), ClientStressState.overCapacity() ? HudPanel.CRITICAL : HudPanel.PRIMARY);
+        panel.line(Component.translatable("br.hud.members",
+                ClientStressState.members().size()), HudPanel.DETAIL);
+        if (!ClientStressState.shells().isEmpty()) {
+            panel.line(Component.translatable("br.hud.plates",
+                    ClientStressState.shells().size()), HudPanel.DETAIL);
         }
         // Blocks that reached the server and came back in no element. Silence here was the
         // second half of "blocks suddenly stop taking part": the first half was the chunk
@@ -183,40 +163,36 @@ public final class StressHud {
             int c = ClientStressState.unassignedCount(r);
             if (c <= 0) continue;
             boolean benign = !r.formsNoElement();
-            g.drawString(mc.font, Component.translatable(r.translationKey(), c), x, y,
-                    benign ? 0x9AA0A6 : 0xC8A24A);
-            y += 11;
+            panel.line(Component.translatable(r.translationKey(), c), benign ? HudPanel.DETAIL : HudPanel.WARNING);
         }
         // Part of what the server tracks was in a chunk it could not read, and the pieces
         // standing against that boundary were left uncoloured. Saying so is the whole
         // point of #74: the previous behaviour was a confident number about a structure
         // the engine had only seen part of.
         if (ClientStressState.truncatedBlocks() > 0) {
-            g.drawString(mc.font, Component.translatable("br.hud.model_incomplete",
-                    ClientStressState.truncatedBlocks()), x, y, 0xC8A24A);
-            y += 11;
+            panel.line(Component.translatable("br.hud.model_incomplete",
+                    ClientStressState.truncatedBlocks()), HudPanel.WARNING);
         }
         // Without this the contour is only ordinal. With it, a colour can be read as MPa.
-        g.drawString(mc.font, Component.translatable("br.hud.scale",
-                String.format(Locale.ROOT, "%.2f", ClientStressState.colourScaleMpa())),
-                x, y, 0xAAAAAA);
-        y += 14;
+        panel.line(Component.translatable("br.hud.scale",
+                String.format(Locale.ROOT, "%.2f", ClientStressState.colourScaleMpa())), HudPanel.DETAIL);
 
+        panel.gap();
         Optional<MemberSnapshot> focus = ClientStressState.focusedMember();
         if (focus.isPresent()) {
-            y = drawFocus(g, mc, x, y, focus.get());
+            drawFocus(panel, focus.get());
             return;
         }
 
         Optional<ShellSnapshot> plate = ClientStressState.focusedShell();
         if (plate.isPresent()) {
-            y = drawPlateFocus(g, mc, x, y, plate.get());
+            drawPlateFocus(panel, plate.get());
             return;
         }
 
-        g.drawString(mc.font, Component.translatable("br.hud.aim"), x, y, 0xAAAAAA);
-        y += 14;
-        drawLegend(g, mc, x, y, mode);
+        panel.line(Component.translatable("br.hud.aim"), HudPanel.DETAIL);
+        panel.gap();
+        drawLegend(panel, mode);
     }
 
     /**
@@ -228,133 +204,52 @@ public final class StressHud {
      * components rather than a single one. Printing "governing fibre" over a plate would
      * be borrowing a beam's vocabulary for something that does not have one.
      */
-    private static int drawPlateFocus(GuiGraphics g, Minecraft mc, int x, int y, ShellSnapshot s) {
-        g.drawString(mc.font, Component.translatable("br.hud.focus_plate",
-                s.id(), s.plate(), String.format(Locale.ROOT, "%.0f", s.thicknessMm())),
-                x, y, 0x9FE8FF);
-        y += 11;
+    private static void drawPlateFocus(HudPanel panel, ShellSnapshot s) {
+        panel.line(Component.translatable("br.hud.focus_plate",
+                s.id(), s.plate(), String.format(Locale.ROOT, "%.0f", s.thicknessMm())), HudPanel.FOCUS);
 
-        g.drawString(mc.font, Component.translatable("br.hud.plate_dc",
-                String.format(Locale.ROOT, "%.3f", s.dc())),
-                x, y, s.overloaded() ? 0xFF6B6B : 0xFFFFFF);
-        y += 11;
+        panel.line(Component.translatable("br.hud.plate_dc",
+                String.format(Locale.ROOT, "%.3f", s.dc())), s.overloaded() ? HudPanel.CRITICAL : HudPanel.PRIMARY);
 
         if (s.display().isPresent()) {
             var f = s.display().get();
-            g.drawString(mc.font, Component.translatable("br.hud.plate_faces",
+            panel.line(Component.translatable("br.hud.plate_faces",
                     String.format(Locale.ROOT, "%+.2f", f.signedPrincipal(0, 0, +1)),
-                    String.format(Locale.ROOT, "%+.2f", f.signedPrincipal(0, 0, -1))),
-                    x, y, 0xFFFFFF);
-            y += 11;
+                    String.format(Locale.ROOT, "%+.2f", f.signedPrincipal(0, 0, -1))), HudPanel.PRIMARY);
         }
 
         // Said out loud, because the recovered number is the one the demand is based on
         // and it is NOT what the element reported at its corner. A reader who compares the
         // two should be told which they are looking at.
         if (s.edgeRecovered()) {
-            g.drawString(mc.font, Component.translatable("br.hud.plate_recovered"), x, y, 0xC8860D);
-            y += 11;
+            panel.line(Component.translatable("br.hud.plate_recovered"), HudPanel.WARNING);
         }
-        return y;
     }
 
     /** Everything about the one member being looked at. */
-    private static int drawFocus(GuiGraphics g, Minecraft mc, int x, int y, MemberSnapshot m) {
-        g.drawString(mc.font, Component.translatable("br.hud.focus", m.id(), m.section()),
-                x, y, 0x9FE8FF);
-        y += 11;
+    private static void drawFocus(HudPanel panel, MemberSnapshot m) {
+        panel.line(Component.translatable("br.hud.focus", m.id(), m.section()), HudPanel.FOCUS);
 
         if (ClientStressState.withheld(m)) {
             // The number exists, and it is about a structure with a piece missing. Showing
             // it greyed would still be showing it, and a player reads a greyed number as a
             // number. So the reason goes here instead of the ratio (N14-c).
-            g.drawString(mc.font, Component.translatable("br.hud.focus_withheld"),
-                    x, y, 0xC8A24A);
-            y += 11;
+            panel.line(Component.translatable("br.hud.focus_withheld"), HudPanel.WARNING);
         } else {
-            g.drawString(mc.font, Component.translatable("br.hud.focus_dc",
+            panel.line(Component.translatable("br.hud.focus_dc",
                     String.format(Locale.ROOT, "%.3f", m.dc()),
-                    Component.translatable("br.fibre." + m.governingFibre().name().toLowerCase(Locale.ROOT))),
-                    x, y, m.isOverloaded() ? 0xFF6B6B : 0xFFFFFF);
-            y += 11;
+                    Component.translatable("br.fibre." + m.governingFibre().name().toLowerCase(Locale.ROOT))), m.isOverloaded() ? HudPanel.CRITICAL : HudPanel.PRIMARY);
         }
 
         Optional<StressStation> st = ClientStressState.focusedStation();
         Optional<SectionDiagram> sd = ClientStressState.focusedSection();
-        if (st.isEmpty() || sd.isEmpty()) return y;
+        if (st.isEmpty() || sd.isEmpty()) return;
 
-        g.drawString(mc.font, Component.translatable("br.hud.at_x",
-                String.format(Locale.ROOT, "%.2f", st.get().xMm() / 1000.0)), x, y, 0xAAAAAA);
-        y += 13;
+        panel.line(Component.translatable("br.hud.at_x",
+                String.format(Locale.ROOT, "%.2f", st.get().xMm() / 1000.0)), HudPanel.DETAIL);
 
-        return drawSectionDiagram(g, mc, x, y, sd.get());
-    }
-
-    /**
-     * The section, drawn as a stress profile.
-     *
-     * <p>A vertical line is the section's depth and the zero-stress axis. Each row is a
-     * horizontal bar whose length is the stress at that depth — right of the axis for
-     * tension, left for compression — so the shape is the familiar triangle for pure
-     * bending and a trapezoid once axial force is added. Where the bar crosses the axis is
-     * the neutral axis, and it is drawn where it actually is rather than assumed to be at
-     * the centroid.
-     */
-    private static int drawSectionDiagram(GuiGraphics g, Minecraft mc, int x, int y, SectionDiagram d) {
-        final int axisX = x + DIA_W / 2;
-        final int top = y;
-        final int bottom = y + DIA_H;
-
-        double peak = d.peakMagnitudeMpa();
-        if (peak <= 0) peak = 1;
-
-        StressPalette p = ClientStressState.palette();
-
-        // Section outline: a plain box so the depth is visible even where stress is zero.
-        g.fill(x, top, x + DIA_W, top + 1, 0x66FFFFFF);
-        g.fill(x, bottom, x + DIA_W, bottom + 1, 0x66FFFFFF);
-        g.fill(axisX, top, axisX + 1, bottom, 0x88FFFFFF);
-
-        for (int row = 0; row < DIA_H; row++) {
-            double fraction = (double) row / (DIA_H - 1);
-            double sigma = d.sigmaAt(fraction);
-            int len = (int) Math.round(Math.abs(sigma) / peak * (DIA_W / 2.0 - 2));
-            if (len <= 0) continue;
-
-            Rgb c = p.signedStress(sigma, peak);
-            int argb = c.argb(0.85f);
-            int ry = top + row;
-            if (sigma > 0) g.fill(axisX + 1, ry, axisX + 1 + len, ry + 1, argb);
-            else g.fill(axisX - len, ry, axisX, ry + 1, argb);
-        }
-
-        // Neutral axis, only when the section really has one.
-        d.neutralFraction().ifPresent(f -> {
-            int ny = top + (int) Math.round(f * (DIA_H - 1));
-            g.fill(x, ny, x + DIA_W, ny + 1, 0xCCFFFFFF);
-        });
-
-        // The words. Without these the picture is still ambiguous.
-        int labelX = x + DIA_W + 6;
-        g.drawString(mc.font, Component.translatable("br.section.top",
-                        Component.translatable(d.topLabelKey()),
-                        String.format(Locale.ROOT, "%+.2f", d.topSigmaMpa())),
-                labelX, top - 2, tint(d.topSigmaMpa(), p));
-        g.drawString(mc.font, Component.translatable("br.section.bottom",
-                        Component.translatable(d.bottomLabelKey()),
-                        String.format(Locale.ROOT, "%+.2f", d.bottomSigmaMpa())),
-                labelX, bottom - 7, tint(d.bottomSigmaMpa(), p));
-        if (d.neutralFraction().isPresent()) {
-            g.drawString(mc.font, Component.translatable("br.section.neutral"),
-                    labelX, top + DIA_H / 2 - 4, 0xCCCCCC);
-        }
-
-        return bottom + 12;
-    }
-
-    private static int tint(double sigma, StressPalette p) {
-        if (Math.abs(sigma) < 1e-9) return p.zeroColour().argb(1f);
-        return (sigma > 0 ? p.tensionColour() : p.compressionColour()).argb(1f);
+        panel.gap();
+        panel.diagram(sd.get(), ClientStressState.palette());
     }
 
     /**
@@ -364,17 +259,12 @@ public final class StressHud {
      * look like a broken utilisation lens rather than a different question — and the
      * material lens was itself drawing stress at the time, so the two wrongs agreed.
      */
-    private static void drawLegend(GuiGraphics g, Minecraft mc, int x, int y, ScanMode mode) {
+    private static void drawLegend(HudPanel panel, ScanMode mode) {
         List<StressPalette.LegendStop> stops = switch (mode) {
             case MATERIAL -> StressPalette.materialLegend();
             case STRESS -> ClientStressState.palette().stressLegend();
             default -> StressPalette.utilizationLegend();
         };
-        for (StressPalette.LegendStop stop : stops) {
-            g.fill(x, y + 1, x + SWATCH, y + 1 + SWATCH, stop.colour().argb(1f));
-            g.drawString(mc.font, Component.translatable(stop.translationKey()),
-                    x + SWATCH + 4, y, 0xFFFFFF);
-            y += 11;
-        }
+        stops.forEach(panel::legend);
     }
 }

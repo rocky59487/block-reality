@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.LangKeysTest" tests="4" skipped="0" failures="1" errors="0" timestamp="2026-09-09T23:52:33" hostname="ROCKYLAPTOP" time="0.188">
+  <properties/>
+  <testcase name="the two languages carry the same keys, so neither is half translated" classname="com.blockreality.impl.LangKeysTest" time="0.016"/>
+  <testcase name="a format string with a placeholder has one in both languages" classname="com.blockreality.impl.LangKeysTest" time="0.003"/>
+  <testcase name="every key the game can ask for has an English string" classname="com.blockreality.impl.LangKeysTest" time="0.121">
+    <failure message="org.opentest4j.AssertionFailedError: keys with no en_us string ==&gt; expected: &lt;[]&gt; but was: &lt;[br.hud.more_details]&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: keys with no en_us string ==&gt; expected: &lt;[]&gt; but was: &lt;[br.hud.more_details]&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//com.blockreality.impl.LangKeysTest.englishIsComplete(LangKeysTest.java:169)
+	at java.base@17.0.18/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base@17.0.18/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.18/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="no br.* string is carried that nothing can ask for" classname="com.blockreality.impl.LangKeysTest" time="0.045"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
