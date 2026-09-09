@@ -63,3 +63,7 @@ SD-6 第三次 smoke 的補送 probe 已過，但 RCON 輔助工具把 command �
 Minecraft 1.20.1 RconClient 一次 read 若收到兩個 frame 會直接斷線。修輔助工具前固定：
 先收第一個命令回覆，再送 delimiter；保留分段回覆拼接；UTF-8 以 bytes 計長；斷線/截斷
 明示失敗，不能回空字串冒充結果。用分段 socket fixture 驗命令順序與長回覆，再重跑真 server。
+
+模組 #109 的 CI attempt 1/2 均停在 apt update 的外部 Chrome repository hash mismatch，
+尚未執行 host gate。此 job 只需 cmake/g++；先檢查 runner 已有可執行工具，缺失才安裝，
+列印實際版本後仍必須建置並執行全部 host/corpus gate，不容許忽略 apt 失敗或把未跑視為 PASS。
