@@ -1427,3 +1427,13 @@ Forge80PASS、合計407登錄/395PASS/12SKIP。十Java變異、十來源鏈破�
 既有≥64KiB規則只對兩份精確hash的授權全文開例外，不泛放行license目錄。
 WSL首次/tmp輸出後續無法讀回，最終改persistent ext4全重跑保存218檔；不冒充Linux全Java回歸。
 舊41.7ms/Linux7FAIL保留，遊戲迴圈尚未換裝；這是封裝本地驗收，不是v2/v4或遊戲發布。
+
+
+## 2026-09-09 MC66A BSI 完整世界快照
+
+先凍docs/MC66A_BSI_BUCKLING.md，再接BSI eigen/材料EB/Java不可變每島與世界摘要。
+core334=322PASS/12SKIP，Forge80PASS；合計414登錄/402PASS/12SKIP，真JNA15項全執行。
+八Java變異AGG/FACTOR/CRITICAL/KIND/RESERVED/MIN/IDS/REQUEST均有具名失敗；
+三島125列獨立先凍表、局部critical在世界拒絕時保留，Java不重新比較lambda。
+引擎833checks/12故障三箱DET3與所有首次輸格、來源、原始bytes見配對引擎MC66A_BSI證據。
+新native開發庫與契約55檔已驗；正式v1.3 jar不包含此版本，GAME_SWAP與真HUD仍待驗。

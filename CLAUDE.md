@@ -182,3 +182,12 @@ small配置約55.9KB→71.8KB的代價照登；AMD耗時僅RECORDED_ONLY，沒�
 407登錄/395PASS/12SKIP；實際InProcessEngineTest5+InProcessRecoveryTest8=13項真JNA，
 舊Sidecar28項仍執行。十Java變異及來源/打包反例有完整證據；使用docs/NATIVE_PACKAGING.md。
 遊戲仍走SidecarClient，未做GAME_SWAP/N25 HUD/FPS；勿刪最後相容入口。下一段為引擎MC66a。
+
+
+### 2026-09-09 MC66A BSI eigen
+
+BsiBuckling完整不可變每島結果與五態世界摘要已接BsiAnalysisResult；世界拒絕仍保留局部critical。
+headers/solve/analyze新增EigenBuckling budget選項，舊簽章保留。core334=322PASS/12SKIP、Forge80PASS；
+原13+新2真JNA全部執行，八Java故障有具名反例。contract55檔/hash4b11cc738790與引擎同步。
+目前開發庫已驗，正式v1.3 jar未更新；遊戲仍Sidecar，HUD hasFactor分支尚需局部critical明示。
+下一單元引擎frame_v2 eigen、兩平台native包、再接HUD/GAME_SWAP；BUCK_MEMBERS保持active。

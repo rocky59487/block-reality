@@ -3,6 +3,7 @@
 #include "bsi_recovery.hpp"
 #include "bsi_member_geometry.hpp"
 #include "bsi_station_identity.hpp"
+#include "bsi_buckling.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -86,6 +87,7 @@ int ReplyBuilder::quality(double achievedRel, int32_t iterations, uint8_t tierHo
 }
 
 int ReplyBuilder::buckling(int32_t island, uint8_t state, uint8_t kind, double factor) {
+    bucklingValidated_ = false;
     Buckling b{}; b.island = island; b.state = state; b.kind = kind; b.reserved = 0; b.factor = factor;
     buckling_.push_back(b);
     return BSI_OK;
@@ -98,6 +100,7 @@ int ReplyBuilder::editClass(char cls, const char* downgraded) {
 }
 
 int ReplyBuilder::diag(uint32_t nodes, uint32_t members, uint32_t facets, uint32_t islands, uint32_t singularIslands, uint32_t refusedBlocks) {
+    bucklingValidated_ = false;
     haveDiag_ = true; nodes_ = nodes; members_ = members; facets_ = facets; islands_ = islands; singular_ = singularIslands; refused_ = refusedBlocks;
     return BSI_OK;
 }
@@ -124,21 +127,20 @@ void ReplyBuilder::appendSection(const char* name, const void* data, uint64_t by
 }
 
 bool ReplyBuilder::islandBucklingCritical(int32_t island, bool& hasRecord) const {
-    hasRecord = false;
-    for (const auto& bk : buckling_) {
-        if (bk.island != island) continue;
-        hasRecord = true;
-        return bk.state == BSI_BSTATE_COMPUTED && std::isfinite(bk.factor) && bk.factor < 1.0;
-    }
-    return false;
+    hasRecord = bucklingValidated_ && island >= 0 && size_t(island) < buckling_.size()
+        && buckling_[size_t(island)].island == island;
+    return hasRecord && buckling::critical(buckling_[size_t(island)].state, buckling_[size_t(island)].factor);
 }
 
 std::string ReplyBuilder::bucklingState(uint8_t requestedMode) const {
     static const char* names[] = {"computed", "no-positive-eigenvalue", "not-eligible", "not-eligible-scale", "disabled-by-request", "solver-failed"};
     if (requestedMode == BSI_BUCK_NONE) return "disabled-by-request";
     if (buckling_.empty()) return "not-eligible";
+#ifdef BSI_TEST_BUCKLING_AGG
     for (const auto& b : buckling_) if (b.state == BSI_BSTATE_COMPUTED) return "computed";
-    uint8_t s = buckling_[0].state;
+#endif
+    uint8_t s = BSI_BSTATE_NO_POSITIVE;
+    for (const auto& b : buckling_) if (buckling::rank(b.state) > buckling::rank(s)) s = b.state;
     return s < 6 ? names[s] : "solver-failed";
 }
 
@@ -171,6 +173,12 @@ bool ReplyBuilder::finalizeDeclare(std::string& why) {
 }
 
 bool ReplyBuilder::finalizeSolve(std::string& why) {
+    // Compatibility for host-internal callers which predate explicit request validation.
+    return finalizeSolve(why, buckling_.empty() ? uint8_t(BSI_BUCK_NONE) : buckling_.front().kind);
+}
+
+bool ReplyBuilder::finalizeSolve(std::string& why, uint8_t requestedMode) {
+    bucklingValidated_ = false;
     payload_.clear(); sections_.clear(); why.clear();
     if (blocksTwice_) { why = "blocks written twice"; return false; }
     if (!haveBlocks_) { why = "engine wrote no blocks section"; return false; }
@@ -178,6 +186,20 @@ bool ReplyBuilder::finalizeSolve(std::string& why) {
     if (!haveEq_) { why = "engine wrote no equilibrium"; return false; }
     if (!haveQuality_) { why = "engine wrote no quality"; return false; }
     if (!haveDiag_) { why = "engine wrote no diag"; return false; }
+    if (requestedMode > BSI_BUCK_SCREEN) { why = "invalid buckling request mode"; return false; }
+#ifndef BSI_TEST_BUCKLING_ORDER
+    std::sort(buckling_.begin(), buckling_.end(), [](const Buckling& a, const Buckling& b) { return a.island < b.island; });
+#endif
+#ifndef BSI_TEST_BUCKLING_IDS
+    if (buckling_.size() != islands_) { why = "incomplete buckling islands"; return false; }
+#endif
+    for (size_t k = 0; k < buckling_.size(); ++k) {
+        const auto& b = buckling_[k];
+#ifndef BSI_TEST_BUCKLING_IDS
+        if (b.island < 0 || uint64_t(b.island) != k) { why = "invalid buckling island identity"; return false; }
+#endif
+        if (!buckling::valid(b.state, b.kind, b.factor, requestedMode)) { why = "invalid buckling state/kind/factor"; return false; }
+    }
     // Validate every emitted recovery value before producing any section.
     const bool f32 = storage_ == BSI_STORAGE_F32;
     if (include_ & kIncMembers) for (const auto& m : members_v_)
@@ -237,7 +259,6 @@ bool ReplyBuilder::finalizeSolve(std::string& why) {
     if (unassignedKind != unassignedCells.size()) { why = "ownerKind=unassigned count " + std::to_string(unassignedKind) + " != unassigned listing " + std::to_string(unassignedCells.size()); return false; }
     std::sort(warnings_.begin(), warnings_.end(), [](const WarningCount& a, const WarningCount& b) { return a.code < b.code; });
     sortUnassigned(unassigned_);
-    std::sort(buckling_.begin(), buckling_.end(), [](const Buckling& a, const Buckling& b) { return a.island < b.island; });
 
     // ---- layout, fixed order ----
 #ifdef BSI_TEST_RECOVERY_NARROW_DC
@@ -292,6 +313,7 @@ bool ReplyBuilder::finalizeSolve(std::string& why) {
 #endif
     }
     if (include_ & kIncAttrsEcho) appendSection("attrsEcho", attrsEcho_.data(), (uint64_t)attrsEcho_.size() * sizeof(bsi_attr), attrsEcho_.size());
+    bucklingValidated_ = true;
     return true;
 }
 

@@ -10,8 +10,6 @@ import java.util.*;
 public final class BsiAnalysisResult {
     private BsiAnalysisResult() { }
     public static final List<String> INCLUDE = List.of("members", "memberGeometry", "stations", "stationIdentity", "shells");
-    private static final List<String> STATES = List.of("computed", "no-positive-eigenvalue", "not-eligible",
-            "not-eligible-scale", "disabled-by-request", "solver-failed");
 
     /** A rejected/stale/incomplete reply produces an empty failed result at the expected revision. */
     @Nonnull public static AnalysisResult decode(BsiResponse reply, @Nonnull WorldRevision expected,
@@ -46,6 +44,7 @@ public final class BsiAnalysisResult {
         var diag = h.objField("diag");
         int islands = count(diag, "islands"), singular = count(diag, "singularIslands");
         require(singular <= islands, "singular count exceeds islands");
+        var snapshot = BsiBuckling.decode(reply, islands);
         var blocks = reply.blocks();
         require(count(diag, "blocks") == blocks.size(), "block count mismatch");
         var beams = BsiBeamDisplay.decode(reply, expected.value(), materials, sections);
@@ -70,31 +69,13 @@ public final class BsiAnalysisResult {
             } else require((b.flags() & 5) == 0, "unowned block has decision flags");
             overloaded |= b.overloaded(); critical |= b.bucklingCritical();
         }
-        var buckling = reply.buckling();
-        require(buckling.size() == islands, "incomplete buckling states");
-        var bh = h.objField("buckling");
-        String stateToken = bh.str("state", ""), kindToken = bh.str("kind", "");
-        require(STATES.contains(stateToken), "unknown buckling state");
-        require(kindToken.equals("none") || kindToken.equals("eigen"), "unsupported buckling kind");
-        BucklingState state = BucklingState.fromWire(stateToken);
-        Set<Integer> seen = new HashSet<>(); double factor = 0;
-        for (var b : buckling) {
-            require(b.island() >= 0 && b.island() < islands && seen.add(b.island()), "invalid buckling island");
-            require(b.state() >= 0 && b.state() < STATES.size(), "unknown buckling state");
-            require(STATES.get(b.state()).equals(stateToken), "mixed buckling states need per-island API");
-            require(b.kind() == (kindToken.equals("none") ? 0 : 1), "mixed buckling kinds");
-            if (state.hasFactor()) {
-                require(b.kind() == 1 && Double.isFinite(b.factor()) && b.factor() > 0, "invalid buckling factor");
-                factor = factor == 0 ? b.factor() : Math.min(factor, b.factor());
-            } else require(Double.isNaN(b.factor()), "non-computed buckling has factor");
-        }
-        require(state.hasFactor() == (factor > 0), "missing computed factor");
-        require(!critical || state.hasFactor(), "critical flag without computed buckling");
+        for (var b : blocks) if (b.bucklingCritical())
+            require(snapshot.islands().get(b.island()).state() == 0, "critical flag without computed island");
         var unassigned = unassigned(h);
         long unassignedCount = unassigned.stream().mapToLong(g -> g.blocks().size()).sum();
         require(unassignedCount == blocks.stream().filter(BsiResponse.BlockResult::unassigned).count(), "unassigned count mismatch");
         return new AnalysisResult(expected, true, singular > 0, singular == 0 ? "" : singular + " mechanism island(s)",
-                maxDc, governing, kind, islands, singular, eq.residual(), factor, state, beams, shells,
+                maxDc, governing, kind, islands, singular, eq.residual(), snapshot.factor(), snapshot.state(), beams, shells,
                 unassigned, overloaded, critical);
     }
 

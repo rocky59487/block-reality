@@ -145,6 +145,7 @@ public final class BsiResponse {
         if (b == null) return out;
         for (int k = 0; k < s.count(); k++) {
             int base = k * BsiRecords.BUCKLING_BYTES;
+            if (b.getShort(base + 6) != 0) throw new IllegalArgumentException("nonzero buckling reserved field");
             out.add(new Buckling(b.getInt(base), b.get(base + 4) & 0xFF, b.get(base + 5) & 0xFF, b.getDouble(base + 8)));
         }
         return out;
