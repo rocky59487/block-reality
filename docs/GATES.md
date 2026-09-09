@@ -1512,3 +1512,10 @@ pass without skips. D32768/BURST64 coverage encode still FAILS its original budg
 changes, freeze reuse of the existing canonical list snapshot during encoding,
 including its bounded retention and extra cold-call allocation when no prior reader
 requested the list. No scene, warmup, fork, percentile or budget is changed.
+
+
+RS final `0736baa` passes the unchanged 64 timing and 16 allocation budgets with
+600 identical payload pairs. All three failed predecessor candidates remain failed
+in their original evidence. Final Windows 490 PASS/29 SKIP; Linux selected45 PASS,
+zero skips. The declared memory losses remain visible. No v1 FPS/tick/performance
+or engine capability gate is lowered. See evidence/REGISTRY_SCALING/RESULTS.md.

@@ -68,9 +68,11 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 - 尚未完成：最新雙平台合格庫的正式 jar、獨立區域排程 #86、
   材質方向/互動實測、效能量測、引擎 lifecycle/剛體姿態消費。
   #89 仍開放；既有公式已退出出貨來源，v1 全部基礎能力仍未完成。
-- REGISTRY_SCALING 已定位 131072 格座標快照的 MapN 成本，候選版改為獨立 hash-backed
-  不可變快照，並封住 entry 陣列對宣告/譜系記錄的寫入出口。身份/存檔及三條可編譯故障臂
-  已驗；三個 JVM fork 的原始基線與候選效能比較仍在進行，尚不宣稱性能通過。
+- REGISTRY_SCALING 的原始基線與四版候選都已保存；最終 `0736baa` 通過原定相對性能與
+  配置預算，600 份 bytes 一致。131K/ONE capture p95 714→6.0 ms、reconcile 9522→283 ms；
+  快照配置增加 42.9%，冷編碼多一份獨立陣列，原始三版性能輸格不覆寫。
+  Windows 490 PASS/29 SKIP、Linux 指定45項無跳過；詳 `evidence/REGISTRY_SCALING/RESULTS.md`。
+  這不代表 FPS 或 v1 高性能；實際 SavedData adapter 量測正在執行。
 - 上游模組 #107 的文件已整合，對位引擎 #39 frame_v2；來源見 `docs/MC66A_FRAME_V2.md`。
   不在本工作改引擎，也不把缺 TECTONIC2_TOKEN 而跳過的 CI native steps 說成已驗。
 

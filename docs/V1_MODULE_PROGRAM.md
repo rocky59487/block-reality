@@ -95,9 +95,10 @@ A49/F576/M832 三場景各 40 次實跑，數字只作 Recorded 基線；M832 �
 不能把背景 65.6 ms p95 說成 client frame time。尚未量 FPS、真玩家 socket、存檔或 registry 上界。
 詳 `../evidence/MODULE_PIPELINE_PROFILE/RESULTS.md`；未以小場景改寫 v1 效能目標。
 
-REGISTRY_SCALING 已針對 4K/32K/131K 密集座標與 131K 長梁凍結量測，定位大世界
-不可變 Map 的成本；候選快照改善與 entry 寫入出口修正已有身份/存檔回歸證據。
-完整三 fork 效能對照仍待完成，詳 `../evidence/REGISTRY_SCALING/RESULTS.md`。
+REGISTRY_SCALING 已完成原始基線與四版候選對照；`0736baa` 通過原定64條時間與16條
+配置預算，600份 payload 一致。131K/ONE 快照 p95 714→6.0 ms、背景分組9522→283 ms，
+增加的快照/冷編碼配置與前三版輸格都保留，詳 `../evidence/REGISTRY_SCALING/RESULTS.md`。
+此結論只涵蓋登錄資料路徑，仍非 live tick/FPS 或 v1 資格。
 
 REGISTRY_SAVE_PROFILE 已先凍 Windows/NTFS 與 WSL/ext4 的真 SavedData adapter 量測，
 使用共同種子、READY/PENDING64、三個 JVM fork；程式已編譯，執行排在 RS 時序量測之後。
