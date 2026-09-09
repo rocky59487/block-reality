@@ -1,0 +1,24 @@
+[
+  {
+    "arm": "identity-reuse",
+    "exit": 1,
+    "behavioral_oracle": [
+      {
+        "test": "fullDestructionAndSameTickReplacementCannotResurrectIdentityEvenAfterPendingSave()",
+        "failure": "org.opentest4j.AssertionFailedError"
+      }
+    ],
+    "pass": true
+  },
+  {
+    "arm": "object-schema",
+    "exit": 1,
+    "behavioral_oracle": [
+      {
+        "test": "unknownObjectSchemaCannotFallBackToCoverageOrOverwriteFile()",
+        "failure": "org.opentest4j.AssertionFailedError"
+      }
+    ],
+    "pass": true
+  }
+]

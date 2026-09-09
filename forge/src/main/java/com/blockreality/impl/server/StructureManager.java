@@ -11,6 +11,8 @@ import com.blockreality.core.engine.GameNativeLoader;
 import com.blockreality.core.bsi.BsiHeaders;
 import com.blockreality.core.bsi.BsiRecords;
 import com.blockreality.core.protocol.Truncation;
+import com.blockreality.core.world.ConstructionDeclaration;
+import com.blockreality.core.world.ConstructionLedger;
 import com.blockreality.impl.BRConfig;
 import com.blockreality.impl.BlockRealityMod;
 import com.blockreality.impl.block.StructuralBlock;
@@ -174,6 +176,28 @@ public final class StructureManager {
 
     public int loadedBlockCount() { return loaded.size(); }
 
+    public ConstructionLedger constructionObjects() { return structural.objects(); }
+    public java.util.UUID analysisSourceId() { return sourceId; }
+    public boolean objectsReady() { return structural.objectsReady(); }
+    public String objectStatus() { return structural.objectStatus(); }
+
+    private static ConstructionDeclaration declaration(BlockState state) {
+        var block = (StructuralBlock) state.getBlock();
+        var axis = state.getValue(StructuralBlock.AXIS);
+        return new ConstructionDeclaration(block.materialToken(), block.sectionToken(),
+                axis == StructuralBlock.Axis.UNDECLARED ? -1 : axis.wire());
+    }
+
+    /** Actual world callbacks also cover commands; no physical rules are inferred here. */
+    public static void observedStructure(ServerLevel level, BlockPos pos, BlockState state) {
+        StructureManager manager = of(level);
+        manager.structural.observe(pos, declaration(state)); manager.markDirty();
+    }
+    public static void removedStructure(ServerLevel level, BlockPos pos) {
+        StructureManager manager = of(level);
+        manager.structural.remove(pos); manager.loaded.remove(pos); manager.markDirty();
+    }
+
     /** Forces the next tick to re-analyse, for {@code /br resolve}. */
     public void requestResolve() {
         gate.bump();
@@ -238,7 +262,7 @@ public final class StructureManager {
     private static int scanChunk(StructureManager m, net.minecraft.world.level.chunk.ChunkAccess access) {
         if (!(access instanceof LevelChunk chunk)) return 0;
         int found = 0;
-        var observed = new ArrayList<BlockKey>();
+        var observed = new HashMap<BlockKey, ConstructionDeclaration>();
         LevelChunkSection[] sections = chunk.getSections();
         for (int si = 0; si < sections.length; si++) {
             LevelChunkSection section = sections[si];
@@ -249,16 +273,17 @@ public final class StructureManager {
             for (int x = 0; x < 16; x++) {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
-                        if (!(section.getBlockState(x, y, z).getBlock() instanceof StructuralBlock)) continue;
-                        observed.add(new BlockKey(
+                        BlockState state = section.getBlockState(x, y, z);
+                        if (!(state.getBlock() instanceof StructuralBlock)) continue;
+                        observed.put(new BlockKey(
                                 chunk.getPos().getMinBlockX() + x, baseY + y,
-                                chunk.getPos().getMinBlockZ() + z));
+                                chunk.getPos().getMinBlockZ() + z), declaration(state));
                         found++;
                     }
                 }
             }
         }
-        m.structural.edit(i -> i.replaceChunk(chunk.getPos().x, chunk.getPos().z, observed));
+        m.structural.observeChunk(chunk.getPos().x, chunk.getPos().z, observed);
         m.loaded.keySet().removeIf(p -> (p.getX() >> 4) == chunk.getPos().x
                 && (p.getZ() >> 4) == chunk.getPos().z && !m.structural.contains(p));
         return found;
@@ -338,14 +363,14 @@ public final class StructureManager {
     }
 
     // ------------------------------------------------------------------ events
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onPlace(BlockEvent.EntityPlaceEvent e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
         if (!(e.getPlacedBlock().getBlock() instanceof StructuralBlock)) {
             groundChanged(level, e.getPos()); return;
         }
         StructureManager m = of(level);
-        m.structural.add(e.getPos().immutable());
+        m.structural.observe(e.getPos(), declaration(e.getPlacedBlock()));
         m.markDirty();
     }
 
@@ -357,10 +382,8 @@ public final class StructureManager {
      * (FORGE-6). At LOWEST, every higher-priority cancellation has happened, and a
      * cancelled event is simply not delivered here.
      *
-     * <p>Backstop for what priority cannot promise (a same-priority canceller
-     * registered later than this mod): the gather drops tracked positions whose
-     * block turns out not to be structural, and {@code /br scan} or a chunk reload
-     * re-adopts a block that was dropped by mistake.
+     * <p>Even a same-priority canceller cannot retire an identity here: this event only
+     * invalidates analysis. Actual block removal records destruction in StructuralBlock.onRemove.
      */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBreak(BlockEvent.BreakEvent e) {
@@ -369,8 +392,7 @@ public final class StructureManager {
             groundChanged(level, e.getPos()); return;
         }
         StructureManager m = of(level);
-        m.structural.remove(e.getPos().immutable());
-        m.loaded.remove(e.getPos().immutable());
+        // Identity retirement follows the actual onRemove callback, after cancellation is resolved.
         m.markDirty();
     }
 
@@ -396,13 +418,10 @@ public final class StructureManager {
      * analysis would keep reporting the structure that used to be there — the
      * silently-safe answer, on the most ordinary event in the game (PR26_REVIEW DF-01).
      *
-     * <p>{@code Detonate} fires after the affected-block list is final and before the
-     * blocks are removed, so the positions here are exactly the ones about to go. The
-     * tracked set is pruned and the world marked dirty; the gather does the rest.
+     * <p>{@code Detonate} precedes removal, so it only invalidates affected input.
+     * Actual onRemove callbacks retire coverage/identity after the world changes.
      */
-    // LOWEST: protection mods edit the affected-block list at their own priorities, and
-    // pruning must act on the FINAL list — removing a block from tracking that a claim
-    // mod then saves would desynchronise the model from the world (v0.3a review §3-6).
+    // Protection mods may still keep blocks; this handler never retires them speculatively.
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onExplode(ExplosionEvent.Detonate e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
@@ -412,9 +431,7 @@ public final class StructureManager {
         for (BlockPos pos : e.getAffectedBlocks()) {
             groundChanged(level, pos);
             if (!(level.getBlockState(pos).getBlock() instanceof StructuralBlock)) continue;
-            BlockPos at = pos.immutable();
-            m.structural.remove(at);
-            m.loaded.remove(at);
+            // The actual onRemove callback records destruction after protection decisions.
             touched = true;
         }
         if (touched) m.markDirty();
@@ -472,6 +489,8 @@ public final class StructureManager {
 
     // ------------------------------------------------------------------- loop
     private void tick(ServerLevel level) {
+        structural.tickObjects(level.getServer(), () -> !level.getServer().isStopped()
+                && BY_DIMENSION.get(dimension) == this);
         ticksSinceSolve++;
         boolean on = enabled();
         if (on != enabledLastTick) {
@@ -589,6 +608,7 @@ public final class StructureManager {
             return;
         }
         BlockKey key = new BlockKey(pos.getX(), pos.getY(), pos.getZ());
+        structural.observe(pos, declaration(state));
         StructuralBlock.Axis axis = state.getValue(StructuralBlock.AXIS);
         if (axis == StructuralBlock.Axis.UNDECLARED) { cycleUndeclared.add(key); return; }
         cycleCells.add(GameWorldSnapshot.Cell.of(key, sb.materialToken(), sb.sectionToken(), axis.wire()));

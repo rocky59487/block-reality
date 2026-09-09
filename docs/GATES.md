@@ -1462,3 +1462,14 @@ WR 判準由 `cd4c1b3` 先凍。首跑真 server 的遠端 chunk 已不可讀，
 13 項真 server gates、487 登錄/459 PASS/28 SKIP、两條可編譯行為故障臂與 jar gate 已驗。
 這只完成已知格索引與整維度延後；#86 物件/區域排程、#17 identity/lineage 未完成，
 效能仍待量測。N14 舊消費端守門保留，未把資料完整性測試當作高性能或 v1 資格。
+
+### 2026-09-10 CONSTRUCTION_IDENTITY：永久遊戲構件與譜系
+
+判準先凍於 `735fa0a`；唯讀權限及原生 member 0 入口由 `e30c416` 在命令實作前加凍。
+首跑 Forge 保存測試绕過正式 dirty notification，導致重開讀到舊 graph；保留 13 PASS/1 FAIL
+原 XML，將 publish/dirty 集中至同一入口後原斷言通過。邊界複查另抓到拆分時一段同批重建，
+另一段錯留母 ID；首敗保留，計算母 ID 出現於所有子段後全部子段取得新身份，不放寬 split 判準。
+終值 epoch 複查另抓到拒絕前已記 destruction，造成拒絕存檔無法重讀；保留首敗，先檢查上界後
+原圖及拒絕理由都能保存/重開。最終 Windows 505 登錄/477 PASS/28 SKIP；兩條具名可編譯故障臂咬住 ID 重用及 schema bypass。
+真 server 保存原生 OFF、拆分/合併/重建、跨 chunk 卸載/重啟/恢復、原生多元素對一物件證據。
+這是遊戲身份與建造譜系，不是引擎抽取、damage、剛體或 v1 完成；详 evidence/CONSTRUCTION_IDENTITY。
