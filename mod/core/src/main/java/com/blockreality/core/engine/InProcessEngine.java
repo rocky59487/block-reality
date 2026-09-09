@@ -6,6 +6,8 @@ import com.blockreality.core.bsi.BsiHeaders;
 import com.blockreality.core.bsi.BsiRecords;
 import com.blockreality.core.bsi.BsiResponse;
 import com.blockreality.core.bsi.BsiAnalysisResult;
+import com.blockreality.core.bsi.BsiVocabulary;
+import com.blockreality.core.json.JsonValue;
 import com.blockreality.api.AnalysisResult;
 import com.blockreality.api.WorldRevision;
 
@@ -41,6 +43,7 @@ public final class InProcessEngine implements AutoCloseable {
     private List<String> capabilities = List.of();
     private long revision;
     private boolean worldDeclared;
+    private BsiVocabulary vocabulary;
 
     private InProcessEngine(BsiNative n) { this.native_ = n; }
 
@@ -97,19 +100,50 @@ public final class InProcessEngine implements AutoCloseable {
 
     /** The vocabulary body, exactly as {@code bsi.vocab.declare} wants it. */
     public boolean declareVocabulary(String vocabBodyJson) {
+        worldDeclared = false;
+        vocabulary = null;
         if (status != Status.READY) return false;
-        BsiResponse r = send(BsiHeaders.vocabDeclare(nextId(), revision, vocabBodyJson), null);
-        return ok(r);
+        String id = nextId();
+        BsiResponse r = send(BsiHeaders.vocabDeclare(id, revision, vocabBodyJson), null);
+        if (!ok(r)) return false;
+        try {
+            var body = JsonValue.parse(vocabBodyJson);
+            if (!body.isExactInt("version") || body.exactI64("version") < 1 || body.exactI64("version") > Integer.MAX_VALUE)
+                throw new IllegalArgumentException("invalid declared vocabulary version");
+            vocabulary = BsiVocabulary.decode(r, id, revision, (int) body.exactI64("version"));
+            return true;
+        } catch (IllegalArgumentException e) {
+            disable("PROTOCOL_ERROR", e.getMessage());
+            return false;
+        }
     }
+
+    public BsiVocabulary vocabulary() { return vocabulary; }
 
     public boolean declareWorld(long worldRevision, List<BsiRecords.Block> blocks) {
         worldDeclared = false;
-        if (status != Status.READY) return false;
+        if (status != Status.READY || vocabulary == null) return false;
         this.revision = worldRevision;
         byte[] payload = BsiRecords.encodeBlocks(blocks);
         BsiResponse r = send(BsiHeaders.worldDeclare(nextId(), revision, payload.length / BsiRecords.BLOCK_BYTES, 0), payload);
         worldDeclared = ok(r);
         return worldDeclared;
+    }
+
+    /** Complete commit analysis for the declared world; never falls back to a previous result. */
+    public AnalysisResult analyze(GameWorldSnapshot snapshot, Integer numThreads,
+            BsiHeaders.Storage storage, BsiHeaders.EigenBuckling buckling) {
+        if (status != Status.READY || vocabulary == null)
+            return AnalysisResult.failed(snapshot.revision(), "BSI analysis: no accepted vocabulary");
+        try {
+            if (!declareWorld(snapshot.revision().value(), snapshot.blocks(vocabulary)))
+                return AnalysisResult.failed(snapshot.revision(), "BSI world declaration refused");
+            return analyze(snapshot.revision(), true, new double[]{0, -9.81, 0}, snapshot.loads(), numThreads,
+                    vocabulary.materials(), vocabulary.sections(), storage, buckling);
+        } catch (IllegalArgumentException e) {
+            worldDeclared = false;
+            return AnalysisResult.failed(snapshot.revision(), "BSI input: " + e.getMessage());
+        }
     }
 
     /** Complete commit analysis for the declared world; never falls back to a previous result. */
@@ -145,7 +179,7 @@ public final class InProcessEngine implements AutoCloseable {
     public BsiResponse solve(boolean selfWeight, double[] gravity, List<BsiRecords.Load> loads,
                              Integer numThreads, List<String> include, BsiHeaders.Precision precision,
                              BsiHeaders.EigenBuckling buckling) {
-        if (status != Status.READY) return null;
+        if (status != Status.READY || !worldDeclared || vocabulary == null) return null;
         byte[] payload = loads == null || loads.isEmpty() ? null : BsiRecords.encodeLoads(loads);
         int n = payload == null ? 0 : payload.length / BsiRecords.LOAD_BYTES;
         return send(BsiHeaders.solve(nextId(), revision, selfWeight, gravity, n, numThreads, include, precision, buckling), payload);

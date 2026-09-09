@@ -23,6 +23,7 @@ sourceSets.main.java.srcDirs += [
         '../mod/api/src/main/java',
         '../mod/core/src/main/java',
 ]
+sourceSets.main.resources.srcDir '../mod/core/src/main/resources'
 
 minecraft {
     // Official Mojang mappings, matching the previous project's convention.
