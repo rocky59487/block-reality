@@ -112,3 +112,11 @@ SP separately measures real adapter compression/fsync/reopen after RS timing JVM
 finish. Live game tick/save latency, long history retention, independent regions,
 actual socket/client/FPS, current qualified native packaging and engine lifecycle,
 collapse/crushing/rolling remain open. No v1 or whole-game high-performance claim.
+
+
+CI run [34414261646](https://github.com/rocky59487/block-reality/actions/runs/34414261646)
+at documentation/evidence head `8122715` completed all four job statuses successfully.
+Java/Forge ran the codec/cache regressions, both profile-driver compile tasks and
+36 quoted-count checks. `ci-8122715.json` records the native job's **15 skipped
+substantive steps**; its status does not establish current native packaging.
+SP subsequently completed: see ../REGISTRY_SAVE_PROFILE/RESULTS.md.

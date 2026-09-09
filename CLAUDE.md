@@ -72,7 +72,8 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   配置預算，600 份 bytes 一致。131K/ONE capture p95 714→6.0 ms、reconcile 9522→283 ms；
   快照配置增加 42.9%，冷編碼多一份獨立陣列，原始三版性能輸格不覆寫。
   Windows 490 PASS/29 SKIP、Linux 指定45項無跳過；詳 `evidence/REGISTRY_SCALING/RESULTS.md`。
-  這不代表 FPS 或 v1 高性能；實際 SavedData adapter 量測正在執行。
+  這不代表 FPS 或 v1 高性能；SavedData adapter 雙平台900次/720樣本已完成且資料一致。
+  131K READY 同步存檔 p95 Windows260 ms、Linux202 ms，時間僅 Recorded，仍須改善。
 - 上游模組 #107 的文件已整合，對位引擎 #39 frame_v2；來源見 `docs/MC66A_FRAME_V2.md`。
   不在本工作改引擎，也不把缺 TECTONIC2_TOKEN 而跳過的 CI native steps 說成已驗。
 

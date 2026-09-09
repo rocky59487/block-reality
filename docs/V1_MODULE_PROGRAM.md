@@ -100,6 +100,7 @@ REGISTRY_SCALING 已完成原始基線與四版候選對照；`0736baa` 通過�
 增加的快照/冷編碼配置與前三版輸格都保留，詳 `../evidence/REGISTRY_SCALING/RESULTS.md`。
 此結論只涵蓋登錄資料路徑，仍非 live tick/FPS 或 v1 資格。
 
-REGISTRY_SAVE_PROFILE 已先凍 Windows/NTFS 與 WSL/ext4 的真 SavedData adapter 量測，
-使用共同種子、READY/PENDING64、三個 JVM fork；程式已編譯，執行排在 RS 時序量測之後。
-這仍是資料介面的成本，不能代替 live server tick、全世界存檔或 client FPS。
+REGISTRY_SAVE_PROFILE 已完成 Windows/NTFS 與 WSL/ext4 的真 SavedData adapter 量測：
+共同種子、READY/PENDING64、各三個 JVM fork，共900次/720量測樣本，跨六fork資料一致。
+131K READY 完整存檔 p95 Windows260 ms、Linux202 ms，僅 Recorded，仍是同步成本。
+詳 `../evidence/REGISTRY_SAVE_PROFILE/RESULTS.md`；不能代替 live server tick、全世界存檔或 FPS。
