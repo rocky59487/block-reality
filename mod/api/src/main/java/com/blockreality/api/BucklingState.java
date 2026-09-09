@@ -19,7 +19,7 @@ public enum BucklingState {
     /** It ran on something and found no positive eigenvalue — nothing here can buckle. */
     NO_POSITIVE_EIGENVALUE("no-positive-eigenvalue"),
 
-    /** It was asked for, but no structure had an element to run it on. */
+    /** At least one island was ineligible; the world was not completely evaluated. */
     NOT_ELIGIBLE("not-eligible"),
 
     /** The request did not ask for it. */

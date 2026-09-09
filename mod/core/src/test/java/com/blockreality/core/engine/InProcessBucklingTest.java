@@ -34,8 +34,18 @@ class InProcessBucklingTest {
                 assertEquals(mixed?BucklingState.NOT_ELIGIBLE:BucklingState.COMPUTED,r.bucklingState());
                 double expected=Math.PI*Math.PI*2e11*(.4*Math.pow(.2,3)/12)/(4*19*19*1e6);
                 if(mixed)assertEquals(0,r.bucklingFactor());else assertEquals(expected,r.bucklingFactor(),.005*expected);
+                assertEquals(mixed?2:1,r.bucklingIslands().size());
+                var column=r.bucklingIslands().get(0);assertEquals(0,column.island());
+                assertEquals(IslandBuckling.Kind.EIGEN,column.kind());assertEquals(BucklingState.COMPUTED,column.state());
+                assertEquals(expected,column.factor(),.005*expected);
+                if(mixed){var floating=r.bucklingIslands().get(1);assertEquals(1,floating.island());
+                    assertEquals(BucklingState.NOT_ELIGIBLE,floating.state());assertTrue(Double.isNaN(floating.factor()));}
+                assertThrows(UnsupportedOperationException.class,()->r.bucklingIslands().clear());
                 var none=engine.analyze(new WorldRevision(17),false,null,loads,1,Map.of(0,"steel"),Map.of(0,"rect"),storage);
                 assertTrue(none.ok(),none.diagnostic());assertEquals(BucklingState.DISABLED_BY_REQUEST,none.bucklingState());assertFalse(none.bucklingCritical());
+                assertEquals(r.islands(),none.bucklingIslands().size());
+                for(var island:none.bucklingIslands()){assertEquals(IslandBuckling.Kind.NONE,island.kind());
+                    assertEquals(BucklingState.DISABLED_BY_REQUEST,island.state());assertTrue(Double.isNaN(island.factor()));}
             }
         }
     }
