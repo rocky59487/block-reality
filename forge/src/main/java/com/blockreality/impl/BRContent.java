@@ -15,20 +15,10 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 /**
- * Registry contents.
- *
- * <p>The v0 demo was deliberately two blocks — a vertical slice, not a content pack. The
- * slice held, so the catalogue the engine always carried is now reachable from the
- * creative tab: three steel sections, sawn timber, a plain concrete beam, a brick pier,
- * and three plate tokens. Every token here has a closed-form gate behind it
- * (verify.py C1/C1b/C15 and the plate suites) BEFORE it got a block — "no capability
- * without a gate" runs in that order, not the other way around.
- *
- * <p>What is deliberately still absent: a brick <em>wall plate</em>. The plate screen is
- * an elastic von Mises surface check, and vM cannot see the tension/compression asymmetry
- * that governs a brittle material — a masonry wall it blessed would be wrong in the
- * unsafe direction. Brick therefore only exists as a pier, where the beam screen's five
- * separate ratios (tension among them) do the asymmetry honestly.
+ * Nine placeable structural products and their legacy save-compatible registry names.
+ * GameVocabulary binds them to the current native declarations: steel/timber members,
+ * solid concrete/brick monoliths, and three panel thicknesses. Product tooltips read
+ * that same declaration; a legacy section-like token is not a physical dimension.
  */
 public final class BRContent {
 
@@ -88,9 +78,6 @@ public final class BRContent {
             () -> new BlockItem(CONCRETE_SLAB.get(), new Item.Properties()));
 
     // ---- the rest of the beam catalogue --------------------------------------
-    // Same material, smaller sections: a 150x300 carries (150*300^2)/(200*400^2) = 42%
-    // of the 200x400's section modulus, so the same span fails visibly sooner — which
-    // is the point of having more than one size on the shelf.
     public static final RegistryObject<Block> STEEL_BEAM_150 = BLOCKS.register("steel_beam_150x300",
             () -> new StructuralBlock("steel", "steel_rect_150x300",
                     BlockBehaviour.Properties.of()
@@ -113,12 +100,7 @@ public final class BRContent {
     public static final RegistryObject<Item> STEEL_BEAM_100_ITEM = ITEMS.register("steel_beam_100x200",
             () -> new BlockItem(STEEL_BEAM_100.get(), new Item.Properties()));
 
-    /**
-     * Plain (unreinforced) concrete beam. The token says {@code concrete_rect_400x600}
-     * because that is what the engine solves: a solid rectangle of concrete, tension
-     * allowable 3 MPa — so it cracks where a textbook says unreinforced concrete
-     * cracks. An honest RC composite section is issue #13, not a rename.
-     */
+    /** Solid concrete monolith; the old beam registry/section token remains save-compatible. */
     public static final RegistryObject<Block> CONCRETE_BEAM = BLOCKS.register("concrete_beam",
             () -> new StructuralBlock("concrete", "concrete_rect_400x600",
                     BlockBehaviour.Properties.of()
@@ -141,7 +123,7 @@ public final class BRContent {
     public static final RegistryObject<Item> TIMBER_BEAM_ITEM = ITEMS.register("timber_beam",
             () -> new BlockItem(TIMBER_BEAM.get(), new Item.Properties()));
 
-    /** Brick pier, 230x350. Beam-screened on purpose — see the class comment. */
+    /** Solid brick monolith; the legacy token does not declare a 230x350 member. */
     public static final RegistryObject<Block> BRICK_PIER = BLOCKS.register("brick_pier",
             () -> new StructuralBlock("brick", "brick_rect_230x350",
                     BlockBehaviour.Properties.of()
@@ -165,7 +147,7 @@ public final class BRContent {
     public static final RegistryObject<Item> CONCRETE_SLAB_150_ITEM = ITEMS.register("concrete_slab_150",
             () -> new BlockItem(CONCRETE_SLAB_150.get(), new Item.Properties()));
 
-    /** 20 mm steel plate — a thin shell, so out-of-plane it buckles long before it yields. */
+    /** Panel material with a declared thickness of 20 mm; verdicts remain engine-owned. */
     public static final RegistryObject<Block> STEEL_PLATE = BLOCKS.register("steel_plate",
             () -> new StructuralBlock("steel", "steel_plate_20",
                     BlockBehaviour.Properties.of()

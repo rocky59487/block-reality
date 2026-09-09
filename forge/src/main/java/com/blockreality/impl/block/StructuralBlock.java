@@ -81,6 +81,7 @@ public class StructuralBlock extends Block {
             @javax.annotation.Nullable net.minecraft.world.level.BlockGetter level,
             java.util.List<net.minecraft.network.chat.Component> text, net.minecraft.world.item.TooltipFlag flag) {
         super.appendHoverText(stack, level, text, flag);
+        ProductTooltip.append(materialToken, sectionToken, text);
         text.add(net.minecraft.network.chat.Component.translatable("br.placement.hint"));
     }
 
