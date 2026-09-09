@@ -50,3 +50,11 @@ rejectsLateAndDuplicateUpdates；忽略dimension比較→rejectsOtherDimensionsW
 持久融合區域、chunk 次序不變與集合成長界限依 #86，另有完整 WORLD_IDENTITY 程序；
 本 envelope 只能解交付身分，不能將目前的載入集合當持久世界。損傷/材料交易的持久
 Artifact/event token 依 #17 仍待接引擎，不在 Java 模擬碰撞或演算結構分解。
+
+## 伺服器事件的 headless 證據範圍
+
+SD-6 的事件路徑另用 integrationTest 專用 probe：在隔離真 server 建立測試 ServerPlayer，
+向 Forge event bus 發送登入/重生/跨維度事件，攔截 Connection.send 所送的實際 channel
+payload，decode 並交付 clock；確認 result/revision 沒有因補送而重算。
+這能驗事件註冊、manager、channel、編碼與來源路徑，不能驗真登入/socket/client clone
+時序。probe 不進正式 source set/jar，N25 與實際雙玩家/旅行驗收仍待執行。
