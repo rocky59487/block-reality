@@ -58,3 +58,8 @@ SD-6 的事件路徑另用 integrationTest 專用 probe：在隔離真 server �
 payload，decode 並交付 clock；確認 result/revision 沒有因補送而重算。
 這能驗事件註冊、manager、channel、編碼與來源路徑，不能驗真登入/socket/client clone
 時序。probe 不進正式 source set/jar，N25 與實際雙玩家/旅行驗收仍待執行。
+
+SD-6 第三次 smoke 的補送 probe 已過，但 RCON 輔助工具把 command 與 delimiter 連續送出；
+Minecraft 1.20.1 RconClient 一次 read 若收到兩個 frame 會直接斷線。修輔助工具前固定：
+先收第一個命令回覆，再送 delimiter；保留分段回覆拼接；UTF-8 以 bytes 計長；斷線/截斷
+明示失敗，不能回空字串冒充結果。用分段 socket fixture 驗命令順序與長回覆，再重跑真 server。
