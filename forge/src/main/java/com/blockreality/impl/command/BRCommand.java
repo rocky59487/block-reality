@@ -62,6 +62,10 @@ public final class BRCommand {
     private static void register(CommandDispatcher<CommandSourceStack> d) {
         d.register(Commands.literal("br")
                 .then(lit("status").executes(c -> status(c.getSource())))
+                .then(lit("profile").executes(c -> profile(c.getSource(), "show"))
+                        .then(Commands.literal("start").executes(c -> profile(c.getSource(), "start")))
+                        .then(Commands.literal("stop").executes(c -> profile(c.getSource(), "stop")))
+                        .then(Commands.literal("show").executes(c -> profile(c.getSource(), "show"))))
                 .then(lit("members").executes(c -> members(c.getSource())))
                 .then(lit("object").then(Commands.argument("pos", BlockPosArgument.blockPos())
                         .executes(c -> object(c.getSource(), BlockPosArgument.getBlockPos(c, "pos")))))
@@ -334,6 +338,24 @@ public final class BRCommand {
                             sh.governingTopFace() ? "top" : "bottom", sh.peakMpa()),
                     sh.overloaded() ? ChatFormatting.RED : ChatFormatting.GRAY);
         }
+        return 1;
+    }
+
+    private static int profile(CommandSourceStack src, String action) {
+        var recorder = managerFor(src).profile();
+        if (action.equals("start")) recorder.start();
+        if (action.equals("stop")) recorder.stop();
+        var snapshot = recorder.snapshot();
+        line(src, "Profile " + snapshot.session() + " " + (snapshot.active() ? "RECORDING" : "STOPPED")
+                + " — last 256 samples/stage, milliseconds; nested stages overlap", ChatFormatting.AQUA);
+        for (var stage : com.blockreality.core.diagnostics.PipelineProfile.Stage.values()) {
+            var s = snapshot.stages().get(stage); if (s == null) continue;
+            line(src, String.format(Locale.ROOT, "  %s n=%d seen=%d p50=%.3f p95=%.3f max=%.3f",
+                    stage.name(), s.retained(), s.observed(), s.p50Ns()/1e6, s.p95Ns()/1e6, s.maxNs()/1e6), ChatFormatting.GRAY);
+        }
+        line(src, "  JNA includes engine time; real player socket/FPS costs are not isolated here", ChatFormatting.GRAY);
+        for (var counter : com.blockreality.core.diagnostics.PipelineProfile.Counter.values())
+            line(src, "  " + counter + "=" + snapshot.counters().getOrDefault(counter, 0L), ChatFormatting.GRAY);
         return 1;
     }
 

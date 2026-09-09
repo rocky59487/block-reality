@@ -3,6 +3,8 @@ package com.blockreality.impl.server;
 import com.blockreality.core.world.WorldCellIndex;
 import com.blockreality.core.world.ConstructionDeclaration;
 import com.blockreality.core.world.ConstructionLedger;
+import com.blockreality.core.diagnostics.PipelineProfile;
+import static com.blockreality.core.diagnostics.PipelineProfile.Stage.*;
 import net.minecraft.core.BlockPos;
 import com.blockreality.api.geom.BlockKey;
 import net.minecraft.nbt.CompoundTag;
@@ -90,17 +92,25 @@ class WorldIndexData extends SavedData implements Iterable<BlockPos> {
         if (!objects.publish(completion)) return false;
         setDirty(); return true;
     }
-    void tickObjects(net.minecraft.server.MinecraftServer server, java.util.function.BooleanSupplier live) {
+    void tickObjects(net.minecraft.server.MinecraftServer server, java.util.function.BooleanSupplier live,
+                     PipelineProfile profile) {
         if (objectsInFlight || !failure().isEmpty() || objects.cellCount() != index.size() || !objects.pending()) return;
-        var work = objects.work(); objectsInFlight = true;
-        boolean submitted = AnalysisExecutor.submit(() -> SolveDispatch.run(
-                () -> ConstructionLedger.reconcile(work),
-                result -> server.execute(() -> {
-                    try { if (live.getAsBoolean()) publishObjects(result); }
+        ConstructionLedger.Work work;
+        try (var ignored = profile.begin(METADATA_CAPTURE)) { work = objects.work(); }
+        objectsInFlight = true;
+        var queued = profile.begin(METADATA_QUEUE);
+        var profileContext = profile.capture();
+        boolean submitted = AnalysisExecutor.submit(() -> profile.run(profileContext, () -> SolveDispatch.run(
+                () -> {
+                    queued.close();
+                    try (var ignored = profile.begin(METADATA_RECONCILE)) { return ConstructionLedger.reconcile(work); }
+                },
+                result -> server.execute(() -> profile.run(profileContext, () -> {
+                    try (var ignored = profile.begin(METADATA_PUBLISH)) { if (live.getAsBoolean()) publishObjects(result); }
                     finally { objectsInFlight = false; }
-                }), () -> objectsInFlight = false,
-                (message, error) -> com.blockreality.impl.BlockRealityMod.LOG.error("object bookkeeping: " + message, error)));
-        if (!submitted) objectsInFlight = false;
+                })), () -> objectsInFlight = false,
+                (message, error) -> com.blockreality.impl.BlockRealityMod.LOG.error("object bookkeeping: " + message, error))));
+        if (!submitted) { queued.close(); objectsInFlight = false; }
     }
     java.util.List<BlockPos> positions() {
         return index.cells().stream().map(p -> new BlockPos(p.x(), p.y(), p.z())).toList();

@@ -65,4 +65,45 @@ class GameInputNativeTest {
             assertFalse(engine.declareWorld(8,List.of(BsiRecords.Block.of(0,0,0,0,0,0))));
         }
     }
+
+    @Test void profilingObservesTheRealBridgeWithoutChangingNativeResults() {
+        var profile=new com.blockreality.core.diagnostics.PipelineProfile();
+        try(var engine=InProcessEngine.open(library(),1,profile)) {
+            assertTrue(engine.declareVocabulary(GameVocabulary.declaration()));
+            var input=world(12); var baseline=engine.analyze(input,1,BsiHeaders.Storage.F64,new BsiHeaders.EigenBuckling(2400));
+            assertTrue(baseline.ok(),baseline.diagnostic()); assertTrue(profile.snapshot().stages().isEmpty());
+            profile.start(); var measured=engine.analyze(input,1,BsiHeaders.Storage.F64,new BsiHeaders.EigenBuckling(2400)); profile.stop();
+            assertTrue(measured.ok(),measured.diagnostic());
+            assertEquals(baseline.maxDc(),measured.maxDc()); assertEquals(baseline.bucklingIslands(),measured.bucklingIslands());
+            assertEquals(baseline.overCapacity(),measured.overCapacity()); assertEquals(baseline.bucklingCritical(),measured.bucklingCritical());
+            assertEquals(baseline.members().get(0).stations(),measured.members().get(0).stations());
+            assertEquals(baseline.members().get(0).display().orElseThrow().stations(),measured.members().get(0).display().orElseThrow().stations());
+            var s=profile.snapshot();
+            assertEquals(2,s.stages().get(com.blockreality.core.diagnostics.PipelineProfile.Stage.NATIVE_CALL).observed());
+            assertEquals(1,s.stages().get(com.blockreality.core.diagnostics.PipelineProfile.Stage.RESULT_DECODE).observed());
+            assertTrue(s.counters().get(com.blockreality.core.diagnostics.PipelineProfile.Counter.REQUEST_BYTES)>0);
+            assertTrue(s.counters().get(com.blockreality.core.diagnostics.PipelineProfile.Counter.REPLY_BYTES)>0);
+
+            // Force the production bridge's real 64 KiB reply buffer to grow while profiling.
+            var cells=new ArrayList<GameWorldSnapshot.Cell>();var ground=new ArrayList<BlockKey>();
+            for(int r=0;r<8;r++)for(int c=0;c<8;c++) {
+                int x=c*12,z=r*4;ground.add(new BlockKey(x-1,0,z));
+                for(int n=0;n<9;n++)cells.add(GameWorldSnapshot.Cell.of(new BlockKey(x+n,0,z),"steel","steel_rect_200x400",0));
+            }
+            var large=new GameWorldSnapshot(new WorldRevision(13),cells,ground,List.of());
+            profile.start();var grown=engine.analyze(large,1,BsiHeaders.Storage.F64,new BsiHeaders.EigenBuckling(2400));profile.stop();
+            assertTrue(grown.ok(),grown.diagnostic());var growth=profile.snapshot();
+            long attempts=growth.counters().get(com.blockreality.core.diagnostics.PipelineProfile.Counter.BUFFER_GROWTH);
+            assertTrue(attempts>0,"real reply exceeds the initial bridge buffer");
+            assertEquals(2+attempts,growth.stages().get(com.blockreality.core.diagnostics.PipelineProfile.Stage.NATIVE_CALL).observed());
+            var repeat=engine.analyze(large,1,BsiHeaders.Storage.F64,new BsiHeaders.EigenBuckling(2400));
+            assertTrue(repeat.ok(),repeat.diagnostic());assertEquals(64,grown.members().size());
+            assertEquals(grown.maxDc(),repeat.maxDc());assertEquals(grown.bucklingIslands(),repeat.bucklingIslands());
+            for(int i=0;i<grown.members().size();i++) {
+                assertEquals(grown.members().get(i).stations(),repeat.members().get(i).stations());
+                assertEquals(grown.members().get(i).display().orElseThrow().stations(),repeat.members().get(i).display().orElseThrow().stations());
+            }
+            assertEquals(growth,profile.snapshot(),"disabled repeat cannot change stopped observations");
+        }
+    }
 }

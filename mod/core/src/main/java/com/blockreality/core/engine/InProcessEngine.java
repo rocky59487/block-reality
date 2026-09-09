@@ -1,5 +1,8 @@
 package com.blockreality.core.engine;
 
+import com.blockreality.core.diagnostics.PipelineProfile;
+import static com.blockreality.core.diagnostics.PipelineProfile.Stage.*;
+
 import com.blockreality.core.bsi.BsiContract;
 import com.blockreality.core.bsi.BsiFrame;
 import com.blockreality.core.bsi.BsiHeaders;
@@ -45,19 +48,24 @@ public final class InProcessEngine implements AutoCloseable {
     private boolean worldDeclared;
     private BsiVocabulary vocabulary;
 
-    private InProcessEngine(BsiNative n) { this.native_ = n; }
+    private final PipelineProfile profile;
+    private InProcessEngine(BsiNative n, PipelineProfile profile) { this.native_ = n; this.profile = profile; }
 
     /** Load the library and complete the handshake. Never throws for a refusal: ask {@link #status()}. */
     public static InProcessEngine open(Path library, int numThreads) {
+        return open(library, numThreads, PipelineProfile.disabled());
+    }
+
+    public static InProcessEngine open(Path library, int numThreads, PipelineProfile profile) {
         BsiNative n;
         try {
-            n = BsiNative.open(library, openOptions(numThreads));
+            n = BsiNative.open(library, openOptions(numThreads), profile);
         } catch (BsiNative.EngineRefused e) {
-            InProcessEngine dead = new InProcessEngine(null);
+            InProcessEngine dead = new InProcessEngine(null, profile);
             dead.disable("ENGINE_LOAD", e.getMessage());
             return dead;
         }
-        InProcessEngine eng = new InProcessEngine(n);
+        InProcessEngine eng = new InProcessEngine(n, profile);
         eng.hello();
         return eng;
     }
@@ -124,7 +132,8 @@ public final class InProcessEngine implements AutoCloseable {
         worldDeclared = false;
         if (status != Status.READY || vocabulary == null) return false;
         this.revision = worldRevision;
-        byte[] payload = BsiRecords.encodeBlocks(blocks);
+        byte[] payload;
+        try (var ignored = profile.begin(WORLD_ENCODE)) { payload = BsiRecords.encodeBlocks(blocks); }
         BsiResponse r = send(BsiHeaders.worldDeclare(nextId(), revision, payload.length / BsiRecords.BLOCK_BYTES, 0), payload);
         worldDeclared = ok(r);
         return worldDeclared;
@@ -136,7 +145,9 @@ public final class InProcessEngine implements AutoCloseable {
         if (status != Status.READY || vocabulary == null)
             return AnalysisResult.failed(snapshot.revision(), "BSI analysis: no accepted vocabulary");
         try {
-            if (!declareWorld(snapshot.revision().value(), snapshot.blocks(vocabulary)))
+            List<BsiRecords.Block> blocks;
+            try (var ignored = profile.begin(WORLD_MAP)) { blocks = snapshot.blocks(vocabulary); }
+            if (!declareWorld(snapshot.revision().value(), blocks))
                 return AnalysisResult.failed(snapshot.revision(), "BSI world declaration refused");
             return analyze(snapshot.revision(), true, new double[]{0, -9.81, 0}, snapshot.loads(), numThreads,
                     vocabulary.materials(), vocabulary.sections(), storage, buckling);
@@ -160,8 +171,10 @@ public final class InProcessEngine implements AutoCloseable {
         if (status != Status.READY || !worldDeclared || expected.value() != revision)
             return AnalysisResult.failed(expected, "BSI analysis: no matching declared world");
         var precision = new BsiHeaders.Precision(BsiHeaders.Tier.COMMIT, storage);
-        return BsiAnalysisResult.decode(solve(selfWeight, gravity, loads, numThreads,
-                BsiAnalysisResult.INCLUDE, precision, buckling), expected, materials, sections, precision);
+        var response = solve(selfWeight, gravity, loads, numThreads, BsiAnalysisResult.INCLUDE, precision, buckling);
+        try (var ignored = profile.begin(RESULT_DECODE)) {
+            return BsiAnalysisResult.decode(response, expected, materials, sections, precision);
+        }
     }
 
     /** One solve. Returns the reply (which may be an error frame) or null when the engine is off. */
@@ -193,9 +206,13 @@ public final class InProcessEngine implements AutoCloseable {
 
     private BsiResponse send(String header, byte[] payload) {
         try {
-            byte[] reply = native_.call(BsiFrame.encode(header, payload));
+            byte[] request;
+            try (var ignored = profile.begin(FRAME_ENCODE)) { request = BsiFrame.encode(header, payload); }
+            byte[] reply = native_.call(request);
             if (reply == null) return null;
-            return BsiResponse.of(BsiFrame.decode(reply, reply.length));
+            try (var ignored = profile.begin(FRAME_DECODE)) {
+                return BsiResponse.of(BsiFrame.decode(reply, reply.length));
+            }
         } catch (BsiNative.EngineRefused e) {
             disable("ENGINE_FAILED", e.getMessage());
             return null;

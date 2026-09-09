@@ -13,6 +13,8 @@ import com.blockreality.core.bsi.BsiRecords;
 import com.blockreality.core.protocol.Truncation;
 import com.blockreality.core.world.ConstructionDeclaration;
 import com.blockreality.core.world.ConstructionLedger;
+import com.blockreality.core.diagnostics.PipelineProfile;
+import static com.blockreality.core.diagnostics.PipelineProfile.Stage.*;
 import com.blockreality.impl.BRConfig;
 import com.blockreality.impl.BlockRealityMod;
 import com.blockreality.impl.block.StructuralBlock;
@@ -81,6 +83,7 @@ public final class StructureManager {
     private StressResultPacket latestPacket;
     private final RevisionGate gate = new RevisionGate();
     private final NativeGameRuntime engine;
+    private final PipelineProfile profile = new PipelineProfile();
     private volatile String engineDetails = "native engine not loaded yet";
     private final AtomicBoolean cleanupStarted = new AtomicBoolean();
     private boolean enabledLastTick;
@@ -164,11 +167,12 @@ public final class StructureManager {
         this.engine = new NativeGameRuntime(enabledLastTick,
                 () -> GameNativeLoader.open(BRConfig.INSTANCE.enginePath.get(),
                         net.minecraftforge.fml.loading.FMLPaths.GAMEDIR.get().resolve("blockreality/engine"),
-                        BRConfig.INSTANCE.numThreads.get(), log),
+                        BRConfig.INSTANCE.numThreads.get(), log, profile),
                 BRConfig.INSTANCE.requestTimeoutMs.get(), log);
     }
 
     public String engineLocation() { return engineDetails; }
+    public PipelineProfile profile() { return profile; }
 
     public ResourceKey<Level> dimension() { return dimension; }
 
@@ -489,8 +493,12 @@ public final class StructureManager {
 
     // ------------------------------------------------------------------- loop
     private void tick(ServerLevel level) {
+        try (var ignored = profile.begin(MANAGER_TICK)) { tickProfiled(level); }
+    }
+
+    private void tickProfiled(ServerLevel level) {
         structural.tickObjects(level.getServer(), () -> !level.getServer().isStopped()
-                && BY_DIMENSION.get(dimension) == this);
+                && BY_DIMENSION.get(dimension) == this, profile);
         ticksSinceSolve++;
         boolean on = enabled();
         if (on != enabledLastTick) {
@@ -556,8 +564,10 @@ public final class StructureManager {
         }
 
         long remaining = Math.max(0, TICK_BUDGET_NS - (System.nanoTime() - tickStart));
-        GatherCycle.Step step = cycle.step(remaining, System::nanoTime,
-                pos -> visitForCycle(level, pos));
+        GatherCycle.Step step;
+        try (var ignored = profile.begin(GATHER_STEP)) {
+            step = cycle.step(remaining, System::nanoTime, pos -> visitForCycle(level, pos));
+        }
         if (step != GatherCycle.Step.COMPLETE) return;
 
         Gathered gathered = finishCycle();
@@ -571,6 +581,10 @@ public final class StructureManager {
     }
 
     private void beginCycle(long revision) {
+        try (var ignored = profile.begin(GATHER_PREPARE)) { beginCycleProfiled(revision); }
+    }
+
+    private void beginCycleProfiled(long revision) {
         dirty = false;
         cycleCoverage = new InputCoverage();
         cycleCells = new ArrayList<>();
@@ -627,6 +641,10 @@ public final class StructureManager {
 
     /** Completes the request: stale removal, then the loads that may travel (#38). */
     private Gathered finishCycle() {
+        try (var ignored = profile.begin(GATHER_FINISH)) { return finishCycleProfiled(); }
+    }
+
+    private Gathered finishCycleProfiled() {
         cycleStale.forEach(structural::remove);
         cycleStale.forEach(loaded::remove);
         List<BsiRecords.Load> forces = new ArrayList<>();
@@ -663,11 +681,18 @@ public final class StructureManager {
         Integer threads = BRConfig.INSTANCE.numThreads.get();
         BsiHeaders.EigenBuckling buckling = BRConfig.INSTANCE.bucklingEnabled.get()
                 ? new BsiHeaders.EigenBuckling(BRConfig.INSTANCE.bucklingDofBudget.get()) : null;
-        boolean accepted = AnalysisExecutor.submit(() -> SolveDispatch.run(
-                () -> request.diagnostic().isEmpty()
-                        ? engine.analyze(request.world(), threads, buckling)
-                        : AnalysisResult.failed(request.world().revision(), request.diagnostic()),
-                result -> server.execute(() -> {
+        var queued = profile.begin(ANALYSIS_QUEUE);
+        var profileContext = profile.capture();
+        boolean accepted = AnalysisExecutor.submit(() -> profile.run(profileContext, () -> SolveDispatch.run(
+                () -> {
+                    queued.close();
+                    try (var ignored = profile.begin(ANALYSIS_WORKER)) {
+                        return request.diagnostic().isEmpty()
+                                ? engine.analyze(request.world(), threads, buckling)
+                                : AnalysisResult.failed(request.world().revision(), request.diagnostic());
+                    }
+                },
+                result -> server.execute(() -> profile.run(profileContext, () -> {
                     // A stopped server runs execute() INLINE on this background thread
                     // (CONC-6). Touch nothing but the flag: the world is going away.
                     if (server.isStopped() || engine.closed() || BY_DIMENSION.get(dimension) != this) {
@@ -679,11 +704,12 @@ public final class StructureManager {
                     } finally {
                         inFlight.set(false);
                     }
-                }),
+                })),
                 () -> { probeInFlight.set(false); inFlight.set(false); },
-                (msg, t) -> BlockRealityMod.LOG.error("[{}] {}", dimension.location(), msg, t)));
+                (msg, t) -> BlockRealityMod.LOG.error("[{}] {}", dimension.location(), msg, t))));
 
         if (!accepted) {
+            queued.close();
             // The pool shut down between the tick and the submit (#37's race). Nothing
             // ran: release the flag and keep the work queued for a future tick.
             inFlight.set(false);
@@ -705,6 +731,10 @@ public final class StructureManager {
      * world state; displaying a classification does not grant that authority.
      */
     private void apply(ServerLevel level, AnalysisResult result) {
+        try (var ignored = profile.begin(APPLY)) { applyProfiled(level, result); }
+    }
+
+    private void applyProfiled(ServerLevel level, AnalysisResult result) {
         if (!ChunkAvailability.allReadable(structural.index().observationChunks(),
                 c -> level.hasChunk(c.x(), c.z()))) {
             probeInFlight.set(false); markDirty(); return;
@@ -777,8 +807,10 @@ public final class StructureManager {
         gate.acceptForCommit(result);
         // An accepted native answer with no elements still carries a classification.
         // Delivery does not make that answer eligible to mutate the world.
-        latestPacket = StressResultPacket.of(result, dimension.location().toString(), lastBucklingSkipped,
-                withheldMembers, withheldShells, truncationFace.size());
+        try (var ignored = profile.begin(PACKET_BUILD)) {
+            latestPacket = StressResultPacket.of(result, dimension.location().toString(), lastBucklingSkipped,
+                    withheldMembers, withheldShells, truncationFace.size());
+        }
         announce(level, Kind.RESULT, "");
     }
 
@@ -809,7 +841,7 @@ public final class StructureManager {
 
     private void announce(ServerLevel level, Kind kind, String detail) {
         notice = kind; noticeDetail = detail;
-        BRNetwork.broadcast(level, update(false));
+        try (var ignored = profile.begin(NETWORK_DISPATCH)) { BRNetwork.broadcast(level, update(false)); }
         lastAnnouncedRevision = gate.current().value();
     }
 
@@ -817,7 +849,7 @@ public final class StructureManager {
     private static void sendSnapshot(net.minecraftforge.event.entity.player.PlayerEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             StructureManager manager = of(player.serverLevel());
-            BRNetwork.sendTo(player, manager.update(true));
+            try (var ignored = manager.profile.begin(NETWORK_DISPATCH)) { BRNetwork.sendTo(player, manager.update(true)); }
         }
     }
 

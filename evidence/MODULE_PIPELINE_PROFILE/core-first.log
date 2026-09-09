@@ -1,0 +1,46 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+
+> Task :core:compileJava
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\main\java\com\blockreality\core\engine\BsiNative.java:118: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+                try (var ignored = profile.begin(REPLY_COPY)) {
+                         ^
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\main\java\com\blockreality\core\engine\InProcessEngine.java:136: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+        try (var ignored = profile.begin(WORLD_ENCODE)) { payload = BsiRecords.encodeBlocks(blocks); }
+                 ^
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\main\java\com\blockreality\core\engine\InProcessEngine.java:149: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(WORLD_MAP)) { blocks = snapshot.blocks(vocabulary); }
+                     ^
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\main\java\com\blockreality\core\engine\InProcessEngine.java:175: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+        try (var ignored = profile.begin(RESULT_DECODE)) {
+                 ^
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\main\java\com\blockreality\core\engine\InProcessEngine.java:210: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(FRAME_ENCODE)) { request = BsiFrame.encode(header, payload); }
+                     ^
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\main\java\com\blockreality\core\engine\InProcessEngine.java:213: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(FRAME_DECODE)) {
+                     ^
+6 warnings
+
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes
+> Task :core:compileTestJava
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses
+
+> Task :core:test
+
+PipelineProfileTest > stopAndRestartRejectOldWorkAndPreserveImmutableStoppedSnapshot() PASSED
+
+PipelineProfileTest > closeIsIdempotentAndInvalidDurationsAreNotRecorded() PASSED
+
+PipelineProfileTest > concurrentCompletionsAndCountersStayBounded() PASSED
+
+PipelineProfileTest > exactNearestRankQuantilesAndBoundedRollingWindow() PASSED
+
+PipelineProfileTest > disabledDoesNotReadClockAllocateSpansOrStoreSamples() PASSED
+
+BUILD SUCCESSFUL in 2s
+7 actionable tasks: 3 executed, 4 up-to-date
