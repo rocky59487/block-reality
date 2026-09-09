@@ -1,7 +1,5 @@
 package com.blockreality.impl.net;
 
-import com.blockreality.api.AnalysisResult;
-import com.blockreality.core.engine.NativeGameRuntime;
 import com.blockreality.impl.BlockRealityMod;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -48,7 +46,9 @@ public final class BRNetwork {
     // "7": beam samples, full cells and governing station identity replace force reconstruction.
     // "8": precise station side identities. "9": f64 global values and supplied verdicts.
     // "10": bounded whole-element delivery and explicit governing omission.
-    private static final String PROTOCOL = "10";
+    // "11": one source/sequence/world-revision envelope for results and notices.
+    private static final String PROTOCOL = "11";
+    private static final java.util.concurrent.atomic.AtomicLong SEQUENCE = new java.util.concurrent.atomic.AtomicLong();
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(BlockRealityMod.MOD_ID, "main"),
@@ -60,59 +60,28 @@ public final class BRNetwork {
 
     public static void onCommonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
-            int id = 0;
-            CHANNEL.registerMessage(id++, StressResultPacket.class,
-                    StressResultPacket::encode, StressResultPacket::decode,
-                    StressResultPacket::handle,
-                    Optional.of(NetworkDirection.PLAY_TO_CLIENT));
-            CHANNEL.registerMessage(id++, EngineStatusPacket.class,
-                    EngineStatusPacket::encode, EngineStatusPacket::decode,
-                    EngineStatusPacket::handle,
-                    Optional.of(NetworkDirection.PLAY_TO_CLIENT));
-            CHANNEL.registerMessage(id++, AnalysisPendingPacket.class,
-                    AnalysisPendingPacket::encode, AnalysisPendingPacket::decode,
-                    AnalysisPendingPacket::handle,
+            CHANNEL.registerMessage(0, AnalysisUpdatePacket.class,
+                    AnalysisUpdatePacket::encode, AnalysisUpdatePacket::decode, AnalysisUpdatePacket::handle,
                     Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         });
     }
 
-    /**
-     * Broadcasts a result to everyone in the dimension.
-     *
-     * <p>Per-player culling by distance is the obvious next step and is not done here: the
-     * demo is one structure, and a distance filter that is wrong is harder to notice than
-     * one that is absent.
-     */
-    public static void sendResult(ServerLevel level, AnalysisResult result, boolean bucklingSkipped) {
-        sendResult(level, result, bucklingSkipped, java.util.Set.of(), java.util.Set.of(), 0);
+    /** Shared across dimensions so a client can retain its ordering watermark during travel. */
+    public static long nextSequence() { return SEQUENCE.incrementAndGet(); }
+
+    public static void broadcast(ServerLevel level, AnalysisUpdatePacket packet) {
+        if (!packet.valid()) {
+            BlockRealityMod.LOG.warn("refusing invalid analysis update: {}", packet.invalidReason());
+            return;
+        }
+        for (ServerPlayer player : level.players()) sendTo(player, packet);
     }
 
-    public static void sendResult(ServerLevel level, AnalysisResult result, boolean bucklingSkipped,
-                                  java.util.Set<Integer> withheldMembers,
-                                  java.util.Set<Integer> withheldShells,
-                                  int truncatedBlocks) {
-        if (!result.ok()) return;
-        StressResultPacket packet = StressResultPacket.of(result,
-                level.dimension().location().toString(), bucklingSkipped,
-                withheldMembers, withheldShells, truncatedBlocks);
-        for (ServerPlayer player : level.players()) {
-            CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
+    public static void sendTo(ServerPlayer player, AnalysisUpdatePacket packet) {
+        if (!packet.valid()) {
+            BlockRealityMod.LOG.warn("refusing invalid analysis snapshot: {}", packet.invalidReason());
+            return;
         }
-    }
-
-    public static void sendEngineStatus(ServerLevel level, NativeGameRuntime.Status status, String detail) {
-        EngineStatusPacket packet = new EngineStatusPacket(status.name(), detail);
-        for (ServerPlayer player : level.players()) {
-            CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
-        }
-    }
-
-    /** The world moved on; clients should mark what they are drawing as stale (INV-4). */
-    public static void sendAnalysisPending(ServerLevel level, long revision) {
-        AnalysisPendingPacket packet = new AnalysisPendingPacket(
-                level.dimension().location().toString(), revision);
-        for (ServerPlayer player : level.players()) {
-            CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
-        }
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
     }
 }

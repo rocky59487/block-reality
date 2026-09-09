@@ -16,9 +16,8 @@ import com.blockreality.core.render.StressRibbon;
 import com.blockreality.core.render.StressRibbonBuilder;
 import com.blockreality.core.render.BucklingReadout;
 import com.blockreality.impl.BlockRealityMod;
-import com.blockreality.impl.net.AnalysisPendingPacket;
-import com.blockreality.core.engine.NativeGameRuntime;
-import com.blockreality.impl.net.EngineStatusPacket;
+import com.blockreality.impl.net.AnalysisUpdatePacket;
+import com.blockreality.core.AnalysisDeliveryClock;
 import com.blockreality.impl.net.StressResultPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -82,7 +81,9 @@ public final class ClientStressState {
     private static int totalMembers;
     private static int totalShells;
     private static List<StressRibbon> ribbons = List.of();
-    private static String engineStatus = "";
+    private static AnalysisUpdatePacket.Kind notice;
+    private static final AnalysisDeliveryClock deliveryClock = new AnalysisDeliveryClock();
+    private static net.minecraft.network.Connection connection;
     private static String engineDetail = "";
     /** Newest world revision the server has announced; above {@link #revision} = stale. */
     private static long pendingRevision = -1;
@@ -160,7 +161,7 @@ public final class ClientStressState {
 
     public static double maxDc() { return maxDc; }
 
-    public static String engineStatus() { return engineStatus; }
+    public static AnalysisUpdatePacket.Kind notice() { return notice; }
 
     public static String engineDetail() { return engineDetail; }
 
@@ -243,7 +244,7 @@ public final class ClientStressState {
                 members).orElse(-1);
     }
 
-    public static void accept(StressResultPacket p) {
+    private static void acceptResult(StressResultPacket p) {
         // The handler already dropped invalid packets; this is defence in depth for
         // any future caller that skips it.
         if (!p.valid()) return;
@@ -283,19 +284,9 @@ public final class ClientStressState {
         totalShells = p.totalShells();
         members = p.members();
         shells = p.shells();
-        engineStatus = "";
+        notice = null;
         if (pendingRevision < revision) pendingRevision = revision;
         rebuild();
-    }
-
-    /** The server says the world moved on; what is on screen becomes stale (INV-4). */
-    public static void acceptPending(AnalysisPendingPacket p) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.level != null
-                && !p.dimension().equals(mc.level.dimension().location().toString())) {
-            return;
-        }
-        if (p.revision() > pendingRevision) pendingRevision = p.revision();
     }
 
     /**
@@ -303,7 +294,7 @@ public final class ClientStressState {
      * is keyed to one world's coordinates, and carrying it across a travel paints the
      * old world's overlay onto whatever now occupies those positions (#41).
      */
-    public static void clear() {
+    private static void clearView() {
         revision = -1;
         hasSummary = false;
         allMechanism = false;
@@ -331,7 +322,7 @@ public final class ClientStressState {
         shownShells = List.of();
         ribbons = List.of();
         colourScaleMpa = 1;
-        engineStatus = "";
+        notice = null;
         engineDetail = "";
         pendingRevision = -1;
         focusedMemberId = -1;
@@ -345,31 +336,41 @@ public final class ClientStressState {
      */
     public static boolean partialMechanism() { return singular && hasData() && !allMechanism; }
 
-    public static void acceptStatus(EngineStatusPacket p) {
-        engineStatus = p.status();
-        engineDetail = p.detail();
-        // The old ribbons are kept either way. Clearing them would look identical to
-        // "this structure is unstressed", which is a different and much more reassuring
-        // claim than the truth.
-        //
-        // Two different things arrive on this packet and they were saying the same
-        // sentence. A HEALTHY engine that refused THIS MODEL — a load on a block that
-        // forms no element, an unknown token — is not an unavailable engine, and telling
-        // the player it is sends them to look at their install while /br status prints a
-        // green READY next to it (PR26_REVIEW DF-04). The status field already
-        // distinguishes them; only the message did not.
+    /** Logout or a new connection retires both the picture and its ordering domain. */
+    public static void clear() {
+        clearView(); deliveryClock.resetConnection(); connection = null;
+    }
+
+    /** Same-connection travel/respawn retires the binding, while old sequence numbers stay retired. */
+    public static void leaveDimension() { clearView(); deliveryClock.leaveDimension(); }
+
+    public static void acceptUpdate(AnalysisUpdatePacket p, net.minecraft.network.Connection sender) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null) {
-            if (p.detail().startsWith(EngineStatusPacket.PLATFORM_PREFIX)) {
-                // The one absence the player cannot fix: no bundled engine for this
-                // platform. A sentence in their language, not a relayed log line.
-                mc.player.displayClientMessage(Component.translatable("br.engine.platform",
-                        p.detail().substring(EngineStatusPacket.PLATFORM_PREFIX.length())), true);
-            } else {
-                String key = NativeGameRuntime.Status.READY.name().equals(p.status())
-                        ? "br.engine.refused" : "br.engine.unavailable";
-                mc.player.displayClientMessage(Component.translatable(key, p.detail()), true);
-            }
+        if (!p.valid() || mc.level == null || mc.getConnection() == null
+                || sender != mc.getConnection().getConnection()) return;
+        if (connection != sender) {
+            clearView(); deliveryClock.resetConnection(); connection = sender;
+        }
+        boolean changedSource = !p.sourceId().equals(deliveryClock.source());
+        if (!deliveryClock.accept(mc.level.dimension().location().toString(), p.dimension(), p.sourceId(),
+                p.sequence(), p.worldRevision(), p.bootstrap(), p.result() == null ? -1 : p.result().revision())) return;
+        var oldNotice = notice; String oldDetail = engineDetail;
+        if (changedSource) clearView();
+        if (p.kind() == AnalysisUpdatePacket.Kind.RESULT) {
+            acceptResult(p.result());
+        } else if (p.kind() != AnalysisUpdatePacket.Kind.PENDING) {
+            clearView();
+        }
+        pendingRevision = p.worldRevision();
+        notice = p.kind() == AnalysisUpdatePacket.Kind.RESULT ? null : p.kind();
+        engineDetail = p.detail();
+        if (mc.player != null && (oldNotice != notice || !oldDetail.equals(engineDetail))) {
+            String key = switch (p.kind()) {
+                case MODEL_REFUSED -> "br.engine.refused";
+                case ENGINE_UNAVAILABLE -> "br.engine.unavailable";
+                default -> null;
+            };
+            if (key != null) mc.player.displayClientMessage(Component.translatable(key, p.detail()), true);
         }
     }
 

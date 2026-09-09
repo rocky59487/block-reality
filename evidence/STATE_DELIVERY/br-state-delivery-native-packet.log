@@ -1,0 +1,32 @@
+> Task :compileJava UP-TO-DATE
+> Task :bundleEngines UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :compileTestJava
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+
+> Task :test
+
+AnalysisUpdatePacketTest > diagnosticClippingPreservesUnicodeAndFitsTheReserve() PASSED
+
+AnalysisUpdatePacketTest > maximumIdentityAndSummaryShareTheExistingByteReserve() PASSED
+
+AnalysisUpdatePacketTest > everyKindRoundTripsWithSourceAndRevision() PASSED
+
+AnalysisUpdatePacketTest > malformedIdentityEnumsAndTrailingPayloadAreRejected() PASSED
+
+AnalysisUpdatePacketTest > decodedNoticesCannotRollBackAnAcceptedResult() PASSED
+
+AnalysisUpdatePacketTest > everyByteTruncationFailsClosedForEveryKind() PASSED
+
+AnalysisUpdatePacketTest > senderRefusesContradictoryResultsBeforeWriting() PASSED
+
+NativeResultPacketTest > sharedContractResourcesDescribeThisBuild() PASSED
+
+NativeResultPacketTest > realNativeAnalysisReachesThePacketWithTheSameFlagsAndDoubles() PASSED
+
+NativeResultPacketTest > failedAnalysisCannotBeEncodedAsAHealthyEmptyResult() PASSED
+
+BUILD SUCCESSFUL in 9s
+5 actionable tasks: 2 executed, 3 up-to-date

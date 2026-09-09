@@ -71,9 +71,22 @@ public final class StressHud {
                 x, y, 0xFFFFFF);
         y += 12;
 
-        if (!ClientStressState.engineStatus().isEmpty()) {
-            g.drawString(mc.font, Component.translatable("br.hud.engine_unavailable",
-                    ClientStressState.engineDetail()), x, y, 0xFF6B6B);
+        var notice = ClientStressState.notice();
+        if (notice != null && (notice != com.blockreality.impl.net.AnalysisUpdatePacket.Kind.PENDING
+                || !ClientStressState.hasData())) {
+            String key = switch (notice) {
+                case EMPTY -> "br.hud.empty";
+                case OFF -> "br.hud.off";
+                case PENDING -> "br.hud.pending";
+                case MODEL_REFUSED -> "br.hud.model_refused";
+                default -> "br.hud.engine_unavailable";
+            };
+            int colour = switch (notice) {
+                case ENGINE_UNAVAILABLE -> 0xFF6B6B;
+                case MODEL_REFUSED -> 0xC8A24A;
+                default -> 0xAAAAAA;
+            };
+            g.drawString(mc.font, Component.translatable(key, ClientStressState.engineDetail()), x, y, colour);
             return;
         }
         // Stale is a label, not a blank: the numbers are real, for a world that has
@@ -94,6 +107,18 @@ public final class StressHud {
         }
         if (!ClientStressState.hasData()) {
             g.drawString(mc.font, Component.translatable("br.hud.no_data"), x, y, 0xAAAAAA);
+            return;
+        }
+        if (ClientStressState.totalMembers() == 0 && ClientStressState.totalShells() == 0) {
+            g.drawString(mc.font, Component.translatable("br.hud.no_elements"), x, y, 0xC8A24A);
+            y += 12;
+            for (UnassignedReason reason : UnassignedReason.values()) {
+                int count = ClientStressState.unassignedCount(reason);
+                if (count > 0) {
+                    g.drawString(mc.font, Component.translatable(reason.translationKey(), count), x, y, 0xAAAAAA);
+                    y += 11;
+                }
+            }
             return;
         }
         if (ClientStressState.truncated()) {

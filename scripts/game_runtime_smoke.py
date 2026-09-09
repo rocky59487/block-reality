@@ -2,6 +2,7 @@
 """Exercise only the isolated runtime-smoke development server through local RCON."""
 import argparse
 import json
+import os
 from pathlib import Path
 import re
 import time
@@ -14,6 +15,7 @@ def main():
     parser.add_argument("--out", required=True)
     parser.add_argument("--stop-only", action="store_true")
     parser.add_argument("--check-readouts", action="store_true", help="also run the frozen UI_VERDICTS server cases")
+    parser.add_argument("--check-state", action="store_true", help="STATE_DELIVERY: requires OFF startup and the opt-in event probe")
     args = parser.parse_args()
     props = dict(line.split("=", 1) for line in Path(args.config).read_text().splitlines()
                  if line and not line.startswith("#") and "=" in line)
@@ -48,12 +50,33 @@ def main():
         match = re.search(r"result revision (\d+)  CURRENT", reply)
         return match is not None and int(match.group(1)) == revision(reply)
 
+    def mode(value):
+        config = Path(args.config).parent / "runtime-smoke/serverconfig/blockreality-server.toml"
+        old = config.read_text(encoding="utf-8")
+        new, count = re.subn(r'(?m)^(\s*mode\s*=\s*)"(?:OFF|INPROCESS)"',
+                            lambda m: m.group(1) + '"' + value + '"', old)
+        assert count == 1, "exactly one isolated server engine mode expected"
+        with config.open("w", encoding="utf-8") as f:
+            f.write(new); f.flush(); os.fsync(f.fileno())
+        os.utime(config, None)
+
+    def probe():
+        reply = command("br_delivery_probe")
+        assert "delivery probe PASS:" in reply, reply
+
     if not client.connect():
         raise RuntimeError("local smoke server is not accepting RCON")
     try:
         if args.stop_only:
             command("stop")
             return
+        if args.check_state:
+            wait_for("OFF startup has no result", lambda s:
+                     "engine          DISABLED" in s and "analysis        OFF" in s and "last result     none yet" in s)
+            probe()
+            mode("INPROCESS")
+            wait_for("config enable recovers native analysis", lambda s:
+                     "engine          READY" in s and "members," in s)
         command("forceload add -16 -16 48 32")
         command("fill 35 199 0 35 251 0 minecraft:air")
         command("fill -2 198 -2 36 215 15 minecraft:air")
@@ -107,6 +130,28 @@ def main():
             command("execute positioned 0 200 0 run br scan 2")
             wait_for("removing critical column clears warning", lambda s:
                      current(s) and "2 members, 12 plate facets" in s and "BUCKLING:" not in s)
+        if args.check_state:
+            probe()
+            command("fill -2 198 -2 36 215 15 minecraft:air")
+            command("fill 35 199 0 35 251 0 minecraft:air")
+            wait_for("removing all structure clears the cached result without scan", lambda s:
+                     "analysis        EMPTY" in s and "last result     none yet" in s and "members," not in s)
+            assert "CURRENT" not in command("br members")
+            assert "CURRENT" not in command("br section 1")
+            probe()
+            command("setblock -1 200 0 minecraft:stone")
+            command("fill 0 200 0 4 200 0 blockreality:steel_beam[axis=x]")
+            command("execute positioned 0 200 0 run br scan 2")
+            wait_for("rebuild after EMPTY reaches native result", lambda s: current(s) and "1 members, 0 plate facets" in s)
+            probe()
+            mode("OFF")
+            wait_for("live disable clears the result", lambda s:
+                     "engine          DISABLED" in s and "analysis        OFF" in s and "last result     none yet" in s)
+            probe()
+            mode("INPROCESS")
+            wait_for("live enable restores native result", lambda s: current(s) and "engine          READY" in s
+                     and "1 members, 0 plate facets" in s)
+            probe()
     finally:
         client.close()
 
