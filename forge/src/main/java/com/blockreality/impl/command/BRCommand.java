@@ -4,8 +4,7 @@ import com.blockreality.api.AnalysisResult;
 import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.StressStation;
 import com.blockreality.api.UnassignedBlocks;
-import com.blockreality.core.sidecar.SidecarClient;
-import com.blockreality.impl.server.SidecarLocator;
+import com.blockreality.core.engine.NativeGameRuntime;
 import com.blockreality.impl.server.StructureManager;
 import com.blockreality.impl.block.StructuralBlock;
 import com.mojang.brigadier.CommandDispatcher;
@@ -152,22 +151,22 @@ public final class BRCommand {
 
     private static int status(CommandSourceStack src) {
         StructureManager m = managerFor(src);
-        SidecarClient.Status s = m.engineStatus();
+        NativeGameRuntime.Status s = m.engineStatus();
 
         line(src, "Block Reality", ChatFormatting.AQUA);
         line(src, "  dimension       " + m.dimension().location(), ChatFormatting.GRAY);
         line(src, "  engine          " + s
-                        + (s == SidecarClient.Status.READY
+                        + (s == NativeGameRuntime.Status.READY
                                 ? "   (transport: " + m.engineTransport() + ")" : ""),
-                s == SidecarClient.Status.READY ? ChatFormatting.GREEN
-                        : s == SidecarClient.Status.DISABLED ? ChatFormatting.RED
+                s == NativeGameRuntime.Status.READY ? ChatFormatting.GREEN
+                        : s == NativeGameRuntime.Status.DISABLED ? ChatFormatting.RED
                         : ChatFormatting.YELLOW);
 
         // Where it looked — a wrong path is the single most likely first-run problem.
         // OP only: the search list spells out server filesystem paths (user names,
         // drive layout), which a non-privileged player has no business reading (#45).
         if (src.hasPermission(BrPermissions.LEVEL_OP)) {
-            for (String l : SidecarLocator.describe(m.engineLocation()).split("\n")) {
+            for (String l : m.engineLocation().split("\n")) {
                 line(src, "  " + l, ChatFormatting.DARK_GRAY);
             }
         }

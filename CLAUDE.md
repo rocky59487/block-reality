@@ -24,57 +24,32 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 - **介面** = **BSI v1**（`contract/`），與 tectonic2 **逐位相同**、雜湊釘死（D-043）。
 - **代價照登**：進程內載入**放棄了崩潰隔離**——原生崩潰會帶掉 JVM。四條比「隔離」弱的防線寫在 D-044，不繞過去。
 
-### 現況（v0.4 進行中）
+### 現況（0.4.0-dev，尚未發布）
 
-**2026-09-10 模組限定 v1 推進**：使用者指示引擎另有人做，本工作只做模組（D-047）。
-總綱 `docs/V1_MODULE_PROGRAM.md`。已接 engine-assigned vocab ID、SI 產品目錄與不可變
-GameWorldSnapshot；完整每格 axis/rotation/joint、六面 ground 觀測整理、載重/revision。
-Windows core350/Forge82=404PASS/28SKIP；Linux真JNA選集18/18；三個輸入故障臂具名FAIL。
-結果 `evidence/GAME_INPUT/RESULTS.md`。這是輸入消費層，Forge採集/遊戲仍待換裝。
-下一步只改模組 GAME_RUNTIME；不做引擎 frame_v2，不在Java寫剛體/碰撞/物理後處理。
+2026-09-10：使用者指定引擎另有人負責，本工作只做模組（D-047、`docs/V1_MODULE_PROGRAM.md`）。
+引擎維持正式 v1.3；本輪消費已交付的 #37 開發庫、契約 `4b11cc738790…`，沒有改引擎。
 
-**最新接續（2026-09-09）**：沿模組 #103 / 引擎 #37 的 opt-in BSI eigen，
-共用 AnalysisResult 現在保留完整不可變 IslandBuckling 列表；直接映射 BsiBuckling，
-不另寫聚合器、不變更契約/pin、不重算Critical。Windows core339/Forge81，394PASS/26SKIP；
-Linux JNA相關16項全過（含真eigen/混合世界），真語料C10在內9PASS/1SKIP。
-判準/結果 docs/BUCKLING_RESULT_RETENTION.md、evidence/BUCKLING_RETENTION/RESULTS.md。
-下一步為frame_v2同快照、雙平台native封裝與混合世界HUD；遊戲仍SidecarClient。
+- `GAME_INPUT` 已接 engine-assigned vocabulary ID、SI 目錄與不可變 GameWorldSnapshot。
+- `GAME_RUNTIME` 已將 Forge 採集→worker→apply 換為真正的 BSI/JNA 原生 session。
+  玩家宣告 axis；觀測六面 sturdy 接觸為 ground；舊方塊未宣告要明示拒絕。
+  off 先於選庫/解包，無效明確路徑拒絕，關世界/reset/逾時使舊结果失效。
+  native 工作若不返回，Java 不能強殺；cleanup 僅在 worker/daemon，D-044 崩潰代價仍成立。
+- 生產 SidecarClient/SidecarProcess/SidecarConfig/ShmRegion 已退到 test；NoSubprocess ALLOWED={}。
+  預設 jar 無 exe、無 process launcher；Gradle 已拒絕 executable 封裝。
+- Windows core357/Forge85：442登錄、414PASS、28SKIP。包含18項 native 整合測試的登錄，
+  不代表 Windows 已執行新原生庫。Linux 真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
+  完整結果 `evidence/GAME_RUNTIME/RESULTS.md`，首敗保留、三故障臂具名咬合。
+- 全部失去支承時原生只回 SOLVE_FAILED；Java 保留拒絕，不能從 message 捏造 MECHANISM。
+  高性能、全機構 typed 展示、真客戶端 N25 尚未驗收。
+- 尚未完成：最新雙平台合格庫的正式 jar、持久 registry #86、混合世界 local-critical HUD、
+  材質方向/互動實測、舊 Java field/legacy codec 物理後處理退場、引擎 lifecycle/剛體姿態消費。
+  #89 仍開放；零 Java 物理與 v1 基礎能力不能稱完成。
+- 上游模組 #107 的文件已整合，對位引擎 #39 frame_v2；來源見 `docs/MC66A_FRAME_V2.md`。
+  不在本工作改引擎，也不把缺 TECTONIC2_TOKEN 而跳過的 CI native steps 說成已驗。
 
-
-- **已落地**：`contract/`（BSI v1 + 共用 host，逐位鏡像 tectonic2）；Java 側 `mod/core/.../bsi/`（frame/header/codec）
-  與 `.../engine/`（`InProcessEngine` + JNA 綁定）；N19–N24 判準已凍；CI 跑契約、打包、跨倉漂移。
-- **2026-09-04 量到的整合現況**（Linux 箱，RECORDED）：契約逐位、pin 自洽；`InProcessEngineTest` **首次在 CI 之外**對本機建的 `libbsi_tectonic.so` 跑，
-  `:core` 259 過 / 1 跳 / 0 敗；`sidecar/verify.py` 330 全過。當次引擎 `capabilities:[]`，members分支未執行。細節 `docs/GATES.md` 2026-09-04。
-  引擎側的 v2 程序（融合 + perfect engine）在 tectonic2 `docs/V2_PROGRAM.md`；本倉對位 **D-046**：**等的是 tectonic2 #20，不等其拆 `Session`**；
-  契約加法批次 #2（`include:"islands"`、`bsi.fracture.step`）綁 **v0.5 倒塌**，v0.4 的 N19–N24 一條不動。
-- **2026-09-06 BSI_CORE**：配對分支引擎宣告core/members，Windows真CAPI :core 260總數/220過/40跳。
-  members首次執行抓到測試root moment漏乘L，依契約原wL²/2修正；原記錄不改、見GATES.md。
-  引擎 v1.3 已驗 Windows/Linux 自足原生庫；NATIVE 的消費者封裝與遊戲換裝 #89 未完成。
-- **2026-09-07 BSI回收契約／codec**：facetBlocks、stations-only與f32布局已同步兩倉，hash59beed904d73…；
-  Java facets/格索引/surfaces解碼與typed precision已接，binary區段範圍/有限值守門；
-  271項=231PASS/40SKIP，真JNA五項全執行，七個Java變異具名咬合。首跑失敗見GATES.md。
-- **2026-09-08 原生回收整合**：引擎已提供stations/shells/f32，真C6/C8/C12通過；
-  新增InProcessRecoveryTest 3/3要求新能力，與原InProcessEngineTest 5/5使用真DLL全執行。
-  Java274項=234PASS/40SKIP/0FAIL；殼幾何/格索引/上下面/f32直接由引擎提供。
-  契約52檔hash b5ad59f1bfa9…同步，完整證據在tectonic2 MC65B_BSI_ADAPTER。
-  殼顯示已遷移：BsiShellDisplay→ShellDisplayField→ShellMesh/HUD/renderer/channel6，
-  客戶端只插值樣本，殼旗標獨立轉發；core283=271PASS/12SKIP、Forge57全過，真JNA9/9，八變異。
-  ShellFieldSpec仍留在Sidecar相容入口一次取樣/舊診斷；梁BSI框架/面中心幾何已接通。
-  53檔契約hash42a1b24c3c0b…；memberGeometry固定168B/f64，核心290=278PASS/12SKIP、Forge57PASS，
-  真JNA10/10，三個Java幾何守門變異有具名FAIL；引擎564checks/五變異三箱與sanitizer詳見MC65B_MEMBER_GEOMETRY。
-  梁顯示已接 BsiBeamDisplay→BeamDisplayField→ribbon/section/HUD/表面切分/channel7。
-  不重算梁力學，完整站點/格集合/NA缺值/overloaded與控制站索引原樣傳送；舊field只在Sidecar相容入口/診斷保留。
-  最新core305=293PASS/12SKIP、Forge64PASS，真JNA12/12、五身份變異具名咬合。
-  stationIdentity opt-in沿原生共同核轉發雙側與主宰旗標；BsiBeamDisplay/StressStation.Identity/channel8保留f64身份，舊請求單側不改。
-  契約54檔hash4977f57308e6，79checks/八變異三箱DET×3、sanitizer及兩箱48組舊回應逐位。
-  首跑ground-only EMPTY_WORLD、host stub零筆證據降級均留GATES與MC65B_BSI_STATION_IDENTITY。
-  下一單元先凍MC64_FORWARD全域/屈曲旗標與單一AnalysisResult入口，再凍display budget、接NATIVE/GAME_SWAP。
-  #89 與消費者封裝仍未完成，版本對位引擎 1.3.0、模組仍 0.4.0-dev。
-  正式引擎來源與原生資產見 tectonic2 v1.3 及套件 provenance.json；本倉 pin 鎖定同一引擎來源提交。
-- **還沒接**：**遊戲流程仍走 `SidecarClient`**（protocol 2 / FrameCore），`InProcessEngine` 尚未接進遊戲迴圈（#89）。
-  「檔案在」不算「有」——見下面的三條鐵則第 2 條。
-- **不會做**：FrameCore 的 BSI 對數臂（D-045）。連帶 N22 差異帳改形為「單臂語料 + 封閉解」並**降一級**，
-  代價寫在 `docs/GATES.md` 2026-09-03e，不用「改形」兩字帶過。
+上一單元證據：`evidence/GAME_INPUT/RESULTS.md`、`evidence/BUCKLING_RETENTION/RESULTS.md`。
+已接 display budget/channel10、直接樣本顯示與 per-island buckling 保存；歷史裁決與輸格保留在
+`docs/GATES.md`、`docs/DECISIONS.md`、各單元 evidence，而不再堆進本現況檔。
 
 ## 力學模型（必讀，決定了所有其他事）
 
@@ -170,39 +145,3 @@ Java 的 `BsiFrame`/`BsiHeaders`/`BsiResponse` 只能實作契約，不得自創
 **嚴重度依「不符代表什麼」定**：兩個預設分支之間不符 = **真漂移 → 紅**；
 PR 上不符 = 變更**在途中** → 警告（否則每次合法的契約變更都從紅開始，然後所有人學會忽略它）。
 **fetch 失敗永不綠。** 最後一道是執行期握手：`bsi.hello` 的 `contractSha256` 不符 → `BSI_VERSION` → 引擎停用並指名兩個雜湊。
-
-### 2026-09-08 MC64_FORWARD 現況
-
-單一BsiAnalysisResult入口已接InProcessEngine.analyze；全域旗標取完整blocks bits，AnalysisResult與channel9獨立保存boolean/f64。
-Forge與core共用Gradle契約資源規則；真原生→Forge封包已驗證，缺resource的首敗保留。
-core316=304PASS/12SKIP、Forge71PASS，真JNA與十個具名變異通過；單處revision變異未逃逸照登。
-遊戲仍SidecarClient，真HUD/換裝未驗收；BSI混合屈曲state/screen明示拒絕。下一單元DISPLAY_DELIVERY，
-原DISPLAY_BAND仍依PE3/MC65B。引擎v1.3標籤未變、模組0.4.0-dev，沒有新效能宣稱。
-
-### 2026-09-08 DISPLAY_DELIVERY 現況
-
-channel10已整合完整元素交付：單包256KiB、總16384格/2048站、控制元素先保留，
-每更新至多64梁/512殼候選。元素payload只編碼一次，廣播共用；收端配置前守累積預算。
-控制元素本身超額時保留全域summary與原kind/id，明示未顯示，不裁它的格/站點。
-空展示不冒充未分析或全機構；HUD接了文字但未實跑Minecraft視窗。
-core316=304PASS/12SKIP、Forge80PASS，合計396登錄；十變異具名咬合、四語料DET3。
-small配置約55.9KB→71.8KB的代價照登；AMD耗時僅RECORDED_ONLY，沒有i9/FPS/速度勝出宣稱。
-原v1.3與契約54檔不變；下一單元NATIVE消費者封裝/解包競爭，再按依賴接GAME_SWAP。
-原DISPLAY_BAND仍依PE3/MC65B，v2/v3/v4與歷史失敗保持原線。
-
-### 2026-09-09 NATIVE消費者封裝
-
-正式v1.3 Windows/Linux原庫已進同一0.4.0-dev jar，來源鏈/解包前契約/版本隔離/兩JVM競爭
-與真BSI 24frames×3各平台逐位驗證。core327=315PASS/12SKIP、Forge80PASS，
-407登錄/395PASS/12SKIP；實際InProcessEngineTest5+InProcessRecoveryTest8=13項真JNA，
-舊Sidecar28項仍執行。十Java變異及來源/打包反例有完整證據；使用docs/NATIVE_PACKAGING.md。
-遊戲仍走SidecarClient，未做GAME_SWAP/N25 HUD/FPS；勿刪最後相容入口。下一段為引擎MC66a。
-
-
-### 2026-09-09 MC66A BSI eigen
-
-BsiBuckling完整不可變每島結果與五態世界摘要已接BsiAnalysisResult；世界拒絕仍保留局部critical。
-headers/solve/analyze新增EigenBuckling budget選項，舊簽章保留。core334=322PASS/12SKIP、Forge80PASS；
-原13+新2真JNA全部執行，八Java故障有具名反例。contract55檔/hash4b11cc738790與引擎同步。
-目前開發庫已驗，正式v1.3 jar未更新；遊戲仍Sidecar，HUD hasFactor分支尚需局部critical明示。
-下一單元引擎frame_v2 eigen、兩平台native包、再接HUD/GAME_SWAP；BUCK_MEMBERS保持active。

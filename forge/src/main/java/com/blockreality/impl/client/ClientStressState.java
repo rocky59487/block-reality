@@ -16,7 +16,7 @@ import com.blockreality.core.render.StressRibbon;
 import com.blockreality.core.render.StressRibbonBuilder;
 import com.blockreality.impl.BlockRealityMod;
 import com.blockreality.impl.net.AnalysisPendingPacket;
-import com.blockreality.core.sidecar.SidecarClient;
+import com.blockreality.core.engine.NativeGameRuntime;
 import com.blockreality.impl.net.EngineStatusPacket;
 import com.blockreality.impl.net.StressResultPacket;
 import net.minecraft.client.Minecraft;
@@ -359,7 +359,7 @@ public final class ClientStressState {
                 mc.player.displayClientMessage(Component.translatable("br.engine.platform",
                         p.detail().substring(EngineStatusPacket.PLATFORM_PREFIX.length())), true);
             } else {
-                String key = SidecarClient.Status.READY.name().equals(p.status())
+                String key = NativeGameRuntime.Status.READY.name().equals(p.status())
                         ? "br.engine.refused" : "br.engine.unavailable";
                 mc.player.displayClientMessage(Component.translatable(key, p.detail()), true);
             }

@@ -1,0 +1,10 @@
+[00:58:09] [Server thread/INFO] [minecraft/DedicatedServer]: Done (4.829s)! For help, type "help"
+[00:58:09] [br-analysis-1/INFO] [BlockReality/]: [minecraft:overworld] native engine source=SYSTEM_PROPERTY path=/home/rocky/br-bsi-retention-native/libbsi_tectonic.so
+[00:58:09] [br-analysis-1/INFO] [BlockReality/]: [minecraft:overworld] native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801
+[01:05:09] [br-analysis-10/INFO] [BlockReality/]: [minecraft:overworld] native engine source=SYSTEM_PROPERTY path=/home/rocky/br-bsi-retention-native/libbsi_tectonic.so
+[01:05:09] [br-analysis-10/INFO] [BlockReality/]: [minecraft:overworld] native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801
+[01:06:01] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[01:06:01] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[runtime-smoke]'/minecraft:overworld
+[01:06:04] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[runtime-smoke]'/minecraft:the_end
+[01:06:04] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[runtime-smoke]'/minecraft:the_nether
+BUILD SUCCESSFUL in 8m 21s

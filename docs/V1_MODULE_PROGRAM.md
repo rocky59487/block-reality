@@ -54,6 +54,12 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 
 ## 現況
 
-GAME_INPUT 的純 Java 輸入/詞彙/真 JNA 入口已驗（`evidence/GAME_INPUT/RESULTS.md`）；
-Forge 軸向/接觸採集與 GAME_RUNTIME 尚待接線。正式引擎仍 v1.3，開發配對為引擎 #37
-`95a03e82` 與契約 `4b11cc738790…`。沒有新遊戲版本發布。
+GAME_INPUT 已在 #106，GAME_RUNTIME 已接 Forge 採集與真正原生迴圈；Linux server 混合
+梁柱板/機構與地面變更/重設已驗，Windows core357/Forge85=414PASS/28SKIP。
+判準及證據見 `GAME_RUNTIME.md`、`../evidence/GAME_RUNTIME/RESULTS.md`。
+全未支承原生只回 SOLVE_FAILED，typed 機構展示未完成；客戶端、最新雙平台 native jar、
+舊 Java 後處理退場、持久世界及倒塌動態仍待完成。沒有新遊戲版本發布。
+
+上游 #107（文件）已合入目前模組分支，對位引擎 #39 frame_v2；本輪沒有改引擎。
+正式引擎仍 v1.3，本次實跑來源仍 #37 `95a03e82` / contract `4b11cc738790…`。
+下一步接不依賴引擎改動的混合世界 HUD 與 UI/持久狀態。

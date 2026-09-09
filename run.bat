@@ -8,7 +8,7 @@ rem ForgeGradle downloads both itself on the first run (several minutes, once).
 rem
 rem Needs: a JDK 17 on PATH or in JAVA_HOME. Gradle comes from the wrapper.
 rem
-rem To use your normal launcher instead, run dist\install.bat and start it as usual.
+rem Native library setup: docs\GAME_RUNTIME.md. dist\ is the historical v0.3c release.
 
 cd /d "%~dp0"
 
@@ -36,19 +36,9 @@ if errorlevel 1 (
 rem ------------------------------------------------------------------- engine
 if not exist "forge\run\" mkdir "forge\run"
 
-rem A locally built engine beats the committed dist binary: after rebuilding the
-rem sidecar, the run must exercise what was just built, not the last release.
-if exist "sidecar\build-win\br-sidecar.exe" (
-    copy /y "sidecar\build-win\br-sidecar.exe" "forge\run\" >nul
-    echo   engine: forge\run\br-sidecar.exe ^(from sidecar\build-win^)
-) else if exist "dist\br-sidecar.exe" (
-    copy /y "dist\br-sidecar.exe" "forge\run\" >nul
-    echo   engine: forge\run\br-sidecar.exe ^(from dist - no local build found^)
-) else (
-    echo   No br-sidecar.exe in dist\ or sidecar\build-win\.
-    echo   The game will still start; analysis will be off and will say so.
-    echo   Type /br status in game to see every path it looked in.
-)
+echo   Native engine: set BR_ENGINE to a compatible DLL, or configure enginePath.
+echo   The development jar contains no engine by default. /br status reports its source.
+echo   See docs\GAME_RUNTIME.md for placement and migration instructions.
 
 echo.
 echo   Starting. The first run downloads Minecraft and Forge - give it a few minutes.
