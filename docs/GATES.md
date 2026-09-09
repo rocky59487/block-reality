@@ -1499,3 +1499,8 @@ object encode 4.427358 ms 超過 3.803510 ms，D131072/BURST64 coverage encode
 4.130830 ms 超過 3.560641 ms；兩條性能門仍判 FAIL。完整首批保存，不靠主流程加速抵銷。
 先加凍 codec 的精確配置/宣告 bytes 重用及舊版 golden，再改序列化；原 baseline、場景、
 fork 數、暖身與每條預算一律不動。新版若仍輸，照登；SP 尚未開始量測。
+
+RS serializer 候選 `bd9053d`：600 份 bytes 仍一致、Linux 37項無跳過；object encode 已過門，
+但 coverage ONE 在 D131072 為 4.240746 > 4.129652 ms，在 F131072 為
+3.777959 > 3.269339 ms，兩條仍 FAIL。先凍不變 coverage 的有界編碼 cache、所有變更失效
+與 caller-owned 回傳/故障臂，再改索引；原性能線不移，額外首次配置與保留記憶體照登。

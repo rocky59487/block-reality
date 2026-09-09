@@ -121,3 +121,22 @@ The same original baseline, scenes, three forks, 600 paired digests, and every
 timing/allocation budget apply to the new candidate. Preserve the first failed
 candidate; do not increase warmups, change JVM heap, select a faster fork or change
 the line to turn an observed loss into a pass. Any continued loss stays explicit.
+
+## Serializer candidate: coverage-only losses; unchanged-geometry cache frozen
+
+`bd9053d` completes all three forks with all 600 digests identical and 37 selected
+Linux tests passing without skips. Object encoding passes, but coverage encoding
+still FAILS: D131072/ONE 4.240746 ms > 4.129652 ms, F131072/ONE
+3.777959 ms > 3.269339 ms. Preserve `candidate-serialized` and
+`comparison-serialized`; the unit is not yet a performance pass.
+
+Before editing WorldCellIndex, freeze reuse of its canonical encoding while coverage
+is unchanged. All geometry/refusal changes invalidate the cache. Public `encode()`
+must always return a caller-owned array, including repeated reads and after decode;
+mutating any returned array must never affect the index or later encodings. Retain
+at most one encoded coverage array per index, bounded by MAX_BYTES (1572912 bytes).
+The first encode after a change may allocate an extra defensive copy; report this
+cost and retained-memory tradeoff. Format, hashes, ordering, capacity/refusal rules,
+generation and chunk observation semantics stay unchanged. A compiled invalidation
+removal must fail a named behavioral oracle. Keep all original performance budgets,
+forks/scenes/warmups and baseline; no sample substitution. SP still has not started.

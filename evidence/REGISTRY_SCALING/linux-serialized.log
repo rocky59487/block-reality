@@ -1,0 +1,95 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava UP-TO-DATE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+
+> Task :core:compileTestJava
+/home/rocky/br-registry-serialized/mod/core/src/test/java/com/blockreality/core/diagnostics/PipelineProfileTest.java:60: warning: [try] auto-closeable resource s is never referenced in body of corresponding try statement
+        p.run(first,()->{try(var s=p.begin(RESULT_DECODE)){
+                                 ^
+1 warning
+
+> Task :core:processTestResources
+> Task :core:testClasses
+
+> Task :core:test
+
+GameInputNativeTest > refusedVocabularyRedeclarationInvalidatesOldWorldAndNames() PASSED
+
+GameInputNativeTest > profilingObservesTheRealBridgeWithoutChangingNativeResults() PASSED
+
+GameInputNativeTest > fullGameVocabularyAndSnapshotReachTheRealEngine() PASSED
+
+InProcessRecoveryTest > nativeOptInSidesAndGoverningIdentityReachDisplay() PASSED
+
+InProcessRecoveryTest > nativeShellFramesAndSurfaceStorageAreCoherent() PASSED
+
+InProcessRecoveryTest > nativeBeamSamplesAndPointLoadSidesReachTheSharedDisplay() PASSED
+
+InProcessRecoveryTest > cantileverFaceSignsAndStorageMatchClosedForm() PASSED
+
+InProcessRecoveryTest > nativeShellRecoveryFeedsTheSameDisplayAndPickingPath() PASSED
+
+InProcessRecoveryTest > coupledSlabWeightAndTransformsAreInvariant() PASSED
+
+InProcessRecoveryTest > unifiedAnalysisKeepsTheNativeShellFlagsAndSamples() PASSED
+
+InProcessRecoveryTest > memberGeometryUsesActualAxesRotatedSectionAndF64WorldPositions() PASSED
+
+NativeGameRuntimeTest > loadsLazilyReusesTheSessionAndKeepsDimensionsSeparate() PASSED
+
+NativeGameRuntimeTest > offNeverCallsTheLoader() PASSED
+
+NativeGameRuntimeTest > concurrentSubmissionsNeverEnterTheSameSessionTogether() PASSED
+
+NativeGameRuntimeTest > aLoadFailureStaysDisabledUntilExplicitReset() PASSED
+
+NativeGameRuntimeTest > closeRevokesBlockedResultsWithoutClosingAnActiveNativeCall() PASSED
+
+NativeGameRuntimeTest > timeoutRevokesAuthorityButDoesNotPretendToKillNativeWork() PASSED
+
+NativeGameRuntimeTest > resetWaitsForTheOldCallAndOpensAFreshSession() PASSED
+
+ConstructionCodecTest > encoderPreservesCatalogueLineageAndModifiedUtfGolden() PASSED
+
+ConstructionCodecTest > resignedUnknownSchemaAndInvalidEpochCounterAndCountsStillRefuse() PASSED
+
+ConstructionCodecTest > corruptionTruncationAndTrailingDataAlwaysRefuse() PASSED
+
+ConstructionCodecTest > duplicateIdsOwnershipAndOrphanParentsRefuseEvenWithValidChecksum() PASSED
+
+ConstructionLedgerTest > cellAndEpochBoundsRefuseWithoutEvictionOrWraparound() PASSED
+
+ConstructionLedgerTest > frameRunsKeepParallelCrossingProductAndUndeclaredAxesSeparate() PASSED
+
+ConstructionLedgerTest > immutableWorkerInputAndStaleCompletionCannotOverwriteNewEdits() PASSED
+
+ConstructionLedgerTest > historyAndLineageBoundsCannotEvictPublishedAncestors() PASSED
+
+ConstructionLedgerTest > restoredRegistryIsIndependentOfLoadedObservationOrderAndEmptyWorldRetires() PASSED
+
+ConstructionLedgerTest > splitRetiresParentEvenWhenOneChildWasCompletelyReplacedInTheBatch() PASSED
+
+ConstructionLedgerTest > monolithAndPanelGroupsUseOnlyDeclaredProductsAndFaceAdjacency() PASSED
+
+ConstructionLedgerTest > splitAndMergeCreateNewIdentitiesWithExactLineage() PASSED
+
+ConstructionLedgerTest > fullDestructionAndSameTickReplacementCannotResurrectIdentityEvenAfterPendingSave() PASSED
+
+ConstructionLedgerTest > noOpExtensionTrimAndUnrelatedObjectsRetainPublishedIdentity() PASSED
+
+ConstructionSnapshotTest > workAndGraphViewsRejectEveryMutableEntryPoint() PASSED
+
+ConstructionSnapshotTest > backgroundSnapshotRemainsStableDuringEditsAndStaleResultCannotPublish() PASSED
+
+ConstructionSnapshotTest > snapshotNullRejectionSurvivesHashBackedStorage() PASSED
+
+ConstructionSnapshotTest > workSnapshotDoesNotAliasCallerCollections() PASSED
+
+ConstructionSnapshotTest > graphRecordsAndRangeViewsNeverExposeMutableEntries() PASSED
+
+BUILD SUCCESSFUL in 3s
+7 actionable tasks: 3 executed, 4 up-to-date
