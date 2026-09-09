@@ -16,3 +16,8 @@ BSI833正常與334原生邊界/真C10回歸。原生開發庫重建，正式nati
 本倉只有文件對位，沒有Java程式修改或重新執行Java的宣稱；55份contract及engine ref不動。
 下一段沿既有NATIVE_CONSUMER更新同來源雙平台自足包，再處理混合世界局部Critical HUD。
 來源/首敗/原始SHA以引擎gate/evidence/MC66A_FRAME/RESULTS.md為準。
+
+同期[#105](https://github.com/rocky59487/block-reality/pull/105)與
+[#106](https://github.com/rocky59487/block-reality/pull/106)已分別補共用結果的各島保存、
+詞彙ID與遊戲輸入快照。本文件分支仍基於#103，只對位引擎；下一次整合先核對
+上述分支及其docs/V1_MODULE_PROGRAM.md，不另建重疊實作。本輪沒有checkout或重验它們。
