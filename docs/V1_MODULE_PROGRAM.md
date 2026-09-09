@@ -54,5 +54,6 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 
 ## 現況
 
-GAME_INPUT 判準先凍；尚未完成 GAME_RUNTIME。正式引擎仍 v1.3，開發配對為引擎 #37
+GAME_INPUT 的純 Java 輸入/詞彙/真 JNA 入口已驗（`evidence/GAME_INPUT/RESULTS.md`）；
+Forge 軸向/接觸採集與 GAME_RUNTIME 尚待接線。正式引擎仍 v1.3，開發配對為引擎 #37
 `95a03e82` 與契約 `4b11cc738790…`。沒有新遊戲版本發布。

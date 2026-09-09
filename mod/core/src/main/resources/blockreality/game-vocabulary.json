@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "materials": [
+    {"name":"steel","role":"member","model":"isotropic","E":200000000000,"nu":0.29,"rho":7850,"allow":{"sigmaC":350000000,"sigmaT":500000000,"tau":200000000},"defaultSection":"steel_rect_200x400"},
+    {"name":"timber","role":"member","model":"isotropic","E":11000000000,"nu":0.35,"rho":600,"allow":{"sigmaC":5000000,"sigmaT":8000000,"tau":2000000},"defaultSection":"timber_rect_140x240"},
+    {"name":"rebar","role":"member","model":"isotropic","E":200000000000,"nu":0.29,"rho":7850,"allow":{"sigmaC":250000000,"sigmaT":400000000,"tau":150000000},"defaultSection":"rebar_round_d25"},
+    {"name":"concrete","role":"monolith","model":"isotropic","E":30000000000,"nu":0.2,"rho":2350,"allow":{"sigmaC":30000000,"sigmaT":3000000,"tau":4000000}},
+    {"name":"brick","role":"monolith","model":"isotropic","E":5000000000,"nu":0.15,"rho":1800,"allow":{"sigmaC":10000000,"sigmaT":500000,"tau":1500000}},
+    {"name":"concrete_slab_200","role":"panel","model":"isotropic","E":30000000000,"nu":0.2,"rho":2350,"allow":{"sigmaC":30000000,"sigmaT":3000000,"tau":4000000},"shellThickness":0.2},
+    {"name":"concrete_slab_150","role":"panel","model":"isotropic","E":30000000000,"nu":0.2,"rho":2350,"allow":{"sigmaC":30000000,"sigmaT":3000000,"tau":4000000},"shellThickness":0.15},
+    {"name":"steel_plate_20","role":"panel","model":"isotropic","E":200000000000,"nu":0.29,"rho":7850,"allow":{"sigmaC":350000000,"sigmaT":500000000,"tau":200000000},"shellThickness":0.02},
+    {"name":"ground_rigid","role":"support","supportKind":"fixAll"}
+  ],
+  "sections": [
+    {"name":"steel_rect_200x400","kind":"rect","p":[0.2,0.4]},
+    {"name":"steel_rect_150x300","kind":"rect","p":[0.15,0.3]},
+    {"name":"steel_rect_100x200","kind":"rect","p":[0.1,0.2]},
+    {"name":"timber_rect_140x240","kind":"rect","p":[0.14,0.24]},
+    {"name":"rebar_round_d25","kind":"circle","p":[0.025]}
+  ]
+}

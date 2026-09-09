@@ -1,0 +1,180 @@
+Starting a Gradle Daemon, 2 busy and 4 incompatible and 3 stopped Daemons could not be reused, use --status for details
+> Task :compileJava
+
+> Task :bundleEngines
+bundleEngines: no engine found in none �X building a jar without one (development build)
+
+> Task :processResources
+> Task :classes
+> Task :compileTestJava
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+
+> Task :test
+
+GameVocabularyResourceTest > forgeCarriesTheSameVocabularyAndEveryRegisteredBlockHasABinding() PASSED
+
+LangKeysTest > the two languages carry the same keys, so neither is half translated PASSED
+
+LangKeysTest > a format string with a placeholder has one in both languages PASSED
+
+LangKeysTest > every key the game can ask for has an English string PASSED
+
+LangKeysTest > no br.* string is carried that nothing can ask for PASSED
+
+BrPermissionsTest > privilegedSubcommandsAreAllPresent() PASSED
+
+BrPermissionsTest > anUnknownLiteralIsARegistrationError() PASSED
+
+BrPermissionsTest > theWhitelistIsExactlyTheReadOnlyDiagnostics() PASSED
+
+BrPermissionsTest > everythingOutsideTheReadOnlyWhitelistRequiresOp() PASSED
+
+DisplayDeliveryTest > countIdentityAndOmissionContradictionsAreRejected() PASSED
+
+DisplayDeliveryTest > receivingChargesAggregateStationsBeforeAllocation() PASSED
+
+DisplayDeliveryTest > selectedRecordsAreCompleteAndThreeEncodesAreIdentical() PASSED
+
+DisplayDeliveryTest > controllingElementReservesBudgetBeforeBothFamilies() PASSED
+
+DisplayDeliveryTest > oversizedControllerIsExplicitAndNeverChangesSummary() PASSED
+
+DisplayDeliveryTest > oversizedFrameIsRejectedBeforeParsing() PASSED
+
+DisplayDeliveryTest > receivingChargesAggregateBlocksBeforeAllocation() PASSED
+
+DisplayDeliveryTest > wholeElementsFitExactBytesAndOneLessOmitsThem() PASSED
+
+DisplayDeliveryTest > countsAreSharedAcrossElementsAndFamilies() PASSED
+
+GlobalVerdictPacketTest > invalidGlobalValuesRejectTheWholePacket() PASSED
+
+GlobalVerdictPacketTest > globalDecisionDoesNotDependOnDisplayedElements() PASSED
+
+GlobalVerdictPacketTest > explicitFlagsSurviveWithoutChangingTheirNumbers() PASSED
+
+GlobalVerdictPacketTest > incompleteWorldSummaryRetainsComputedIslandCritical() PASSED
+
+GlobalVerdictPacketTest > fullDoubleRangeSurvivesWithoutNarrowingOrRepair() PASSED
+
+MemberPacketCodecTest > allSampledPacketTruncationsAreRejected() PASSED
+
+MemberPacketCodecTest > absentDisplayDoesNotEraseSamplesOrDiagnostics() PASSED
+
+MemberPacketCodecTest > fullPacketPreservesEverySampleCellFlagAndGoverningIndex() PASSED
+
+MemberPacketCodecTest > oversizedCollectionsRejectInsteadOfDroppingTailSamples() PASSED
+
+MemberPacketCodecTest > exactIdentityAndMissingGoverningSurviveTheFullPacket() PASSED
+
+MemberPacketCodecTest > identifiedPacketTruncationsAndInvalidIdentityAreRejected() PASSED
+
+MemberPacketCodecTest > nonFiniteMetadataAndSamplesAreRejected() PASSED
+
+NativeResultPacketTest > sharedContractResourcesDescribeThisBuild() PASSED
+
+NativeResultPacketTest > realNativeAnalysisReachesThePacketWithTheSameFlagsAndDoubles() SKIPPED
+
+NativeResultPacketTest > failedAnalysisCannotBeEncodedAsAHealthyEmptyResult() PASSED
+
+ShellPacketCodecTest > missingDisplayAndOptionalRawRemainDistinct() PASSED
+
+ShellPacketCodecTest > nonFiniteSurfaceAndInvalidFrameRejectTheWholePacket() PASSED
+
+ShellPacketCodecTest > everyTruncationOfASampledShellPacketIsRejected() PASSED
+
+ShellPacketCodecTest > completePacketPreservesVerdictBlocksAndSamplesThroughPicking() PASSED
+
+StressResultPacketTest > aHostileMemberCountRejectsThePacket() PASSED
+
+StressResultPacketTest > roundTripPreservesTheDrawableResult() PASSED
+
+StressResultPacketTest > theWithheldFlagFollowsItsMemberThroughOverlayTruncation() PASSED
+
+StressResultPacketTest > withholdingWithoutATruncatedBlockIsRejected() PASSED
+
+StressResultPacketTest > anUnknownBucklingStateOrdinalIsRejectedNotClamped() PASSED
+
+StressResultPacketTest > everyBucklingStateSurvivesTheTrip() PASSED
+
+StressResultPacketTest > unassignedCountsTravelPerReason() PASSED
+
+StressResultPacketTest > anOverLongTokenIsTruncatedRatherThanThrownDuringTheBroadcast() PASSED
+
+StressResultPacketTest > theSmallestDoubleFactorIsPreservedExactly() PASSED
+
+StressResultPacketTest > anOverlongDimensionIsClippedNotThrown() PASSED
+
+StressResultPacketTest > theHostSubstitutesDisabledByScaleAndNobodyElseCan() PASSED
+
+StressResultPacketTest > everyNumberTheClientDrawsIsWithinTheDisplayBudgetOfTheServersOwn() PASSED
+
+StressResultPacketTest > aWholeModelSendsNoWithholdingAtAll() PASSED
+
+StressResultPacketTest > aMemberWithoutAGoverningStationDecodesAsNone() PASSED
+
+StressResultPacketTest > withheldElementsAndTheirReasonSurviveTheWire() PASSED
+
+StressResultPacketTest > aStateThatContradictsItsFactorIsRejected() PASSED
+
+StressResultPacketTest > theMaterialTokenSurvivesTheWire() PASSED
+
+StressResultPacketTest > theSafetyClassificationIsTheServersNotAFloatComparison() PASSED
+
+StressResultPacketTest > truncationKeepsTheGoverningMemberAndSaysSo() PASSED
+
+StressResultPacketTest > bucklingSkippedRoundTripsAndAContradictionIsRejected() PASSED
+
+StressResultPacketTest > aTruncatedBufferNeverThrowsItRejects() PASSED
+
+StressResultPacketTest > nanIsCorruptionNotZero() PASSED
+
+StressResultPacketTest > anEmptyResultRoundTripsAsMechanismData() PASSED
+
+StressResultPacketTest > governingStationSurvivesTheTripAsAPosition() PASSED
+
+AnalysisExecutorTest > shutdownIsIdempotentAndSafeWithoutAPool() PASSED
+
+AnalysisExecutorTest > submitAfterShutdownDoesNotThrowItReportsFalse() PASSED
+
+AnalysisExecutorTest > thePoolIsRebuiltAfterShutdown() PASSED
+
+BucklingPolicyTest > theLimitIsInclusiveAndZeroMeansNever() PASSED
+
+BucklingPolicyTest > aNegativeLimitIsOffRatherThanInverted() PASSED
+
+BucklingPolicyTest > theShippedDefaultIsTheOneTheCostTableWasReadFor() PASSED
+
+GatherCycleTest > aCycleWithinBudgetCompletesInOneStep() PASSED
+
+GatherCycleTest > aRevisionChangeAbandonsTheParkedCycle() PASSED
+
+GatherCycleTest > anOverBudgetCycleYieldsAndResumesWhereItStopped() PASSED
+
+GatherCycleTest > stepWithNoCycleIsIdle() PASSED
+
+GatherCycleTest > zeroBudgetStillGuaranteesMinimumProgress() PASSED
+
+SnapshotLoadsTest > aLoadOnABlockThatFormsNoElementIsIdentifiedByTheProbe() PASSED
+
+SnapshotLoadsTest > aLoadInAnUnloadedChunkWaitsWithItsBlock() PASSED
+
+SnapshotLoadsTest > momentsAreNotInventedForPointLoads() PASSED
+
+SnapshotLoadsTest > aLoadOnAnIncludedBlockTravels() PASSED
+
+SnapshotLoadsTest > aBlockThatFormsNoElementButCarriesNoLoadIsLeftAlone() PASSED
+
+SnapshotLoadsTest > aLoadWhoseBlockIsGoneIsReportedStale() PASSED
+
+SolveDispatchTest > aSuccessfulRunHandsTheResultToDeliveryAndDoesNotReleaseItself() PASSED
+
+SolveDispatchTest > aThrowingSolveReleasesTheFlagAndLogs() PASSED
+
+SolveDispatchTest > anErrorInTheSolveDoesNotDoubleRelease() PASSED
+
+SolveDispatchTest > aThrowingDeliveryReleasesTheFlagAndLogs() PASSED
+
+BUILD SUCCESSFUL in 26s
+5 actionable tasks: 5 executed

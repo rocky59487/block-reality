@@ -1,0 +1,29 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava
+> Task :core:processResources
+> Task :core:classes
+
+> Task :core:compileTestJava FAILED
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\bsi\BsiVocabularyTest.java:16: error: method decode in class BsiFrame cannot be applied to given types;
+        return BsiVocabulary.decode(BsiResponse.of(BsiFrame.decode(BsiFrame.encode(header, null))), "r2", REV, 1);
+                                                           ^
+  required: byte[],int
+  found:    byte[]
+  reason: actual and formal argument lists differ in length
+1 error
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:compileTestJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 2s
+5 actionable tasks: 3 executed, 2 up-to-date

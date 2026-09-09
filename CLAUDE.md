@@ -26,6 +26,13 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 
 ### 現況（v0.4 進行中）
 
+**2026-09-10 模組限定 v1 推進**：使用者指示引擎另有人做，本工作只做模組（D-047）。
+總綱 `docs/V1_MODULE_PROGRAM.md`。已接 engine-assigned vocab ID、SI 產品目錄與不可變
+GameWorldSnapshot；完整每格 axis/rotation/joint、六面 ground 觀測整理、載重/revision。
+Windows core350/Forge82=404PASS/28SKIP；Linux真JNA選集18/18；三個輸入故障臂具名FAIL。
+結果 `evidence/GAME_INPUT/RESULTS.md`。這是輸入消費層，Forge採集/遊戲仍待換裝。
+下一步只改模組 GAME_RUNTIME；不做引擎 frame_v2，不在Java寫剛體/碰撞/物理後處理。
+
 **最新接續（2026-09-09）**：沿模組 #103 / 引擎 #37 的 opt-in BSI eigen，
 共用 AnalysisResult 現在保留完整不可變 IslandBuckling 列表；直接映射 BsiBuckling，
 不另寫聚合器、不變更契約/pin、不重算Critical。Windows core339/Forge81，394PASS/26SKIP；

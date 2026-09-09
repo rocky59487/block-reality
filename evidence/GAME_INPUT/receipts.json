@@ -1,0 +1,49 @@
+{
+  "counts": {
+    "windows_core": {
+      "tests": 350,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 27
+    },
+    "windows_forge": {
+      "tests": 82,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "linux_native_selection": {
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "logs": {
+    "core.txt": {
+      "source": "build\\game-input-core-full.log",
+      "raw_sha256": "d4da6a3e0807965b01e513019d9cd7ca6a4afc80572f73a67d7547497716d7ef"
+    },
+    "forge.txt": {
+      "source": "build\\game-input-forge.log",
+      "raw_sha256": "ab18fe9355ae451faec776833895015948dd60ed078ef0922c09ab4c3d9ada25"
+    },
+    "unit-first-compile.txt": {
+      "source": "build\\game-input-unit-first.log",
+      "raw_sha256": "6172862ec6ebbcce0dcdcd599e5ec4a95a8b6962182b3aaef5f1febfc7765081"
+    },
+    "native.txt": {
+      "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-game-input-native-final.log",
+      "raw_sha256": "ad5d60650f0cc303564f96ed1cccda4c08c6160dd780d86e310a699081a4d40d"
+    },
+    "native-first-failure.xml": {
+      "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-game-input-first-failure.xml",
+      "raw_sha256": "2bf92f91d19dc38323bc59bd14b12be7d8556b9fabf096e02bd3fd130d316098"
+    },
+    "mutations.json": {
+      "source": "build\\game-input-mutations-1\\counts.json",
+      "raw_sha256": "d769320e02cd55fabb5c4a68b94c5548165c4610c553c8dc779fc0599f0dfcf3"
+    }
+  },
+  "copies": "UTF-8 display copies; trailing whitespace removed; raw digests refer to source logs"
+}
