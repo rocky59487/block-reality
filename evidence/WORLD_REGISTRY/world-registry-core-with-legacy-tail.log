@@ -1,0 +1,55 @@
+
+SidecarLifecycleTest > closeOnANeverStartedClientIsSafeAndTerminal() PASSED
+
+SidecarLifecycleTest > aCrashDuringAnalysisFailsThatRequestAndRecovers() SKIPPED
+
+SidecarLifecycleTest > aStaleReplyLeftInThePipeDoesNotPoisonTheNextRequest() SKIPPED
+
+SidecarLifecycleTest > resetRevivesADisabledClientOnceTheBinaryIsInstalled() SKIPPED
+
+SidecarLifecycleTest > aWedgedSidecarTimesOutAndIsKilled() SKIPPED
+
+SidecarLifecycleTest > aFloodingSidecarIsKilledNotBuffered() SKIPPED
+
+SidecarLifecycleTest > missingBinaryDisablesAnalysisAndLeavesTheGamePlayable() PASSED
+
+SidecarLifecycleTest > aProtocolMismatchIsRefusedOutrightAndNotRetried() SKIPPED
+
+SidecarLifecycleTest > aShmDoorbellRevisionMismatchIsADesyncAndEndsTheConversation() SKIPPED
+
+SidecarLifecycleTest > aClosedClientIsTerminalAndNeverRespawns() SKIPPED
+
+SidecarLifecycleTest > growIsRetriedOnceGrownAndARefusalAfterGrowthIsAnAnswer() SKIPPED
+
+SidecarLifecycleTest > closingSendsByeAndDoesNotLeaveAProcessBehind() SKIPPED
+
+SidecarLifecycleTest > concurrentSolveResetStatusAndCloseNeverThrowAndCloseWins() PASSED
+
+SidecarLifecycleTest > aRefusedShmMappingDowngradesToJsonAndTheSolveStillAnswers() SKIPPED
+
+SidecarPathsTest > whatExplorersCopyAsPathGivesYouIsAPath() PASSED
+
+SidecarPathsTest > blankAndNullAreSimplyAbsent() PASSED
+
+SidecarPathsTest > aStringThatCannotBeAPathIsReportedAndNotThrown() PASSED
+
+SidecarPathsTest > surroundingSpaceIsNotPartOfTheName() PASSED
+
+WorldCellIndexTest > coverageIncludesOnlyActualGroundBordersWithoutInventingDiagonalContacts() PASSED
+
+WorldCellIndexTest > oppositeObservationOrdersAndReloadHaveIdenticalBytes() PASSED
+
+WorldCellIndexTest > emptyReconciliationOnlyRemovesItsOwnChunkAndSnapshotsStayImmutable() PASSED
+
+WorldCellIndexTest > capacityFailureDoesNotEvictAndSurvivesRestart() PASSED
+
+WorldCellIndexTest > invalidChunkObservationsAreAtomic() PASSED
+
+WorldCellIndexTest > damagedChecksumsAndEveryTruncationFailClosed() PASSED
+
+WorldCellIndexTest > validDigestCannotAuthorizeUnknownSchemaDuplicatesOrderingOrOutOfWorldCells() PASSED
+
+> Task :core:check
+
+BUILD SUCCESSFUL in 5s
+9 actionable tasks: 3 executed, 6 up-to-date

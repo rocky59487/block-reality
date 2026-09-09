@@ -178,8 +178,9 @@ public final class BRCommand {
                 + "   test loads: " + m.loadedBlockCount(), ChatFormatting.GRAY);
 
         AnalysisResult r = m.latest();
+        line(src, "  analysis        " + m.noticeKind()
+                + (m.noticeDetail().isEmpty() ? "" : " — " + m.noticeDetail()), ChatFormatting.GRAY);
         if (r == null) {
-            line(src, "  analysis        " + m.noticeKind(), ChatFormatting.GRAY);
             line(src, "  last result     none yet", ChatFormatting.GRAY);
             return 1;
         }

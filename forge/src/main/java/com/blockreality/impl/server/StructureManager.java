@@ -84,13 +84,14 @@ public final class StructureManager {
     private boolean enabledLastTick;
     private long probedRevision = -1;
 
-    private final Set<BlockPos> structural = ConcurrentHashMap.newKeySet();
+    private final WorldIndexData structural;
+    private String registryFailureSeen = "";
+    private final ChunkAvailability availability = new ChunkAvailability();
     /**
      * Test loads by block: {fx, fy, fz} in newtons, Minecraft axes (+y up). The stress
      * glasses toggle the configured downward value; {@code /br load} writes any vector,
      * which is what makes a shear wall loadable in its own plane from inside the game.
-     * In memory only, like {@code structural} itself: the world is the save file, the
-     * loads are the experiment.
+     * In memory only: temporary loads are experiments; structural coverage is durable.
      */
     private final Map<BlockPos, double[]> loaded = new ConcurrentHashMap<>();
 
@@ -124,7 +125,8 @@ public final class StructureManager {
     private List<GameWorldSnapshot.Cell> cycleCells;
     private Set<BlockKey> cycleGround;
     private List<BlockKey> cycleUndeclared;
-    private record Gathered(GameWorldSnapshot world, String diagnostic) { }
+    private record Gathered(GameWorldSnapshot world, String diagnostic, InputCoverage coverage) { }
+    private InputCoverage cycleCoverage;
     private Set<BlockKey> cycleIncluded;
     private List<BlockPos> cycleStale;
     /** Tracked blocks this cycle could not read, because their chunk is not loaded. */
@@ -145,8 +147,13 @@ public final class StructureManager {
         return BRConfig.INSTANCE.analysisEnabled.get() && BRConfig.INSTANCE.mode.get() == BRConfig.EngineMode.INPROCESS;
     }
 
-    private StructureManager(ResourceKey<Level> dimension) {
-        this.dimension = dimension;
+    private StructureManager(ServerLevel level) {
+        this.dimension = level.dimension();
+        var root = level.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT);
+        var folder = net.minecraft.world.level.dimension.DimensionType.getStorageFolder(dimension, root).resolve("data");
+        this.structural = WorldIndexData.open(level.getDataStorage(), folder);
+        dirty = !structural.isEmpty() || !structural.failure().isEmpty();
+        notice = dirty ? Kind.PENDING : Kind.EMPTY;
         enabledLastTick = enabled();
         java.util.function.Consumer<String> log = message -> {
             engineDetails = message;
@@ -198,6 +205,7 @@ public final class StructureManager {
      * @return how many structural blocks are now tracked in the scanned area
      */
     public int rescan(ServerLevel level, BlockPos centre, int chunkRadius) {
+        long beforeScan = structural.index().generation();
         int cx = centre.getX() >> 4;
         int cz = centre.getZ() >> 4;
         int found = 0;
@@ -223,13 +231,14 @@ public final class StructureManager {
             loaded.remove(pos);
         }
 
-        if (found > 0 || !gone.isEmpty()) markDirty();
+        if (found > 0 || !gone.isEmpty() || beforeScan != structural.index().generation()) markDirty();
         return found;
     }
 
     private static int scanChunk(StructureManager m, net.minecraft.world.level.chunk.ChunkAccess access) {
         if (!(access instanceof LevelChunk chunk)) return 0;
         int found = 0;
+        var observed = new ArrayList<BlockKey>();
         LevelChunkSection[] sections = chunk.getSections();
         for (int si = 0; si < sections.length; si++) {
             LevelChunkSection section = sections[si];
@@ -241,7 +250,7 @@ public final class StructureManager {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
                         if (!(section.getBlockState(x, y, z).getBlock() instanceof StructuralBlock)) continue;
-                        m.structural.add(new BlockPos(
+                        observed.add(new BlockKey(
                                 chunk.getPos().getMinBlockX() + x, baseY + y,
                                 chunk.getPos().getMinBlockZ() + z));
                         found++;
@@ -249,11 +258,14 @@ public final class StructureManager {
                 }
             }
         }
+        m.structural.edit(i -> i.replaceChunk(chunk.getPos().x, chunk.getPos().z, observed));
+        m.loaded.keySet().removeIf(p -> (p.getX() >> 4) == chunk.getPos().x
+                && (p.getZ() >> 4) == chunk.getPos().z && !m.structural.contains(p));
         return found;
     }
 
     public static StructureManager of(ServerLevel level) {
-        return BY_DIMENSION.computeIfAbsent(level.dimension(), StructureManager::new);
+        return BY_DIMENSION.computeIfAbsent(level.dimension(), ignored -> new StructureManager(level));
     }
 
     public RevisionGate gate() { return gate; }
@@ -408,23 +420,24 @@ public final class StructureManager {
         if (touched) m.markDirty();
     }
 
-    /**
-     * Adopts structural blocks that arrive without a place event.
-     *
-     * <p>Three cases need this, and the first is fatal without it: <strong>the tracked set
-     * is in memory only</strong>, so reloading a world would forget every structure ever
-     * built until each block was placed again. The others are {@code /setblock} and world
-     * edit tools, which bypass {@code EntityPlaceEvent} entirely.
-     *
-     * <p>Scanning a chunk block by block would be 98k lookups per chunk. Instead each
-     * section is asked whether its <em>palette</em> could contain a structural block —
-     * a handful of comparisons — and only matching sections are walked.
-     */
+    /** Complete loaded-chunk reconciliation; persistence is loaded before the first scan. */
     @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
-        StructureManager m = BY_DIMENSION.computeIfAbsent(level.dimension(), StructureManager::new);
-        if (scanChunk(m, e.getChunk()) > 0) m.markDirty();
+        StructureManager m = of(level);
+        int x = e.getChunk().getPos().x, z = e.getChunk().getPos().z;
+        boolean observed = m.structural.index().observesChunk(x, z);
+        long before = m.structural.index().generation();
+        scanChunk(m, e.getChunk());
+        if (observed || before != m.structural.index().generation()) m.markDirty();
+    }
+
+    @SubscribeEvent
+    public static void onChunkUnload(ChunkEvent.Unload e) {
+        if (!(e.getLevel() instanceof ServerLevel level)) return;
+        StructureManager m = BY_DIMENSION.get(level.dimension());
+        if (m != null && m.structural.index().observesChunk(e.getChunk().getPos().x, e.getChunk().getPos().z))
+            m.markDirty(); // Invalidates a pending native reply; never deletes persisted coverage.
     }
 
     @SubscribeEvent
@@ -480,6 +493,19 @@ public final class StructureManager {
             announce(level, Kind.ENGINE_UNAVAILABLE, engine.state().detail());
         }
 
+        String registryFailure = structural.failure();
+        if (!registryFailure.equals(registryFailureSeen)) {
+            registryFailureSeen = registryFailure; requestResolve();
+        }
+        if (!registryFailure.isEmpty()) {
+            clearAnalysis();
+            if (notice != Kind.MODEL_REFUSED || !noticeDetail.equals(registryFailure)
+                    || lastAnnouncedRevision != gate.current().value())
+                announce(level, Kind.MODEL_REFUSED, registryFailure);
+            dirty = false; return;
+        }
+        if (availability.poll(structural.index().observationChunks(),
+                c -> level.hasChunk(c.x(), c.z()), 256)) markDirty();
         long currentRevision = gate.current().value();
 
         // INV-4: the overlay clients are drawing describes an older world the moment
@@ -516,14 +542,18 @@ public final class StructureManager {
         if (step != GatherCycle.Step.COMPLETE) return;
 
         Gathered gathered = finishCycle();
-        if (structural.isEmpty()) {
-            clearAnalysis();
-            announce(level, Kind.EMPTY, "");
-        } else dispatch(level, gathered);
+        if (!gathered.coverage().dispatch(() -> {
+            if (gathered.world().cells().isEmpty() && gathered.diagnostic().isEmpty()) {
+                clearAnalysis(); announce(level, Kind.EMPTY, ""); dirty = false;
+            } else dispatch(level, gathered);
+        })) {
+            announce(level, Kind.PENDING, gathered.coverage().detail());
+        }
     }
 
     private void beginCycle(long revision) {
         dirty = false;
+        cycleCoverage = new InputCoverage();
         cycleCells = new ArrayList<>();
         cycleGround = new HashSet<>();
         cycleUndeclared = new ArrayList<>();
@@ -532,7 +562,7 @@ public final class StructureManager {
         cycleSkipped = new ArrayList<>();
         // A STABLE order: the live set may change while the cycle is parked, and an
         // iterator over it would be invalidated. The copy is O(n) refs, once per cycle.
-        cycle.begin(List.copyOf(structural), revision);
+        cycle.begin(structural.positions(), revision);
     }
 
     /** One block of the gather. Main thread only — the single point that reads world state. */
@@ -547,6 +577,7 @@ public final class StructureManager {
         // sits nothing was missing. Now the skip is written down, so finishCycle can work
         // out whether it cut through anything (N14-a).
         if (!level.isLoaded(pos)) {
+            cycleCoverage.missing(WorldIndexData.key(pos));
             cycleSkipped.add(new BlockKey(pos.getX(), pos.getY(), pos.getZ()));
             return;
         }
@@ -565,7 +596,9 @@ public final class StructureManager {
         for (net.minecraft.core.Direction face : net.minecraft.core.Direction.values()) {
             BlockPos neighbour = pos.relative(face);
             BlockKey at = new BlockKey(neighbour.getX(), neighbour.getY(), neighbour.getZ());
-            if (!level.isLoaded(neighbour)) { cycleSkipped.add(at); continue; }
+            if (level.isOutsideBuildHeight(neighbour)) continue;
+            if (!level.isLoaded(neighbour)) {
+                cycleCoverage.missing(WorldIndexData.key(neighbour)); cycleSkipped.add(at); continue; }
             BlockState observed = level.getBlockState(neighbour);
             if (!(observed.getBlock() instanceof StructuralBlock) && !observed.isAir()
                     && observed.isFaceSturdy(level, neighbour, face.getOpposite())) cycleGround.add(at);
@@ -585,17 +618,19 @@ public final class StructureManager {
                 forces.add(new BsiRecords.Load(p.getX(), p.getY(), p.getZ(), f[0], f[1], f[2]));
             }
         }
-        lastBucklingSkipped = !BRConfig.INSTANCE.bucklingEnabled.get();
-        truncationFace = Truncation.face(cycleSkipped, cycleIncluded);
+        if (cycleCoverage.complete()) {
+            lastBucklingSkipped = !BRConfig.INSTANCE.bucklingEnabled.get();
+            truncationFace = Truncation.face(cycleSkipped, cycleIncluded);
+        }
         String diagnostic = cycleUndeclared.isEmpty() ? "" : "undeclared placement axis at "
                 + cycleUndeclared.get(0) + " (" + cycleUndeclared.size()
                 + " blocks); sneak-right-click with an empty hand to declare X/Y/Z";
-        GameWorldSnapshot snapshot = diagnostic.isEmpty()
+        GameWorldSnapshot snapshot = !cycleCoverage.complete() ? null : diagnostic.isEmpty()
                 ? new GameWorldSnapshot(gate.current(), cycleCells, List.copyOf(cycleGround), forces)
                 : new GameWorldSnapshot(gate.current(), List.of(), List.of(), List.of());
         cycleCells = null; cycleGround = null; cycleUndeclared = null;
         cycleIncluded = null; cycleStale = null; cycleSkipped = null;
-        return new Gathered(snapshot, diagnostic);
+        return new Gathered(snapshot, diagnostic, cycleCoverage);
     }
 
     private void dispatch(ServerLevel level, Gathered request) {
@@ -650,6 +685,10 @@ public final class StructureManager {
      * world state; displaying a classification does not grant that authority.
      */
     private void apply(ServerLevel level, AnalysisResult result) {
+        if (!ChunkAvailability.allReadable(structural.index().observationChunks(),
+                c -> level.hasChunk(c.x(), c.z()))) {
+            probeInFlight.set(false); markDirty(); return;
+        }
         if (engine.closed()) return;
         if (gate.isStale(result)) { probeInFlight.set(false); dirty = true; return; }
         if (probeInFlight.getAndSet(false) && result.ok()) {
@@ -725,10 +764,11 @@ public final class StructureManager {
 
     public Kind noticeKind() {
         if (!enabled()) return Kind.OFF;
+        if (!structural.failure().isEmpty()) return Kind.MODEL_REFUSED;
         return structural.isEmpty() ? Kind.EMPTY : notice;
     }
 
-    public String noticeDetail() { return noticeDetail; }
+    public String noticeDetail() { return structural.failure().isEmpty() ? noticeDetail : structural.failure(); }
 
     private void clearAnalysis() {
         latest = null; latestPacket = null;
@@ -740,10 +780,10 @@ public final class StructureManager {
 
     private AnalysisUpdatePacket update(boolean bootstrap) {
         Kind kind = noticeKind();
-        if (bootstrap && kind == Kind.PENDING && latestPacket != null) kind = Kind.RESULT;
+        if (bootstrap && kind == Kind.PENDING && noticeDetail.isEmpty() && latestPacket != null) kind = Kind.RESULT;
         return AnalysisUpdatePacket.of(dimension.location().toString(), sourceId, BRNetwork.nextSequence(),
                 gate.current().value(), bootstrap, kind, engineStatus(),
-                kind == Kind.MODEL_REFUSED || kind == Kind.ENGINE_UNAVAILABLE ? noticeDetail : "",
+                kind == Kind.MODEL_REFUSED || kind == Kind.ENGINE_UNAVAILABLE || kind == Kind.PENDING ? noticeDetail() : "",
                 kind == Kind.RESULT ? latestPacket : null);
     }
 

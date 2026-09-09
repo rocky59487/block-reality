@@ -96,5 +96,6 @@
   "br.product.member": "Placement axis declares the member direction.",
   "br.product.monolith": "The entire cell contains material.",
   "br.product.panel": "Placement axis does not set the panel normal.",
-  "br.product.unavailable": "Declared dimensions unavailable"
+  "br.product.unavailable": "Declared dimensions unavailable",
+  "br.hud.input_waiting": "Waiting for structure and support chunks to load"
 }

@@ -1,0 +1,14 @@
+{
+  "core": {
+    "registered": 383,
+    "pass": 356,
+    "skip": 27,
+    "fail": 0
+  },
+  "forge": {
+    "registered": 104,
+    "pass": 103,
+    "skip": 1,
+    "fail": 0
+  }
+}
