@@ -8,17 +8,12 @@ import com.blockreality.api.UnassignedBlocks;
 import com.blockreality.api.UnassignedReason;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.api.WorldRevision;
-import com.blockreality.impl.BlockRealityMod;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * The drawable half of an analysis, sent to the client.
@@ -319,7 +314,7 @@ public final class StressResultPacket {
      * <p>{@code writeUtf(s, max)} throws when {@code s} is longer, and this encode runs
      * inside the broadcast loop — one over-long token from an engine that is not the one
      * this build ships would take out the send to every player, not just the drawing of
-     * one member. {@code EngineStatusPacket} already guards its two strings this way; the
+     * one member. {@code AnalysisUpdatePacket} already guards its two strings this way; the
      * two element tokens did not (PR26_REVIEW ATK-10 / DF-11). Tokens come from the
      * engine, so this should never fire; a guard that never fires is the point.
      */
@@ -451,23 +446,6 @@ public final class StressResultPacket {
     private static double finite(double f, String what) {
         if (!Double.isFinite(f)) throw new Bad(what + " is not finite");
         return f;
-    }
-
-    // ---------------------------------------------------------------- handle
-    /**
-     * The client-only type is named by its fully qualified name inside the supplier, and
-     * is deliberately <em>not</em> imported. An import would put it in this class's
-     * constant pool, and a dedicated server verifying this class would then try to
-     * resolve a class that does not exist on its side.
-     */
-    public static void handle(StressResultPacket p, Supplier<NetworkEvent.Context> ctx) {
-        if (!p.valid) {
-            BlockRealityMod.LOG.warn("dropping malformed stress packet: {}", p.invalidReason);
-        } else {
-            ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                    () -> () -> com.blockreality.impl.client.ClientStressState.accept(p)));
-        }
-        ctx.get().setPacketHandled(true);
     }
 
     public WorldRevision worldRevision() { return new WorldRevision(revision); }

@@ -78,11 +78,15 @@
   "br.unassigned.fully_supported": "%s block(s) fully supported — in the model, nothing to report",
   "br.unassigned.unknown": "%s block(s) left out for a reason this build does not know",
   "br.hud.focus_withheld": "not judged: this member runs into unloaded chunks",
-  "br.engine.platform": "No bundled native engine for this platform (%s); analysis is off.",
   "br.buckling.not_eligible_scale": "World buckling incomplete: engine DOF budget",
   "br.buckling.solver_failed": "World buckling computation failed",
   "br.placement.axis": "Structural axis: %s",
   "br.placement.hint": "Placement face sets axis. Sneak-use with an empty hand to cycle X/Y/Z.",
   "br.buckling.local_critical": "BUCKLING: linear onset reached in a structure",
-  "br.buckling.world_factor": "World buckling λ_cr %s (linear onset)"
+  "br.buckling.world_factor": "World buckling λ_cr %s (linear onset)",
+  "br.hud.empty": "No structural blocks are tracked in this world",
+  "br.hud.off": "Structural analysis is off",
+  "br.hud.pending": "Analysing the current structure…",
+  "br.hud.model_refused": "Model not analysed: %s",
+  "br.hud.no_elements": "No element stress results; see block classifications"
 }

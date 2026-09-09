@@ -78,11 +78,15 @@
   "br.unassigned.fully_supported": "%s 格完全支承——已在模型內，沒有內力可報",
   "br.unassigned.unknown": "%s 格未納入，理由是這個版本不認得的代碼",
   "br.hud.focus_withheld": "未判定：這根構件延伸進未載入的區塊",
-  "br.engine.platform": "此平台（%s）沒有隨附原生引擎，分析停用。",
   "br.buckling.not_eligible_scale": "全域挫屈未完整評估：引擎自由度預算",
   "br.buckling.solver_failed": "全域挫屈計算失敗",
   "br.placement.axis": "結構軸向：%s",
   "br.placement.hint": "放置面決定軸向；空手潛行右鍵切換 X/Y/Z。",
   "br.buckling.local_critical": "挫屈警示：已有結構達到線性臨界狀態",
-  "br.buckling.world_factor": "全域挫屈 λ_cr %s（線性臨界值）"
+  "br.buckling.world_factor": "全域挫屈 λ_cr %s（線性臨界值）",
+  "br.hud.empty": "此世界目前沒有已追蹤的結構方塊",
+  "br.hud.off": "結構分析已停用",
+  "br.hud.pending": "正在分析目前結構…",
+  "br.hud.model_refused": "模型未完成分析：%s",
+  "br.hud.no_elements": "沒有元素應力結果；請參閱方塊分類"
 }

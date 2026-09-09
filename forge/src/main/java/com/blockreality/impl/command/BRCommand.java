@@ -179,6 +179,7 @@ public final class BRCommand {
 
         AnalysisResult r = m.latest();
         if (r == null) {
+            line(src, "  analysis        " + m.noticeKind(), ChatFormatting.GRAY);
             line(src, "  last result     none yet", ChatFormatting.GRAY);
             return 1;
         }

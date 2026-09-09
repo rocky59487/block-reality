@@ -167,7 +167,16 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: dependencies
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq cmake g++
+        run: |
+          if ! command -v cmake >/dev/null || ! command -v g++ >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq cmake g++
+          fi
+          cmake --version
+          g++ --version
+
+      - name: RCON framing used by server smoke tests
+        run: python3 scripts/test_rcon_client.py
 
       - name: build the BSI host and its stub engines
         run: |

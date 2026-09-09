@@ -15,6 +15,9 @@ import com.blockreality.impl.BRConfig;
 import com.blockreality.impl.BlockRealityMod;
 import com.blockreality.impl.block.StructuralBlock;
 import com.blockreality.impl.net.BRNetwork;
+import com.blockreality.impl.net.AnalysisUpdatePacket;
+import com.blockreality.impl.net.AnalysisUpdatePacket.Kind;
+import com.blockreality.impl.net.StressResultPacket;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -70,6 +73,10 @@ public final class StructureManager {
     private static final Map<ResourceKey<Level>, StructureManager> BY_DIMENSION = new ConcurrentHashMap<>();
 
     private final ResourceKey<Level> dimension;
+    private final java.util.UUID sourceId = java.util.UUID.randomUUID();
+    private Kind notice = Kind.EMPTY;
+    private String noticeDetail = "";
+    private StressResultPacket latestPacket;
     private final RevisionGate gate = new RevisionGate();
     private final NativeGameRuntime engine;
     private volatile String engineDetails = "native engine not loaded yet";
@@ -164,6 +171,7 @@ public final class StructureManager {
     public void requestResolve() {
         gate.bump();
         dirty = true;
+        notice = Kind.PENDING; noticeDetail = "";
         ticksSinceSolve = Integer.MAX_VALUE / 2;
     }
 
@@ -314,6 +322,7 @@ public final class StructureManager {
     private void markDirty() {
         gate.bump();
         dirty = true;
+        notice = Kind.PENDING; noticeDetail = "";
     }
 
     // ------------------------------------------------------------------ events
@@ -357,6 +366,7 @@ public final class StructureManager {
     private static void groundChanged(ServerLevel level, BlockPos pos) {
         StructureManager manager = BY_DIMENSION.get(level.dimension());
         if (manager == null) return;
+        if (manager.structural.contains(pos)) { manager.markDirty(); return; }
         for (net.minecraft.core.Direction face : net.minecraft.core.Direction.values()) {
             if (manager.structural.contains(pos.relative(face))) { manager.markDirty(); return; }
         }
@@ -458,14 +468,16 @@ public final class StructureManager {
             if (!on) {
                 Thread cleanup = new Thread(engine::closeWhenIdle, "br-native-disable");
                 cleanup.setDaemon(true); cleanup.start();
-                BRNetwork.sendEngineStatus(level, engineStatus(), "analysis is off");
+                clearAnalysis();
+                announce(level, Kind.OFF, "");
             }
         }
         if (!on || engine.closed()) return;
         if (engine.pollTimeout()) {
             gate.bump();
             latest = AnalysisResult.failed(gate.current(), engine.state().detail());
-            BRNetwork.sendEngineStatus(level, engineStatus(), engine.state().detail());
+            latestPacket = null;
+            announce(level, Kind.ENGINE_UNAVAILABLE, engine.state().detail());
         }
 
         long currentRevision = gate.current().value();
@@ -473,9 +485,16 @@ public final class StructureManager {
         // INV-4: the overlay clients are drawing describes an older world the moment
         // the revision moves. Tell them once per revision change, so the HUD can say
         // "stale" instead of presenting the old picture as current.
-        if (latest != null && currentRevision != lastAnnouncedRevision) {
-            BRNetwork.sendAnalysisPending(level, currentRevision);
-            lastAnnouncedRevision = currentRevision;
+        if (structural.isEmpty()) {
+            if (dirty || notice != Kind.EMPTY || latest != null) {
+                clearAnalysis();
+                announce(level, Kind.EMPTY, "");
+            }
+            dirty = false;
+            return;
+        }
+        if (currentRevision != lastAnnouncedRevision && notice == Kind.PENDING) {
+            announce(level, Kind.PENDING, "");
         }
 
         if (inFlight.get() || engineStatus() == NativeGameRuntime.Status.DISABLED) return;
@@ -488,7 +507,6 @@ public final class StructureManager {
 
         if (!cycle.inProgress()) {
             if (!dirty || ticksSinceSolve < BRConfig.INSTANCE.minTicksBetweenSolves.get()) return;
-            if (structural.isEmpty()) { dirty = false; return; }
             beginCycle(currentRevision);
         }
 
@@ -497,7 +515,11 @@ public final class StructureManager {
                 pos -> visitForCycle(level, pos));
         if (step != GatherCycle.Step.COMPLETE) return;
 
-        dispatch(level, finishCycle());
+        Gathered gathered = finishCycle();
+        if (structural.isEmpty()) {
+            clearAnalysis();
+            announce(level, Kind.EMPTY, "");
+        } else dispatch(level, gathered);
     }
 
     private void beginCycle(long revision) {
@@ -623,11 +645,9 @@ public final class StructureManager {
      * world, because a mod that demolishes a build when its analysis fails is a
      * mod nobody will install twice.
      *
-     * <p>What reaches the wire is decided by the gate, not assumed (#53): the broadcast
-     * happens only for a result the commit gate accepted — or for an all-singular
-     * mechanism verdict, which is real information about the current world even though
-     * there is nothing usable to draw. An ok-but-empty reply updates {@code latest} for
-     * {@code /br status} and travels no further.
+     * <p>Current successful results, including classifications with no elements, reach
+     * the display channel. The separate commit gate decides whether a result can affect
+     * world state; displaying a classification does not grant that authority.
      */
     private void apply(ServerLevel level, AnalysisResult result) {
         if (engine.closed()) return;
@@ -665,7 +685,9 @@ public final class StructureManager {
             // reason to leave a stale set lying where the next reader will find it.
             withheldMembers = Set.of();
             withheldShells = Set.of();
-            BRNetwork.sendEngineStatus(level, engineStatus(), result.diagnostic());
+            latestPacket = null;
+            announce(level, engineStatus() == NativeGameRuntime.Status.DISABLED
+                    ? Kind.ENGINE_UNAVAILABLE : Kind.MODEL_REFUSED, result.diagnostic());
             dirty = false;
             // At most one unloaded-force probe per revision, and only after a real native refusal.
             if (!result.ok() && !loaded.isEmpty() && engineStatus() == NativeGameRuntime.Status.READY
@@ -693,15 +715,60 @@ public final class StructureManager {
                 MemberSnapshot::blocks, MemberSnapshot::id);
         withheldShells = Truncation.touching(truncationFace, result.shells(),
                 ShellSnapshot::blocks, ShellSnapshot::id);
-        boolean committed = gate.acceptForCommit(result);
-        if (committed || display == RevisionGate.Display.MECHANISM) {
-            // Elements standing against a block we could not read do not get a verdict
-            // (N14-c). Everything else is shown exactly as before — an empty face makes
-            // both sets empty and the packet identical to the one v0.3c sent (N14-e).
-            BRNetwork.sendResult(level, result, lastBucklingSkipped,
-                    withheldMembers, withheldShells, truncationFace.size());
-            lastAnnouncedRevision = result.revision().value();
+        gate.acceptForCommit(result);
+        // An accepted native answer with no elements still carries a classification.
+        // Delivery does not make that answer eligible to mutate the world.
+        latestPacket = StressResultPacket.of(result, dimension.location().toString(), lastBucklingSkipped,
+                withheldMembers, withheldShells, truncationFace.size());
+        announce(level, Kind.RESULT, "");
+    }
+
+    public Kind noticeKind() {
+        if (!enabled()) return Kind.OFF;
+        return structural.isEmpty() ? Kind.EMPTY : notice;
+    }
+
+    public String noticeDetail() { return noticeDetail; }
+
+    private void clearAnalysis() {
+        latest = null; latestPacket = null;
+        withheldMembers = Set.of(); withheldShells = Set.of(); truncationFace = Set.of();
+        probeWithoutLoads = false; probeInFlight.set(false);
+        cycle.abandon(); cycleCells = null; cycleGround = null; cycleUndeclared = null;
+        cycleIncluded = null; cycleStale = null; cycleSkipped = null;
+    }
+
+    private AnalysisUpdatePacket update(boolean bootstrap) {
+        Kind kind = noticeKind();
+        if (bootstrap && kind == Kind.PENDING && latestPacket != null) kind = Kind.RESULT;
+        return AnalysisUpdatePacket.of(dimension.location().toString(), sourceId, BRNetwork.nextSequence(),
+                gate.current().value(), bootstrap, kind, engineStatus(),
+                kind == Kind.MODEL_REFUSED || kind == Kind.ENGINE_UNAVAILABLE ? noticeDetail : "",
+                kind == Kind.RESULT ? latestPacket : null);
+    }
+
+    private void announce(ServerLevel level, Kind kind, String detail) {
+        notice = kind; noticeDetail = detail;
+        BRNetwork.broadcast(level, update(false));
+        lastAnnouncedRevision = gate.current().value();
+    }
+
+    /** Reuses the accepted payload; joining or travelling does not trigger another native solve. */
+    private static void sendSnapshot(net.minecraftforge.event.entity.player.PlayerEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            StructureManager manager = of(player.serverLevel());
+            BRNetwork.sendTo(player, manager.update(true));
         }
+    }
+
+    @SubscribeEvent public static void onLogin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) {
+        sendSnapshot(e);
+    }
+    @SubscribeEvent public static void onRespawn(net.minecraftforge.event.entity.player.PlayerEvent.PlayerRespawnEvent e) {
+        sendSnapshot(e);
+    }
+    @SubscribeEvent public static void onTravel(net.minecraftforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent e) {
+        sendSnapshot(e);
     }
 
     /** Removes every load the engine has nowhere to put, and says so out loud. */

@@ -1,0 +1,7 @@
+// Explicit integration-only invocation: gradlew -I ../scripts/state-delivery-probe.gradle runServer
+// The normal build/jar never sees this source directory.
+allprojects { afterEvaluate { p ->
+    if (p.plugins.hasPlugin('net.minecraftforge.gradle')) {
+        p.sourceSets.main.java.srcDir('src/integrationTest/java')
+    }
+} }

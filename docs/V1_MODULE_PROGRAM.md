@@ -55,7 +55,7 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 ## 現況
 
 GAME_INPUT 已在 #106，GAME_RUNTIME 已接 Forge 採集與真正原生迴圈；Linux server 混合
-梁柱板/機構與地面變更/重設已驗，Windows core360/Forge85=417PASS/28SKIP。
+梁柱板/機構與地面變更/重設已驗，Windows core367/Forge92=431PASS/28SKIP。
 判準及證據見 `GAME_RUNTIME.md`、`../evidence/GAME_RUNTIME/RESULTS.md`。
 全未支承原生只回 SOLVE_FAILED，typed 機構展示未完成；客戶端、最新雙平台 native jar、
 舊 Java 後處理退場、持久世界及倒塌動態仍待完成。沒有新遊戲版本發布。
@@ -63,4 +63,6 @@ GAME_INPUT 已在 #106，GAME_RUNTIME 已接 Forge 採集與真正原生迴圈�
 上游 #107（文件）已合入目前模組分支，對位引擎 #39 frame_v2；本輪沒有改引擎。
 正式引擎仍 v1.3，本次實跑來源仍 #37 `95a03e82` / contract `4b11cc738790…`。
 混合世界 HUD/命令警示已接並用真 server 驗文字；客戶端視覺仍待 N25。
-下一步處理空模型/停用與 dimension/revision 通知、持久 registry、材質與互動。
+STATE_DELIVERY 已接空模型/停用與來源/順序/revision 通知；真 server 16 項、24 個 synthetic
+玩家事件與 native→封包→clock 已驗，詳 `../evidence/STATE_DELIVERY/RESULTS.md`。
+下一步處理真客戶端補送/旅行時序、持久 registry、材質與互動。

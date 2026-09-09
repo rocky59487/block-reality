@@ -11,6 +11,7 @@ import java.util.function.ToIntFunction;
 /** Whole-element selection and owned payloads. No mechanics or field format lives here. */
 final class DisplayDelivery {
     static final int MAX_PACKET_BYTES = 262_144;
+    /** Shared reserve for the result summary and channel 11 identity envelope. */
     static final int HEADER_RESERVE = 2_048;
     static final int MAX_BLOCKS = 16_384;
     static final int MAX_STATIONS = 2_048;
