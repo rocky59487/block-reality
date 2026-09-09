@@ -1,0 +1,17 @@
+// Opt-in profile driver, never included in main/test jars or regular check.
+allprojects { afterEvaluate { p ->
+    if (p.name == 'core') {
+        def profile = p.sourceSets.create('registryProfile') {
+            java.srcDir 'src/profile/java'
+            compileClasspath += p.sourceSets.main.output + p.configurations.compileClasspath
+            runtimeClasspath += p.sourceSets.main.output + p.configurations.runtimeClasspath
+        }
+        p.tasks.register('registryScaling', JavaExec) {
+            dependsOn p.tasks.named('registryProfileClasses')
+            classpath = profile.runtimeClasspath
+            mainClass = 'com.blockreality.core.world.RegistryScaling'
+            jvmArgs '-Xms2g', '-Xmx2g'
+            args System.getProperty('br.registryOutput'), System.getProperty('br.registryFork')
+        }
+    }
+} }
