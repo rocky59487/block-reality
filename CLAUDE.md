@@ -190,4 +190,5 @@ BsiBuckling完整不可變每島結果與五態世界摘要已接BsiAnalysisResu
 headers/solve/analyze新增EigenBuckling budget選項，舊簽章保留。core334=322PASS/12SKIP、Forge80PASS；
 原13+新2真JNA全部執行，八Java故障有具名反例。contract55檔/hash4b11cc738790與引擎同步。
 目前開發庫已驗，正式v1.3 jar未更新；遊戲仍Sidecar，HUD hasFactor分支尚需局部critical明示。
-下一單元引擎frame_v2 eigen、兩平台native包、再接HUD/GAME_SWAP；BUCK_MEMBERS保持active。
+引擎frame_v2 eigen已local_verified：504項/十故障臂三箱DET3、60份舊frame逐位，見docs/MC66A_FRAME_V2.md。
+下一單元更新兩平台native包與來源鏈/真JNA，再接混合世界局部Critical HUD/GAME_SWAP；BUCK_MEMBERS保持active。
