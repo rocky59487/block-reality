@@ -44,7 +44,7 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 - 尚未完成：最新雙平台合格庫的正式 jar、持久 registry #86、混合世界 local-critical HUD、
   材質方向/互動實測、舊 Java field/legacy codec 物理後處理退場、引擎 lifecycle/剛體姿態消費。
   #89 仍開放；零 Java 物理與 v1 基礎能力不能稱完成。
-- 上游模組 #107 僅文件，對位引擎 #39 frame_v2；尚未合併。先核對來源與依賴，
+- 上游模組 #107 的文件已整合，對位引擎 #39 frame_v2；來源見 `docs/MC66A_FRAME_V2.md`。
   不在本工作改引擎，也不把缺 TECTONIC2_TOKEN 而跳過的 CI native steps 說成已驗。
 
 上一單元證據：`evidence/GAME_INPUT/RESULTS.md`、`evidence/BUCKLING_RETENTION/RESULTS.md`。
