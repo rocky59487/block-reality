@@ -1,0 +1,7 @@
+finish-evidence.py initially exited 1 under the Windows CP950 default:
+  File "finish-evidence.py", line 20
+    events=json.loads((out/'linux/runtime-smoke-third.json').read_text())
+UnicodeDecodeError: 'cp950' codec can't decode byte 0xe2 in position 2620: illegal multibyte sequence
+
+Retained from the tool terminal receipt. The same file subsequently exits 0 with
+python -X utf8 build/native-candidate-runtime/finish-evidence.py.

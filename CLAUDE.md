@@ -28,10 +28,14 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 
 2026-09-10：使用者指定引擎另有人負責，本工作只做模組（D-047、`docs/V1_MODULE_PROGRAM.md`）。
 引擎維持正式 v1.3；既有實跑證據使用 #37 `95a03e82`、契約 `4b11cc738790…`。
-新交付 #40 / 模組 #119 提供 `42e10f5` 雙平台候選；NCR 正在整合驗收，沒有改引擎。
+新交付 #40 / 模組 #119 提供 `42e10f5` 雙平台候選；NCR 已驗目前 HUD/模組候選，沒有改引擎。
 
-- NATIVE_CANDIDATE_RUNTIME 已凍判準並整合 #119 的候選 staging/check 腳本與來源 pin。
-  root SHA 已核對交付資料；目前版本的双平台真庫/真 jar/遊戲驗收尚未執行，不能沿用舊候選的420項結論。
+- NATIVE_CANDIDATE_RUNTIME 已整合 #119 及其最新交付文件，保留 #120 HUD。
+  同一顆15,203,560B jar帶雙平台42e10f5庫，兩平台48frame×3、解包/快取/權限/雙JVM通過；
+  Windows509 PASS/12平台SKIP，Linux520 PASS/1平台SKIP，原生相關全部執行。
+  真Forge開發環境由bundled資源解包，16項server狀態、24個合成玩家事件、45項client守門/16圖通過。
+  首次空世界前置錯誤與漏通知失敗保留；詳 `evidence/NATIVE_CANDIDATE_RUNTIME/RESULTS.md`。
+  這是候選與dev遊戲驗收，未替換正式資產，也不等於installed-jar/Windows CM/N25/FPS合格。
 - `GAME_INPUT` 已接 engine-assigned vocabulary ID、SI 目錄與不可變 GameWorldSnapshot。
 - `GAME_RUNTIME` 已將 Forge 採集→worker→apply 換為真正的 BSI/JNA 原生 session。
   玩家宣告 axis；觀測六面 sturdy 接觸為 ground；舊方塊未宣告要明示拒絕。
@@ -39,8 +43,8 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   native 工作若不返回，Java 不能強殺；cleanup 僅在 worker/daemon，D-044 崩潰代價仍成立。
 - 生產 SidecarClient/SidecarProcess/SidecarConfig/ShmRegion 已退到 test；NoSubprocess ALLOWED={}。
   預設 jar 無 exe、無 process launcher；Gradle 已拒絕 executable 封裝。
-- Windows core412/Forge109：521登錄、492PASS、29SKIP。包含19項 native 整合測試的登錄，
-  不代表 Windows 已執行新原生庫。Linux 真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
+- Windows core412/Forge109：521登錄、509PASS、12平台SKIP；Linux520PASS、1平台SKIP。
+  19項 native 相關全部執行。新庫Linux真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
   完整結果 `evidence/GAME_RUNTIME/RESULTS.md`，首敗保留、三故障臂具名咬合。
 - 全部失去支承時原生只回 SOLVE_FAILED；Java 保留拒絕，不能從 message 捏造 MECHANISM。
   高性能、全機構 typed 展示、真客戶端 N25 尚未驗收。

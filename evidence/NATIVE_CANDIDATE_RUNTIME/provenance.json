@@ -1,0 +1,48 @@
+{
+  "contractSha256": "4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801",
+  "libraries": [
+    {
+      "platform": "windows-x86_64",
+      "os": "windows",
+      "arch": "x86_64",
+      "file": "bsi_tectonic.dll",
+      "sha256": "9761d73586277614a56132ec3492d324ae83c8489068c00c266c3d56f530acea",
+      "size": 31769600,
+      "engineVersion": "tectonic-1.3.0+42e10f5",
+      "engine": "tectonic",
+      "version": "1.3.0",
+      "buildSha": "42e10f5",
+      "contractSha256": "4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801",
+      "releaseAsset": "tectonic2-1.3.0-windows-x86_64.zip",
+      "releaseAssetSha256": "dca6091ed1090a905bb9e31a16352b2c9fabd7f8f397453b02f75452671a19ba"
+    },
+    {
+      "platform": "linux-x86_64",
+      "os": "linux",
+      "arch": "x86_64",
+      "file": "libbsi_tectonic.so",
+      "sha256": "53aae7156b94c0a761ef5abb2322ad47a708362f417a50ca3f04105d9c50abf1",
+      "size": 28500368,
+      "engineVersion": "tectonic-1.3.0+42e10f5",
+      "engine": "tectonic",
+      "version": "1.3.0",
+      "buildSha": "42e10f5",
+      "contractSha256": "4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801",
+      "releaseAsset": "tectonic2-1.3.0-linux-x86_64.zip",
+      "releaseAssetSha256": "7987e4781fdcaae1eea9f25967259ece8bc995962aefeb9761ce3f22f76ddb5c"
+    }
+  ],
+  "release": {
+    "sourceCommit": "42e10f5f7af166788588afcd2fb2fd97101d16dc",
+    "version": "1.3.0",
+    "sha256sums": "f587d8092e0798da4d1f9c8d0e7a4d1b806d64fbf5999d749622757181231cd5",
+    "assets": {
+      "tectonic2-1.3.0-linux-x86_64.zip": "7987e4781fdcaae1eea9f25967259ece8bc995962aefeb9761ce3f22f76ddb5c",
+      "tectonic2-1.3.0-source.tar.gz": "ed58caaaff8a14dcef9056eb8810f70963afe1d3db643413aa0783201556baec",
+      "tectonic2-1.3.0-verification.json": "dcbd38209f19f5ae392d43da506bad26dd0d308fbc2e6379e6e5d51274287489",
+      "tectonic2-1.3.0-windows-x86_64.zip": "dca6091ed1090a905bb9e31a16352b2c9fabd7f8f397453b02f75452671a19ba"
+    },
+    "sourceFiles": 5045,
+    "basis": "locally qualified candidate; runtime hello is a separate platform gate"
+  }
+}

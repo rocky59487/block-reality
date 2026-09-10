@@ -1,0 +1,13 @@
+ROOT REJECTED
+ASSET REJECTED
+MISSING_PLATFORM REJECTED
+PATH REJECTED
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\Lib\zipfile\__init__.py:1611: UserWarning: Duplicate name: 'provenance.json'
+  return self._open_to_write(zinfo, force_zip64=force_zip64)
+DUPLICATE REJECTED
+INNER REJECTED
+REVISION REJECTED
+CONTRACT REJECTED
+BINARY REJECTED
+SDK REJECTED
+PASS 10 real-archive corruption cases; 4 independent guard removals exposed
