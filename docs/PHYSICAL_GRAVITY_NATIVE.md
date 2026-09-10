@@ -64,3 +64,22 @@ physical能力，不能靜默假裝已啟用；啟用生產請求時須同時提
 79 checks／0 failures，三次完整 stdout／stderr／exit 逐位相同。此處獨立釘死
 typed adapter＋host gate 計數79；原物理硬線完全不改。八條native故障沿用初凍，
 具名失敗及真DLL／SO／JNA／舊ABI1相容仍待完成，不據首輪關閉PGN或MASS。
+
+## 2026-09-11 A2 — 真庫／JNA首輪與模式遷移回歸
+
+Windows／Linux真DLL／SO首跑均571 checks／0 failures：每次66個完整response，
+三次逐位重現；34個成功typed payload逐位對應，typed另有2個未知模式拒絕payload。
+JNA首成功235 checks／0 failures：66 frames×3及遊戲production入口的矩形柱解析root force。
+以上計數現在釘死；typed／host仍79。八故障Windows／Linux具名FAIL數依序為
+MODE22、STICKY10、SIZE4、RANGE2、LEGACY9、CAP1、ABI2、ENTRY1。
+最初typed stdout只列判斷，不據它宣稱payload DET；後續pgn-payload保留完整typed bytes。
+Linux首建既有sn_chol計時c0因adapter抑制fprintf而unused，首FAIL保留；runner只允許
+該warning類別以warning可見，其餘仍Werror。首JNA命令的PowerShell參數拆分失敗亦保留。
+
+consumer production GameWorldSnapshot現在明確選physical，直接solve舊overload仍analysis。
+首既有core回歸449登錄／1FAIL／40SKIP保留：GameInputNativeTest把physical遊戲結果
+與預設analysis比較，maxDC為0.054844759821428536對0.047831485714285686，揭示模式差異。
+對位比較改為明確physical；原4格FE自重reaction oracle另保留在legacy呼叫，並新增
+5格完整材料reaction oracle。這是已預授的opt-in遷移，不改容差、不刪原例、不洗掉SKIP。
+新舊host／engine四配對已用7905b23真正ABI1來源重建，Windows／Linux各DET3；
+仍待CLIENT故障、i9、sanitizer、其餘契約／消費者回歸與交付整理，PGN未關閉。
