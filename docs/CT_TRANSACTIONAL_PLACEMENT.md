@@ -148,3 +148,8 @@ with at most16 pending destinations and4096 bytes each. No silent eviction, over
 of a different pending request, corrupt-file fallback or automatic new UUID on retry.
 Durable terminal outcomes clear only their own exact pending record. Transient failures
 retain it. Screens must state when a sent request remains unresolved after closing.
+When the server explicitly reports EXPIRED after checking durable history, the player
+may choose a separately labelled new preview. Remove only that exact expired outbox
+record; require a fresh preview and another confirmation before a new construction.
+Client timeout/elapsed time never authorizes this release. An old session in the same
+journal domain with no stored decision is expired, while a different domain conflicts.
