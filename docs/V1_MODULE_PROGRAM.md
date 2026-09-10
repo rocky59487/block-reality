@@ -59,7 +59,7 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 目前開發jar15,286,415B、SHA9d8cb6795e9c…；來源/授權/封裝/JNA及真安裝專服門檻1–5通過。
 完整573登錄：Windows561PASS/12平台SKIP、Linux572PASS/1平台SKIP；兩平台96frame×3直連
 與3次jar/JNA回覆一致，涵蓋C14原生殼indicative警示。真專服10項與重啟讀數/快取通過。
-詳 `../evidence/NATIVE_V15_CONSUMER/RESULTS.md`；本版client重驗和exact-head CI仍待完成。
+詳 `../evidence/NATIVE_V15_CONSUMER/RESULTS.md`；本版client127模型/14互動/45守門及22圖通過，厚殼警示遊戲輸入仍未觀測；CI f7f9533四項通過/15原生步驟SKIP。
 最新SDK是線性挫屈交付，不代表倒塌/壓碎/接觸/剛體已可用。以下保留較早單元證據。
 
 MATERIAL_GEOMETRY 已在模組來源b10884b完成矩形產品外觀/目標/碰撞形狀、端面方向、

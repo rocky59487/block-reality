@@ -2,7 +2,8 @@
 
 2026-09-10. Criteria: `docs/NATIVE_V15_CONSUMER.md`, committed at1972f7f;
 incremental packaging extension ata132e32 preceded its fix. Gates1–5 PASS;
-gate6 real-client recheck and gate7 exact-head CI remain OPEN. This is a development
+gate6 geometry/HUD passes but actual-game shell warning remains OPEN. Exact-head CI
+atf7f9533 passes4 jobs/15 native step SKIPs (see client/). This is a development
 jar, not a v1 release. No engine source was modified, built, merged or published.
 
 ## Identity and artifact
@@ -90,10 +91,12 @@ build qualification roots. Do not describe these ZIPs as complete directory copi
 XML ZIPs, release metadata/source manifest, licenses, incremental records and helper
 sources are included. Raw bytes were not normalized or re-decoded for archiving.
 
-Gate6 real Linux client geometry/HUD remains pending. C14 thick-shell warnings
-verified through CAPI/JNA are not yet observations from an actual game input.
-Gate7 exact-head module CI is pending; the retained CI9976fc0 belongs to the CT base,
-not this branch. The engine release discloses historical Linux7 failures,41.7ms and
+Gate6 real Linux client geometry/HUD recheck now passes127 model,14 vanilla input,
+45 original scene and6 extra capture checks, with22 real screenshots. See
+`client/RESULTS.md` for setup failures, exact scope and visual limitations.
+C14 thick-shell warnings verified through CAPI/JNA are not yet observations from
+an actual game input; that part remains OPEN. Gate7 module CI atf7f9533 passes;
+retained CI9976fc0 belongs to the CT base. The engine release discloses historical Linux7 failures,41.7ms and
 soft-SS misses and a CI billing limitation; those remain upstream limitations.
 Windows CM/N25, actual installed client, FPS/soak, full construction transactions,
 independent region scheduling and dynamic event/rigid-pose delivery remain open.

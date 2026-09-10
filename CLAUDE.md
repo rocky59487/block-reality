@@ -35,7 +35,7 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   Windows561PASS/12平台SKIP、Linux572PASS/1平台SKIP；573登錄，原生適用測試全部執行。
   兩平台各96frame×3直連與3個jar/JNA工作階段一致，涵蓋C14旋轉/鏡像/厚殼indicative原生回覆。
   真安裝Linux Forge10項遊戲守門及重啟讀數/快取一致通過。NOTICE增量封裝缺陷已修，首敗照存。
-  詳 `evidence/NATIVE_V15_CONSUMER/RESULTS.md`；本版真client重驗及CI尚待完成。
+  詳 `evidence/NATIVE_V15_CONSUMER/RESULTS.md`；本版真client127模型/14互動/45守門及22圖通過，厚殼警示遊戲輸入仍未觀測；CI f7f9533四項通過/15原生步驟SKIP。
   v1.5提供線性梁殼共同挫屈，未交付非線性倒塌/壓碎/接觸/剛體運動；不以Java補做。
   以下NCR/INS/MG是保留的較早候選證據，不代表最新引擎版本。
 
@@ -108,7 +108,7 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   M832 背景分析 p95 65.6 ms、apply 1.6 ms；含原生工作，不是 FPS 或 v1 高性能資格。
   詳 `evidence/MODULE_PIPELINE_PROFILE/RESULTS.md`；量測啟停不改 world/result revision。
 - 尚未完成：模組正式發布、Forge施工交易與undo/UI、獨立區域排程 #86、
-  原Windows CM/N25與最新SDK客戶端重驗、FPS/soak、引擎 lifecycle/剛體姿態消費。
+  原Windows CM/N25與厚殼警示遊戲輸入、FPS/soak、引擎 lifecycle/剛體姿態消費。
   #89 仍開放；既有公式已退出出貨來源，v1 全部基礎能力仍未完成。
 - REGISTRY_SCALING 的原始基線與四版候選都已保存；最終 `0736baa` 通過原定相對性能與
   配置預算，600 份 bytes 一致。131K/ONE capture p95 714→6.0 ms、reconcile 9522→283 ms；

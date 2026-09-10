@@ -1608,3 +1608,11 @@ pass. First archive-helper failures and exact-head CI docs-count failure remain
 recorded; corrected9976fc0 CI has4 successful jobs and15 skipped native steps.
 Player adapters have no production Forge construction caller; CT-1..9 remain open.
 Recorded save costs, including the Windows small-fixture p95 loss, are not FPS gates.
+
+Native v1.5 client follow-up at98dbd54 passes127 real-model,14 vanilla-interaction,
+45 original scene and6 extra capture checks,22 PNGs. Missing Gradle-copy input,
+onboarding timeout and failed profile preparation remain in the first-attempt
+records. Gate6 geometry/HUD passes; actual-game shell-indicative warning remains
+unobserved/open. No native C14 result is relabeled as a client observation. CI
+f7f9533/run34441250786 passes4 jobs with15 native step SKIPs. See
+evidence/NATIVE_V15_CONSUMER/client/RESULTS.md. No original gate is lowered.

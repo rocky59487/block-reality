@@ -8,8 +8,8 @@
     "3": "PASS",
     "4": "PASS",
     "5": "PASS",
-    "6": "OPEN",
-    "7": "OPEN"
+    "6": "PARTIAL: geometry/HUD PASS; actual-game shell warning OPEN",
+    "7": "PASS at f7f9533, 4 jobs / 15 native step SKIPs"
   },
   "engine_modified": false,
   "formal_v1": false
