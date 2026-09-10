@@ -57,3 +57,10 @@ consumer只傳要求／消費原生结果，遷移說明註記小結構的絕對
 physical能力，不能靜默假裝已啟用；啟用生產請求時須同時提供相容候選庫／明確能力拒絕。
 完成原生接線後更新MASS工作帳及#94的實測證據；仍不等於持久碎塊身份、摩擦滾動、壓碎、
 非線性、遊戲外觀或完整v2完成，不提前關閉那些出口。
+
+## 2026-09-11 A1 — 首輪 typed／host 計數
+
+首完整 Windows MSVC19.51 執行保留於 `.agent-work/pgn-first/windows`：
+79 checks／0 failures，三次完整 stdout／stderr／exit 逐位相同。此處獨立釘死
+typed adapter＋host gate 計數79；原物理硬線完全不改。八條native故障沿用初凍，
+具名失敗及真DLL／SO／JNA／舊ABI1相容仍待完成，不據首輪關閉PGN或MASS。
