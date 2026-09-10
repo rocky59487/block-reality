@@ -42,6 +42,10 @@ final class TransactionFixtures {
         @Override public void checkAccess() { }
         @Override public long revision() { return Long.parseLong(new String(live.get("revision").bytes(), StandardCharsets.UTF_8)); }
         @Override public Value read(String resource) { calls.add("read:" + resource); return live.getOrDefault(resource, Value.missing()); }
+        @Override public void checkpoint(List<String> resources) throws IOException {
+            calls.add("checkpoint");
+            for (String resource : resources) durable.put(resource, live.getOrDefault(resource, Value.missing()));
+        }
         @Override public void write(String resource, Value value) throws IOException {
             calls.add("write:" + resource); writes++;
             if (writes == failWrite || permanentWriteFailure) throw new IOException("Injected participant write");

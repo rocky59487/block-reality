@@ -15,6 +15,57 @@ import static com.blockreality.core.transaction.AtomicConstructionCoordinator.*;
 class AtomicConstructionCoordinatorTest {
     @TempDir Path root;
 
+    @Test void checkpointMakesUnsavedBaselineDurableBeforePreparedAndIsNeverRepeatedForReplay() throws Exception {
+        var request = request(1, 0); var intent = intent(request);
+        try (var journal = new FileTransactionJournal(root, DOMAIN)) {
+            var host = new MemoryHost(intent) {
+                @Override public void checkpoint(List<String> resources) throws IOException {
+                    assertTrue(journal.read(request.id()).isEmpty()); assertEquals(0, writes);
+                    assertEquals(before(intent), live); assertEquals(before(intent), visible);
+                    super.checkpoint(resources);
+                }
+            };
+            host.durable.put("inventory/0", value("older-unsaved-baseline"));
+            host.onWrite = () -> assertEquals(before(intent), host.durable);
+            var c = new AtomicConstructionCoordinator(journal); c.recover(host);
+            var receipt = c.execute(request, r -> intent, host);
+            assertEquals(Phase.COMMITTED, receipt.phase());
+            assertEquals(1, Collections.frequency(host.calls, "checkpoint"));
+            assertEquals(receipt, c.execute(request, r -> { fail(); return null; }, host));
+            assertEquals(1, Collections.frequency(host.calls, "checkpoint"));
+        }
+    }
+
+    @Test void failedCheckpointCreatesNoIntentAndDoesNotChangeVisibleParticipants() throws Exception {
+        var request = request(1, 0); var intent = intent(request);
+        var host = new MemoryHost(intent) {
+            @Override public void checkpoint(List<String> resources) throws IOException { throw new IOException("Injected checkpoint"); }
+        };
+        try (var journal = new FileTransactionJournal(root, DOMAIN)) {
+            var c = new AtomicConstructionCoordinator(journal); c.recover(host);
+            assertThrows(IOException.class, () -> c.execute(request, r -> intent, host));
+            assertTrue(journal.read(request.id()).isEmpty()); assertTrue(journal.pending().isEmpty()); assertTrue(c.ready());
+            assertEquals(before(intent), host.live); assertEquals(before(intent), host.visible); assertEquals(0, host.writes);
+        }
+    }
+
+    @Test void checkpointCannotHideChangedImagesOrRevision() throws Exception {
+        for (String resource : List.of("inventory/0", "revision")) {
+            var request = request(1, 0); var intent = intent(request);
+            var host = new MemoryHost(intent) {
+                @Override public void checkpoint(List<String> resources) throws IOException {
+                    super.checkpoint(resources); live.put(resource, value("99"));
+                }
+            };
+            try (var journal = new FileTransactionJournal(root.resolve(resource.replace('/', '-')), DOMAIN)) {
+                var c = new AtomicConstructionCoordinator(journal); c.recover(host);
+                var receipt = c.execute(request, r -> intent, host);
+                assertEquals(Reason.PARTICIPANT_CONFLICT, receipt.reason()); assertEquals(Phase.REJECTED, receipt.phase());
+                assertEquals(0, host.writes); assertEquals(0, host.publications);
+            }
+        }
+    }
+
     @Test void commitConsumesAllImagesOnceAndReplaySurvivesRestartAndLaterEdits() throws Exception {
         var request = request(1, 0); var intent = intent(request); var host = new MemoryHost(intent);
         var prepared = new AtomicInteger(); Receipt original;

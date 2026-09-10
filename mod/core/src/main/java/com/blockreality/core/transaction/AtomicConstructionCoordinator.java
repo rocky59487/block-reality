@@ -20,6 +20,8 @@ public final class AtomicConstructionCoordinator {
         void checkAccess();
         long revision();
         Value read(String resource) throws Exception;
+        /** Before PREPARED: persist/verify live before-images without visible participant changes. */
+        void checkpoint(List<String> resources) throws Exception;
         void write(String resource, Value value) throws Exception;
         void flush(List<String> resources) throws Exception;
         void publish(Receipt receipt) throws Exception;
@@ -70,6 +72,9 @@ public final class AtomicConstructionCoordinator {
             catch (Exception failure) { throw new IOException("Construction preparation failed without a decision", failure); }
             if (!intent.request().equals(request)) throw new IllegalArgumentException("Preparer changed request binding");
             try {
+                if (host.revision() != request.baseRevision() || !matches(intent, host, false))
+                    return reject(request, Reason.PARTICIPANT_CONFLICT);
+                host.checkpoint(resources(intent));
                 if (host.revision() != request.baseRevision() || !matches(intent, host, false))
                     return reject(request, Reason.PARTICIPANT_CONFLICT);
             } catch (IOException failure) { throw failure; }

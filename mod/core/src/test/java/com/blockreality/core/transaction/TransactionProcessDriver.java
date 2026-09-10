@@ -93,6 +93,12 @@ public final class TransactionProcessDriver {
             return result;
         }
         @Override public void checkAccess() { }
+        @Override public void checkpoint(List<String> resources) throws IOException {
+            for (String resource : resources) {
+                if (!live.get(resource).equals(readFile(file(resource))))
+                    throw new IOException("Process fixture baseline was not durable");
+            }
+        }
         @Override public long revision() { return Long.parseLong(new String(live.get("revision").bytes(), StandardCharsets.UTF_8)); }
         @Override public Value read(String resource) { return live.getOrDefault(resource, Value.missing()); }
         @Override public void write(String resource, Value value) {
