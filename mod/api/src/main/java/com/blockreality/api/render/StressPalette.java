@@ -98,12 +98,8 @@ public enum StressPalette {
     }
 
     // ------------------------------------------------------------- utilisation
-    /**
-     * Colour for a demand/capacity ratio. Safe below 0.6, ramping to amber at 1.0, and
-     * flat vermilion beyond — a member at 3.0 is not three times more interesting than
-     * one at 1.5, it has simply failed.
-     */
-    public static Rgb utilization(double dc) {
+    /** Fixed visual reference ramp for legend stops and the below-capacity colour range. */
+    private static Rgb utilizationReference(double dc) {
         if (!Double.isFinite(dc) || dc <= 0) return DC_SAFE;
         if (dc >= 1.0) return DC_OVER;
         if (dc <= 0.6) return Rgb.lerp(DC_SAFE, DC_NEAR, dc / 0.6 * 0.35);
@@ -113,22 +109,15 @@ public enum StressPalette {
     /** Native verdict controls failure colour; the number only sets the below-capacity ramp. */
     public static Rgb utilization(double dc, boolean overloaded) {
         if (overloaded) return DC_OVER;
-        return dc >= 1 ? DC_NEAR : utilization(dc);
-    }
-
-    public static Hatch utilizationHatch(double dc) {
-        if (!Double.isFinite(dc)) return Hatch.NONE;
-        if (dc >= 1.0) return Hatch.CROSS;
-        if (dc >= 0.6) return Hatch.DIAGONAL_DOWN;
-        return Hatch.NONE;
+        return dc >= 1 ? DC_NEAR : utilizationReference(dc);
     }
 
     /** Legend stops for the HUD, in order. Labels are translation keys, not display text. */
     public static List<LegendStop> utilizationLegend() {
         return List.of(
-                new LegendStop("br.legend.dc.safe", 0.0, utilization(0.0), Hatch.NONE),
-                new LegendStop("br.legend.dc.watch", 0.6, utilization(0.6), Hatch.DIAGONAL_DOWN),
-                new LegendStop("br.legend.dc.limit", 1.0, utilization(1.0), Hatch.CROSS));
+                new LegendStop("br.legend.dc.safe", 0.0, utilizationReference(0.0), Hatch.NONE),
+                new LegendStop("br.legend.dc.watch", 0.6, utilizationReference(0.6), Hatch.DIAGONAL_DOWN),
+                new LegendStop("br.legend.dc.limit", 1.0, utilizationReference(1.0), Hatch.CROSS));
     }
 
     public List<LegendStop> stressLegend() {
