@@ -353,11 +353,29 @@ jobs:
       - name: static METIS (IDXTYPEWIDTH 32)
         if: steps.reach.outputs.ok == 'true'
         working-directory: .tectonic2
+        env:
+          # PINNED and VERIFIED. `pip3 download pymetis` with no version fetched whatever
+          # PyPI served that day, and the vendored METIS tree is NOT stable across pymetis
+          # releases: 2023.1.1 carries 119 files, 2025.1.1/2025.2/2025.2.1 carry 137, and
+          # 2025.2.2 carries 130. The C sources compiled into the shipped partitioner could
+          # therefore change with no commit in this repository, which no gate here would see.
+          # tools/build_metis_static.py already hashes its input for the release path; this
+          # is the same rule for the path CI builds from.
+          PYMETIS_VERSION: '2025.2.2'
+          PYMETIS_SHA256: '79c6d56c30c6f3df7cc755617cbadcfc252a175ce4e5a59982edad0f1ab71c99'
         run: |
-          pip3 download pymetis --no-binary :all: --no-deps -d /tmp/metis_src
-          tar xzf /tmp/metis_src/pymetis-*.tar.gz -C /tmp
-          cp -r /tmp/pymetis-*/src/metis /tmp/metis
+          set -euo pipefail
+          sdist=/tmp/metis_src/pymetis-$PYMETIS_VERSION.tar.gz
+          mkdir -p /tmp/metis_src
+          curl -fsSL --retry 3 --retry-delay 2 -o "$sdist" \
+            "https://pypi.org/packages/source/p/pymetis/pymetis-$PYMETIS_VERSION.tar.gz"
+          echo "$PYMETIS_SHA256  $sdist" | sha256sum -c -
+          tar xzf "$sdist" -C /tmp
+          cp -r "/tmp/pymetis-$PYMETIS_VERSION/src/metis" /tmp/metis
           sed -i 's/#define IDXTYPEWIDTH 64/#define IDXTYPEWIDTH 32/' /tmp/metis/include/metis.h
+          # A sed that matched nothing is exactly how a 64-bit idx_t ships unnoticed, and
+          # this inline copy had no assertion where build_metis_static.py has one.
+          grep -qx '#define IDXTYPEWIDTH 32' /tmp/metis/include/metis.h
           mkdir -p /tmp/metis_out
           for f in /tmp/metis/GKlib/*.c /tmp/metis/libmetis/*.c; do
             gcc -O2 -fPIC -DNDEBUG -DLINUX -D_FILE_OFFSET_BITS=64 -DUSE_GKREGEX \
