@@ -175,3 +175,11 @@ control與最終各10項原生守門及重啟/原生快取恢復通過；修正�
 最終jar15,203,634B、SHA7bdfce5d1581…；比NCR只有mods.toml不同，204類別與兩原生庫逐位相同。
 其完整程式測試明示沿用NCR，未冒充重跑；新安裝與封裝證據見 `../evidence/INSTALLED_NATIVE_SERVER/RESULTS.md`。
 這只補Linux安裝專服，不取代Windows安裝客戶端、CM/N25、材質方向/互動、FPS與引擎動態依賴。
+
+CT_CHUNK_PARTICIPANT 補上同一IOWorker整批保存、future排空、force與完整NBT讀回比較。
+7項新測試含真region檔案重開；双平台完整Forge131PASS，core沿用4737e3c相同來源測試。
+目前603登錄：Windows591PASS/12平台SKIP、Linux602PASS/1平台SKIP；4類別新增，原250類別/
+v1.5庫及資源逐位不變。省略force與遺失capability的可編譯反例被抓到，詳
+`../evidence/CONSTRUCTION_TRANSACTIONS/CHUNK_PARTICIPANT/RESULTS.md`。
+下一步正式host仍須解決ChunkSerializer吞掉capability例外、custom save資料擷取及原版
+NbtIo無上限讀取配置；canonical上限不等於解析前上限。尚無Forge施工呼叫者，CT-1..9不關閉。
