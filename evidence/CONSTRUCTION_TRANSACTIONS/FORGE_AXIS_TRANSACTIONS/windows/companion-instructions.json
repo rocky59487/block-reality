@@ -1,0 +1,18 @@
+{
+  "com.blockreality.core.RevisionGate$Display": {
+    "instruction_descriptor_output_identical": true,
+    "sha256": "0f4390d36f4cc3c336bff029b2b1d65784292c1d4254bc30fc0ebc48a40503f0"
+  },
+  "com.blockreality.core.transaction.ManufacturedRegistry$Prepared": {
+    "instruction_descriptor_output_identical": true,
+    "sha256": "c7de5661e558e48f5d7e51fc55b4826c304501137451c6204719b9ba8526c9d0"
+  },
+  "com.blockreality.impl.server.StructureManager$Gathered": {
+    "instruction_descriptor_output_identical": true,
+    "sha256": "fdc5af96e7ac5ddb984412b43bff379ff874c6ccf4c31616b5159c1d0a547e8d"
+  },
+  "com.blockreality.impl.server.WorldIndexData$RegistryGzip": {
+    "instruction_descriptor_output_identical": true,
+    "sha256": "8970dd1c6516b2832d90855c9aaca92cbb227ab44d322440975f70914d594e28"
+  }
+}

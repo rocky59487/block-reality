@@ -1,0 +1,8 @@
+{
+  "status": "FAIL",
+  "stage": "resume audit before first negative runtime",
+  "observed_tool_output": "FileNotFoundError: isolated-artifact.json at resume-audits.py line 8",
+  "transcribed_from_tool_output_not_raw_subprocess_log": true,
+  "cause": "The isolation command returned a running session. Its dependent launcher was called before the session had completed.",
+  "correction": "Revalidated the same isolation session to terminal exit 0, then reran the launcher. No Minecraft process or mod copy had been reached by the failed launcher."
+}

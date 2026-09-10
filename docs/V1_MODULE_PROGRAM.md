@@ -56,13 +56,15 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 
 最新交付已更新為v1.5，模組Main #126的契約同步已整合。本工作只消費來源42ba7eb9、
 契約5d4367f40de8的發布SDK；引擎倉未修改/建置/合併/發布。
-目前模組來源5e5920d，開發jar15,332,097B、SHA06e6355bc11d…；保留同一v1.5雙平台庫。
-核心472項沿用相同來源4737e3c的雙平台實跑，Forge142項本輪雙平台全過，合計614登錄；
-Windows602PASS/12平台SKIP，Linux613PASS/1平台SKIP。製造metadata、區塊持久化、有界讀取
-與live capture已驗；本輪普通jar真安裝專服44項檢查涵蓋capability吞錯、save-hook與完整讀回。
-詳 `../evidence/CONSTRUCTION_TRANSACTIONS/LIVE_CHUNK_CAPTURE/RESULTS.md`。
-`codex/forge-construction-capture`接續PR132；正式施工入口、更新抑制、提交後單次發布、undo/UI仍未接合，
-完整CT-1..9及#12/#17保持開放。引擎動態能力、真客戶端/FPS/soak與正式v1仍待驗。
+目前模組來源338c490，開發jar15,355,886B、SHA828d24b47b23…；保留同一v1.5雙平台庫。
+核心477項於d720995雙平台完整實跑，338c490核心來源逐位相同而沿用；Forge145項本輪雙平台全過。
+合計622登錄：Windows610PASS/12平台SKIP，Linux621PASS/1平台SKIP。首個空手軸向EDIT已接
+Forge交易服務，先checkpoint完整區塊/舊覆蓋，提交後才公開一次，啟動時先復原再開放分析。
+普通jar隔離實裝控制與恢復控制各60項通過，完整庫存NBT不變；三個Minecraft JVM中斷
+各兩次重啟通過，兩個可編譯反例被抓到。來源、首敗與證據見
+`../evidence/CONSTRUCTION_TRANSACTIONS/FORGE_AXIS_TRANSACTIONS/RESULTS.md`。
+`codex/forge-axis-transactions`接續PR133；一般放置/消耗庫存/blueprint/undo與C2S確認仍待接合，
+完整CT-1..9及#12/#17保持開放。玩家是synthetic；真socket/client、FPS/soak與正式v1仍待驗。
 
 原v1.5換裝單元jar15,286,415B、SHA9d8cb6795e9c…的來源/授權/封裝/JNA及真安裝專服門檻1–5通過。
 完整573登錄：Windows561PASS/12平台SKIP、Linux572PASS/1平台SKIP；兩平台96frame×3直連

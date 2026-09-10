@@ -1,0 +1,9 @@
+{
+  "jar_sha256": "8688c8a8f3371650ddda0b575b25890627a94c0000603e444a0ff74ccc010b50",
+  "harness_sha256": "2aafcb2e8d7b9242fd8afc27251df40c861bec3b512fb391c20642d2ee76b82b",
+  "negative_arm": true,
+  "fresh_world": true,
+  "server": "/home/rocky/br-forge-axis-transactions/installed-visibility",
+  "loopback_port": 25600,
+  "resumed_after_setup_inspection_only": true
+}

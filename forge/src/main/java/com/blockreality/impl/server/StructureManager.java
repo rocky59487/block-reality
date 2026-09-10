@@ -18,6 +18,7 @@ import static com.blockreality.core.diagnostics.PipelineProfile.Stage.*;
 import com.blockreality.impl.BRConfig;
 import com.blockreality.impl.BlockRealityMod;
 import com.blockreality.impl.block.StructuralBlock;
+import com.blockreality.impl.server.construction.ConstructionService;
 import com.blockreality.impl.net.BRNetwork;
 import com.blockreality.impl.net.AnalysisUpdatePacket;
 import com.blockreality.impl.net.AnalysisUpdatePacket.Kind;
@@ -77,6 +78,9 @@ public final class StructureManager {
     private static final Map<ResourceKey<Level>, StructureManager> BY_DIMENSION = new ConcurrentHashMap<>();
 
     private final ResourceKey<Level> dimension;
+    private final MinecraftServer server;
+    private final Set<net.minecraft.world.level.ChunkPos> deferredChunks = ConcurrentHashMap.newKeySet();
+    private volatile boolean deferredChunkOverflow;
     private final java.util.UUID sourceId = java.util.UUID.randomUUID();
     private Kind notice = Kind.EMPTY;
     private String noticeDetail = "";
@@ -90,6 +94,7 @@ public final class StructureManager {
     private long probedRevision = -1;
 
     private final WorldIndexData structural;
+    private final java.nio.file.Path coverageFile;
     private String registryFailureSeen = "";
     private final ChunkAvailability availability = new ChunkAvailability();
     /**
@@ -154,8 +159,10 @@ public final class StructureManager {
 
     private StructureManager(ServerLevel level) {
         this.dimension = level.dimension();
+        this.server = level.getServer();
         var root = level.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT);
         var folder = net.minecraft.world.level.dimension.DimensionType.getStorageFolder(dimension, root).resolve("data");
+        this.coverageFile = folder.resolve(WorldIndexData.NAME + ".dat");
         this.structural = WorldIndexData.open(level.getDataStorage(), folder);
         dirty = !structural.isEmpty() || !structural.failure().isEmpty();
         notice = dirty ? Kind.PENDING : Kind.EMPTY;
@@ -194,16 +201,19 @@ public final class StructureManager {
 
     /** Actual world callbacks also cover commands; no physical rules are inferred here. */
     public static void observedStructure(ServerLevel level, BlockPos pos, BlockState state) {
+        if (ConstructionService.suppressStructuralChange(level,pos)) return;
         StructureManager manager = of(level);
         manager.structural.observe(pos, declaration(state)); manager.markDirty();
     }
     public static void removedStructure(ServerLevel level, BlockPos pos) {
+        if (ConstructionService.suppressStructuralChange(level,pos)) return;
         StructureManager manager = of(level);
         manager.structural.remove(pos); manager.loaded.remove(pos); manager.markDirty();
     }
 
     /** Forces the next tick to re-analyse, for {@code /br resolve}. */
     public void requestResolve() {
+        ConstructionService.rejectReentrant(server);
         gate.bump();
         dirty = true;
         notice = Kind.PENDING; noticeDetail = "";
@@ -212,6 +222,7 @@ public final class StructureManager {
 
     /** Clears a disabled engine so the next tick tries again, for {@code /br reset}. */
     public void resetEngine() {
+        ConstructionService.rejectReentrant(server);
         engine.requestReset(enabled());
         requestResolve();
     }
@@ -233,6 +244,7 @@ public final class StructureManager {
      * @return how many structural blocks are now tracked in the scanned area
      */
     public int rescan(ServerLevel level, BlockPos centre, int chunkRadius) {
+        ConstructionService.rejectReentrant(server);
         long beforeScan = structural.index().generation();
         int cx = centre.getX() >> 4;
         int cz = centre.getZ() >> 4;
@@ -319,6 +331,7 @@ public final class StructureManager {
 
     /** Glasses affordance: toggle the configured downward test load on one block. */
     public boolean toggleLoad(BlockPos pos) {
+        ConstructionService.rejectReentrant(server);
         BlockPos key = pos.immutable();
         boolean added = loaded.putIfAbsent(key,
                 new double[] { 0, -Math.abs(BRConfig.INSTANCE.demoLoadNewtons.get()), 0 }) == null;
@@ -335,6 +348,7 @@ public final class StructureManager {
      * @return true if a load is now present, false if the call cleared it
      */
     public boolean setLoad(BlockPos pos, double fxN, double fyN, double fzN) {
+        ConstructionService.rejectReentrant(server);
         BlockPos key = pos.immutable();
         if (fxN == 0 && fyN == 0 && fzN == 0) {
             loaded.remove(key);
@@ -347,6 +361,7 @@ public final class StructureManager {
 
     /** @return how many loads were removed */
     public int clearAllLoads() {
+        ConstructionService.rejectReentrant(server);
         int n = loaded.size();
         if (n > 0) {
             loaded.clear();
@@ -361,6 +376,7 @@ public final class StructureManager {
     }
 
     private void markDirty() {
+        if (ConstructionService.busy(server)) return;
         gate.bump();
         dirty = true;
         notice = Kind.PENDING; noticeDetail = "";
@@ -370,6 +386,7 @@ public final class StructureManager {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onPlace(BlockEvent.EntityPlaceEvent e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
+        if (ConstructionService.suppressObservation(level)) return;
         if (!(e.getPlacedBlock().getBlock() instanceof StructuralBlock)) {
             groundChanged(level, e.getPos()); return;
         }
@@ -392,6 +409,7 @@ public final class StructureManager {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBreak(BlockEvent.BreakEvent e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
+        if (ConstructionService.suppressObservation(level)) return;
         if (!(e.getState().getBlock() instanceof StructuralBlock)) {
             groundChanged(level, e.getPos()); return;
         }
@@ -402,6 +420,7 @@ public final class StructureManager {
 
     /** Ground edits change the declared world even when no structural cell was placed or removed. */
     private static void groundChanged(ServerLevel level, BlockPos pos) {
+        if (ConstructionService.suppressObservation(level)) return;
         StructureManager manager = BY_DIMENSION.get(level.dimension());
         if (manager == null) return;
         if (manager.structural.contains(pos)) { manager.markDirty(); return; }
@@ -429,6 +448,7 @@ public final class StructureManager {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onExplode(ExplosionEvent.Detonate e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
+        if (ConstructionService.suppressObservation(level)) return;
         StructureManager m = BY_DIMENSION.get(level.dimension());
         if (m == null) return;
         boolean touched = false;
@@ -446,6 +466,11 @@ public final class StructureManager {
     public static void onChunkLoad(ChunkEvent.Load e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
         StructureManager m = of(level);
+        if (ConstructionService.suppressObservation(level)) {
+            if (m.deferredChunks.size() >= 65536 && !m.deferredChunks.contains(e.getChunk().getPos())) m.deferredChunkOverflow = true;
+            else m.deferredChunks.add(e.getChunk().getPos());
+            return;
+        }
         int x = e.getChunk().getPos().x, z = e.getChunk().getPos().z;
         boolean observed = m.structural.index().observesChunk(x, z);
         long before = m.structural.index().generation();
@@ -457,6 +482,11 @@ public final class StructureManager {
     public static void onChunkUnload(ChunkEvent.Unload e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
         StructureManager m = BY_DIMENSION.get(level.dimension());
+        if (m != null) m.deferredChunks.remove(e.getChunk().getPos());
+        if (ConstructionService.suppressObservation(level)) {
+            // The normal availability poll rechecks persisted coverage after the owner releases.
+            return;
+        }
         if (m != null && m.structural.index().observesChunk(e.getChunk().getPos().x, e.getChunk().getPos().z))
             m.markDirty(); // Invalidates a pending native reply; never deletes persisted coverage.
     }
@@ -497,8 +527,25 @@ public final class StructureManager {
     }
 
     private void tickProfiled(ServerLevel level) {
+        if (ConstructionService.busy(server)) return;
+        String constructionFailure = ConstructionService.failureMessage(server);
+        if (!constructionFailure.isEmpty()) {
+            if (!noticeDetail.equals(constructionFailure) || latest != null) {
+                clearAnalysis(); announce(level,Kind.MODEL_REFUSED,constructionFailure);
+            }
+            dirty = false; return;
+        }
+        if (!deferredChunks.isEmpty()) {
+            int waiting = deferredChunks.size(); reconcileDeferredChunks(level);
+            if (deferredChunks.size() < waiting) markDirty();
+            if (!deferredChunks.isEmpty()) {
+                if (notice != Kind.PENDING || !noticeDetail.equals("Waiting for loaded chunk coverage"))
+                    announce(level,Kind.PENDING,"Waiting for loaded chunk coverage");
+                return;
+            }
+        }
         structural.tickObjects(level.getServer(), () -> !level.getServer().isStopped()
-                && BY_DIMENSION.get(dimension) == this, profile);
+                && ConstructionService.available(server) && BY_DIMENSION.get(dimension) == this, profile);
         ticksSinceSolve++;
         boolean on = enabled();
         if (on != enabledLastTick) {
@@ -735,6 +782,7 @@ public final class StructureManager {
     }
 
     private void applyProfiled(ServerLevel level, AnalysisResult result) {
+        if (!ConstructionService.available(server)) { probeInFlight.set(false); dirty = true; return; }
         if (!ChunkAvailability.allReadable(structural.index().observationChunks(),
                 c -> level.hasChunk(c.x(), c.z()))) {
             probeInFlight.set(false); markDirty(); return;
@@ -815,12 +863,16 @@ public final class StructureManager {
     }
 
     public Kind noticeKind() {
+        if (!ConstructionService.failureMessage(server).isEmpty()) return Kind.MODEL_REFUSED;
         if (!enabled()) return Kind.OFF;
         if (!structural.failure().isEmpty()) return Kind.MODEL_REFUSED;
         return structural.isEmpty() ? Kind.EMPTY : notice;
     }
 
-    public String noticeDetail() { return structural.failure().isEmpty() ? noticeDetail : structural.failure(); }
+    public String noticeDetail() {
+        String constructionFailure = ConstructionService.failureMessage(server);
+        return !constructionFailure.isEmpty() ? constructionFailure : structural.failure().isEmpty() ? noticeDetail : structural.failure();
+    }
 
     private void clearAnalysis() {
         latest = null; latestPacket = null;
@@ -847,10 +899,60 @@ public final class StructureManager {
 
     /** Reuses the accepted payload; joining or travelling does not trigger another native solve. */
     private static void sendSnapshot(net.minecraftforge.event.entity.player.PlayerEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            StructureManager manager = of(player.serverLevel());
-            try (var ignored = manager.profile.begin(NETWORK_DISPATCH)) { BRNetwork.sendTo(player, manager.update(true)); }
+        if (event.getEntity() instanceof ServerPlayer player) sendSnapshot(player);
+    }
+    public static void sendSnapshot(ServerPlayer player) {
+        if (ConstructionService.deferSnapshot(player)) return;
+        StructureManager manager = of(player.serverLevel());
+        try (var ignored = manager.profile.begin(NETWORK_DISPATCH)) { BRNetwork.sendTo(player, manager.update(true)); }
+    }
+
+    private void reconcileDeferredChunks(ServerLevel level) {
+        if (deferredChunkOverflow) throw new IllegalStateException("Construction deferred chunk capacity exceeded");
+        for (var pos : List.copyOf(deferredChunks)) {
+            var chunk = level.getChunkSource().getChunkNow(pos.x,pos.z);
+            if (chunk != null) { scanChunk(this,chunk); deferredChunks.remove(pos); }
         }
+    }
+    /** Startup only: committed ownership adds conservative coverage without loading its chunks. */
+    public void restoreConstructionBaseline(ServerLevel level, long floor, List<BlockKey> ownedCells) {
+        if (!server.isSameThread() || !ConstructionService.busy(server) || level.getServer() != server || level.dimension() != dimension)
+            throw new IllegalStateException("Construction baseline owner mismatch");
+        for (BlockKey cell : ownedCells) structural.add(new BlockPos(cell.x(),cell.y(),cell.z()));
+        reconcileDeferredChunks(level);
+        if (!structural.failure().isEmpty()) throw new IllegalStateException("Construction coverage cannot be restored");
+        gate.restoreMinimum(floor); clearAnalysis(); dirty = !structural.isEmpty() || !deferredChunks.isEmpty();
+        notice = dirty ? Kind.PENDING : Kind.EMPTY; noticeDetail = "";
+    }
+    /** The legacy cells being edited must already be durable known coverage before PREPARED. */
+    public void checkpointConstructionCoverage(ServerLevel level, java.util.Collection<BlockPos> positions) throws java.io.IOException {
+        if (!server.isSameThread() || !ConstructionService.busy(server) || level.getServer() != server || level.dimension() != dimension)
+            throw new java.io.IOException("Construction coverage owner mismatch");
+        for (BlockPos pos : positions) {
+            var chunk = level.getChunkSource().getChunkNow(pos.getX() >> 4,pos.getZ() >> 4);
+            if (chunk == null || !(chunk.getBlockState(pos).getBlock() instanceof StructuralBlock))
+                throw new java.io.IOException("Construction baseline cell is unavailable");
+            structural.observe(pos,declaration(chunk.getBlockState(pos)));
+        }
+        structural.checkpoint(coverageFile);
+    }
+    /** Only the service can publish its already committed complete final cell set. */
+    public void publishConstructionState(ServerLevel level, Map<BlockPos,BlockState> cells, long baseRevision) {
+        if (!server.isSameThread() || !ConstructionService.publishing(server) || level.getServer() != server
+                || level.dimension() != dimension || gate.current().value() != baseRevision)
+            throw new IllegalStateException("Construction publication owner/revision mismatch");
+        reconcileDeferredChunks(level);
+        for (var cell : cells.entrySet()) {
+            if (cell.getValue().getBlock() instanceof StructuralBlock) structural.observe(cell.getKey(),declaration(cell.getValue()));
+            else { structural.remove(cell.getKey()); loaded.remove(cell.getKey()); }
+        }
+        if (!structural.failure().isEmpty()) throw new IllegalStateException("Construction coverage publication failed");
+        gate.bump(); dirty = true; notice = Kind.PENDING; noticeDetail = "";
+    }
+    public void announceConstruction(ServerLevel level, long revision) {
+        if (!server.isSameThread() || !ConstructionService.publishing(server) || gate.current().value() != revision)
+            throw new IllegalStateException("Construction notification owner/revision mismatch");
+        announce(level,Kind.PENDING,"");
     }
 
     @SubscribeEvent public static void onLogin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) {

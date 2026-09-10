@@ -22,6 +22,32 @@ class WorldIndexDataTest {
     }
     private Path file(Path folder) { return folder.resolve(WorldIndexData.NAME + ".dat"); }
 
+    @Test void constructionCheckpointPersistsUnsavedLegacyCoverageAndExactMetadata() throws Exception {
+        var data = open(root); var pos = new BlockPos(7,80,-1); data.observe(pos,X);
+        var expected = data.save(new CompoundTag()); data.checkpoint(file(root));
+        assertFalse(data.isDirty()); var reopened = open(root);
+        assertTrue(reopened.contains(pos)); assertEquals(expected,reopened.save(new CompoundTag()));
+        data.checkpoint(file(root)); assertEquals(expected,open(root).save(new CompoundTag()));
+    }
+    @Test void constructionCheckpointRefusesFailedWritesAndIncorrectReadback() throws Exception {
+        var data = new WorldIndexData(new WorldCellIndex(),"") {
+            @Override void writeCompressed(CompoundTag tag,Path temporary) throws IOException {
+                super.writeCompressed(new CompoundTag(),temporary);
+            }
+        };
+        data.observe(new BlockPos(8,80,0),X);
+        assertThrows(IOException.class,()->data.checkpoint(file(root)));
+        byte[] unexpected = Files.readAllBytes(file(root));
+        assertThrows(IOException.class,()->data.checkpoint(file(root)));
+        assertArrayEquals(unexpected,Files.readAllBytes(file(root)));
+        var failure = new WorldIndexData(new WorldCellIndex(),"") {
+            @Override void replace(Path temporary,Path target) throws IOException { throw new IOException("checkpoint rename refused"); }
+        };
+        failure.observe(new BlockPos(9,80,0),X);
+        assertThrows(IOException.class,()->failure.checkpoint(file(root)));
+        assertTrue(failure.isDirty()); assertArrayEquals(unexpected,Files.readAllBytes(file(root)));
+    }
+
     private static final ConstructionDeclaration X = new ConstructionDeclaration("steel","steel_rect_200x400",0);
     private static void settle(WorldIndexData data) {
         assertTrue(data.publishObjects(ConstructionLedger.reconcile(data.objects().work())));

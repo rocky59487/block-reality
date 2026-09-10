@@ -36,6 +36,16 @@ public final class RevisionGate {
 
     public synchronized WorldRevision current() { return current; }
 
+    /** Startup journal floor; older persisted baselines can never make the public clock go backwards. */
+    public synchronized WorldRevision restoreMinimum(long minimum) {
+        if (minimum < 0) throw new IllegalArgumentException("Negative revision floor");
+        if (minimum > current.value()) {
+            current = new WorldRevision(minimum);
+            lastAccepted = null;
+        }
+        return current;
+    }
+
     public synchronized long rejectedCount() { return rejected; }
 
     /** The newest result that was current when it arrived; may be null. */

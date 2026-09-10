@@ -1,0 +1,76 @@
+{
+  "inventory": [
+    {
+      "interaction": 1,
+      "bytes": 177,
+      "sha256": "94821f2ff4821ad1054a944a5c03676077882ab1f039b6a2f39195a315014182"
+    },
+    {
+      "interaction": 2,
+      "bytes": 177,
+      "sha256": "94821f2ff4821ad1054a944a5c03676077882ab1f039b6a2f39195a315014182"
+    },
+    {
+      "interaction": 3,
+      "bytes": 177,
+      "sha256": "94821f2ff4821ad1054a944a5c03676077882ab1f039b6a2f39195a315014182"
+    },
+    {
+      "interaction": 4,
+      "bytes": 177,
+      "sha256": "94821f2ff4821ad1054a944a5c03676077882ab1f039b6a2f39195a315014182"
+    },
+    {
+      "interaction": 5,
+      "bytes": 217,
+      "sha256": "1755b34434b3f927424fb5364fb87b6081c816d0058cb5a26fe744de763d2b2d"
+    },
+    {
+      "interaction": 6,
+      "bytes": 177,
+      "sha256": "94821f2ff4821ad1054a944a5c03676077882ab1f039b6a2f39195a315014182"
+    },
+    {
+      "interaction": 7,
+      "bytes": 177,
+      "sha256": "94821f2ff4821ad1054a944a5c03676077882ab1f039b6a2f39195a315014182"
+    }
+  ],
+  "restored": [
+    {
+      "interaction": 1,
+      "bytes": 177,
+      "sha256": "94821f2ff4821ad1054a944a5c03676077882ab1f039b6a2f39195a315014182"
+    },
+    {
+      "interaction": 2,
+      "bytes": 177,
+      "sha256": "94821f2ff4821ad1054a944a5c03676077882ab1f039b6a2f39195a315014182"
+    },
+    {
+      "interaction": 3,
+      "bytes": 177,
+      "sha256": "94821f2ff4821ad1054a944a5c03676077882ab1f039b6a2f39195a315014182"
+    },
+    {
+      "interaction": 4,
+      "bytes": 177,
+      "sha256": "94821f2ff4821ad1054a944a5c03676077882ab1f039b6a2f39195a315014182"
+    },
+    {
+      "interaction": 5,
+      "bytes": 217,
+      "sha256": "1755b34434b3f927424fb5364fb87b6081c816d0058cb5a26fe744de763d2b2d"
+    },
+    {
+      "interaction": 6,
+      "bytes": 177,
+      "sha256": "94821f2ff4821ad1054a944a5c03676077882ab1f039b6a2f39195a315014182"
+    },
+    {
+      "interaction": 7,
+      "bytes": 177,
+      "sha256": "94821f2ff4821ad1054a944a5c03676077882ab1f039b6a2f39195a315014182"
+    }
+  ]
+}

@@ -15,6 +15,61 @@ class ManufacturedRegistryTest {
     @TempDir Path root;
     static final String OVERWORLD = "minecraft:overworld", NETHER = "minecraft:the_nether";
     static final ConstructionDeclaration STEEL = new ConstructionDeclaration("steel","steel_rect_200x400",0);
+
+    @Test void validatedPendingContextCannotExposeForeignMetadataAsRecoveryAuthority() throws Exception {
+        try (var journal = new FileTransactionJournal(root,DOMAIN)) {
+            var registry = ManufacturedRegistry.load(journal);
+            commit(journal,registry,registry.prepareBuild(request(1,7),OVERWORLD,false,List.of(run(0,2))));
+            var proposal = registry.prepareEdit(request(2,9),OVERWORLD,Set.of(new BlockKey(0,80,0)),Set.of());
+            var opaque = new Change("cell/0/80/0",value("before"),value("after"));
+            Intent intent = proposal.withParticipants(List.of(opaque));
+            var context = registry.validatePrepared(Entry.prepared(intent));
+            assertEquals(OVERWORLD,context.dimension()); assertEquals("EDIT",context.operation());
+            assertTrue(context.revisionResource().startsWith("revision/"));
+            assertEquals(proposal.metadata().stream().sorted(Comparator.comparing(Change::resource)).toList(),context.changes());
+            assertThrows(UnsupportedOperationException.class,()->context.changes().clear());
+            Change piece = proposal.metadata().stream().filter(c -> c.resource().startsWith("piece/")).findFirst().orElseThrow();
+            Intent foreignBefore = replace(intent,new Change(piece.resource(),Value.missing(),piece.after()));
+            assertThrows(IOException.class,()->registry.validatePrepared(Entry.prepared(foreignBefore)));
+            Request original = intent.request();
+            Request foreign = new Request(original.id(),original.actor(),original.session(),UUID.randomUUID(),original.baseRevision(),original.planHash());
+            assertThrows(IOException.class,()->registry.validatePrepared(Entry.prepared(new Intent(foreign,intent.changes(),intent.created(),intent.retired()))));
+            assertThrows(IOException.class,()->registry.validatePrepared(Entry.prepared(intent).finish(Phase.COMMITTED,Reason.NONE)));
+            assertEquals(1,registry.order()); assertEquals(2,registry.ownedCells());
+            assertEquals(context,registry.validatePrepared(Entry.prepared(intent)));
+        }
+    }
+    @Test void committedCoverageIsImmutableDimensionScopedAndTracksReleasedOwnership() throws Exception {
+        try (var journal = new FileTransactionJournal(root,DOMAIN)) {
+            var registry = ManufacturedRegistry.load(journal);
+            commit(journal,registry,registry.prepareBuild(request(1,0),OVERWORLD,false,List.of(run(3,2),run(0,2))));
+            commit(journal,registry,registry.prepareBuild(request(2,0),NETHER,false,List.of(run(-2,1))));
+            var coverage = registry.ownedCells(OVERWORLD);
+            assertEquals(List.of(new BlockKey(0,80,0),new BlockKey(1,80,0),new BlockKey(3,80,0),new BlockKey(4,80,0)),coverage);
+            assertThrows(UnsupportedOperationException.class,coverage::clear);
+            commit(journal,registry,registry.prepareEdit(request(3,1),OVERWORLD,Set.of(new BlockKey(0,80,0)),Set.of()));
+            assertEquals(4,coverage.size()); assertEquals(3,registry.ownedCells(OVERWORLD).size());
+            assertEquals(List.of(new BlockKey(-2,80,0)),registry.ownedCells(NETHER));
+            assertEquals(registry.ownedCells(OVERWORLD),ManufacturedRegistry.load(journal).ownedCells(OVERWORLD));
+        }
+    }
+    @Test void abortedBeforeRevisionSurvivesRepeatedReopenWithoutPromotingRejectedRequests() throws Exception {
+        try (var journal = new FileTransactionJournal(root,DOMAIN)) {
+            var registry = ManufacturedRegistry.load(journal);
+            store(journal,registry.prepareEdit(request(1,17),OVERWORLD,Set.of(),Set.of()),Phase.ABORTED);
+            journal.create(Entry.rejected(request(2,999),Reason.STALE_REVISION));
+            commit(journal,registry,registry.prepareEdit(request(3,2),NETHER,Set.of(),Set.of()));
+            for (int i=0;i<2;i++) {
+                registry = ManufacturedRegistry.load(journal);
+                assertEquals(17,registry.worldRevisionFloor(OVERWORLD)); assertEquals(0,registry.lastCommittedRevision(OVERWORLD));
+                assertEquals(3,registry.worldRevisionFloor(NETHER)); assertEquals(3,registry.lastCommittedRevision(NETHER));
+                assertEquals(0,registry.ownedCells()); assertEquals(1,registry.order());
+            }
+        }
+        try (var journal = FileTransactionJournal.open(root)) {
+            assertEquals(17,ManufacturedRegistry.load(journal).worldRevisionFloor(OVERWORLD));
+        }
+    }
     static ManufacturedPiece.Plan run(int start, int count) {
         var cells = new ArrayList<BlockKey>(); for (int x = start; x < start+count; x++) cells.add(new BlockKey(x,80,0));
         return new ManufacturedPiece.Plan(STEEL,cells);

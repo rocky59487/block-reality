@@ -159,6 +159,37 @@ class WorldIndexData extends SavedData implements Iterable<BlockPos> {
         }
     }
     // Vanilla NBT/gzip framing, with less compression work before synchronous persistence.
+    /** A construction baseline needs an acknowledgment, including a bounded exact decoded readback. */
+    void checkpoint(Path target) throws IOException {
+        if (!failure().isEmpty()) throw new IOException("World coverage is not available for checkpoint");
+        save(target.toFile());
+        if (isDirty() || !failure().isEmpty()) throw new IOException("World coverage checkpoint write failed");
+        try (FileChannel channel = FileChannel.open(target,StandardOpenOption.WRITE,LinkOption.NOFOLLOW_LINKS)) { channel.force(true); }
+        if (!System.getProperty("os.name","").startsWith("Windows"))
+            try (FileChannel directory = FileChannel.open(target.toAbsolutePath().getParent(),StandardOpenOption.READ)) { directory.force(true); }
+        CompoundTag expected = new CompoundTag(); expected.put("data",save(new CompoundTag())); NbtUtils.addCurrentDataVersion(expected);
+        CountingDigest wanted = new CountingDigest(); NbtIo.write(expected,new DataOutputStream(wanted));
+        CountingDigest actual = new CountingDigest();
+        try (var input = new java.util.zip.GZIPInputStream(Files.newInputStream(target,StandardOpenOption.READ,LinkOption.NOFOLLOW_LINKS))) {
+            byte[] buffer = new byte[32768]; int count;
+            while ((count = input.read(buffer,0,(int)Math.min(buffer.length,wanted.bytes-actual.bytes+1))) != -1) {
+                actual.write(buffer,0,count);
+                if (actual.bytes > wanted.bytes) throw new IOException("World coverage checkpoint exceeds expected image");
+            }
+        }
+        if (actual.bytes != wanted.bytes || !java.util.Arrays.equals(actual.digest.digest(),wanted.digest.digest()))
+            throw new IOException("World coverage checkpoint readback mismatch");
+    }
+    private static final class CountingDigest extends OutputStream {
+        private final java.security.MessageDigest digest;
+        private long bytes;
+        CountingDigest() {
+            try { digest = java.security.MessageDigest.getInstance("SHA-256"); }
+            catch (java.security.NoSuchAlgorithmException impossible) { throw new AssertionError(impossible); }
+        }
+        @Override public void write(int value) { digest.update((byte)value); bytes++; }
+        @Override public void write(byte[] value, int offset, int length) { digest.update(value,offset,length); bytes += length; }
+    }
     void writeCompressed(CompoundTag root, Path temporary) throws IOException {
         try (OutputStream file = Files.newOutputStream(temporary);
              var gzip = new RegistryGzip(file);
