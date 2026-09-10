@@ -1,0 +1,12 @@
+[
+  "cmd",
+  "/c",
+  "gradlew.bat",
+  "--no-daemon",
+  "--console=plain",
+  "-I",
+  "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\player-participant\\measure.gradle",
+  "-Dbr.playerCostSource=C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\player-participant\\cost-src",
+  "-Dbr.playerCostOutput=C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\player-participant\\cost",
+  "constructionPlayerCost"
+]

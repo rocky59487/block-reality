@@ -1,0 +1,44 @@
+{
+  "source": "5d1fb6f4a02d3f082fd879690a04c216b5b319fa",
+  "jar_sha256": "74aa09815fd335f25af2b7f27a62d53e13ba7ffa07c512112a0c6b997b27531a",
+  "jar_bytes": 15273480,
+  "unchanged_prior_entries": 372,
+  "changed": [
+    "com/blockreality/core/transaction/AtomicConstructionCoordinator$Host.class",
+    "com/blockreality/core/transaction/AtomicConstructionCoordinator$RecoveryRequired.class",
+    "com/blockreality/core/transaction/AtomicConstructionCoordinator$ReplayConflict.class",
+    "com/blockreality/core/transaction/AtomicConstructionCoordinator$ValidationRefused.class",
+    "com/blockreality/core/transaction/AtomicConstructionCoordinator.class"
+  ],
+  "exception_debug_changes": {
+    "com/blockreality/core/transaction/AtomicConstructionCoordinator$RecoveryRequired.class": {
+      "instructions_and_signatures_unchanged": true,
+      "javap_sha256": "a7d721ddbe331a5a50f7d8350d2f7e1e666dfe517d1bfabd140b3af80b5a0963"
+    },
+    "com/blockreality/core/transaction/AtomicConstructionCoordinator$ReplayConflict.class": {
+      "instructions_and_signatures_unchanged": true,
+      "javap_sha256": "be689a294d9f1ec95925f4082a60fb29bc571c497941668d1a0254a250f47f68"
+    },
+    "com/blockreality/core/transaction/AtomicConstructionCoordinator$ValidationRefused.class": {
+      "instructions_and_signatures_unchanged": true,
+      "javap_sha256": "b6ce752a84114586ec3b33b27e3635d35270635fe32c062a065850b8618e5628"
+    }
+  },
+  "added": [
+    "com/blockreality/impl/server/construction/",
+    "com/blockreality/impl/server/construction/CanonicalNbt$Budget.class",
+    "com/blockreality/impl/server/construction/CanonicalNbt$LimitedOutput.class",
+    "com/blockreality/impl/server/construction/CanonicalNbt.class",
+    "com/blockreality/impl/server/construction/PlayerFileParticipant$FastGzip.class",
+    "com/blockreality/impl/server/construction/PlayerFileParticipant$Faults.class",
+    "com/blockreality/impl/server/construction/PlayerFileParticipant$Snapshot.class",
+    "com/blockreality/impl/server/construction/PlayerFileParticipant$Stage.class",
+    "com/blockreality/impl/server/construction/PlayerFileParticipant.class",
+    "com/blockreality/impl/server/construction/PlayerInventoryImage.class"
+  ],
+  "native": {
+    "blockreality-engine/linux-x86_64/libbsi_tectonic.so": "53aae7156b94c0a761ef5abb2322ad47a708362f417a50ca3f04105d9c50abf1",
+    "blockreality-engine/windows-x86_64/bsi_tectonic.dll": "9761d73586277614a56132ec3492d324ae83c8489068c00c266c3d56f530acea"
+  },
+  "first_inspection": "Expected only coordinator+Host to change; actual also three nested exception classes. Inspecting javap -c -p verifies their instructions/signatures unchanged; shifted source lines account for debug change."
+}
