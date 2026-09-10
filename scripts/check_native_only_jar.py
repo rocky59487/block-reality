@@ -25,6 +25,7 @@ FORBIDDEN = (
     "com/blockreality/impl/server/PipelineProbe",
     "com/blockreality/impl/net/StateDeliveryProbe",
     "com/blockreality/impl/client/ClientRenderProbe",
+    "com/blockreality/impl/client/MaterialGeometryProbe",
     "com/blockreality/impl/server/RenderServerProbe",
 )
 REQUIRED = {"com/blockreality/api/" + name + ".class"

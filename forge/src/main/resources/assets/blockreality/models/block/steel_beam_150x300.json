@@ -1,6 +1,12 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/block",
+  "loader": "blockreality:product",
+  "material": "steel",
+  "section": "steel_rect_150x300",
   "textures": {
-    "all": "minecraft:block/polished_deepslate"
+    "side": "minecraft:block/iron_block",
+    "end": "minecraft:block/netherite_block",
+    "particle": "#side",
+    "warning": "minecraft:block/yellow_concrete"
   }
 }

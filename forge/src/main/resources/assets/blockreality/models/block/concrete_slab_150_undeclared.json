@@ -1,0 +1,5 @@
+{
+  "parent": "blockreality:block/concrete_slab_150",
+  "loader": "blockreality:product",
+  "undeclared": true
+}

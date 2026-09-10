@@ -71,11 +71,17 @@ public final class ClientRenderProbe {
             if (id == handled) return;
             if (id < 1 || id < handled) throw new IllegalArgumentException("control order");
             String action = command.get("action").getAsString();
+            if (MaterialGeometryProbe.handle(mc, out, command)) { handled = id; return; }
             if (action.equals("exit") && command.keySet().equals(Set.of("id", "action"))) {
                 handled = id; mc.stop(); return;
             }
-            if (!action.equals("capture") || !command.keySet().equals(Set.of("id", "action", "name",
-                    "width", "height", "scale", "language", "mode", "worldRevision", "kind")))
+            var captureKeys = new java.util.HashSet<>(Set.of("id", "action", "name",
+                    "width", "height", "scale", "language", "mode", "worldRevision", "kind"));
+            if (command.has("view")) {
+                captureKeys.add("view");
+                if (!command.get("view").getAsString().equals("inventory")) throw new IllegalArgumentException("capture view");
+            }
+            if (!action.equals("capture") || !command.keySet().equals(captureKeys))
                 throw new IllegalArgumentException("unknown control shape");
             String name = command.get("name").getAsString(), language = command.get("language").getAsString();
             int width = command.get("width").getAsInt(), height = command.get("height").getAsInt();
@@ -106,7 +112,9 @@ public final class ClientRenderProbe {
         try {
             if (!reload.isDone()) return;
             reload.join();
-            if (mc.player == null || mc.level == null || mc.screen != null || mc.getOverlay() != null
+            boolean expectedScreen = pending.has("view")
+                    ? mc.screen instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen : mc.screen == null;
+            if (mc.player == null || mc.level == null || !expectedScreen || mc.getOverlay() != null
                     || announcedRevision() != pending.get("worldRevision").getAsLong()
                     || !stateKind().equals(pending.get("kind").getAsString())
                     || mc.getWindow().getWidth() != pending.get("width").getAsInt()
@@ -155,6 +163,7 @@ public final class ClientRenderProbe {
         result.addProperty("guiScale", mc.getWindow().getGuiScale());
         result.addProperty("language", mc.getLanguageManager().getSelected());
         result.addProperty("mode", ClientStressState.mode().name());
+        result.add("interaction", MaterialGeometryProbe.observation(mc));
         result.addProperty("glRenderer", GL11.glGetString(GL11.GL_RENDERER));
         result.addProperty("glVersion", GL11.glGetString(GL11.GL_VERSION));
         return result;

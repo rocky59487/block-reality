@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "axis=x": {
+      "model": "blockreality:block/steel_plate",
+      "y": 90
+    },
+    "axis=y": {
+      "model": "blockreality:block/steel_plate",
+      "x": 90,
+      "y": 90
+    },
+    "axis=z": {
       "model": "blockreality:block/steel_plate"
+    },
+    "axis=undeclared": {
+      "model": "blockreality:block/steel_plate_undeclared"
     }
   }
 }

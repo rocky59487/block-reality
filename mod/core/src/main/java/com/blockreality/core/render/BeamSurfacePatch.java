@@ -12,8 +12,14 @@ public final class BeamSurfacePatch {
     private record Point(Vec3d position, double xMm) { }
 
     public static List<List<Vertex>> sample(BeamDisplayField field, List<Vec3d> polygon, double blockHalfMm) {
+        return sample(field, polygon, blockHalfMm, blockHalfMm);
+    }
+
+    /** Independent visual extents keep the native depth/width sample coordinates intact. */
+    public static List<List<Vertex>> sample(BeamDisplayField field, List<Vec3d> polygon, double depthHalfMm, double widthHalfMm) {
         if (polygon.size() < 3) throw new IllegalArgumentException("surface requires a polygon");
-        if (!Double.isFinite(blockHalfMm) || blockHalfMm <= 0) throw new IllegalArgumentException("invalid surface magnification");
+        if (!Double.isFinite(depthHalfMm) || depthHalfMm <= 0 || !Double.isFinite(widthHalfMm) || widthHalfMm <= 0)
+            throw new IllegalArgumentException("invalid surface magnification");
         List<List<Point>> parts = List.of(polygon.stream().map(p -> new Point(p, field.longitudinalMm(p))).toList());
         for (double cut : field.breaksMm()) {
             List<List<Point>> next = new ArrayList<>();
@@ -34,8 +40,8 @@ public final class BeamSurfacePatch {
                 // Intersections retain their exact station coordinate independently of world-vector rounding.
                 double x = p.xMm;
                 Vec3d d = p.position.minus(field.originMm());
-                vertices.add(new Vertex(p.position, field.sampleMpa(x, d.dot(field.ay()) / blockHalfMm,
-                        d.dot(field.az()) / blockHalfMm, x > mid ? BeamDisplayField.Side.FIRST : BeamDisplayField.Side.LAST)));
+                vertices.add(new Vertex(p.position, field.sampleMpa(x, d.dot(field.ay()) / depthHalfMm,
+                        d.dot(field.az()) / widthHalfMm, x > mid ? BeamDisplayField.Side.FIRST : BeamDisplayField.Side.LAST)));
             }
             result.add(List.copyOf(vertices));
         }
