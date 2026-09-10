@@ -113,7 +113,9 @@ public final class ClientRenderProbe {
             if (!reload.isDone()) return;
             reload.join();
             boolean expectedScreen = pending.has("view")
-                    ? mc.screen instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen : mc.screen == null;
+                    ? mc.screen instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen
+                        || mc.screen instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
+                    : mc.screen == null;
             if (mc.player == null || mc.level == null || !expectedScreen || mc.getOverlay() != null
                     || announcedRevision() != pending.get("worldRevision").getAsLong()
                     || !stateKind().equals(pending.get("kind").getAsString())
