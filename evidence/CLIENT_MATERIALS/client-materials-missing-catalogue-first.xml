@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.engine.ProductGeometryTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-09T18:41:35" hostname="ROCKYLAPTOP" time="0.03">
+  <properties/>
+  <testcase name="missingPackagedCatalogueCannotPoisonTooltipClassInitialization()" classname="com.blockreality.core.engine.ProductGeometryTest" time="0.03">
+    <failure message="java.lang.ExceptionInInitializerError" type="java.lang.ExceptionInInitializerError">java.lang.ExceptionInInitializerError
+	at com.blockreality.core.engine.GameVocabulary.declaration(GameVocabulary.java:43)
+	at com.blockreality.core.engine.GameVocabulary$Geometry.lambda$read$0(GameVocabulary.java:56)
+	at java.base/java.util.Map.forEach(Map.java:713)
+	at com.blockreality.core.engine.GameVocabulary$Geometry.read(GameVocabulary.java:54)
+	at com.blockreality.core.engine.GameVocabulary$Geometry.&lt;clinit&gt;(GameVocabulary.java:51)
+	at com.blockreality.core.engine.GameVocabulary.geometry(GameVocabulary.java:47)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at com.blockreality.core.engine.ProductGeometryTest.missingPackagedCatalogueCannotPoisonTooltipClassInitialization(ProductGeometryTest.java:84)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+Caused by: java.lang.IllegalStateException: missing game vocabulary resource
+	at com.blockreality.core.engine.GameVocabulary$Declaration.read(GameVocabulary.java:69)
+	at com.blockreality.core.engine.GameVocabulary$Declaration.&lt;clinit&gt;(GameVocabulary.java:66)
+	... 14 more
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

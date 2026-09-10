@@ -1,0 +1,17 @@
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file 'C:\Users\wmc02\Desktop\block-reality\forge\build.gradle' line: 84
+
+* What went wrong:
+A problem occurred evaluating root project 'blockreality-forge'.
+> GAME_RUNTIME: executable engine packaging is retired; use -PbrNativesDir or none
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 3s

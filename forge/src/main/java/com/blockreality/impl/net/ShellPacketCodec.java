@@ -64,7 +64,7 @@ final class ShellPacketCodec {
             display = Optional.of(new ShellDisplayField(corners, ex, ey, normal, readFace(buf), readFace(buf)));
         }
         return new Entry(new ShellSnapshot(id, material, plate, thickness, dc, raw, top, recovered, blocks,
-                Optional.empty(), display, overloaded, fibre), withheld);
+                display, overloaded, fibre), withheld);
     }
     private static List<ShellDisplayField.Surface> readFace(FriendlyByteBuf buf) {
         List<ShellDisplayField.Surface> out = new ArrayList<>(4);

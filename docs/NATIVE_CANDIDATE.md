@@ -1,8 +1,9 @@
 # MC66a 雙平台候選包
 
-2026-09-10。本分支整合 #105 的各島結果保存、#106 的遊戲输入與 #107 文件對位，
-再使用同一來源重建的 Windows/Linux 自足原生庫。正式 v1.3 資產沒有被替換。
-這是 0.4.0-dev 候選 jar；遊戲入口仍 SidecarClient，未完成 GAME_RUNTIME / HUD 實景。
+2026-09-10。本分支合入固定 #118 dc94b2b4fc4fb9df55f67a635042cb300f6f80e9，
+包含 #105–#117 的原生遊戲流程、局部危險語意、資料交付及持久身份等完整模組鏈。
+使用已驗的同來源 Windows/Linux 自足庫。這是 0.4.0-dev 候選 jar，正式 v1.3 未被替換。
+生產已用原生 session，Sidecar/舊 Java 力學只留在測試；CM/N25/倒塌等完整交付仍待驗。
 
 ## 可核對的身份
 
@@ -11,10 +12,10 @@
 - Windows DLL：`9761d73586277614a56132ec3492d324ae83c8489068c00c266c3d56f530acea`，31,769,600 bytes。
 - Linux SO：`53aae7156b94c0a761ef5abb2322ad47a708362f417a50ca3f04105d9c50abf1`，28,500,368 bytes。
 - 候選根 SHA256SUMS：`f587d8092e0798da4d1f9c8d0e7a4d1b806d64fbf5999d749622757181231cd5`。
-- 已驗 jar：`18da0e77caf1c217edd2de52d11401e585417df79fe876bed827e8c5d5b871f6`，15,148,828 bytes。
+- 已驗 jar：`ed3eeb58a360855f03088eb03a7877ec3006623c802ed7e7a7da986f05dc2d90`，15,198,720 bytes。
 
 本機產物位於 tectonic2 checkout 的 `.agent-work/mc66a-native/assets` 和
-`.agent-work/mc66a-native/package`。這些二進位不提交 Git，沒有新的公開 release。
+`.agent-work/mc66a-latest/package`。這些二進位不提交 Git，沒有新的公開 release。
 `assets` 有兩個 native ZIP、source.tar.gz、verification.json、SHA256SUMS；
 `package` 有上述 jar、provenance.json、SHA256SUMS.txt。
 
@@ -34,23 +35,30 @@ python scripts/stage_release_natives.py --release-dir <assets> --out <staged> --
 Forge 用 JDK17 執行 `gradlew build -x test -PbrEngineDir=none -PbrNativesDir=<staged>`，
 包含 reobfJar。`-x test` 只用於已完成完整測試之後的組包，不能省略下列資格。
 
-## 本次實測
+## 本次實測與固定原生來源
+
+原生/i9與來源鏈測試沿MC66A_NATIVE已驗同一DLL/SO；本階段沒有重建或重跑這些項目。
+最新模組、reobf jar、兩平台解包/回放與九bundle反例均重新執行。
 
 | 範圍 | 結果 |
 |---|---|
 | Windows/Linux 原生 | 六匯出、OS-only 依賴；334 邊界、9 語料 PASS / C13 custom SKIP；DET3，C10 已執行 |
 | i9 | 複製同一 Windows DLL，61 傳輸檔 SHA 核對；artifact/334/C10 語料 DET3 |
-| Windows 模組 | core350：338 PASS / 12 平台 SKIP；Forge82 全過，共432登錄/420 PASS/12 SKIP |
-| Linux 真 JNA 選集 | Engine5、Recovery8、Analysis1、Buckling2、GameInput2，18/18，無 SKIP |
+| Windows 最新模組 | core412：400 PASS / 12 平台 SKIP；Forge109 全過，共521登錄/509 PASS/12 SKIP |
+| Linux 選集 | Engine5、Recovery8、Analysis1、Buckling2、GameInput3：19項native相關全過；另7項NativeGameRuntime控制器全過，無SKIP |
+| 實際reobf jar | 201類別常數池與禁用類檢查；bundled-legacy/dormant-reference兩條可編譯反例被拒絕 |
 | 同一 jar | 各平台48完整frame，含C10三情境×f64/f32；原庫/解包庫三輪逐位；兩JVM競爭一致 |
 | 防錯 | 6收據反例、10來源鏈反例及4守門移除、9 bundle反例、兩平台匯出/runtime反例；錯身份與解包權限/快取/pin拒絕 |
 
 12 個 Windows SKIP 是 11 個 POSIX fake-process lifecycle 與 1 個 POSIX 權限測試；
 native-dependent 全部執行。jar 的 Windows ACL、Linux POSIX 權限拒絕另有真測試。
-macOS、Minecraft client/server 實景、FPS、GAME_RUNTIME 沒有在本單元驗收。
+macOS、Minecraft client/server 實景、FPS 沒有在本單元驗收。GAME_RUNTIME已由#108完成；
+#118的Linux真client probe讀數/圖像及三項視覺缺口保持，不能當作本輪CM/N25驗收。
 引擎原2690與MC66a物理核本輪不重跑；core/contract源碼與已驗frame_v2保持不變。
 
 第一次收據檢查誤比 corpus stdout 內各轮不同的報告路徑，改為比實際三輪 report；
 第一次 staging 抓到本地 pin 的 CRLF，恢復 Git 已提交的 LF bytes，沒有改契約或放寬守門。
 原始輸出/來源/產物 hash 見引擎 `gate/evidence/MC66A_NATIVE/RESULTS.md`。
-下一段接混合世界局部 Critical HUD、Forge 觀測採集與 GAME_RUNTIME；Java 不重算力學。
+该證據的18da0e77… jar只對應舊#106來源；最新來源與ed3eeb58… jar證據另封在
+`gate/evidence/MC66A_NATIVE_LATEST/RESULTS.md`，不改舊證據。下一步依V1_MODULE_PROGRAM
+接真client缺口、獨立排程及引擎damage/lifecycle依賴；不重做已完成的原生遊戲流程。

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.world.ConstructionCodecTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-09T21:37:49" hostname="ROCKYLAPTOP" time="0.008">
+  <properties/>
+  <testcase name="resignedUnknownSchemaAndInvalidEpochCounterAndCountsStillRefuse()" classname="com.blockreality.core.world.ConstructionCodecTest" time="0.001"/>
+  <testcase name="corruptionTruncationAndTrailingDataAlwaysRefuse()" classname="com.blockreality.core.world.ConstructionCodecTest" time="0.006"/>
+  <testcase name="duplicateIdsOwnershipAndOrphanParentsRefuseEvenWithValidChecksum()" classname="com.blockreality.core.world.ConstructionCodecTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -37,8 +37,6 @@ public record MemberSnapshot(
         EndForces endJ,
         List<BlockKey> blocks,
         List<StressStation> stations,
-        /** Legacy Sidecar diagnostics; native and client display paths leave this empty. */
-        Optional<StressFieldSpec> field,
         @javax.annotation.Nonnull Optional<BeamDisplayField> display,
         boolean overloaded,
         @javax.annotation.Nonnull Optional<Double> governingPositionMm) {
@@ -48,24 +46,6 @@ public record MemberSnapshot(
         stations = List.copyOf(stations);
         if (display.isPresent() && (!display.get().stations().equals(stations) || display.get().lengthMm() != lengthMm))
             throw new IllegalArgumentException("member and display samples disagree");
-    }
-
-    /** Legacy source compatibility. Its protocol has numeric DC but no independent verdict flag. */
-    public MemberSnapshot(int id, String material, String section, double lengthMm, double dc,
-                          GoverningFibre governingFibre, int governingStation, EndForces endI, EndForces endJ,
-                          List<BlockKey> blocks, List<StressStation> stations, Optional<StressFieldSpec> field) {
-        this(id, material, section, lengthMm, dc, governingFibre, governingStation, endI, endJ, blocks, stations,
-                field, legacyDisplay(field, stations), dc > 1.0,
-                governingStation >= 0 && governingStation < stations.size()
-                        ? Optional.of(stations.get(governingStation).xMm()) : Optional.empty());
-    }
-
-    private static Optional<BeamDisplayField> legacyDisplay(Optional<StressFieldSpec> field, List<StressStation> samples) {
-        if (field.isEmpty() || samples.isEmpty()) return Optional.empty();
-        var f = field.get();
-        try {
-            return Optional.of(new BeamDisplayField(f.originMm(), f.ax(), f.ay(), f.az(), f.lengthMm(), f.cz(), f.cy(), samples));
-        } catch (IllegalArgumentException e) { return Optional.empty(); }
     }
 
     public boolean isOverloaded() { return overloaded; }

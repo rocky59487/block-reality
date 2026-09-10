@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.server.BucklingPolicyTest" tests="3" skipped="0" failures="1" errors="0" timestamp="2026-09-09T16:46:02" hostname="ROCKYLAPTOP" time="0.027">
+  <properties/>
+  <testcase name="theLimitIsInclusiveAndZeroMeansNever()" classname="com.blockreality.impl.server.BucklingPolicyTest" time="0.003"/>
+  <testcase name="aNegativeLimitIsOffRatherThanInverted()" classname="com.blockreality.impl.server.BucklingPolicyTest" time="0.0"/>
+  <testcase name="theShippedDefaultIsTheOneTheCostTableWasReadFor()" classname="com.blockreality.impl.server.BucklingPolicyTest" time="0.023">
+    <failure message="org.opentest4j.AssertionFailedError: no bucklingBlockLimit default found in C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\BRConfig.java ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: no bucklingBlockLimit default found in C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\BRConfig.java ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.blockreality.impl.server.BucklingPolicyTest.theShippedDefaultIsTheOneTheCostTableWasReadFor(BucklingPolicyTest.java:55)
+	at java.base@17.0.18/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base@17.0.18/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.18/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

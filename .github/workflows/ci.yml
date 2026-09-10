@@ -96,6 +96,15 @@ jobs:
           chmod +x forge/gradlew
           cd forge && ./gradlew --no-daemon build
 
+      # Compile opt-in measurement drivers without running hardware benchmarks or
+      # adding their classes to the ordinary source sets/jar.
+      - name: compile core registry profile driver
+        working-directory: mod
+        run: ./gradlew --no-daemon -I ../scripts/registry-scaling.gradle :core:compileRegistryProfileJava
+      - name: compile Forge registry save profile driver
+        working-directory: forge
+        run: ./gradlew --no-daemon -I ../scripts/registry-save-profile.gradle compileRegistrySaveProfileJava
+
       # Runs LAST because it reads gradle's JUnit XML, which only exists once both
       # suites have run. Every check count quoted in a document is compared against
       # what the suites actually printed — the defect this closes reached the public
@@ -167,7 +176,16 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: dependencies
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq cmake g++
+        run: |
+          if ! command -v cmake >/dev/null || ! command -v g++ >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq cmake g++
+          fi
+          cmake --version
+          g++ --version
+
+      - name: RCON framing used by server smoke tests
+        run: python3 scripts/test_rcon_client.py
 
       - name: build the BSI host and its stub engines
         run: |

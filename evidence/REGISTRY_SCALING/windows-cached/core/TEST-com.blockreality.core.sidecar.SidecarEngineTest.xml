@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.sidecar.SidecarEngineTest" tests="28" skipped="0" failures="0" errors="0" timestamp="2026-09-09T22:35:43" hostname="ROCKYLAPTOP" time="1.199">
+  <properties/>
+  <testcase name="theWorstSectionCanBeInTheMiddleAndTheScreenMustSeeIt()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.043"/>
+  <testcase name="aLoadInsideAMemberSplitsItAtThatPoint()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.03"/>
+  <testcase name="anUnknownSectionIsRefusedRatherThanDefaulted()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.034"/>
+  <testcase name="aSectionChangeSplitsTheMemberButKeepsItConnected()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.033"/>
+  <testcase name="theSupportMomentIsRecoveredAndNeverLowersADemand()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.143"/>
+  <testcase name="repeatedSolvesAtTheSameRevisionAreIdentical()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.034"/>
+  <testcase name="aFloorCarriesNoMembraneForceUnderItsOwnWeight()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.035"/>
+  <testcase name="aShearWallCarriesLoadInItsOwnPlane()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.038"/>
+  <testcase name="overloadingTheMemberPushesDemandOverCapacity()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.031"/>
+  <testcase name="shmAndJsonTransportsAgree()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.034"/>
+  <testcase name="everyBlockCentreIsInsideTheMeshAndOnlyTheOuterHalfBlockIsClamped()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.037"/>
+  <testcase name="aLoadOnNoElementAtAllIsStillRefused()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.031"/>
+  <testcase name="everySolveCarriesItsOwnEquilibriumCheck()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.043"/>
+  <testcase name="shmTransportCarriesShellsIdentically()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.035"/>
+  <testcase name="anUnsupportedStructureIsReportedAsAMechanism()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.032"/>
+  <testcase name="oneUnsupportedBuildingDoesNotSilenceTheOthers()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.033"/>
+  <testcase name="everyStationMatchesTheClosedFormBendingStress()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.032"/>
+  <testcase name="aRunOfBlocksBecomesOneMemberNotFive()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.034"/>
+  <testcase name="aSlabBecomesPlateFacetsAndNotAGridOfBeams()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.034"/>
+  <testcase name="aSlenderColumnIsCalledSafeByStressAndUnstableByBuckling()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.031"/>
+  <testcase name="handshakeReportsTheCatalogue()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.031"/>
+  <testcase name="theSpanMomentMatchesTimoshenko()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.144"/>
+  <testcase name="aSingleBlockIsNotABeam()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.033"/>
+  <testcase name="aColumnSharesItsTopNodeWithTheFloorItHoldsUp()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.05"/>
+  <testcase name="theFreeEndCarriesNoBendingStress()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.034"/>
+  <testcase name="aBeamHeldAtBothEndsHogsAtTheSupportAndSagsBetween()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.033"/>
+  <testcase name="theOverlayDrawnFromRealEngineOutputIsBlueOnTopAndRedBelow()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.035"/>
+  <testcase name="topFibreIsInTensionAndBottomInCompression()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.035"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

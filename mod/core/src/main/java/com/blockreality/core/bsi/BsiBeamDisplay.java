@@ -62,7 +62,7 @@ public final class BsiBeamDisplay {
                     g.faceY().get(0) * 1000, g.faceZ().get(2) * 1000, samples);
             out.add(new MemberSnapshot(m.id(), material, section, length, m.maxDC(),
                     GoverningFibre.values()[m.governingFibre()], matches == 1 ? governing : -1,
-                    diagnostic(m.endI()), diagnostic(m.endJ()), blocks, samples, Optional.empty(),
+                    diagnostic(m.endI()), diagnostic(m.endJ()), blocks, samples,
                     Optional.of(display), m.overloaded(), Optional.of(m.governingS() * length)));
         }
         return List.copyOf(out);

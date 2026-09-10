@@ -4,8 +4,10 @@ import com.blockreality.api.AnalysisResult;
 import com.blockreality.api.MemberSnapshot;
 import com.blockreality.api.StressStation;
 import com.blockreality.api.UnassignedBlocks;
-import com.blockreality.core.sidecar.SidecarClient;
-import com.blockreality.impl.server.SidecarLocator;
+import com.blockreality.core.engine.NativeGameRuntime;
+import com.blockreality.core.render.BucklingReadout;
+import com.blockreality.core.world.ArtifactAnalysisLinks;
+import com.blockreality.api.geom.BlockKey;
 import com.blockreality.impl.server.StructureManager;
 import com.blockreality.impl.block.StructuralBlock;
 import com.mojang.brigadier.CommandDispatcher;
@@ -14,6 +16,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -59,9 +62,15 @@ public final class BRCommand {
     private static void register(CommandDispatcher<CommandSourceStack> d) {
         d.register(Commands.literal("br")
                 .then(lit("status").executes(c -> status(c.getSource())))
+                .then(lit("profile").executes(c -> profile(c.getSource(), "show"))
+                        .then(Commands.literal("start").executes(c -> profile(c.getSource(), "start")))
+                        .then(Commands.literal("stop").executes(c -> profile(c.getSource(), "stop")))
+                        .then(Commands.literal("show").executes(c -> profile(c.getSource(), "show"))))
                 .then(lit("members").executes(c -> members(c.getSource())))
+                .then(lit("object").then(Commands.argument("pos", BlockPosArgument.blockPos())
+                        .executes(c -> object(c.getSource(), BlockPosArgument.getBlockPos(c, "pos")))))
                 .then(lit("section")
-                        .then(Commands.argument("member", IntegerArgumentType.integer(1))
+                        .then(Commands.argument("member", IntegerArgumentType.integer(0))
                                 .executes(c -> section(c.getSource(),
                                         IntegerArgumentType.getInteger(c, "member")))))
                 .then(lit("resolve")
@@ -152,22 +161,22 @@ public final class BRCommand {
 
     private static int status(CommandSourceStack src) {
         StructureManager m = managerFor(src);
-        SidecarClient.Status s = m.engineStatus();
+        NativeGameRuntime.Status s = m.engineStatus();
 
         line(src, "Block Reality", ChatFormatting.AQUA);
         line(src, "  dimension       " + m.dimension().location(), ChatFormatting.GRAY);
         line(src, "  engine          " + s
-                        + (s == SidecarClient.Status.READY
+                        + (s == NativeGameRuntime.Status.READY
                                 ? "   (transport: " + m.engineTransport() + ")" : ""),
-                s == SidecarClient.Status.READY ? ChatFormatting.GREEN
-                        : s == SidecarClient.Status.DISABLED ? ChatFormatting.RED
+                s == NativeGameRuntime.Status.READY ? ChatFormatting.GREEN
+                        : s == NativeGameRuntime.Status.DISABLED ? ChatFormatting.RED
                         : ChatFormatting.YELLOW);
 
         // Where it looked — a wrong path is the single most likely first-run problem.
         // OP only: the search list spells out server filesystem paths (user names,
         // drive layout), which a non-privileged player has no business reading (#45).
         if (src.hasPermission(BrPermissions.LEVEL_OP)) {
-            for (String l : SidecarLocator.describe(m.engineLocation()).split("\n")) {
+            for (String l : m.engineLocation().split("\n")) {
                 line(src, "  " + l, ChatFormatting.DARK_GRAY);
             }
         }
@@ -178,10 +187,13 @@ public final class BRCommand {
                 + "   test loads: " + m.loadedBlockCount(), ChatFormatting.GRAY);
 
         AnalysisResult r = m.latest();
+        line(src, "  analysis        " + m.noticeKind()
+                + (m.noticeDetail().isEmpty() ? "" : " — " + m.noticeDetail()), ChatFormatting.GRAY);
         if (r == null) {
             line(src, "  last result     none yet", ChatFormatting.GRAY);
             return 1;
         }
+        showResultRevision(src, m, r);
         if (!r.ok()) {
             line(src, "  last result     FAILED — " + r.diagnostic(), ChatFormatting.RED);
         } else if (r.allSingular()) {
@@ -221,7 +233,7 @@ public final class BRCommand {
                 }
             }
             line(src, String.format(Locale.ROOT, "  structures      %d solved, %d unrestrained",
-                            r.islands(), r.singularIslands()),
+                            r.islands() - r.singularIslands(), r.singularIslands()),
                     r.singularIslands() > 0 ? ChatFormatting.YELLOW : ChatFormatting.GRAY);
             // The engine's own force balance, recomputed from geometry rather than read
             // back out of the load vector. It is here because a number that is only
@@ -229,19 +241,14 @@ public final class BRCommand {
             line(src, String.format(Locale.ROOT, "  equilibrium     residual %.3e",
                             r.equilibriumResidual()),
                     r.equilibriumResidual() > 1e-8 ? ChatFormatting.YELLOW : ChatFormatting.GRAY);
-            // Stability, reported next to strength and never folded into it. A slender
-            // column reaches its buckling load at a stress the D/C line calls comfortable.
-            // Absent means the structure carries no compression that could buckle it, which
-            // is a real state and not a missing number.
-            if (r.bucklingState().hasFactor()) {
-                line(src, String.format(Locale.ROOT,
-                                "  buckling        lambda_cr %.3f%s   (linear onset, an upper bound)",
-                                r.bucklingFactor(),
-                                r.bucklingCritical() ? "   ALREADY UNSTABLE" : ""),
-                        r.bucklingCritical() ? ChatFormatting.RED : ChatFormatting.GRAY);
-            } else {
-                line(src, "  buckling        not reported: " + r.bucklingState().wire(),
-                        ChatFormatting.GRAY);
+            for (var row : BucklingReadout.lines(r.bucklingState(), r.bucklingFactor(), r.bucklingCritical())) {
+                ChatFormatting colour = switch (row.tone()) {
+                    case CRITICAL -> ChatFormatting.RED;
+                    case UNEVALUATED -> ChatFormatting.YELLOW;
+                    case DETAIL -> ChatFormatting.GRAY;
+                };
+                src.sendSuccess(() -> Component.translatableWithFallback(row.key(), row.fallback(),
+                        row.arguments().toArray()).withStyle(colour), false);
             }
             // One line per reason. The old single line said "N blocks formed no element"
             // for every block in the list, and for a beam lying flat on the ground -- a
@@ -290,6 +297,7 @@ public final class BRCommand {
             line(src, "No usable analysis. Try /br status.", ChatFormatting.YELLOW);
             return 0;
         }
+        showResultRevision(src, managerFor(src), r);
         line(src, "members  " + r.members().size()
                 + "     plate facets  " + r.shells().size(), ChatFormatting.AQUA);
         StructureManager mgr = managerFor(src);
@@ -328,9 +336,57 @@ public final class BRCommand {
                             sh.id(), sh.plate(), sh.thicknessMm(), sh.dc(), sh.dcRaw(),
                             sh.edgeRecovered() ? ", edge recovered" : "",
                             sh.governingTopFace() ? "top" : "bottom", sh.peakMpa()),
-                    sh.dc() > 1.0 ? ChatFormatting.RED : ChatFormatting.GRAY);
+                    sh.overloaded() ? ChatFormatting.RED : ChatFormatting.GRAY);
         }
         return 1;
+    }
+
+    private static int profile(CommandSourceStack src, String action) {
+        var recorder = managerFor(src).profile();
+        if (action.equals("start")) recorder.start();
+        if (action.equals("stop")) recorder.stop();
+        var snapshot = recorder.snapshot();
+        line(src, "Profile " + snapshot.session() + " " + (snapshot.active() ? "RECORDING" : "STOPPED")
+                + " — last 256 samples/stage, milliseconds; nested stages overlap", ChatFormatting.AQUA);
+        for (var stage : com.blockreality.core.diagnostics.PipelineProfile.Stage.values()) {
+            var s = snapshot.stages().get(stage); if (s == null) continue;
+            line(src, String.format(Locale.ROOT, "  %s n=%d seen=%d p50=%.3f p95=%.3f max=%.3f",
+                    stage.name(), s.retained(), s.observed(), s.p50Ns()/1e6, s.p95Ns()/1e6, s.maxNs()/1e6), ChatFormatting.GRAY);
+        }
+        line(src, "  JNA includes engine time; real player socket/FPS costs are not isolated here", ChatFormatting.GRAY);
+        for (var counter : com.blockreality.core.diagnostics.PipelineProfile.Counter.values())
+            line(src, "  " + counter + "=" + snapshot.counters().getOrDefault(counter, 0L), ChatFormatting.GRAY);
+        return 1;
+    }
+
+    /** Reads saved object geometry without loading the target chunk. Native IDs are preview links. */
+    private static int object(CommandSourceStack src, BlockPos pos) {
+        var manager = managerFor(src); var ledger = manager.constructionObjects(); var graph = ledger.graph();
+        Long id = graph.owners().get(new BlockKey(pos.getX(), pos.getY(), pos.getZ()));
+        if (id == null) {
+            line(src, "No published object at " + pos.toShortString() + " — registry " + manager.objectStatus(), ChatFormatting.YELLOW);
+            return 0;
+        }
+        var artifact = graph.records().get(id); var declaration = artifact.declaration();
+        line(src, "object " + graph.key(id) + "  " + manager.objectStatus(), ChatFormatting.AQUA);
+        line(src, "  declaration " + declaration.role() + " " + declaration.material() + "/" + declaration.section()
+                + " axis=" + (declaration.axis() < 0 ? "not applicable/undeclared" : "XYZ".charAt(declaration.axis())), ChatFormatting.GRAY);
+        line(src, "  cells " + artifact.cells().size() + "  graph epoch " + ledger.completedEpoch()
+                + "  observation epoch " + ledger.epoch(), ChatFormatting.GRAY);
+        line(src, "  parents " + boundedIds(artifact.parents()), ChatFormatting.GRAY);
+        var links = manager.objectsReady()
+                ? ArtifactAnalysisLinks.of(ledger, id, manager.latest(), manager.gate().current()) : java.util.Optional.<ArtifactAnalysisLinks>empty();
+        if (links.isEmpty()) {
+            line(src, "  native links unavailable/stale", ChatFormatting.YELLOW);
+        } else {
+            line(src, "  native preview " + manager.dimension().location() + " source=" + manager.analysisSourceId()
+                    + " revision=" + links.get().revision().value(), ChatFormatting.GRAY);
+            line(src, "  members " + boundedIds(links.get().members()) + "  shells " + boundedIds(links.get().shells()), ChatFormatting.GRAY);
+        }
+        return 1;
+    }
+    private static String boundedIds(java.util.List<? extends Number> ids) {
+        return ids.size() <= 16 ? ids.toString() : ids.subList(0, 16) + " … (" + ids.size() + " total)";
     }
 
     /**
@@ -346,6 +402,7 @@ public final class BRCommand {
             line(src, "No usable analysis. Try /br status.", ChatFormatting.YELLOW);
             return 0;
         }
+        showResultRevision(src, managerFor(src), r);
         var found = r.member(memberId);
         if (found.isEmpty()) {
             line(src, "No member #" + memberId + ". Try /br members.", ChatFormatting.YELLOW);
@@ -415,6 +472,13 @@ public final class BRCommand {
         m.resetEngine();
         line(src, "Engine reset; it will be started again on the next tick.", ChatFormatting.GREEN);
         return 1;
+    }
+
+    private static void showResultRevision(CommandSourceStack src, StructureManager manager, AnalysisResult result) {
+        boolean stale = manager.gate().isStale(result);
+        line(src, "  result revision " + result.revision().value()
+                + (stale ? "  STALE — world changed; values below describe the previous model" : "  CURRENT"),
+                stale ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY);
     }
 
     private static void line(CommandSourceStack src, String text, ChatFormatting colour) {

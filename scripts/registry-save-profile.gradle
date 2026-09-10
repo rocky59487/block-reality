@@ -1,0 +1,17 @@
+// Explicit adapter profiling only; ordinary main/test source sets are untouched.
+allprojects { afterEvaluate { p ->
+    if (p.plugins.hasPlugin('net.minecraftforge.gradle')) {
+        def profile = p.sourceSets.create('registrySaveProfile') {
+            java.srcDir 'src/profile/java'
+            compileClasspath += p.sourceSets.main.output + p.sourceSets.main.compileClasspath
+            runtimeClasspath += p.sourceSets.main.output + p.sourceSets.main.compileClasspath
+        }
+        p.tasks.register('registrySaveProfile', JavaExec) {
+            dependsOn p.tasks.named('registrySaveProfileClasses')
+            classpath = profile.runtimeClasspath
+            mainClass = 'com.blockreality.impl.server.RegistrySaveProfile'
+            jvmArgs '-Xms2g', '-Xmx2g'
+            args System.getProperty('br.saveOutput'), System.getProperty('br.saveSeeds'), System.getProperty('br.saveFork')
+        }
+    }
+} }

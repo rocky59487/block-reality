@@ -1,0 +1,35 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes
+> Task :core:compileTestJava UP-TO-DATE
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses UP-TO-DATE
+
+> Task :core:test FAILED
+
+ConstructionSnapshotTest > graphRecordsAndRangeViewsNeverExposeMutableEntries() FAILED
+    org.opentest4j.AssertionFailedError: Expected java.lang.UnsupportedOperationException to be thrown, but nothing was thrown.
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+        at app//org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:73)
+        at app//org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:35)
+        at app//org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3115)
+        at app//com.blockreality.core.world.ConstructionSnapshotTest.assertReadOnly(ConstructionSnapshotTest.java:66)
+        at app//com.blockreality.core.world.ConstructionSnapshotTest.graphRecordsAndRangeViewsNeverExposeMutableEntries(ConstructionSnapshotTest.java:46)
+
+1 test completed, 1 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:test'.
+> There were failing tests. See the report at: file:///C:/Users/wmc02/Desktop/block-reality/build/rs-mutants-wmud64j9/mod/core/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 1s
+7 actionable tasks: 2 executed, 5 up-to-date

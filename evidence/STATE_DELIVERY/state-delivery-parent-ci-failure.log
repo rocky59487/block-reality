@@ -1,0 +1,29 @@
+BSI contract, host, corpus, and the packaging rules	dependencies	﻿2026-09-09T17:58:01.1735817Z ##[group]Run sudo apt-get update -qq && sudo apt-get install -y -qq cmake g++
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:01.1736303Z [36;1msudo apt-get update -qq && sudo apt-get install -y -qq cmake g++[0m
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:01.1771916Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:01.1772246Z env:
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:01.1772542Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:01.1772986Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:01.1773363Z   GRADLE_ACTION_ID: gradle/actions/setup-gradle
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:01.1773648Z   GRADLE_USER_HOME: /home/runner/.gradle
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:01.1773925Z   GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:01.1774198Z   GRADLE_BUILD_ACTION_CACHE_RESTORED: true
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:01.1774592Z   DEVELOCITY_INJECTION_INIT_SCRIPT_NAME: gradle-actions.inject-develocity.init.gradle
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:01.1775222Z   DEVELOCITY_INJECTION_CUSTOM_VALUE: gradle-actions
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:01.1775743Z   GITHUB_DEPENDENCY_GRAPH_ENABLED: false
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:01.1776002Z ##[endgroup]
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4805113Z E: Failed to fetch https://dl.google.com/linux/chrome-stable/deb/dists/stable/main/binary-amd64/Packages.gz  Hash Sum mismatch
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4805996Z    Hashes of expected file:
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4806375Z     - Filesize:1405 [weak]
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4806878Z     - SHA256:233e56de019b57db89238fa7bcc3647718dbbea3a40c2dc1c633a8c8952aa9e9
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4807495Z     - SHA1:f25f722f552dc3fd510081e6b65a0e7174ec9321 [weak]
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4807940Z     - MD5Sum:2fc39e32c7bdf718a907c390338392ea [weak]
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4808330Z    Hashes of received file:
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4808826Z     - SHA256:bc1428ab27c6d76ee9bb76de07f1ded0ddb4aaabd958fc72855634ef5894a4b3
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4809417Z     - SHA1:f601c49edc3ea059583213f0be1589cb0fa6e2e5 [weak]
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4809859Z     - MD5Sum:2ce0a26fc7a49a488341fc13c6d05b52 [weak]
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4810378Z     - Filesize:1405 [weak]
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4810835Z    Last modification reported: Wed, 09 Sep 2026 09:41:12 +0000
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4811390Z    Release file created at: Wed, 09 Sep 2026 17:16:59 +0000
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4812069Z E: Some index files failed to download. They have been ignored, or old ones used instead.
+BSI contract, host, corpus, and the packaging rules	dependencies	2026-09-09T17:58:09.4831546Z ##[error]Process completed with exit code 100.

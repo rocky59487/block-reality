@@ -81,7 +81,7 @@ final class MemberPacketCodec {
         Optional<BeamDisplayField> display = g == null ? Optional.empty() : Optional.of(
                 new BeamDisplayField(g.origin, g.ax, g.ay, g.az, length, g.hy, g.hz, stations));
         return new Entry(new MemberSnapshot(id, material, section, length, dc, GoverningFibre.values()[ordinal],
-                governing, endI, endJ, blocks, stations, Optional.empty(), display, overloaded, position), withheld);
+                governing, endI, endJ, blocks, stations, display, overloaded, position), withheld);
     }
     private static void optional(FriendlyByteBuf b, Optional<Double> v) { b.writeBoolean(v.isPresent()); v.ifPresent(b::writeDouble); }
     private static Optional<Double> optional(FriendlyByteBuf b) { return b.readBoolean() ? Optional.of(finite(b)) : Optional.empty(); }

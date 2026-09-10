@@ -195,8 +195,9 @@ class BsiAnalysisResultTest {
         }
     }
     @Test void legacyConstructorRetainsItsDistinctBoundaryConvention() {
-        var legacy=new AnalysisResult(new WorldRevision(17),true,false,"",1,7,"member",1,0,0,1,
-                BucklingState.COMPUTED,List.of(),List.of(),List.of());
+        var legacy=new AnalysisResult(
+                new WorldRevision(17), true, false, "", 1, 7, "member", 1, 0, 0, 1, BucklingState.COMPUTED,
+                List.of(), List.of(), List.of(), false, true);
         assertFalse(legacy.overCapacity());assertTrue(legacy.bucklingCritical());
         assertFalse(decode(fixture(1,0,1,0)).bucklingCritical());
     }

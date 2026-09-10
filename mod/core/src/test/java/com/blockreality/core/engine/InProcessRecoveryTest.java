@@ -49,7 +49,7 @@ class InProcessRecoveryTest {
                 for(int k=0;k<mapped.size();k++) {
                     var m=mapped.get(k);var b=r.members().get(k);var f=m.display().orElseThrow();var g=r.memberGeometry().get(k);
                     assertEquals(b.stationCount(),m.stations().size());assertEquals(b.blockCount(),m.blocks().size());
-                    assertTrue(m.field().isEmpty());assertEquals(b.overloaded(),m.overloaded());assertEquals(b.maxDC(),m.dc());
+                    assertTrue(com.blockreality.testfixtures.NativeSnapshotChecks.hasNoLegacyField(m));assertEquals(b.overloaded(),m.overloaded());assertEquals(b.maxDC(),m.dc());
                     assertEquals(g.origin().scaled(1000),f.originMm());assertEquals(g.ey(),f.ay());assertEquals(g.faceY().get(0)*1000,f.halfYMm());
                     assertEquals(-b.endI()[0],m.endI().n());assertEquals(b.endJ()[5]*1000,m.endJ().mz());
                     for(int j=0;j<m.stations().size();j++) {
@@ -109,7 +109,7 @@ class InProcessRecoveryTest {
                 for (int k=0; k<display.size(); k++) {
                     var shell = display.get(k); var field = shell.display().orElseThrow();
                     var facet = response.facets().get(k); var surfaces = response.facetSurfaces().get(k);
-                    assertTrue(shell.field().isEmpty()); assertTrue(shell.rawDc().isEmpty());
+                    assertTrue(com.blockreality.testfixtures.NativeSnapshotChecks.hasNoLegacyField(shell)); assertTrue(shell.rawDc().isEmpty());
                     assertEquals(facet.dc(),shell.dc()); assertEquals(facet.overloaded(),shell.overloaded());
                     assertEquals(facet.governingTop(),shell.governingTopFace());
                     assertEquals(facet.blockCount(),shell.blocks().size());

@@ -1,5 +1,8 @@
 # MC66a frame_v2 配對工作
 
+本檔保留 #107 文件分支的引擎對位紀錄；下述「遊戲仍 Sidecar」是該分支當時的狀態。
+已在 GAME_RUNTIME 整合 #105/#106 與本分支，當前模組已走 BSI/JNA，見末段。
+
 2026-09-10，配對引擎 MC66A_FRAME_V2 判準先凍。
 frame_v2 eigen 將沿已驗同次快照傳全部選項與完整島狀態；世界拒絕保留局部Critical。
 原screen獨立保留且explain才標euler_screen；無請求舊bytes不變。
@@ -22,4 +25,12 @@ BSI833正常與334原生邊界/真C10回歸。原生開發庫重建，正式nati
 詞彙ID與遊戲輸入快照。本文件分支仍基於#103，只對位引擎；下一次整合先核對
 上述分支及其docs/V1_MODULE_PROGRAM.md，不另建重疊實作。本輪沒有checkout或重验它們。
 
-2026-09-10 接續：本地整合分支已納入#105/#106並驗兩平台自足候選jar，詳見 [NATIVE_CANDIDATE](NATIVE_CANDIDATE.md)。正式v1.3未替換。
+## GAME_RUNTIME 整合
+
+2026-09-10：#107 `6a38cdf` 已合入 `codex/game-runtime`，保留其 ancestry。
+只有文件衝突，CLAUDE 以較新的真 native 遊戲迴圈現況為準；沒有重做或覆寫 #105/#106。
+本輪 Linux server 使用原 #37 開發庫 `95a03e82`，不是 #39 重建的新庫；上述 frame_v2
+數值測試屬上游提供的紀錄，這次没有在模組工作中重跑或修改引擎。
+下一段模組可獨立處理 HUD/命令 revision 與局部屈曲警示；新庫發布驗收仍待引擎交付。
+
+2026-09-10 候選對位：#118完整模組鏈已以42e10f5双平台庫重新驗證與組包；精確身份與範圍見 [NATIVE_CANDIDATE](NATIVE_CANDIDATE.md)。舊server/client證據來源保持。

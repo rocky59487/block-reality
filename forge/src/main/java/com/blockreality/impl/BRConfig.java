@@ -16,55 +16,44 @@ public final class BRConfig {
     public static final ForgeConfigSpec SPEC;
     public static final BRConfig INSTANCE;
 
-    public final ForgeConfigSpec.ConfigValue<String> sidecarPath;
+    public enum EngineMode { INPROCESS, OFF }
+    public final ForgeConfigSpec.ConfigValue<String> enginePath;
+    public final ForgeConfigSpec.EnumValue<EngineMode> mode;
+    public final ForgeConfigSpec.IntValue numThreads;
+    public final ForgeConfigSpec.BooleanValue bucklingEnabled;
+    public final ForgeConfigSpec.IntValue bucklingDofBudget;
     public final ForgeConfigSpec.BooleanValue analysisEnabled;
     public final ForgeConfigSpec.IntValue minTicksBetweenSolves;
     public final ForgeConfigSpec.IntValue requestTimeoutMs;
-    public final ForgeConfigSpec.IntValue bucklingBlockLimit;
     public final ForgeConfigSpec.DoubleValue demoLoadNewtons;
 
     private BRConfig(ForgeConfigSpec.Builder b) {
         b.comment("Block Reality — structural analysis").push("engine");
 
-        sidecarPath = b
-                .comment("Path to the br-sidecar executable.",
-                        "Leave empty to search, in order: the br.sidecar system property,",
-                        "the BR_SIDECAR environment variable, <game dir>/br-sidecar, then PATH.",
-                        "If nothing is found the mod still loads and plays; analysis is off.")
-                .define("sidecarPath", "");
+        mode = b.comment("INPROCESS loads the native engine; OFF performs no discovery or unpacking.")
+                .defineEnum("mode", EngineMode.INPROCESS);
+        enginePath = b.comment("Optional native shared library path. An invalid explicit path is refused.",
+                        "Otherwise: br.engine property, BR_ENGINE, platform override directory, bundled library.")
+                .define("enginePath", "");
+        numThreads = b.comment("Native engine worker budget per dimension.")
+                .defineInRange("numThreads", 1, 1, 256);
+        bucklingEnabled = b.comment("Request engine eigen buckling; the engine reports eligibility per island.")
+                .define("bucklingEnabled", true);
+        bucklingDofBudget = b.comment("Engine eigen DOF budget per island; 0 means no host-imposed DOF limit.")
+                .defineInRange("bucklingDofBudget", 2400, 0, 10_000_000);
 
         analysisEnabled = b
-                .comment("Master switch. Off means no sidecar is ever started.")
+                .comment("Master switch. Off means no library is discovered, unpacked or loaded.")
                 .define("analysisEnabled", true);
 
         requestTimeoutMs = b
-                .comment("How long to wait for one analysis before treating the engine as wedged.")
+                .comment("Timeout revokes a native result; native work can only close safely after it returns.")
                 .defineInRange("requestTimeoutMs", 5000, 250, 120_000);
 
         minTicksBetweenSolves = b
                 .comment("Minimum ticks between solves. A player laying a row of blocks",
                         "should produce one analysis, not twenty.")
                 .defineInRange("minTicksBetweenSolves", 10, 1, 200);
-
-        bucklingBlockLimit = b
-                .comment("Above this many structural blocks the linear-buckling screen is",
-                        "SKIPPED and the HUD says so; strength (D/C) always runs.",
-                        "0 means never compute buckling.",
-                        "",
-                        "Measured cost of the screen itself, WSL/x86-64, shipped engine",
-                        "(sidecar/repro_buckling_cost.py). Three shapes at a similar",
-                        "block count, because the cost is not a function of blocks:",
-                        "  straight beam,  300 blocks,   18 dof  ->    1 ms",
-                        "  floor slab,     305 blocks, 1758 dof  ->   27 ms",
-                        "  portal frame,   504 blocks, 1212 dof  ->   82 ms",
-                        "and at the far end, where it does start to hurt:",
-                        "  floor slab,    1616 blocks, 9624 dof  ->  208 ms",
-                        "  portal frame,  1004 blocks, 2412 dof  -> 1005 ms",
-                        "  portal frame,  2004 blocks, 4812 dof  -> 10.4 s",
-                        "A frame costs ~24x a slab at the SAME dof: long chains of",
-                        "identical bays give the eigensolver clustered modes to separate.",
-                        "600 keeps a frame near 120 ms and a slab near 55 ms.")
-                .defineInRange("bucklingBlockLimit", 600, 0, 1_000_000);
 
         b.pop().push("demo");
 

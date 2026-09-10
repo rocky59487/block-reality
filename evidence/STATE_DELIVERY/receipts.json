@@ -1,0 +1,178 @@
+{
+  "state-delivery-compile-first.log": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-compile-first.log",
+    "rawSha256": "ef609a81dc810270b40db9f434ef585af808979f3e20caa9f5d7d099f926280b",
+    "rawBytes": 1888
+  },
+  "state-delivery-packet-first.log": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-packet-first.log",
+    "rawSha256": "812a20ac9b6a8f7c46acd2e861738780182a2e59f6b2b12bd992d08a142d3ba1",
+    "rawBytes": 3264
+  },
+  "state-delivery-forge-full.log": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-forge-full.log",
+    "rawSha256": "871a2167b8205e79eed8549690103cf709dfd1f3c46aa9f8fd065d7bb165d652",
+    "rawBytes": 8778
+  },
+  "state-delivery-core-full.log": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-core-full.log",
+    "rawSha256": "2449bad97b7221fed958189f2dec1a6bd007d64e7502172e69f78950a2d27645",
+    "rawBytes": 29649
+  },
+  "state-delivery-docs.log": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-docs.log",
+    "rawSha256": "8132679eca0e411bbe361afc52cd876c8023bf9b722e9c4e09705376eab02702",
+    "rawBytes": 118
+  },
+  "state-delivery-rcon-tests.log": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-rcon-tests.log",
+    "rawSha256": "383a12fba9b5b327054a24ce7e5739569c4f0b6621facd981f2d6a4271063b3c",
+    "rawBytes": 106
+  },
+  "state-delivery-parent-ci-failure.log": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-parent-ci-failure.log",
+    "rawSha256": "7ed7b117fc00cce0328a6b31d161026788e58dcd37e589703cb8e91136a192be",
+    "rawBytes": 4374
+  },
+  "state-delivery-server-first.json": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-server-first.json",
+    "rawSha256": "e6042902ddd05213bc20d902320c45bfc1fa34e744655e5814f7ca49bcc3d2ab",
+    "rawBytes": 12203
+  },
+  "br-state-delivery-smoke-first.log": {
+    "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-state-delivery-smoke-first.log",
+    "rawSha256": "72c2fee3b606a6df60965956469320470d0edb529a677e4f47f690ccc0b18830",
+    "rawBytes": 732
+  },
+  "state-delivery-server-second.json": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-server-second.json",
+    "rawSha256": "c278dd78c9aa1bfd8fbc0f2ee6c8c36c3d57f77969818c99c0b35d5083d152a3",
+    "rawBytes": 433
+  },
+  "br-state-delivery-smoke-second.log": {
+    "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-state-delivery-smoke-second.log",
+    "rawSha256": "c0ef3c821e416f3b2c2b1f1e099dbe7f3a2a5056bb1d6e9abf44a6fef5a54cd7",
+    "rawBytes": 517
+  },
+  "state-delivery-server-third.json": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-server-third.json",
+    "rawSha256": "7925148fbf10c4caaec4cd5fa9b8e43dbb46803e31ff042f00caa47539710bda",
+    "rawBytes": 537
+  },
+  "br-state-delivery-smoke-third.log": {
+    "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-state-delivery-smoke-third.log",
+    "rawSha256": "8115834414c03ed506de62ca5bf623c4a6434c21027de251706899f8e9e7c781",
+    "rawBytes": 911
+  },
+  "state-delivery-server-final.json": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-server-final.json",
+    "rawSha256": "4de8a6814ef9a1117e1dec55898b00687956391656f49565534715fb88e75af8",
+    "rawBytes": 12376
+  },
+  "br-state-delivery-smoke-final.log": {
+    "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-state-delivery-smoke-final.log",
+    "rawSha256": "47f08bcf00c4bf64a2962aa42343556c24d76e3f7ba223d33fd8356169b51070",
+    "rawBytes": 790
+  },
+  "state-delivery-server-fifth.json": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-server-fifth.json",
+    "rawSha256": "b1ece1e4f6e825fbdd3b4a4ae8da042afe524cefea8276c37f3347dfca6fe1a3",
+    "rawBytes": 23827
+  },
+  "br-state-delivery-smoke-fifth.log": {
+    "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-state-delivery-smoke-fifth.log",
+    "rawSha256": "cc229008d268f523013069858478ffd0cc326a51f73a0427dca97cf7e656b583",
+    "rawBytes": 702
+  },
+  "server-first-excerpt.log": {
+    "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-state-delivery-server-first.log",
+    "rawSha256": "17bf2f329d509210f07e5391ff332b9dacc1f6acbd950c97a347a2376a7f03a1",
+    "rawBytes": 117109,
+    "selection": "bootstrap/native/config/error/stop/build lines only; complete raw retained at source"
+  },
+  "server-second-excerpt.log": {
+    "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-state-delivery-server-second.log",
+    "rawSha256": "b8ac7f75b05cd35c01c7a816dc748bded51e830c47dcb66e5dce81c4c6e6aca8",
+    "rawBytes": 112343,
+    "selection": "bootstrap/native/config/error/stop/build lines only; complete raw retained at source"
+  },
+  "server-final-excerpt.log": {
+    "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-state-delivery-server-final.log",
+    "rawSha256": "f26c7048c0f255bce6ad85e22227396d16c99700199290b9eabd3e2077915685",
+    "rawBytes": 112567,
+    "selection": "bootstrap/native/config/error/stop/build lines only; complete raw retained at source"
+  },
+  "server-fifth-excerpt.log": {
+    "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-state-delivery-server-fifth.log",
+    "rawSha256": "269ef78c569707a8de3ae0d55ae9673ad0a14f6f857ac75d2676f47f21703ab9",
+    "rawBytes": 116013,
+    "selection": "bootstrap/native/config/error/stop/build lines only; complete raw retained at source"
+  },
+  "br-state-delivery-native-packet.log": {
+    "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-state-delivery-native-packet.log",
+    "rawSha256": "bb9aed52e844d7bcf640d115f8b970fd5c50b1bbc1d57649771e053f140c2ac9",
+    "rawBytes": 1143
+  },
+  "junit/TEST-com.blockreality.core.AnalysisDeliveryClockTest.xml": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/mod/core/build/test-results/test/TEST-com.blockreality.core.AnalysisDeliveryClockTest.xml",
+    "rawSha256": "40f9fc96763493f4f9ffa82224b38261aa76405c1effd1fbd624b01fbf444098",
+    "rawBytes": 1303
+  },
+  "junit/TEST-com.blockreality.impl.net.AnalysisUpdatePacketTest.xml": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/forge/build/test-results/test/TEST-com.blockreality.impl.net.AnalysisUpdatePacketTest.xml",
+    "rawSha256": "93f8a69caea7f740bdf44f9981539837c01c5ff7948944402ebe21c77f4ba414",
+    "rawBytes": 1722
+  },
+  "linux-junit/TEST-com.blockreality.impl.net.NativeResultPacketTest.xml": {
+    "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-game-runtime-server/forge/build/test-results/test/TEST-com.blockreality.impl.net.NativeResultPacketTest.xml",
+    "rawSha256": "7ba5ee542bff2254f963e5fc5bccd597ee5c638eca5ee6375b575126be5b5328",
+    "rawBytes": 774
+  },
+  "linux-junit/TEST-com.blockreality.impl.net.AnalysisUpdatePacketTest.xml": {
+    "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-game-runtime-server/forge/build/test-results/test/TEST-com.blockreality.impl.net.AnalysisUpdatePacketTest.xml",
+    "rawSha256": "990c3e3eb1e1c594959995cfa921fed8653961bf6a7d1b5aa22d6f9e5d9375a9",
+    "rawBytes": 1704
+  },
+  "mutations/counts.json": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-mutations/counts.json",
+    "rawSha256": "1cccf5cea6300f19ea10dca9fabe1ec2796f7388e30bb58dbc04238bdbb0771a",
+    "rawBytes": 485
+  },
+  "mutations/DIMENSION_IGNORED/run.txt": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-mutations/DIMENSION_IGNORED/run.txt",
+    "rawSha256": "6c2f9fcf589eda26dc1dce7070da0f92955091a69b00bf8205938687b961d795",
+    "rawBytes": 1040
+  },
+  "mutations/SEQUENCE_IGNORED/run.txt": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-mutations/SEQUENCE_IGNORED/run.txt",
+    "rawSha256": "993161fa14d97f947273b16bfc2a2d7e314d4e0f3dc4922dc6135cbc139e1edf",
+    "rawBytes": 1027
+  },
+  "mutations/SOURCE_IGNORED/run.txt": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-mutations/SOURCE_IGNORED/run.txt",
+    "rawSha256": "c62f97479234abc1fc64f5d6f1109fa44a869f51dcb303d7bc740e7bdba960d3",
+    "rawBytes": 1029
+  },
+  "mutations/DIMENSION_IGNORED/results/TEST-com.blockreality.core.AnalysisDeliveryClockTest.xml": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-mutations/DIMENSION_IGNORED/results/TEST-com.blockreality.core.AnalysisDeliveryClockTest.xml",
+    "rawSha256": "bf0686fdc07d009bc3eb59837507903080b5f9fdf514680de72307fcc8d215f4",
+    "rawBytes": 1594
+  },
+  "mutations/SEQUENCE_IGNORED/results/TEST-com.blockreality.core.AnalysisDeliveryClockTest.xml": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-mutations/SEQUENCE_IGNORED/results/TEST-com.blockreality.core.AnalysisDeliveryClockTest.xml",
+    "rawSha256": "5b9c59ed8312815028b9f059ec68c1d14066fc18714e2ecef5690b0a9335b850",
+    "rawBytes": 1570
+  },
+  "mutations/SOURCE_IGNORED/results/TEST-com.blockreality.core.AnalysisDeliveryClockTest.xml": {
+    "source": "C:/Users/wmc02/Desktop/block-reality/build/state-delivery-mutations/SOURCE_IGNORED/results/TEST-com.blockreality.core.AnalysisDeliveryClockTest.xml",
+    "rawSha256": "b6dc34a051a8c7654137077c8537f4f37242beb41f137ad4b614e61f754ae8ea",
+    "rawBytes": 1578
+  },
+  "developmentJar": {
+    "path": "C:/Users/wmc02/Desktop/block-reality/forge/build/libs/blockreality-0.4.0-dev.jar",
+    "sha256": "ad0b906d31c7fae9f549fd0f5756df22d1084f238ea5eba1f8d2e7befb8d52f9",
+    "bytes": 412925,
+    "bundledNatives": 0,
+    "integrationProbeClasses": 0
+  }
+}

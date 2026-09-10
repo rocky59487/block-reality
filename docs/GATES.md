@@ -1437,3 +1437,114 @@ core334=322PASS/12SKIP，Forge80PASS；合計414登錄/402PASS/12SKIP，真JNA15
 三島125列獨立先凍表、局部critical在世界拒絕時保留，Java不重新比較lambda。
 引擎833checks/12故障三箱DET3與所有首次輸格、來源、原始bytes見配對引擎MC66A_BSI證據。
 新native開發庫與契約55檔已驗；正式v1.3 jar不包含此版本，GAME_SWAP與真HUD仍待驗。
+
+### 2026-09-10 GAME_RUNTIME：原生換裝的資源政策與舊門檻退場
+
+判準先凍於 docs/GAME_RUNTIME.md（18b9946）。使用者限定模組工作，引擎另有人負責。
+遊戲由 block-count buckling limit 600 改為引擎 per-island budgetDof，初始 2400 可配置。
+原 sidecar 600 格成本表不再適用於新預算；性能結論降為未驗，待固定場景實測。
+首次 Forge 85 項中的 1 FAIL 正是舊預設檢查，保留原 XML，再讓當前預設門改驗 DOF wire。
+N24-a2 SidecarProcess 生產豁免隨遊戲切換移除；原實作移至 test source，不在新 jar。
+N25 真 server/client、最新 Win/Linux 原生資產與 v1 性能/倒塌/剛體資格仍按原線待驗。
+
+### 2026-09-10 GAME_RUNTIME 全機構回覆界線
+
+第二次真 server 支承移除已使 revision 前進，原生返回 SOLVE_FAILED/no solved island；
+smoke 原預期 MECHANISM，仍判 FAIL，原檔保留。不得把引擎診斷 message 轉成 Java 機構判定。
+後續只驗新 revision 撤銷舊結果並明示拒絕，這條降為傳輸/生命週期驗證；全機構 typed 展示
+仍未完成。混合世界的 singular 計數另驗，不把它移作全機構證據。詳見 GAME_RUNTIME.md。
+
+### 2026-09-10 WORLD_REGISTRY：已知格持久化與完整輸入
+
+WR 判準由 `cd4c1b3` 先凍。首跑真 server 的遠端 chunk 已不可讀，但 Forge Unload 事件
+尚未送出，結果仍為 CURRENT；55 秒首敗保留，沒有放寬等待條件。增加每 tick 至多
+256 個必要 chunk 的可讀性檢查，apply 前重查完整範圍後，同場景卸載/重啟/載回通過。
+13 項真 server gates、487 登錄/459 PASS/28 SKIP、两條可編譯行為故障臂與 jar gate 已驗。
+這只完成已知格索引與整維度延後；#86 物件/區域排程、#17 identity/lineage 未完成，
+效能仍待量測。N14 舊消費端守門保留，未把資料完整性測試當作高性能或 v1 資格。
+
+### 2026-09-10 CONSTRUCTION_IDENTITY：永久遊戲構件與譜系
+
+判準先凍於 `735fa0a`；唯讀權限及原生 member 0 入口由 `e30c416` 在命令實作前加凍。
+首跑 Forge 保存測試绕過正式 dirty notification，導致重開讀到舊 graph；保留 13 PASS/1 FAIL
+原 XML，將 publish/dirty 集中至同一入口後原斷言通過。邊界複查另抓到拆分時一段同批重建，
+另一段錯留母 ID；首敗保留，計算母 ID 出現於所有子段後全部子段取得新身份，不放寬 split 判準。
+終值 epoch 複查另抓到拒絕前已記 destruction，造成拒絕存檔無法重讀；保留首敗，先檢查上界後
+原圖及拒絕理由都能保存/重開。最終 Windows 505 登錄/477 PASS/28 SKIP；兩條具名可編譯故障臂咬住 ID 重用及 schema bypass。
+真 server 保存原生 OFF、拆分/合併/重建、跨 chunk 卸載/重啟/恢復、原生多元素對一物件證據。
+這是遊戲身份與建造譜系，不是引擎抽取、damage、剛體或 v1 完成；详 evidence/CONSTRUCTION_IDENTITY。
+
+### 2026-09-10 MODULE_PIPELINE_PROFILE：模組階段成本基線
+
+`5d9a078` 先凍預設 OFF、有界記錄器與 A49/F576/M832，各 10 次暖身/40 次量測。
+三場景首跑全保留、14 項功能門通過；所有時間依原分級為 Recorded，沒有事後補性能勝負線。
+M832 背景 worker p95 65.627 ms、含引擎的原生呼叫 p95 48.566 ms、apply p95 1.611 ms；
+兩次 native call/resolve，nested stages 互相重疊，不相加/相減成引擎 CPU 時間或 FPS。
+832 格混合結果的 display packet 已截取為 259753 B，明示 omission；不假稱所有元素都送到。
+512 登錄/483 PASS/29 SKIP，Linux 指定18項無跳過；真大回覆擴容與記錄開關前後樣本一致。
+原 counted BsiRetryGate fixture 此機未備，本輪不冒稱又驗到 solve vtable 一次；其原證據保留。
+單一共享開發機的首批基線未驗統計穩定性、真玩家網路、FPS、save/容量上界或 edit storm。
+原 41.7 ms FAIL/Linux 紅帳與 v1 高性能/封裝/物理展示全部門檻不降，詳 evidence/MODULE_PIPELINE_PROFILE。
+
+### 2026-09-10 REGISTRY_SCALING：不可變 entry 的驗收範圍
+
+`a04b538` 先凍四種容量/分布、兩種編輯、三個 JVM fork；`51c5d69` 根據原始首批快照
+787 ms/分組 9178 ms 先凍相對性能與配置預算。首次候選測試抓到 Java 17 的 wrapped
+HashMap entry 陣列可改值；沿同一路徑也抓到既有 Graph wrapped TreeMap 的可寫 entry。
+保留兩份首敗，先補凍 ordered record/range views 的不可变出口再改儲存；這是修正範圍擴展，
+原性能/配置預算、identity/bytes 不變，未降低門檻。最終效能結論待完整比較，不能提前稱過門。
+
+RS 首次完整對照：600 份 bytes 雜湊一致、Linux 指定36項無跳過通過，但 D4096/ONE
+object encode 4.427358 ms 超過 3.803510 ms，D131072/BURST64 coverage encode
+4.130830 ms 超過 3.560641 ms；兩條性能門仍判 FAIL。完整首批保存，不靠主流程加速抵銷。
+先加凍 codec 的精確配置/宣告 bytes 重用及舊版 golden，再改序列化；原 baseline、場景、
+fork 數、暖身與每條預算一律不動。新版若仍輸，照登；SP 尚未開始量測。
+
+RS serializer 候選 `bd9053d`：600 份 bytes 仍一致、Linux 37項無跳過；object encode 已過門，
+但 coverage ONE 在 D131072 為 4.240746 > 4.129652 ms，在 F131072 為
+3.777959 > 3.269339 ms，兩條仍 FAIL。先凍不變 coverage 的有界編碼 cache、所有變更失效
+與 caller-owned 回傳/故障臂，再改索引；原性能線不移，額外首次配置與保留記憶體照登。
+
+
+RS cached candidate `d1457a7`: 600 payload pairs match and 45 selected Linux tests
+pass without skips. D32768/BURST64 coverage encode still FAILS its original budget
+(2.146288 > 2.039887 ms). Preserve the complete third run. Before further code
+changes, freeze reuse of the existing canonical list snapshot during encoding,
+including its bounded retention and extra cold-call allocation when no prior reader
+requested the list. No scene, warmup, fork, percentile or budget is changed.
+
+
+RS final `0736baa` passes the unchanged 64 timing and 16 allocation budgets with
+600 identical payload pairs. All three failed predecessor candidates remain failed
+in their original evidence. Final Windows 490 PASS/29 SKIP; Linux selected45 PASS,
+zero skips. The declared memory losses remain visible. No v1 FPS/tick/performance
+or engine capability gate is lowered. See evidence/REGISTRY_SCALING/RESULTS.md.
+
+
+### 2026-09-10 SAVE_COMPRESSION
+
+`201e081` froze compression latency/size/allocation and compatibility criteria
+before `4e9e927` changed the writer. All 900 paired payloads, 36 timing and 36
+allocation budgets, and every 1.50x file-size limit pass on the first candidate.
+The unchanged SP baseline remains Recorded, not retroactively assigned a pass/fail.
+Size grows about18% at131K cells; synchronous save still blocks for tens to over
+100ms. No v1 tick/FPS, native or visual gate is lowered. Linux full Forge109 PASS,
+zero skips; Windows108 PASS/1 SKIP. See evidence/SAVE_COMPRESSION/RESULTS.md.
+
+### 2026-09-10 CLIENT_RENDER_PROBE: explicit supplemental visual workflow
+
+The installed Windows client still has a security permission dialog. A separate
+Linux development client/software renderer may provide a real baseline before
+source-level material/HUD edits. This changes CM's preparation order, not its
+acceptance: resulting visuals are downgraded to supplemental candidates, and
+CM-1..6/N25 remain unaccepted until their original installed-client/profile gates
+run. The installed jar and CM server remain untouched. No screenshot or synthetic
+delivery substitutes for Windows or native release qualification. CRP criteria
+are in docs/CLIENT_RENDER_PROBE.md, committed before probe code or launch.
+
+CRP third attempt collected16 real screenshots and passed45 coordinator checks.
+The first onboarding timeout and second probe-observation failure remain failed.
+Revision44 cached bootstrap and revision116 model refusal were observed over the
+actual socket. Direction models and1280px long-message readability visibly fail
+in the baseline. This permits supplemental source candidates, not CM/N25 acceptance.
+See evidence/CLIENT_RENDER_PROBE/RESULTS.md; no production engine/delivery edit.

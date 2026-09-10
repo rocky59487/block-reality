@@ -1,0 +1,15 @@
+OFF startup has no result: PASS
+Traceback (most recent call last):
+  File "/mnt/c/Users/wmc02/Desktop/block-reality/scripts/game_runtime_smoke.py", line 157, in <module>
+    main()
+  File "/mnt/c/Users/wmc02/Desktop/block-reality/scripts/game_runtime_smoke.py", line 75, in main
+    wait_for("config enable recovers native analysis", lambda s:
+  File "/mnt/c/Users/wmc02/Desktop/block-reality/scripts/game_runtime_smoke.py", line 37, in wait_for
+    reply = command("br status")
+  File "/mnt/c/Users/wmc02/Desktop/block-reality/scripts/game_runtime_smoke.py", line 29, in command
+    response = re.sub("§.", "", client.command(text))
+  File "/mnt/c/Users/wmc02/Desktop/block-reality/scripts/rcon_client.py", line 69, in command
+    self._send(0, "")
+  File "/mnt/c/Users/wmc02/Desktop/block-reality/scripts/rcon_client.py", line 37, in _send
+    self.sock.sendall(data)
+BrokenPipeError: [Errno 32] Broken pipe

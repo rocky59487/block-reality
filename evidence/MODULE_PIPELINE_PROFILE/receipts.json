@@ -1,0 +1,31 @@
+{
+  "criteria": "5d9a078",
+  "parent": "472c3a2aa552db4eb30c7cfd01b9e27055f27139",
+  "host_cpu": "AMD Ryzen 9 8940HX, 16 cores / 32 logical processors",
+  "engine_source": "95a03e82bbc50c53eac97b5289b79d8e640f8075",
+  "engine_sha256": "bbf38ff3d4633d4c9e0e7f42fb87e1e3183a6f9d7418ed88432b05392b36c121",
+  "contract_sha256": "4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801",
+  "server_source_lf_sha256": {
+    "mod/core/src/main/java/com/blockreality/core/diagnostics/PipelineProfile.java": "4febb1d6b0cbd1ee75b1cccadb02196076f46f30a4b764990f5d4653851c004b",
+    "mod/core/src/main/java/com/blockreality/core/engine/BsiNative.java": "69b813687708976be8f9fbbdcfa6f7c65d29c34f418c5600d984ce87a96e677e",
+    "mod/core/src/main/java/com/blockreality/core/engine/GameNativeLoader.java": "a1fbb37d8ece9515196d8d36aa9be81eb2e60736d18ff01d6a1b2fe569329224",
+    "mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java": "0a5fb0dd58f498527c550131e1230c53912f1e06b8a29ef2a491b4b5f36a0474",
+    "forge/src/main/java/com/blockreality/impl/server/StructureManager.java": "c8107a89211295aa848eb5965c4e0a674344cb6330a32cb11b77109a4a09823e",
+    "forge/src/main/java/com/blockreality/impl/server/WorldIndexData.java": "c18b9caa455bef103786e256683feb154cffb43614e74e1aeef7f41d35db01f2",
+    "forge/src/main/java/com/blockreality/impl/command/BRCommand.java": "1485e9733bb7bcdce50ae0ccec88efac255631727600c04e69b99f7017396e6d"
+  },
+  "final_source_lf_sha256": {
+    "mod/core/src/main/java/com/blockreality/core/diagnostics/PipelineProfile.java": "4febb1d6b0cbd1ee75b1cccadb02196076f46f30a4b764990f5d4653851c004b",
+    "mod/core/src/main/java/com/blockreality/core/engine/BsiNative.java": "d012656d572731feea8aeaaf41d12b06e8f788e96bade684b8779c1e57048d3d",
+    "mod/core/src/main/java/com/blockreality/core/engine/GameNativeLoader.java": "a1fbb37d8ece9515196d8d36aa9be81eb2e60736d18ff01d6a1b2fe569329224",
+    "mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java": "0a5fb0dd58f498527c550131e1230c53912f1e06b8a29ef2a491b4b5f36a0474",
+    "forge/src/main/java/com/blockreality/impl/server/StructureManager.java": "c8107a89211295aa848eb5965c4e0a674344cb6330a32cb11b77109a4a09823e",
+    "forge/src/main/java/com/blockreality/impl/server/WorldIndexData.java": "c18b9caa455bef103786e256683feb154cffb43614e74e1aeef7f41d35db01f2",
+    "forge/src/main/java/com/blockreality/impl/command/BRCommand.java": "1485e9733bb7bcdce50ae0ccec88efac255631727600c04e69b99f7017396e6d"
+  },
+  "post_baseline_delta": "BsiNative reply-copy indentation only; expanded native test exercises real buffer growth. Production behavior unchanged.",
+  "jar_bytes": 453741,
+  "jar_sha256": "a7d78d33604ca9d382aa9dbc27498e86c374d904870d172e4f36cc490c7398ef",
+  "performance_classification": "Recorded",
+  "release_qualified": false
+}

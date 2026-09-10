@@ -1,0 +1,9 @@
+OFF startup has no result: PASS
+Traceback (most recent call last):
+  File "/mnt/c/Users/wmc02/Desktop/block-reality/scripts/game_runtime_smoke.py", line 157, in <module>
+    main()
+  File "/mnt/c/Users/wmc02/Desktop/block-reality/scripts/game_runtime_smoke.py", line 73, in main
+    probe()
+  File "/mnt/c/Users/wmc02/Desktop/block-reality/scripts/game_runtime_smoke.py", line 62, in probe
+    assert "delivery probe PASS:" in reply, reply
+AssertionError: An unexpected error occurred trying to execute that command

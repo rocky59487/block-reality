@@ -1,0 +1,10 @@
+[
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          DISABLED\n  native engine not loaded yet\n  revision        2   (rejected as stale: 0)\n  blocks          27   test loads: 0\n  analysis        OFF\n  last result     none yet\n"
+  },
+  {
+    "command": "br_delivery_probe",
+    "response": "An unexpected error occurred trying to execute that command\n"
+  }
+]

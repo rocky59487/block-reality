@@ -1,0 +1,22 @@
+{
+  "connected": false,
+  "screen": "AccessibilityOnboardingScreen",
+  "worldRevision": -1,
+  "resultRevision": -1,
+  "kind": "null",
+  "stale": false,
+  "members": 0,
+  "shells": 0,
+  "maxDc": 0.0,
+  "width": 1280,
+  "height": 720,
+  "guiWidth": 427,
+  "guiHeight": 240,
+  "guiScale": 3.0,
+  "language": "en_us",
+  "mode": "UTILIZATION",
+  "glRenderer": "llvmpipe (LLVM 15.0.7, 256 bits)",
+  "glVersion": "4.5 (Core Profile) Mesa 23.2.1-1ubuntu3.1~22.04.4",
+  "handled": 0,
+  "writing": false
+}

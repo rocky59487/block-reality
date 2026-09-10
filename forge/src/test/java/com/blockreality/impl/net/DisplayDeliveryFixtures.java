@@ -16,8 +16,9 @@ final class DisplayDeliveryFixtures {
                     6+i,8+i,9+i,Optional.of(50.),Optional.empty(),Optional.of(new StressStation.Identity(s,i%2==0?-1:1))));
         }
         Optional<BeamDisplayField> display = ns == 0 ? Optional.empty() : Optional.of(new BeamDisplayField(o,x,y,z,2000,200,100,stations));
-        return new MemberSnapshot(id,"steel","rect",2000,1,GoverningFibre.TENSION,ns==0?-1:ns/2,
-                EndForces.ZERO,EndForces.ZERO,blocks(nb),stations,Optional.empty(),display,true,Optional.empty());
+        return new MemberSnapshot(
+                id, "steel", "rect", 2000, 1, GoverningFibre.TENSION, ns==0?-1:ns/2, EndForces.ZERO, EndForces.ZERO,
+                blocks(nb), stations, display, true, Optional.empty());
     }
     static List<BlockKey> blocks(int n) {
         List<BlockKey> blocks = new ArrayList<>();
@@ -31,8 +32,7 @@ final class DisplayDeliveryFixtures {
         var f=new ShellDisplayField(List.of(new Vec3d(x,64500,500),new Vec3d(x+1000,64500,500),
                 new Vec3d(x+1000,64500,1500),new Vec3d(x,64500,1500)),
                 new Vec3d(1,0,0),new Vec3d(0,0,1),new Vec3d(0,-1,0),face,face);
-        return new ShellSnapshot(id,"slab","slab",200,1,Double.NaN,true,false,blocks(nb),
-                Optional.empty(),Optional.of(f),true,6);
+        return new ShellSnapshot(id, "slab", "slab", 200, 1, Double.NaN, true, false, blocks(nb), Optional.of(f), true, 6);
     }
     static AnalysisResult result(List<MemberSnapshot> m, List<ShellSnapshot> s, int governing, String kind) {
         return new AnalysisResult(new WorldRevision(19),true,false,"",1,governing,kind,1,0,0,0,

@@ -3,6 +3,8 @@ package com.blockreality.impl.net;
 import com.blockreality.api.*;
 import com.blockreality.core.bsi.*;
 import com.blockreality.core.engine.InProcessEngine;
+import com.blockreality.core.AnalysisDeliveryClock;
+import com.blockreality.core.engine.NativeGameRuntime;
 import net.minecraft.network.FriendlyByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
@@ -34,14 +36,23 @@ class NativeResultPacketTest {
             var world=new ArrayList<BsiRecords.Block>();world.add(BsiRecords.Block.of(-1,0,0,1,-1,0));
             for(int i=0;i<=4;i++)world.add(BsiRecords.Block.of(i,0,0,0,-1,0));
             assertTrue(engine.declareWorld(73,world));
+            var clock = new AnalysisDeliveryClock();
+            UUID source = new UUID(1, 73);
+            long sequence = 0;
             for(var storage:BsiHeaders.Storage.values())for(double force:new double[]{0,-1e8}) {
                 var result=engine.analyze(new WorldRevision(73),true,new double[]{0,-9.81,0},
                         List.of(new BsiRecords.Load(2,0,0,0,force,0)),4,Map.of(0,"steel"),Map.of(0,"rect"),storage);
                 assertTrue(result.ok(),result.diagnostic());assertEquals(force<0,result.overCapacity());
                 var bytes=new FriendlyByteBuf(Unpooled.buffer());
                 try {
-                    StressResultPacket.encode(StressResultPacket.of(result,"minecraft:overworld",false),bytes);
-                    var decoded=StressResultPacket.decode(bytes);assertTrue(decoded.valid(),decoded.invalidReason());
+                    var update = AnalysisUpdatePacket.of("minecraft:overworld",source,++sequence,73,sequence==1,
+                            AnalysisUpdatePacket.Kind.RESULT,NativeGameRuntime.Status.READY,"",
+                            StressResultPacket.of(result,"minecraft:overworld",false));
+                    AnalysisUpdatePacket.encode(update,bytes);
+                    var received=AnalysisUpdatePacket.decode(bytes);assertTrue(received.valid(),received.invalidReason());
+                    var decoded=received.result();
+                    assertTrue(clock.accept("minecraft:overworld",received.dimension(),received.sourceId(),received.sequence(),
+                            received.worldRevision(),received.bootstrap(),decoded.revision()));
                     assertEquals(result.overCapacity(),decoded.overCapacity());assertEquals(result.bucklingCritical(),decoded.bucklingCritical());
                     assertEquals(result.maxDc(),decoded.maxDc());assertEquals(result.bucklingState(),decoded.bucklingState());
                     assertEquals(result.members().get(0).stations(),decoded.members().get(0).stations());

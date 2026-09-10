@@ -15,10 +15,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Mod entry point.
  *
- * <p>Note what does <em>not</em> happen here: the sidecar is not started. It is lazy, and
- * a player who never places a structural block never pays for a process. More to the
- * point, a mod that failed to load because an optional native binary was missing would be
- * a worse mod than one that simply cannot analyse anything.
+ * <p>The native engine is loaded lazily by an analysis worker. A missing library disables
+ * analysis without preventing the rest of the mod from loading.
  */
 @Mod(BlockRealityMod.MOD_ID)
 public final class BlockRealityMod {
@@ -48,11 +46,7 @@ public final class BlockRealityMod {
                 () -> com.blockreality.impl.client.ClientBootstrap::init);
     }
 
-    /**
-     * Shut the sidecars down with the server. The child processes would exit on their own
-     * when stdin closed, but doing it explicitly means the shutdown is ordered rather than
-     * racing the JVM's exit.
-     */
+    /** Revoke pending results before scheduling native cleanup and stopping analysis workers. */
     private static void onServerStopping(ServerStoppingEvent event) {
         StructureManager.shutdownAll();
     }

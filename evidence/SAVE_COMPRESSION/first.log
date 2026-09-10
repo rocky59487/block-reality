@@ -1,0 +1,28 @@
+> Task :compileJava
+> Task :bundleEngines UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes
+> Task :compileTestJava
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+
+> Task :test
+
+WorldIndexDataTest > corruptExistingFileIsNeverReplacedByEmptyData() PASSED
+
+WorldIndexDataTest > actualSavedDataSurvivesReloadWithDimensionSeparation() PASSED
+
+WorldIndexDataTest > gzipWriterReadsLegacyCompressionAndPreservesPendingMetadataForVanilla() PASSED
+
+WorldIndexDataTest > legacyCoverageMigratesWithoutForgettingUnloadedUnknownDeclarations() PASSED
+
+WorldIndexDataTest > savedPendingReplacementRetiresOriginalIdentityAfterReload() PASSED
+
+WorldIndexDataTest > failedAtomicReplacementPreservesOldFileAndDirtyRetry() PASSED
+
+WorldIndexDataTest > unknownObjectSchemaCannotFallBackToCoverageOrOverwriteFile() PASSED
+
+WorldIndexDataTest > failedCompressedWritePreservesOriginalFileAndAllowsExactRetry() PASSED
+
+BUILD SUCCESSFUL in 7s
+5 actionable tasks: 3 executed, 2 up-to-date

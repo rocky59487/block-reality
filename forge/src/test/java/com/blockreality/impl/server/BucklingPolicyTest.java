@@ -33,37 +33,14 @@ class BucklingPolicyTest {
         assertFalse(BucklingPolicy.enabled(0, -1));
     }
 
-    /** The block limit BRConfig actually ships, read out of the source. */
-    private static final int SHIPPED_DEFAULT = 600;
-
     @Test
-    void theShippedDefaultIsTheOneTheCostTableWasReadFor() throws Exception {
-        // The number in BRConfig and the number its cost table justifies have to be the
-        // same one. They were not: the comment quoted a fit that predates forcing the
-        // sparse eigensolver and claimed 300 blocks cost about 2 s, where the measurement
-        // is 1 ms for a beam and 27 ms for a floor of that size. A limit chosen against a
-        // cost that is wrong by 80x is a limit chosen by accident.
-        //
-        // Read out of the source rather than asserted against itself. Instantiating
-        // BRConfig needs Forge's builder, and a test that only compared 600 to 600 would
-        // pass whatever the shipped file said -- which is the failure it exists to catch.
-        Path config = repoRoot().resolve(
-                "forge/src/main/java/com/blockreality/impl/BRConfig.java");
-        String src = Files.readString(config, StandardCharsets.UTF_8);
-        Matcher m = Pattern.compile(
-                "defineInRange\\(\"bucklingBlockLimit\", *(\\d+)").matcher(src);
-        assertTrue(m.find(), "no bucklingBlockLimit default found in " + config);
-        assertEquals(SHIPPED_DEFAULT, Integer.parseInt(m.group(1)),
-                "the shipped default moved without this test and its cost table moving with it");
-
-        // And the table that justifies it is still beside it, with the shape that costs
-        // the most named. A number with its reasoning deleted is a number nobody can
-        // re-derive when it next needs changing.
-        assertTrue(src.contains("portal frame"),
-                "the cost table the limit was chosen against is gone from the comment");
-
-        assertTrue(BucklingPolicy.enabled(SHIPPED_DEFAULT, SHIPPED_DEFAULT));
-        assertFalse(BucklingPolicy.enabled(SHIPPED_DEFAULT + 1, SHIPPED_DEFAULT));
+    void theNativeDefaultUsesEngineDofBudgetInsteadOfBlockCounts() throws Exception {
+        String config = Files.readString(repoRoot().resolve("forge/src/main/java/com/blockreality/impl/BRConfig.java"));
+        String manager = Files.readString(repoRoot().resolve("forge/src/main/java/com/blockreality/impl/server/StructureManager.java"));
+        assertFalse(config.contains("bucklingBlockLimit"));
+        assertTrue(config.contains("defineInRange(\"bucklingDofBudget\", 2400"));
+        assertTrue(manager.contains("new BsiHeaders.EigenBuckling(BRConfig.INSTANCE.bucklingDofBudget.get())"));
+        assertFalse(manager.contains("BucklingPolicy.enabled"));
     }
 
     private static Path repoRoot() {

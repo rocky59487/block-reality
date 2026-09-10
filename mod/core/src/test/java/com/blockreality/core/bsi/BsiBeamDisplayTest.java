@@ -43,7 +43,7 @@ class BsiBeamDisplayTest {
 
     @Test void samplesUnitsAndDiagnosticConventionComeFromWire() {
         var m=sample();var f=m.display().orElseThrow();
-        assertTrue(m.field().isEmpty());assertEquals(2000,m.lengthMm());assertEquals("rect",m.section());
+        assertTrue(com.blockreality.testfixtures.NativeSnapshotChecks.hasNoLegacyField(m));assertEquals(2000,m.lengthMm());assertEquals("rect",m.section());
         assertEquals(new Vec3d(2500,64500,-3500),f.originMm());assertEquals(200,f.halfYMm());assertEquals(100,f.halfZMm());
         assertEquals(new EndForces(-7,8,9,10000,11000,12000),m.endI());
         for(int k=0;k<4;k++) {

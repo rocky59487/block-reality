@@ -1,0 +1,55 @@
+[
+  {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\world-registry-server-first.json",
+    "evidence": "server-first.json",
+    "sha256": "e5a990f4bd5a76e87bdf6e3525dda48254ff281db56c521cdf4f58c6a5e4512b"
+  },
+  {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\world-registry-server-final.json",
+    "evidence": "server-after-fix.json",
+    "sha256": "7d13819e38256f2c0381b8065a778728e9668cc1b797cc132b9dbd82e07fdf3c"
+  },
+  {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\world-registry-compile-first.log",
+    "evidence": "compile-first.log",
+    "sha256": "3efe9745195a9057ed8b4a36852b4779c58a890b05aabb00319fa222bc13ddf6"
+  },
+  {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\world-registry-docs-first.log",
+    "evidence": "docs.log",
+    "sha256": "a5d175e9a4dd0bd89cc795b8f63f31100d9f58e9c12b82c78644f0b1a5953a10"
+  },
+  {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\world-registry-core-all.log",
+    "sha256": "3cb1bb979f71572fd6bcb90d354fafad05ef3c660dc428bd1b8de8fa62f80564"
+  },
+  {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\world-registry-core-with-legacy.log",
+    "sha256": "4682cabbedbd3e9f6f1be2583977ca772e83a36cdecfd89ef5ac3c6d1c8572ef"
+  },
+  {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\world-registry-forge-final.log",
+    "sha256": "a091ce8aac3b9a9ec98d06c7170523097c4548e353ed72dbd6ccc1a6e965f9ed"
+  },
+  {
+    "source": "/home/rocky/br-world-registry-server-first.log",
+    "sha256": "a8503018b02ca0dee9d134ebf4040d87ce33142cb541ccaa9e2ff7840c6eabff"
+  },
+  {
+    "source": "/home/rocky/br-world-registry-server-second.log",
+    "sha256": "c313388518891f9df87af6d94cbcc2659cd7cc50442df3cdcfd71255b4872537"
+  },
+  {
+    "source": "/home/rocky/br-world-registry-server-final.log",
+    "sha256": "c202219c814c8ab63ed18f66738d9c3963908ef4fe9ee3cfd61e7096d3c4cc2d"
+  },
+  {
+    "source": "/home/rocky/br-world-registry-server-final-restart.log",
+    "sha256": "b6b4843cae9f4d11ce95f19043f05f36e53f67fa308da1647c9c02c6244b7ab3"
+  },
+  {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\world-registry-server-final3.json",
+    "evidence": "server-final.json",
+    "sha256": "606b1d25a191d12858cccb4e6e01dc7b6faf1908a56e820712bb96b8fda8bb23"
+  }
+]

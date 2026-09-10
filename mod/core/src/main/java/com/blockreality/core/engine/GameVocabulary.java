@@ -4,6 +4,8 @@ import com.blockreality.core.bsi.BsiVocabulary;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Optional;
 
 /** Product declarations and SI material data; section properties remain engine-owned. */
 public final class GameVocabulary {
@@ -38,14 +40,43 @@ public final class GameVocabulary {
         return binding;
     }
 
-    public static String declaration() { return Declaration.JSON; }
+    public static String declaration() { return Declaration.LOADED.text(); }
+
+    /** Presentation failure must neither invent dimensions nor prevent placing a product. */
+    public static Optional<ProductGeometry> geometry(String material, String section) {
+        return Geometry.BY_PRODUCT.getOrDefault(new Product(material, section), Optional.empty());
+    }
+
+    private static final class Geometry {
+        private static final Map<Product, Optional<ProductGeometry>> BY_PRODUCT = read();
+        private static Map<Product, Optional<ProductGeometry>> read() {
+            Map<Product, Optional<ProductGeometry>> result = new HashMap<>();
+            PRODUCTS.forEach((product, binding) -> {
+                try {
+                    result.put(product, Optional.of(ProductGeometry.read(declaration(), binding)));
+                } catch (IllegalArgumentException | IllegalStateException e) {
+                    result.put(product, Optional.empty());
+                }
+            });
+            return Map.copyOf(result);
+        }
+    }
+
     private static final class Declaration {
-        private static final String JSON = read();
-        private static String read() {
+        // A failed resource read stays an ordinary refusal on every call. Throwing out of
+        // <clinit> would permanently poison the class and turn a tooltip into a linkage crash.
+        private static final Loaded LOADED = read();
+        private record Loaded(String json, IOException failure) {
+            String text() {
+                if (failure != null) throw new IllegalStateException("cannot read game vocabulary", failure);
+                return json;
+            }
+        }
+        private static Loaded read() {
             try (var in = GameVocabulary.class.getResourceAsStream("/blockreality/game-vocabulary.json")) {
-                if (in == null) throw new IllegalStateException("missing game vocabulary resource");
-                return new String(in.readAllBytes(), StandardCharsets.UTF_8);
-            } catch (IOException e) { throw new IllegalStateException("cannot read game vocabulary", e); }
+                if (in == null) throw new IOException("missing game vocabulary resource");
+                return new Loaded(new String(in.readAllBytes(), StandardCharsets.UTF_8), null);
+            } catch (IOException e) { return new Loaded(null, e); }
         }
     }
 }
