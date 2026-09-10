@@ -13,16 +13,19 @@ WHAT IS IN THE JAR
 ------------------
 
 Structural analysis does not run in Java, so the mod carries a native ANALYSIS LIBRARY
-inside the jar and unpacks it on first launch, into
+inside the jar and unpacks it when enabled analysis first needs it, into
 
-    <game directory>/blockreality/engine/lib/<hash>/
+    <game directory>/blockreality/engine/lib/<os>-<arch>/<SHA256>/<library file>
 
 The library is loaded by the game. It is not a program: it is never started as a process,
-and it is unpacked without an execute bit. Its SHA-256 is recorded in the jar beside it and
-checked before it is used, so a corrupted download refuses rather than misbehaves.
+and on Linux it is unpacked without an execute bit. Its SHA-256 is recorded in the jar
+beside it and checked before it is used. A damaged cache is repaired from verified jar
+bytes when possible; invalid metadata or an incompatible interface is refused.
+Tectonic2 runs inside the same process: a native crash can terminate the game or server.
 
-Nothing is downloaded, at install time or while you play. The library is bytes that were
-already inside the jar you chose to install. The mod does not open network connections.
+Once Minecraft and Forge are installed, this distribution needs no separate engine
+download. The engine bytes are already inside the jar. Normal Minecraft multiplayer
+connections carry the mod's analysis displays; they do not download an engine.
 
 
 IF YOUR PLATFORM IS NOT SUPPORTED YET
@@ -33,7 +36,7 @@ archive lists them, with the version and interface revision of each. On a platfo
 engine the mod still loads and you can still build — analysis is simply off, and the game
 log says so in one line.
 
-You can supply your own engine without waiting for a mod update. Build it from
+You can supply a compatible delivered native library from
 <https://github.com/rocky59487/tectonic2>, then put the library in
 
     <game directory>/blockreality/engine/<os>-<arch>/
@@ -49,9 +52,10 @@ VERIFYING WHAT YOU DOWNLOADED
 
     sha256sum -c SHA256SUMS.txt
 
-engine-provenance.json records, for every library in the jar, its hash, the engine version
-and the interface revision — read out of the engine itself at build time, not asserted by
-the build.
+engine-provenance.json records every bundled library's hash, engine version and interface
+revision. It also identifies the source and whether this is a published release or a
+locally qualified candidate. Source/archive verification and runtime handshake are
+separate checks; a candidate does not become a formal release by being packaged.
 
 
 LICENCES
