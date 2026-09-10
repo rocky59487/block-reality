@@ -93,3 +93,9 @@ ZIPs preserve every original file byte and include verified per-file SHA256 mani
 `receipts.json` pins the archives/logs/helpers, `source-manifest.json` pins the412 source
 and configuration files used for the isolated mutation workspace, and `summary.json`
 states the remaining scope. No existing game client/server or engine checkout changed.
+
+Exact-head CI34438328998 at a52c28f initially fails the documentation-count step:
+seven current claims still said555 while the suites register573. All functional
+steps pass;3 other jobs succeed and15 native build steps skip. Raw run/failure log
+are retained. Current counts/subcounts are corrected without changing tests or gates;
+the follow-up exact-head CI result remains required.
