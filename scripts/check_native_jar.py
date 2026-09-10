@@ -9,10 +9,12 @@ No production child process is introduced: every subprocess here is a test drive
 import argparse
 import base64
 import ctypes
+import copy
 from contextlib import closing
 import hashlib
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -36,31 +38,39 @@ def load_corpus():
     return module
 
 
-def frames(corpus, directory, eigen=False):
+def frames(corpus, directory, eigen=False, shell_eigen=False):
     raw = dict(corpus.load_cases())
     for name, data in raw.items():
-        if not name.startswith(("C5-", "C6-", "C8-") + (("C10-",) if eigen else ())):
+        if not name.startswith(("C5-", "C6-", "C8-") + (("C10-",) if eigen else ())
+                               + (("C14-",) if shell_eigen else ())):
             continue
         case = corpus.Case(name, data, raw)
         mats, secs = case.vocab_ids()
         worlds = list(case.worlds.items())
-        is_buckling = name.startswith("C10-")
+        is_shell = name.startswith("C14-")
+        is_buckling = name.startswith(("C10-", "C14-"))
         for world_name, world in (worlds if is_buckling else worlds[:1]):
             for storage in ["f64", "f32"]:
-                suffix = "_" + world_name if is_buckling else ""
-                dest = directory / (case.case_id.replace("-", "_") + suffix + "_" + storage)
-                dest.mkdir(parents=True, exist_ok=False)
-                hello = {"bsi": 1, "client": "native-jar/1", "contractSha256": corpus.contract_sha(), "arena": {"supported": False, "maxBytes": 0}}
-                solve = dict(world.solve, numThreads=1, include=["members", "stations", "shells", "memberGeometry", "stationIdentity"],
-                             precision={"tier": "commit", "storage": storage})
-                loads = corpus.encode_loads(world.loads)
-                if loads:
-                    solve["loads"] = len(loads) // 64
-                requests = [("bsi.hello", hello, b""), ("bsi.vocab.declare", case.vocab, b""),
-                            ("bsi.world.declare", {"blocks": len(world.blocks)}, corpus.encode_blocks(world.blocks, mats, secs)),
-                            ("bsi.solve", solve, loads)]
-                for index, (method, body, payload) in enumerate(requests):
-                    (dest / f"{index}.frame").write_bytes(corpus.encode_frame(corpus.header(method, body, str(index)), payload))
+                for variant in (["thin", "thick"] if is_shell else [""]):
+                    suffix = "_" + world_name if is_buckling else ""
+                    if variant: suffix += "_" + variant
+                    dest = directory / (case.case_id.replace("-", "_") + suffix + "_" + storage)
+                    dest.mkdir(parents=True, exist_ok=False)
+                    vocab = copy.deepcopy(case.vocab)
+                    if variant == "thick":
+                        wall = next(m for m in vocab["materials"] if m["name"] == "wall")
+                        wall["shellThickness"] = 0.3
+                    hello = {"bsi": 1, "client": "native-jar/1", "contractSha256": corpus.contract_sha(), "arena": {"supported": False, "maxBytes": 0}}
+                    solve = dict(world.solve, numThreads=1, include=["members", "stations", "shells", "memberGeometry", "stationIdentity"],
+                                 precision={"tier": "commit", "storage": storage})
+                    loads = corpus.encode_loads(world.loads)
+                    if loads:
+                        solve["loads"] = len(loads) // 64
+                    requests = [("bsi.hello", hello, b""), ("bsi.vocab.declare", vocab, b""),
+                                ("bsi.world.declare", {"blocks": len(world.blocks)}, corpus.encode_blocks(world.blocks, mats, secs)),
+                                ("bsi.solve", solve, loads)]
+                    for index, (method, body, payload) in enumerate(requests):
+                        (dest / f"{index}.frame").write_bytes(corpus.encode_frame(corpus.header(method, body, str(index)), payload))
 
 
 def direct(corpus, library, inputs, dest, version, build_sha):
@@ -91,6 +101,33 @@ def snapshot(directory):
     return {p.relative_to(directory).as_posix(): sha(p.read_bytes()) for p in sorted(directory.rglob("*.frame"))}
 
 
+def shell_verdicts(corpus, directory):
+    """Read native C14 records/flags verbatim; these are consumer oracles, not gameplay physics."""
+    schema = json.loads((ROOT / "contract/bsi.schema.json").read_text(encoding="utf-8"))
+    records = {}
+    for session in sorted(directory.glob("C14_*")):
+        hello = corpus.decode_frame((session / "0.frame").read_bytes())
+        assert "bsi.buckling.eigen.shells" in hello.h["capabilities"], hello.h
+        reply = corpus.decode_frame((session / "3.frame").read_bytes())
+        assert not reply.error and reply.h["buckling"] == {"kind": "eigen", "state": "computed"}, reply.h
+        sections = {s["name"].split(":")[0]: corpus.decode_records(schema, s["name"], reply.payload[s["offset"]:s["offset"]+s["bytes"]])
+                    for s in reply.h["sections"] if s["name"].split(":")[0] in {"blocks", "buckling"}}
+        buckling = sections["buckling"]
+        assert len(buckling) == 1 and buckling[0]["state"] == schema["x-enums"]["bucklingState"].index("computed"), buckling
+        factor = buckling[0]["factor"]; assert math.isfinite(factor) and factor > 0, buckling
+        thick = "_thick_" in session.name
+        warning = [w for w in reply.h["diag"]["warnings"] if w["code"] == "SHELL_BUCKLING_INDICATIVE"]
+        assert (len(warning) == 1 and warning[0]["count"] == 1) if thick else not warning, warning
+        owned = [b for b in sections["blocks"] if b["island"] == 0]
+        assert owned and all(bool(b["flags"] & 2) == thick for b in owned), owned
+        records[session.name] = {"factor": factor, "indicative": thick, "island_blocks": len(owned), "warnings": warning}
+    assert len(records) == 12, len(records)
+    for variant in ["thin", "thick"]:
+        selected = [r["factor"] for name, r in records.items() if "_" + variant + "_" in name]
+        assert len(selected) == 6 and all(math.isclose(v, selected[0], rel_tol=1e-12, abs_tol=0) for v in selected), selected
+    return records
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     for name in ["jar", "java", "classes", "jna", "library", "out"]:
@@ -98,6 +135,7 @@ def main():
     ap.add_argument("--version", default="1.3.0")
     ap.add_argument("--build-sha", default="c90b448")
     ap.add_argument("--eigen", action="store_true", help="also replay all C10 buckling variants")
+    ap.add_argument("--shell-eigen", action="store_true", help="also replay C14 wall/rotation/mirror with thin and indicative thick panels")
     args = ap.parse_args()
     blas_environment = {"OPENBLAS_CORETYPE": "Haswell", "OPENBLAS_NUM_THREADS": "1"}
     env = dict(os.environ, **blas_environment)
@@ -126,7 +164,7 @@ def main():
         return list(map(str, [args.java, "-cp", cp, "com.blockreality.core.engine.NativeJarProbe",
                               mode, use_jar, cache, args.out / "inputs", dest, *extra]))
     corpus = load_corpus()
-    frames(corpus, args.out / "inputs", args.eigen)
+    frames(corpus, args.out / "inputs", args.eigen, args.shell_eigen)
     platform = "windows-x86_64" if os.name == "nt" else "linux-x86_64"
     with zipfile.ZipFile(args.jar) as archive:
         manifest = archive.read("blockreality-engine/natives.manifest").decode()
@@ -138,9 +176,13 @@ def main():
         direct(corpus, args.library, args.out / "inputs", args.out / f"direct-{repetition}", args.version, args.build_sha)
         run(f"jar-{repetition}", command("replay", args.out / "cache", args.out / f"jar-{repetition}"))
     reference = snapshot(args.out / "direct-0")
-    assert len(reference) == (48 if args.eigen else 24), ("corpus request count", len(reference))
+    assert len(reference) == (48 if args.eigen else 24) + (48 if args.shell_eigen else 0), ("corpus request count", len(reference))
     for arm in [f"{kind}-{i}" for kind in ["direct", "jar"] for i in range(3)]:
         assert snapshot(args.out / arm) == reference, ("direct/jar DET mismatch", arm)
+    if args.shell_eigen:
+        verdicts = shell_verdicts(corpus, args.out / "direct-0")
+        assert shell_verdicts(corpus, args.out / "jar-0") == verdicts
+        (args.out / "shell-verdicts.json").write_text(json.dumps(verdicts, indent=2), encoding="utf-8")
     run("faults", command("faults", args.out / "fault-cache", args.out / "faults"))
     # Permission denial must be the filesystem's answer, not a fake loader exception.
     denied = args.out / "denied-cache"
@@ -195,7 +237,7 @@ def main():
     summary = dict(platform=platform, jar_sha256=sha(args.jar.read_bytes()), native_sha256=entry[3],
                    requests=snapshot(args.out/"inputs"), replies=reference, det_repeats=3,
                    concurrent_jvms=2, numThreads=1, blas_environment=blas_environment, version=args.version, buildSha=args.build_sha,
-                   eigen=args.eigen, scope="jar extraction + BSI replay; not a Minecraft game run")
+                   eigen=args.eigen, shellEigen=args.shell_eigen, scope="jar extraction + BSI replay; not a Minecraft game run")
     (args.out / "verification.json").write_text(json.dumps(summary, indent=2)+"\n",encoding="utf-8")
     print(json.dumps(summary,indent=2))
 
