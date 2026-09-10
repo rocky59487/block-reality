@@ -1,0 +1,42 @@
+{
+  "different_entries": [
+    {
+      "name": "META-INF/accesstransformer.cfg",
+      "windows_bytes": 659,
+      "linux_bytes": 665,
+      "windows_crlf": 0,
+      "linux_crlf": 6
+    },
+    {
+      "name": "META-INF/mods.toml",
+      "windows_bytes": 1880,
+      "linux_bytes": 1894,
+      "windows_crlf": 33,
+      "linux_crlf": 47
+    },
+    {
+      "name": "assets/blockreality/lang/en_us.json",
+      "windows_bytes": 6117,
+      "linux_bytes": 6119,
+      "windows_crlf": 101,
+      "linux_crlf": 103
+    },
+    {
+      "name": "assets/blockreality/lang/zh_tw.json",
+      "windows_bytes": 5869,
+      "linux_bytes": 5871,
+      "windows_crlf": 101,
+      "linux_crlf": 103
+    },
+    {
+      "name": "blockreality/game-vocabulary.json",
+      "windows_bytes": 1903,
+      "linux_bytes": 1924,
+      "windows_crlf": 0,
+      "linux_crlf": 21
+    }
+  ],
+  "all_differences_are_only_line_endings": true,
+  "compiled_classes_identical": true,
+  "correction": "Initial inspection narration guessed the direction incorrectly. Both sides normalize identically; the Linux snapshot has more CRLF, while some Windows entries have mixed endings. The candidate was never changed."
+}

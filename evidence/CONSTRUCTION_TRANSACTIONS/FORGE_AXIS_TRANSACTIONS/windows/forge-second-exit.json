@@ -1,0 +1,1 @@
+{"command": ["cmd", "/c", "gradlew.bat", "--no-daemon", "--console=plain", "build", "-PbrNativesDir=C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-v1.5-consumer\\staged"], "exit": 1}

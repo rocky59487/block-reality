@@ -1,0 +1,30 @@
+{
+  "source": "338c490",
+  "bytes": 15355886,
+  "sha256": "828d24b47b237c2ded256633a10c3e0d42795eeaa0c51c88514eb7773889fa32",
+  "changed_entries": [
+    "assets/blockreality/lang/en_us.json",
+    "assets/blockreality/lang/zh_tw.json",
+    "com/blockreality/core/RevisionGate$Display.class",
+    "com/blockreality/core/RevisionGate.class",
+    "com/blockreality/core/transaction/ManufacturedRegistry$Prepared.class",
+    "com/blockreality/core/transaction/ManufacturedRegistry.class",
+    "com/blockreality/impl/BlockRealityMod.class",
+    "com/blockreality/impl/block/StructuralBlock.class",
+    "com/blockreality/impl/server/StructureManager$Gathered.class",
+    "com/blockreality/impl/server/StructureManager.class",
+    "com/blockreality/impl/server/WorldIndexData$RegistryGzip.class",
+    "com/blockreality/impl/server/WorldIndexData.class"
+  ],
+  "added_entries": [
+    "com/blockreality/core/transaction/ManufacturedRegistry$PendingMetadata.class",
+    "com/blockreality/impl/server/WorldIndexData$CountingDigest.class",
+    "com/blockreality/impl/server/construction/CellStateImage.class",
+    "com/blockreality/impl/server/construction/ConstructionService$Host.class",
+    "com/blockreality/impl/server/construction/ConstructionService.class"
+  ],
+  "removed_entries": [],
+  "unchanged_entries": 396,
+  "unchanged_classes": 246,
+  "engine_licenses_provenance_and_AT_unchanged": true
+}

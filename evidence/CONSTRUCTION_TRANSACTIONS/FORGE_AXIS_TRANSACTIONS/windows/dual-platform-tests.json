@@ -1,0 +1,67 @@
+{
+  "windows": {
+    "core": {
+      "source": "d720995",
+      "counts": {
+        "tests": 477,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 12
+      },
+      "skipped_tests": [
+        "com.blockreality.core.sidecar.BundledEngineTest.theUnpackedEngineIsExecutable(Path)",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aCrashDuringAnalysisFailsThatRequestAndRecovers()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aStaleReplyLeftInThePipeDoesNotPoisonTheNextRequest()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.resetRevivesADisabledClientOnceTheBinaryIsInstalled()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aWedgedSidecarTimesOutAndIsKilled()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aFloodingSidecarIsKilledNotBuffered()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aProtocolMismatchIsRefusedOutrightAndNotRetried()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aShmDoorbellRevisionMismatchIsADesyncAndEndsTheConversation()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aClosedClientIsTerminalAndNeverRespawns()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.growIsRetriedOnceGrownAndARefusalAfterGrowthIsAnAnswer()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.closingSendsByeAndDoesNotLeaveAProcessBehind()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aRefusedShmMappingDowngradesToJsonAndTheSolveStillAnswers()"
+      ]
+    },
+    "forge": {
+      "source": "338c490",
+      "counts": {
+        "tests": 145,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "skipped_tests": []
+    },
+    "registered": 622,
+    "passed": 610,
+    "skipped": 12
+  },
+  "linux": {
+    "core": {
+      "source": "d720995",
+      "counts": {
+        "tests": 477,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "skipped_tests": [
+        "com.blockreality.core.sidecar.SidecarPathsTest.aStringThatCannotBeAPathIsReportedAndNotThrown()"
+      ]
+    },
+    "forge": {
+      "source": "338c490",
+      "counts": {
+        "tests": 145,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "skipped_tests": []
+    },
+    "registered": 622,
+    "passed": 621,
+    "skipped": 1
+  }
+}

@@ -1,0 +1,55 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava UP-TO-DATE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:compileTestJava UP-TO-DATE
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses UP-TO-DATE
+
+> Task :core:constructionRecoveryGate
+PASS prepare-temp_forced
+PASS prepare-replaced
+PASS prepare-target_forced
+PASS prepare-directory_forced
+PASS commit-temp_forced
+PASS commit-replaced
+PASS commit-target_forced
+PASS commit-directory_forced
+PASS abort-temp_forced
+PASS abort-replaced
+PASS abort-target_forced
+PASS abort-directory_forced
+PASS write-1
+PASS flush-1
+PASS write-2
+PASS flush-2
+PASS write-3
+PASS flush-3
+PASS write-4
+PASS flush-4
+PASS write-5
+PASS flush-5
+PASS write-6
+PASS flush-6
+PASS rollback-write-1
+PASS rollback-flush-1
+PASS rollback-write-2
+PASS rollback-flush-2
+PASS rollback-write-3
+PASS rollback-flush-3
+PASS rollback-write-4
+PASS rollback-flush-4
+PASS rollback-write-5
+PASS rollback-flush-5
+PASS rollback-write-6
+PASS rollback-flush-6
+PASS publish
+{"status":"PASS","crashed_jvms":37,"fresh_recovery_jvms":37,"concurrent_owner_checks":1,"elapsed_ms":54494,"scope":"file participants, not Minecraft"}
+
+BUILD SUCCESSFUL in 1m 7s
+7 actionable tasks: 1 executed, 6 up-to-date
