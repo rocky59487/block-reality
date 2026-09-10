@@ -1,0 +1,1 @@
+{"command": ["cmd", "/c", "gradlew.bat", "--no-daemon", "--console=plain", "test", "--tests", "com.blockreality.impl.server.construction.LiveChunkCaptureTest", "--tests", "com.blockreality.impl.server.construction.BoundedChunkReadTest", "--tests", "com.blockreality.impl.server.construction.ChunkFileParticipantTest"], "exit": 0}

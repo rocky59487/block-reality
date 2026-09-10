@@ -1,0 +1,11 @@
+{
+  "jar_sha256": "06e6355bc11df1442194d88babd42b62bac75d3ca31c29b27f245cfb34851c91",
+  "server": "/home/rocky/br-live-chunk-capture/installed-server",
+  "library_source": "/home/rocky/br-native-v15-consumer/installed-server/libraries",
+  "harness_sha256": "12fcff663f03beb6bb174a43611c63a35df1b3684ff3a656745a8a318e1f0316",
+  "fresh_world": true,
+  "loopback_only": true,
+  "port": 25599,
+  "no_old_world_player_or_cache_copied": true,
+  "no_access_transformer_in_harness": true
+}
