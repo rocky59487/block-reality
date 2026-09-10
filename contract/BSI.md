@@ -438,3 +438,22 @@ include stationIdentity需要members+stations，以及cap bsi.readback.stationId
 未知side/flags/reserved拒絕。每member最多一筆governing且s等於member.governingS；沒有則原生無匹配索引(-1)。
 舊member160/station88或44/geometry168不改；identity零筆時仍輸出已請求的區段。
 Java不得由f32位置重猜側或最大DC，flags/DC仍由原判定提供。f32世界座標未恢復為f64精度。
+
+
+## Part G — 2026-09-09：完整屈曲島與世界摘要
+
+MC66A_BSI_BUCKLING：solve 的 buckling 區段恰有 diag.islands 筆，按 id=0..n-1。
+
+2026-09-10 MC66B：宣告 `bsi.buckling.eigen.shells` 的引擎可處理共同梁殼線性
+特徵值挫屈。沿用同次線性解的膜力與每島五態，不改 16 B 記錄。厚度/最短 facet 邊長
+大於 1/4 時，所屬島的 block bit1 為 indicative，並以既有 warnings 通道輸出
+`SHELL_BUCKLING_INDICATIVE`（count 為受影響島數）。C14 以原生 4×8 自重牆測試
+正特徵值與旋轉/鏡像；此能力不改變 §B 的殼格點載重 `LOAD_TARGET` 規則。
+每筆 kind 等於請求；none 只能 disabled-by-request，eigen/screen 不得 disabled。
+Computed 因子必須有限且嚴格正，其他狀態必須 NaN；拒絕未知 state、缺筆、重複與越界。
+世界摘要按 solver-failed > not-eligible > not-eligible-scale > computed >
+no-positive-eigenvalue，空 eigen/screen=not-eligible、空 none=disabled-by-request。
+Computed 世界因子由各 computed 島最小值導出；header 仍只有 kind/state。
+世界拒絕不抹除成功島的結果或 bit2；每格嚴格 double λ<1 的旗標仍對自己的島雙向核對。
+budgetDof 為 0..2147483647；0 取引擎預算。ABI 1 結構未變；tectonic eigen 此版採
+subdiv=2、maxIter=300、tol=1e-8，未提供這三項的 BSI 請求欄位。未知請求欄位依原規拒絕。

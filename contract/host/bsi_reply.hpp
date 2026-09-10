@@ -48,6 +48,7 @@ public:
     // Validate consistency for a solve reply and lay out the payload. On a
     // violation returns false with `why` (=> INTERNAL). partial: status partial.
     bool finalizeSolve(std::string& why);
+    bool finalizeSolve(std::string& why, uint8_t requestedMode);
     bool finalizeDeclare(std::string& why);
 
     // After finalize: the payload bytes, the section table, and header material.
@@ -105,6 +106,7 @@ private:
     bool haveEq_ = false; Equilibrium eq_{};
     bool haveQuality_ = false; Quality qual_{};
     std::vector<Buckling> buckling_;
+    bool bucklingValidated_ = false;
     std::vector<bsi_attr> attrsEcho_;
     bool haveDiag_ = false; uint32_t nodes_ = 0, members_ = 0, facets_ = 0, islands_ = 0, singular_ = 0, refused_ = 0;
     bool haveEdit_ = false; char editCls_ = 0; std::string editDowngraded_;
