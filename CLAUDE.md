@@ -74,12 +74,18 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   #125仍是draft；9976fc0的4項CI通過、15項native step跳過，不能代替本地原生實跑。
   CT_JOURNAL_BOOTSTRAP 已在同一鎖內讀回原領域ID，缺manifest而有資料時拒絕新建；
   提供有界不可變交易key清單、先核實未知寫入結果。5項新檔案測試及兩平台37次中斷/復原通過。
-  詳 `evidence/CONSTRUCTION_TRANSACTIONS/JOURNAL_BOOTSTRAP/RESULTS.md`；製造物件metadata/Forge入口仍待接合。
-  目前開發jar15,286,967B/SHA73a491fba10e…保留v1.5雙庫；沒有正式v1發布。
+  詳 `evidence/CONSTRUCTION_TRANSACTIONS/JOURNAL_BOOTSTRAP/RESULTS.md`；製造物件metadata後續進度見下一段，Forge入口仍待接合。
+  目前開發jar15,316,390B/SHA1315dce1e785…保留v1.5雙庫；沒有正式v1發布。
+- CT_MANUFACTURED_METADATA 已用COMMITTED日誌重建永久製造ID、精確所有權、不可逆編輯/退休與整批undo資格。
+  18項新測試、兩平台完整測試及37次中斷/復原通過；所有權與undo兩個可編譯反例被抓到。
+  原236類別與引擎/資源逐位不變，只增加14個metadata類別。雙平台864次日誌成本操作內容一致；
+  單格準備p95≤0.61ms，持久提交約13–46ms，131K重建約141/167ms；同主機並行量測僅Recorded。
+  尚無Forge施工呼叫者；metadata資格不授權世界修改或退款，完整CT-1..9/undo/UI仍開放。
+  詳 `evidence/CONSTRUCTION_TRANSACTIONS/MANUFACTURED_METADATA/RESULTS.md`。
 - NATIVE_VERDICT_API 已刪除只看數字的未使用影線API，公開利用率配色必須收原生overload旗標。
   37組顯示讀數不變，忽略旗標的可編譯反例被抓到；#128/6d1a0c2的4項CI通過、15原生步驟SKIP。
   #124未於Main整合前仍保持開放；詳 `evidence/NATIVE_VERDICT_API/RESULTS.md`。
-- Windows core454/Forge124：578登錄、566PASS、12平台SKIP；Linux577PASS、1平台SKIP。
+- Windows core472/Forge124：596登錄、584PASS、12平台SKIP；Linux595PASS、1平台SKIP。
   20項 native 相關全部執行。新庫Linux真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
   完整結果 `evidence/GAME_RUNTIME/RESULTS.md`，首敗保留、三故障臂具名咬合。
 - 全部失去支承時原生只回 SOLVE_FAILED；Java 保留拒絕，不能從 message 捏造 MECHANISM。

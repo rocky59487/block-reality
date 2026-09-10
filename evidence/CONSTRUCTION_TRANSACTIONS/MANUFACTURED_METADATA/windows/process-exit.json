@@ -1,0 +1,1 @@
+{"command": ["cmd", "/c", "gradlew.bat", "--no-daemon", "--console=plain", ":core:constructionRecoveryGate", "-Dbr.transactionEvidence=C:\\Users\\wmc02\\Desktop\\block-reality\\build\\manufactured-metadata\\process"], "exit": 0}

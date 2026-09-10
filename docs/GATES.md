@@ -1641,3 +1641,20 @@ participants. Ordinary jar changes only FileTransactionJournal.class;386 entries
 including both native libraries/resources remain identical. No game transaction,
 metadata replay, FPS or CT-1..9 completion claim. See
 evidence/CONSTRUCTION_TRANSACTIONS/JOURNAL_BOOTSTRAP/RESULTS.md.
+
+### 2026-09-10 CT_MANUFACTURED_METADATA
+
+Criteria a409ada/aba5aac precede4737e3c; c1d8ebb fixes the cost protocol before its
+profile driver. Permanent manufactured IDs, committed-journal reconstruction,
+strict ownership and irreversible whole-build undo metadata pass18 new tests on
+both platforms. Full596 registered:Windows584 PASS/12 platform SKIP, Linux595
+PASS/1 platform SKIP. Both37 interrupted/recovery JVM runs and owner checks pass.
+Two compiled planner/committed-validator removals fail ownership and undo assertions;
+control/restored18 pass. The first14-test source/XML remains pre-extension evidence.
+Jar1315dce1e785 adds14 classes; all387 old entries/236 classes remain byte-identical.
+Both native libraries/resources remain unchanged. The864 profile operations retain
+all samples, matching fingerprints and2400 identical copied files per platform.
+Times are Recorded only, with concurrent same-host execution and the Linux1024
+reopen313ms p95 tail retained. No Forge construction caller, world/player atomicity,
+refund authorization, CT-1..9, FPS or v1 completion follows from metadata alone.
+See evidence/CONSTRUCTION_TRANSACTIONS/MANUFACTURED_METADATA/RESULTS.md.

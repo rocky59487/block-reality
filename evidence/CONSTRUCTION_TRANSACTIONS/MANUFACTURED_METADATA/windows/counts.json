@@ -1,0 +1,30 @@
+{
+  "windows": {
+    "core": {
+      "tests": 472,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 12
+    },
+    "forge": {
+      "tests": 124,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "linux": {
+    "core": {
+      "tests": 472,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "forge": {
+      "tests": 124,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  }
+}
