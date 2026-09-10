@@ -1658,3 +1658,20 @@ Times are Recorded only, with concurrent same-host execution and the Linux1024
 reopen313ms p95 tail retained. No Forge construction caller, world/player atomicity,
 refund authorization, CT-1..9, FPS or v1 completion follows from metadata alone.
 See evidence/CONSTRUCTION_TRANSACTIONS/MANUFACTURED_METADATA/RESULTS.md.
+
+### 2026-09-10 CT_CHUNK_PARTICIPANT
+
+f693306 freezes chunk storage criteria before70d1112. Whole-batch canonical-image
+admission, complete store-future draining, force-before-readback, error latching and
+new-adapter synchronization pass7 tests, including actual region-file reopen.
+Windows/Linux full Forge131 PASS/0 SKIP; unchanged472-test core evidence is reused
+from4737e3c, not described as a fresh run. Current603 registration has Windows591
+PASS/12 platform SKIP and Linux602 PASS/1 platform SKIP coverage. Both compiled
+force/lost-capability mutants fail behavior;7-test control/restored pass. All401
+old jar entries/250 classes remain identical;4 adapter classes are added.
+The live level binding/capture is not exercised and no production construction
+caller exists. Review finds vanilla chunk reads allocate NBT with an unlimited
+accounter before canonical admission, while ChunkSerializer can swallow capability
+errors. These remain open live-integration limitations, not relaxed corrupt-disk
+bounds or accepted capture guarantees. No CT-1..9/FPS/v1 gate is lowered. See
+evidence/CONSTRUCTION_TRANSACTIONS/CHUNK_PARTICIPANT/RESULTS.md.

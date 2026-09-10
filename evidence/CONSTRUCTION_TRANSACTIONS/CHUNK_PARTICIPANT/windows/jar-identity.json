@@ -1,0 +1,15 @@
+{
+  "source": "70d1112",
+  "jar_bytes": 15324472,
+  "jar_sha256": "b5a9bab7e7b68559f20633aac4980079d8bf4a59340455f06339da7144d125c4",
+  "added_entries": [
+    "com/blockreality/impl/server/construction/ChunkFileParticipant$1.class",
+    "com/blockreality/impl/server/construction/ChunkFileParticipant$Batch.class",
+    "com/blockreality/impl/server/construction/ChunkFileParticipant$Storage.class",
+    "com/blockreality/impl/server/construction/ChunkFileParticipant.class"
+  ],
+  "removed_entries": [],
+  "changed_entries": [],
+  "unchanged_entries": 401,
+  "unchanged_classes": 250
+}
