@@ -153,3 +153,11 @@ may choose a separately labelled new preview. Remove only that exact expired out
 record; require a fresh preview and another confirmation before a new construction.
 Client timeout/elapsed time never authorizes this release. An old session in the same
 journal domain with no stored decision is expired, while a different domain conflicts.
+
+Installed replay observation: hold the fixture chunk loaded with an explicit test ticket.
+Compare public clocks immediately before/after each admitted replay, retaining intervening
+tick clocks; ordinary engine completions between calls are not replay publications.
+Inventory, metadata and complete journal bytes still remain bound to the pre-replay baseline.
+Add an ordinary nested support change during the post-commit neighbor notification:
+the committed source's duplicate notification must not add a revision, while the actual
+support change remains observed. Keep both notification paths through vanilla Forge.
