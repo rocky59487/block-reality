@@ -45,7 +45,7 @@ final class ChunkFileParticipant {
         return new Storage() {
             public CompletableFuture<Void> store(ChunkPos pos, CompoundTag image) { return worker.store(pos,image); }
             public CompletableFuture<Void> synchronize(boolean force) { return worker.synchronize(force); }
-            public CompletableFuture<Optional<CompoundTag>> load(ChunkPos pos) { return worker.loadAsync(pos); }
+            public CompletableFuture<Optional<CompoundTag>> load(ChunkPos pos) { return BoundedChunkRead.load(worker,pos); }
         };
     }
 
