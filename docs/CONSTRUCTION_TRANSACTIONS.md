@@ -52,6 +52,11 @@ The atomic visibility claim applies to published world/registry/inventory state,
 external validator deliberately inspecting the candidate during validation.
 
 Storage is bounded and checksummed, with atomic phase replacement and an exclusive owner.
+Initial limits:4096 plan cells,256 pieces,8192 changed resources,1MiB per value and16MiB
+per journal record;262144 lifetime transaction keys and1GiB total committed journal files.
+The journal stores one checksummed file per transaction with atomic phase replacement;
+at most one PREPARED transaction per domain may be outstanding. Completed records are
+read lazily for replay/undo; their before/after images are not all retained in heap.
 No idempotency-key eviction or reused artifact IDs. Capacity exhaustion refuses new work
 explicitly. Exact payload/actor/domain binding survives restart. A reused key with different
 content cannot replace the original outcome. Strict stale base revisions may require a new
