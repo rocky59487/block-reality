@@ -4,6 +4,7 @@ import com.blockreality.api.BucklingState;
 import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.ScanMode;
 import com.blockreality.api.UnassignedReason;
+import com.blockreality.impl.net.ConstructionProtocol;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -148,6 +149,9 @@ class LangKeysTest {
         for (BucklingState s : BucklingState.values()) keys.add(s.translationKey());
         for (GoverningFibre f : GoverningFibre.values()) {
             keys.add("br.fibre." + f.name().toLowerCase(Locale.ROOT));
+        }
+        for (ConstructionProtocol.Status status : ConstructionProtocol.Status.values()) {
+            keys.add("br.build.status." + status.name().toLowerCase(Locale.ROOT));
         }
         // Only the lenses a player can switch to. The four later ones are named in the
         // enum but unreachable, and giving them display strings now would read as a claim

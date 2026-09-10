@@ -13,18 +13,8 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.Optional;
 
 /**
- * Server to client only.
- *
- * <p>The demo has <strong>no</strong> client-to-server packets. Every player action that
- * matters — placing a block, breaking one, toggling a load — already reaches the server
- * through a vanilla event that vanilla has already permission-checked. Adding a custom
- * C2S packet would mean re-implementing those checks, and the previous codebase's audit
- * found a batch-placement path that skipped {@code EntityPlaceEvent} and the world border
- * entirely, bypassing every land-claim protection in the pack.
- *
- * <p>So the smallest safe surface is no surface. When a C2S packet does become necessary,
- * it needs a rate limit and a size cap on day one, because retrofitting those means
- * auditing every call site instead of one.
+ * Analysis delivery is server to client only. Construction requests use the separate
+ * {@link ConstructionChannel}, with their own admission, protection checks and wire version.
  *
  * <p>"S2C only" is <em>declared</em>, not assumed: every registration pins
  * {@link NetworkDirection#PLAY_TO_CLIENT}. Without the pin, a modified client could send

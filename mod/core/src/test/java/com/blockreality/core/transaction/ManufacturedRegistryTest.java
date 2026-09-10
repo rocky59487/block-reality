@@ -25,6 +25,9 @@ class ManufacturedRegistryTest {
             Intent intent = proposal.withParticipants(List.of(opaque));
             var context = registry.validatePrepared(Entry.prepared(intent));
             assertEquals(OVERWORLD,context.dimension()); assertEquals("EDIT",context.operation());
+            assertFalse(context.creative());assertEquals(1,context.pieces().size());
+            assertEquals(List.of(new BlockKey(1,80,0)),context.pieces().get(0).cells());
+            assertThrows(UnsupportedOperationException.class,()->context.pieces().clear());
             assertTrue(context.revisionResource().startsWith("revision/"));
             assertEquals(proposal.metadata().stream().sorted(Comparator.comparing(Change::resource)).toList(),context.changes());
             assertThrows(UnsupportedOperationException.class,()->context.changes().clear());

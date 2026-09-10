@@ -25,6 +25,7 @@ public final class ClientEvents {
     @SubscribeEvent
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut e) {
         ClientStressState.clear();
+        ClientConstruction.leave();
     }
 
     /**
@@ -35,5 +36,6 @@ public final class ClientEvents {
     @SubscribeEvent
     public static void onClone(ClientPlayerNetworkEvent.Clone e) {
         ClientStressState.leaveDimension();
+        ClientConstruction.leave();
     }
 }

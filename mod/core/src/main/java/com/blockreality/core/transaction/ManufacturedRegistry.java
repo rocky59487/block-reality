@@ -79,8 +79,9 @@ public final class ManufacturedRegistry {
                         .thenComparingInt(BlockKey::y).thenComparingInt(BlockKey::z)).toList();
     }
 
-    public record PendingMetadata(String dimension, String operation, String revisionResource, List<Change> changes) {
-        public PendingMetadata { changes = List.copyOf(changes); }
+    public record PendingMetadata(String dimension, String operation, boolean creative, String revisionResource,
+                                  List<Change> changes, List<ManufacturedPiece> pieces) {
+        public PendingMetadata { changes = List.copyOf(changes); pieces = List.copyOf(pieces); }
     }
 
     /** Validate against committed authority before the host uses any pending world images for recovery. */
@@ -93,7 +94,8 @@ public final class ManufacturedRegistry {
             List<Change> metadata = entry.intent().changes().stream().filter(change ->
                     change.resource().equals("meta/order") || change.resource().equals(revision)
                     || change.resource().startsWith("piece/") || change.resource().startsWith("transaction/")).toList();
-            return new PendingMetadata(batch.descriptor().dimension(),batch.descriptor().operation().name(),revision,metadata);
+            return new PendingMetadata(batch.descriptor().dimension(),batch.descriptor().operation().name(),
+                    batch.descriptor().creative(),revision,metadata,batch.updates().stream().map(Update::after).toList());
         } catch (RuntimeException malformed) { throw new IOException("Pending metadata does not match committed authority",malformed); }
     }
 
