@@ -73,7 +73,29 @@ def frames(corpus, directory, eigen=False, shell_eigen=False):
                         (dest / f"{index}.frame").write_bytes(corpus.encode_frame(corpus.header(method, body, str(index)), payload))
 
 
-def direct(corpus, library, inputs, dest, version, build_sha):
+def gravity_frames(corpus, receipt, directory):
+    """Replay the PGN gate's complete requests; preserve session and invalid-mode cases."""
+    rows = json.loads(receipt.read_text(encoding="utf-8"))
+    assert len(rows) == 198 and rows[:66] == rows[66:132] == rows[132:], "PGN requires 66 frames, DET3"
+    expected_errors = set()
+    session, index = -1, 0
+    for row in rows[:66]:
+        if row["method"] == "bsi.hello":
+            session += 1
+            index = 0
+        assert session >= 0, "PGN session must begin with hello"
+        target = directory / f"PGN_{session}" / f"{index:03}.frame"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(corpus.encode_frame(corpus.header(row["method"], row["body"], "pgn", 1),
+                                              base64.b64decode(row["request_payload_base64"], validate=True)))
+        if json.loads(row["header"])["kind"] == "error":
+            expected_errors.add(target.relative_to(directory).as_posix())
+        index += 1
+    assert session == 4 and len(expected_errors) == 6, "PGN session/schema coverage"
+    return expected_errors
+
+
+def direct(corpus, library, inputs, dest, version, build_sha, expected_errors=()):
     for session in sorted(inputs.iterdir()):
         with closing(corpus.CapiClient(str(library))) as engine:
             # Replace the default-options session with an explicitly single-thread session.
@@ -88,8 +110,8 @@ def direct(corpus, library, inputs, dest, version, build_sha):
                 assert rc == 0, (path, rc, needed.value)
                 reply = buffer.raw[:length.value]
                 decoded = corpus.decode_frame(reply)
-                assert not decoded.error, (path, decoded.h)
-                if path.name == "0.frame":
+                assert decoded.error == (path.relative_to(inputs).as_posix() in expected_errors), (path, decoded.h)
+                if corpus.decode_frame(frame).h["method"] == "bsi.hello":
                     assert decoded.h["version"] == version and decoded.h["contractSha256"] == corpus.contract_sha(), decoded.h
                     assert decoded.h["buildSha"] == build_sha, decoded.h
                 target = dest / session.name / path.name
@@ -136,6 +158,7 @@ def main():
     ap.add_argument("--build-sha", default="c90b448")
     ap.add_argument("--eigen", action="store_true", help="also replay all C10 buckling variants")
     ap.add_argument("--shell-eigen", action="store_true", help="also replay C14 wall/rotation/mirror with thin and indicative thick panels")
+    ap.add_argument("--gravity-frames", type=Path, help="PGN run_pgn_library.py frames.json; adds all 66 requests")
     args = ap.parse_args()
     blas_environment = {"OPENBLAS_CORETYPE": "Haswell", "OPENBLAS_NUM_THREADS": "1"}
     env = dict(os.environ, **blas_environment)
@@ -165,6 +188,7 @@ def main():
                               mode, use_jar, cache, args.out / "inputs", dest, *extra]))
     corpus = load_corpus()
     frames(corpus, args.out / "inputs", args.eigen, args.shell_eigen)
+    expected_errors = gravity_frames(corpus, args.gravity_frames, args.out / "inputs") if args.gravity_frames else set()
     platform = "windows-x86_64" if os.name == "nt" else "linux-x86_64"
     with zipfile.ZipFile(args.jar) as archive:
         manifest = archive.read("blockreality-engine/natives.manifest").decode()
@@ -173,10 +197,10 @@ def main():
         assert sha(args.library.read_bytes()) == entry[3]
         assert archive.read(f"blockreality-engine/{platform}/{entry[2]}") == args.library.read_bytes()
     for repetition in range(3):
-        direct(corpus, args.library, args.out / "inputs", args.out / f"direct-{repetition}", args.version, args.build_sha)
+        direct(corpus, args.library, args.out / "inputs", args.out / f"direct-{repetition}", args.version, args.build_sha, expected_errors)
         run(f"jar-{repetition}", command("replay", args.out / "cache", args.out / f"jar-{repetition}"))
     reference = snapshot(args.out / "direct-0")
-    assert len(reference) == (48 if args.eigen else 24) + (48 if args.shell_eigen else 0), ("corpus request count", len(reference))
+    assert len(reference) == (48 if args.eigen else 24) + (48 if args.shell_eigen else 0) + (66 if args.gravity_frames else 0), ("corpus request count", len(reference))
     for arm in [f"{kind}-{i}" for kind in ["direct", "jar"] for i in range(3)]:
         assert snapshot(args.out / arm) == reference, ("direct/jar DET mismatch", arm)
     if args.shell_eigen:
@@ -238,6 +262,9 @@ def main():
                    requests=snapshot(args.out/"inputs"), replies=reference, det_repeats=3,
                    concurrent_jvms=2, numThreads=1, blas_environment=blas_environment, version=args.version, buildSha=args.build_sha,
                    eigen=args.eigen, shellEigen=args.shell_eigen, scope="jar extraction + BSI replay; not a Minecraft game run")
+    if args.gravity_frames:
+        summary.update(gravityFramesSha256=sha(args.gravity_frames.read_bytes()), gravityRequests=66,
+                       gravitySolveNumThreads=4, expectedProtocolErrors=sorted(expected_errors))
     (args.out / "verification.json").write_text(json.dumps(summary, indent=2)+"\n",encoding="utf-8")
     print(json.dumps(summary,indent=2))
 

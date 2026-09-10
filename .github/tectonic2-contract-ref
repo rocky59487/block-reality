@@ -2,7 +2,7 @@
 # CI (N23-b) clones this ref and diffs the whole directory: if either side moves
 # without the other, the build goes red instead of the two drifting apart.
 # Update it in the SAME commit that copies a new contract/ across.
-42ba7eb912bd7d763435ce48a945df6954b680ea
+691651156881670d5ec67349b162dadbf81d1ce9
 #
 # ...and the contract hash at that commit. This second line is what makes the mirror
 # check work WITHOUT a cross-repository clone: check_contract.py hashes every file under
@@ -10,4 +10,4 @@
 # pins agree with their own directories AND with each other are byte-identical where it
 # matters. The clone-and-diff above is still run when CI can reach the other repository;
 # this line is the leg that cannot be skipped for want of a token.
-sha256 5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd
+sha256 c5dfaa40c15355c7a0f29d6b1eb31c8fc125fde7c87233e7d5e691d00b9f7321

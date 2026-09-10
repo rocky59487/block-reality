@@ -9,9 +9,14 @@
 
 namespace bsi {
 
-static bool adopt(const bsi_engine_vtable* vt, void* dl, Engine& out, std::string& err) {
+static bool adopt(const bsi_engine_vtable* (*entry)(uint32_t), void* dl, Engine& out, std::string& err) {
+    uint32_t requested = BSI_ENGINE_ABI;
+    const bsi_engine_vtable* vt = entry(requested);
+    if (!vt) { requested = BSI_ENGINE_ABI_LEGACY; vt = entry(requested); }
     if (!vt) { err = "bsi_engine_entry returned NULL (host ABI " + std::to_string(BSI_ENGINE_ABI) + " not supported)"; return false; }
-    if (vt->abi_version != BSI_ENGINE_ABI) { err = "engine abi_version " + std::to_string(vt->abi_version) + " != host " + std::to_string(BSI_ENGINE_ABI); return false; }
+#ifndef BSI_TEST_PGN_ENTRY
+    if (vt->abi_version != requested) { err = "engine abi_version " + std::to_string(vt->abi_version) + " != requested " + std::to_string(requested); return false; }
+#endif
     if (!vt->name || !vt->version || !vt->build_sha || !vt->capabilities || !vt->open || !vt->close || !vt->vocab || !vt->world_declare || !vt->solve) {
         err = "engine vtable has a NULL mandatory slot"; return false;
     }
@@ -28,7 +33,7 @@ static bool adopt(const bsi_engine_vtable* vt, void* dl, Engine& out, std::strin
 
 bool loadEngineEntry(const bsi_engine_vtable* (*entry)(uint32_t), Engine& out, std::string& err) {
     if (!entry) { err = "no entry point"; return false; }
-    return adopt(entry(BSI_ENGINE_ABI), nullptr, out, err);
+    return adopt(entry, nullptr, out, err);
 }
 
 bool loadEngineLibrary(const std::string& path, Engine& out, std::string& err) {
@@ -37,14 +42,14 @@ bool loadEngineLibrary(const std::string& path, Engine& out, std::string& err) {
     if (!h) { err = "LoadLibrary failed: " + path; return false; }
     auto entry = (const bsi_engine_vtable* (*)(uint32_t))GetProcAddress(h, "bsi_engine_entry");
     if (!entry) { FreeLibrary(h); err = "bsi_engine_entry not exported by " + path; return false; }
-    if (!adopt(entry(BSI_ENGINE_ABI), (void*)h, out, err)) { FreeLibrary(h); return false; }
+    if (!adopt(entry, (void*)h, out, err)) { FreeLibrary(h); return false; }
     return true;
 #else
     void* h = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
     if (!h) { const char* e = dlerror(); err = std::string("dlopen failed: ") + (e ? e : path.c_str()); return false; }
     auto entry = (const bsi_engine_vtable* (*)(uint32_t))dlsym(h, "bsi_engine_entry");
     if (!entry) { dlclose(h); err = "bsi_engine_entry not exported by " + path; return false; }
-    if (!adopt(entry(BSI_ENGINE_ABI), h, out, err)) { dlclose(h); return false; }
+    if (!adopt(entry, h, out, err)) { dlclose(h); return false; }
     return true;
 #endif
 }

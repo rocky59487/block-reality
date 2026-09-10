@@ -350,6 +350,8 @@ private:
         o.bucklingMode = BSI_BUCK_NONE; o.bucklingK = 1.0; o.bucklingBudgetDof = 0;
         o.tier = BSI_TIER_COMMIT; o.targetRel = 1e-9; o.storage = BSI_STORAGE_F64; o.warmStart = 0; o.maxTimeMs = 0; o.numThreads = 0; o.includeMask = 0;
         if (const json::Value* v = body.find("selfWeight")) o.selfWeight = v->b ? 1 : 0;
+        const json::Value* mass = body.find("massModel");
+        const bool physicalMass = mass && mass->str == "physical";
         if (const json::Value* v = body.find("gravity")) for (int k = 0; k < 3; ++k) o.gravity[k] = v->arr[k].num;
         if (const json::Value* bk = body.find("buckling")) {
             if (const json::Value* m = bk->find("mode")) { int i = sch.enumIndex("bucklingMode", m->str); o.bucklingMode = (uint8_t)i; }
@@ -376,6 +378,12 @@ private:
             else if (e.str == "memberGeometry") o.includeMask |= kIncMemberGeometry;
         }
         // capability gate BEFORE the engine (P6)
+#ifndef BSI_TEST_PGN_CAP
+        if (physicalMass && !has("bsi.mass.physical")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "massModel=physical needs bsi.mass.physical"); return; }
+#endif
+#ifndef BSI_TEST_PGN_ABI
+        if (physicalMass && (engine_.vt->abi_version < 2 || !engine_.vt->solve_v2)) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "massModel=physical needs the ABI2 solve slot"); return; }
+#endif
         if (o.bucklingMode == BSI_BUCK_EIGEN && !has("bsi.buckling.eigen")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "buckling.mode=eigen needs bsi.buckling.eigen"); return; }
         if (o.bucklingMode == BSI_BUCK_SCREEN && !has("bsi.buckling.screen")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "buckling.mode=screen needs bsi.buckling.screen"); return; }
         if (o.tier == BSI_TIER_DISPLAY && !has("bsi.precision.display")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "precision.tier=display needs bsi.precision.display"); return; }
@@ -409,7 +417,19 @@ private:
         if (o.includeMask & kIncAttrsEcho) b.attrsEcho(attrs_.data(), (uint32_t)attrs_.size());
         bsi_writer w{&b};
         services_.cancelled = 0;
-        int st = engine_.vt->solve(inst_, &o, loads.empty() ? nullptr : loads.data(), (uint32_t)N, &w);
+        int st;
+        if (physicalMass) {
+            bsi_solve_options_v2 extended{};
+            extended.struct_size = sizeof(extended);
+            extended.common = o;
+            extended.massModel = BSI_MASS_PHYSICAL;
+#ifdef BSI_TEST_PGN_ABI
+            if (engine_.vt->abi_version < 2 || !engine_.vt->solve_v2)
+                st = engine_.vt->solve(inst_, &o, loads.empty() ? nullptr : loads.data(), (uint32_t)N, &w);
+            else
+#endif
+                st = engine_.vt->solve_v2(inst_, &extended, loads.empty() ? nullptr : loads.data(), (uint32_t)N, &w);
+        } else st = engine_.vt->solve(inst_, &o, loads.empty() ? nullptr : loads.data(), (uint32_t)N, &w);
         if (st != BSI_OK) { errorFromBuilder(out, rq, st, b); return; }
         std::string why;
         if (!b.finalizeSolve(why, o.bucklingMode)) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", why); return; }
