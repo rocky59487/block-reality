@@ -8,7 +8,7 @@
     "bsi_engine.h": "532e4ed9bd92411bab410ee9f1c2014da6e08f64db57b9d490f25970e723473a",
     "bsi_fracture.h": "64095c37a2665513149295f01ab7991be67dde9f4cb5f111582befb25e0d626b",
     "check_contract.py": "7cc10992e6c5d5d07668b825a2b0c3c2cc00087b4d6a98ece13cf36a596a15be",
-    "CONTRACT_SHA256": "057e59ac627aed51bc1ec4703beba01e05dd374eb0a478c55bb2ab6e3e71679d",
+    "CONTRACT_SHA256": "71830f255149c8de485a5597d18d9c11520a743d345c0b29e7b78acd1977dbfd",
     "README.md": "7021a3837ffd8fb9238f43c107b0ce0083c23412e58e6ecaf59dd680ae4a1739",
     "conformance/README.md": "e849a2ec04e50f1ceff387747ef71076b14ec4d050db436f97b78d21660b30c7",
     "conformance/run.py": "1457140f87d2d99ac171dfdd857e67f29ffd06b0066e406caa585ea2bb4d1c3a",
@@ -102,8 +102,5 @@
       "stderr_base64": "d2FybmluZzogaW4gdGhlIHdvcmtpbmcgY29weSBvZiAnLmdpdGh1Yi90ZWN0b25pYzItY29udHJhY3QtcmVmJywgTEYgd2lsbCBiZSByZXBsYWNlZCBieSBDUkxGIHRoZSBuZXh0IHRpbWUgR2l0IHRvdWNoZXMgaXQKd2FybmluZzogaW4gdGhlIHdvcmtpbmcgY29weSBvZiAnY29udHJhY3QvQ09OVFJBQ1RfU0hBMjU2JywgQ1JMRiB3aWxsIGJlIHJlcGxhY2VkIGJ5IExGIHRoZSBuZXh0IHRpbWUgR2l0IHRvdWNoZXMgaXQK",
       "stderr_sha256": "a084b52cb33e96b96a772988ec4c6778bc15fa4919bb66fd539b064c285e696a"
     }
-  ],
-  "consumer_contract_commit": "e4c1b803b1fda854980e18f80fd0fdd610318162",
-  "contract_tree": "0a398a136db8717943e9a185feec31dce4600801",
-  "file_hash_basis": "committed Git blobs; initial checkout hashes preserved separately"
+  ]
 }
