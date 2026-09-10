@@ -27,7 +27,8 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 ### 現況（0.4.0-dev，尚未發布）
 
 2026-09-10：使用者指定引擎另有人負責，本工作只做模組（D-047、`docs/V1_MODULE_PROGRAM.md`）。
-引擎維持正式 v1.3；本輪消費已交付的 #37 開發庫、契約 `4b11cc738790…`，沒有改引擎。
+引擎維持正式 v1.3；整合分支現已合入#118，使用已驗候選42e10f5（契約4b11cc738790…）。
+候選完整身份、兩平台新jar與實測邊界見 `docs/NATIVE_CANDIDATE.md`；不替換正式資產。
 
 - `GAME_INPUT` 已接 engine-assigned vocabulary ID、SI 目錄與不可變 GameWorldSnapshot。
 - `GAME_RUNTIME` 已將 Forge 採集→worker→apply 換為真正的 BSI/JNA 原生 session。
@@ -36,8 +37,9 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   native 工作若不返回，Java 不能強殺；cleanup 僅在 worker/daemon，D-044 崩潰代價仍成立。
 - 生產 SidecarClient/SidecarProcess/SidecarConfig/ShmRegion 已退到 test；NoSubprocess ALLOWED={}。
   預設 jar 無 exe、無 process launcher；Gradle 已拒絕 executable 封裝。
-- Windows core412/Forge109：521登錄、492PASS、29SKIP。包含19項 native 整合測試的登錄，
-  不代表 Windows 已執行新原生庫。Linux 真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
+- 最新候選Windows core412/Forge109：521登錄、509PASS、12平台SKIP，19項native相關已執行。
+  Linux19項native相關與7項控制器全過；同一jar兩平台48frames×3/兩JVM通過。
+  Linux 真 server 梁柱板/混合機構/支承恢復/reset 是既有GAME_RUNTIME證據；本次未重跑server。
   完整結果 `evidence/GAME_RUNTIME/RESULTS.md`，首敗保留、三故障臂具名咬合。
 - 全部失去支承時原生只回 SOLVE_FAILED；Java 保留拒絕，不能從 message 捏造 MECHANISM。
   高性能、全機構 typed 展示、真客戶端 N25 尚未驗收。

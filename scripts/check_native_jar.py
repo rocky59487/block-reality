@@ -2,6 +2,7 @@
 """Real NATIVE_CONSUMER jar gate. Requires compiled NativeJarProbe, JNA and local release library.
 
 Runs Python CAPI and jar-only production Java classes on identical C5/C6/C8 frames,
+optionally including all C10 eigen variants with --eigen,
 three fresh sessions each; two additional JVMs rendezvous inside resource extraction.
 No production child process is introduced: every subprocess here is a test driver.
 """
@@ -35,31 +36,34 @@ def load_corpus():
     return module
 
 
-def frames(corpus, directory):
+def frames(corpus, directory, eigen=False):
     raw = dict(corpus.load_cases())
     for name, data in raw.items():
-        if not name.startswith(("C5-", "C6-", "C8-")):
+        if not name.startswith(("C5-", "C6-", "C8-") + (("C10-",) if eigen else ())):
             continue
         case = corpus.Case(name, data, raw)
-        world = next(iter(case.worlds.values()))
         mats, secs = case.vocab_ids()
-        for storage in ["f64", "f32"]:
-            dest = directory / (case.case_id.replace("-", "_") + "_" + storage)
-            dest.mkdir(parents=True, exist_ok=False)
-            hello = {"bsi": 1, "client": "native-jar/1", "contractSha256": corpus.contract_sha(), "arena": {"supported": False, "maxBytes": 0}}
-            solve = dict(world.solve, numThreads=1, include=["members", "stations", "shells", "memberGeometry", "stationIdentity"],
-                         precision={"tier": "commit", "storage": storage})
-            loads = corpus.encode_loads(world.loads)
-            if loads:
-                solve["loads"] = len(loads) // 64
-            requests = [("bsi.hello", hello, b""), ("bsi.vocab.declare", case.vocab, b""),
-                        ("bsi.world.declare", {"blocks": len(world.blocks)}, corpus.encode_blocks(world.blocks, mats, secs)),
-                        ("bsi.solve", solve, loads)]
-            for index, (method, body, payload) in enumerate(requests):
-                (dest / f"{index}.frame").write_bytes(corpus.encode_frame(corpus.header(method, body, str(index)), payload))
+        worlds = list(case.worlds.items())
+        is_buckling = name.startswith("C10-")
+        for world_name, world in (worlds if is_buckling else worlds[:1]):
+            for storage in ["f64", "f32"]:
+                suffix = "_" + world_name if is_buckling else ""
+                dest = directory / (case.case_id.replace("-", "_") + suffix + "_" + storage)
+                dest.mkdir(parents=True, exist_ok=False)
+                hello = {"bsi": 1, "client": "native-jar/1", "contractSha256": corpus.contract_sha(), "arena": {"supported": False, "maxBytes": 0}}
+                solve = dict(world.solve, numThreads=1, include=["members", "stations", "shells", "memberGeometry", "stationIdentity"],
+                             precision={"tier": "commit", "storage": storage})
+                loads = corpus.encode_loads(world.loads)
+                if loads:
+                    solve["loads"] = len(loads) // 64
+                requests = [("bsi.hello", hello, b""), ("bsi.vocab.declare", case.vocab, b""),
+                            ("bsi.world.declare", {"blocks": len(world.blocks)}, corpus.encode_blocks(world.blocks, mats, secs)),
+                            ("bsi.solve", solve, loads)]
+                for index, (method, body, payload) in enumerate(requests):
+                    (dest / f"{index}.frame").write_bytes(corpus.encode_frame(corpus.header(method, body, str(index)), payload))
 
 
-def direct(corpus, library, inputs, dest):
+def direct(corpus, library, inputs, dest, version, build_sha):
     for session in sorted(inputs.iterdir()):
         with closing(corpus.CapiClient(str(library))) as engine:
             # Replace the default-options session with an explicitly single-thread session.
@@ -76,8 +80,8 @@ def direct(corpus, library, inputs, dest):
                 decoded = corpus.decode_frame(reply)
                 assert not decoded.error, (path, decoded.h)
                 if path.name == "0.frame":
-                    assert decoded.h["version"] == "1.3.0" and decoded.h["contractSha256"] == corpus.contract_sha(), decoded.h
-                    assert decoded.h["buildSha"] == "c90b448", decoded.h
+                    assert decoded.h["version"] == version and decoded.h["contractSha256"] == corpus.contract_sha(), decoded.h
+                    assert decoded.h["buildSha"] == build_sha, decoded.h
                 target = dest / session.name / path.name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(reply)
@@ -91,6 +95,9 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     for name in ["jar", "java", "classes", "jna", "library", "out"]:
         ap.add_argument("--" + name, type=Path, required=True)
+    ap.add_argument("--version", default="1.3.0")
+    ap.add_argument("--build-sha", default="c90b448")
+    ap.add_argument("--eigen", action="store_true", help="also replay all C10 buckling variants")
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=False)
     log = {}
@@ -112,7 +119,7 @@ def main():
         return list(map(str, [args.java, "-cp", cp, "com.blockreality.core.engine.NativeJarProbe",
                               mode, use_jar, cache, args.out / "inputs", dest, *extra]))
     corpus = load_corpus()
-    frames(corpus, args.out / "inputs")
+    frames(corpus, args.out / "inputs", args.eigen)
     platform = "windows-x86_64" if os.name == "nt" else "linux-x86_64"
     with zipfile.ZipFile(args.jar) as archive:
         manifest = archive.read("blockreality-engine/natives.manifest").decode()
@@ -121,10 +128,10 @@ def main():
         assert sha(args.library.read_bytes()) == entry[3]
         assert archive.read(f"blockreality-engine/{platform}/{entry[2]}") == args.library.read_bytes()
     for repetition in range(3):
-        direct(corpus, args.library, args.out / "inputs", args.out / f"direct-{repetition}")
+        direct(corpus, args.library, args.out / "inputs", args.out / f"direct-{repetition}", args.version, args.build_sha)
         run(f"jar-{repetition}", command("replay", args.out / "cache", args.out / f"jar-{repetition}"))
     reference = snapshot(args.out / "direct-0")
-    assert len(reference) == 24, ("corpus request count", len(reference))
+    assert len(reference) == (48 if args.eigen else 24), ("corpus request count", len(reference))
     for arm in [f"{kind}-{i}" for kind in ["direct", "jar"] for i in range(3)]:
         assert snapshot(args.out / arm) == reference, ("direct/jar DET mismatch", arm)
     run("faults", command("faults", args.out / "fault-cache", args.out / "faults"))
@@ -180,7 +187,8 @@ def main():
         run(mode+"-pin", command("missing-pin",args.out/(mode+"-cache"),args.out/(mode+"-pin"),jar=bad_jar))
     summary = dict(platform=platform, jar_sha256=sha(args.jar.read_bytes()), native_sha256=entry[3],
                    requests=snapshot(args.out/"inputs"), replies=reference, det_repeats=3,
-                   concurrent_jvms=2, numThreads=1, scope="jar extraction + BSI replay; not a Minecraft game run")
+                   concurrent_jvms=2, numThreads=1, version=args.version, buildSha=args.build_sha,
+                   eigen=args.eigen, scope="jar extraction + BSI replay; not a Minecraft game run")
     (args.out / "verification.json").write_text(json.dumps(summary, indent=2)+"\n",encoding="utf-8")
     print(json.dumps(summary,indent=2))
 
