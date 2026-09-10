@@ -47,7 +47,8 @@ def sums(data):
     return result
 
 
-def verify_release(directory, version, revision, sums_sha256):
+def verify_release(directory, version, revision, sums_sha256, basis="published"):
+    require(basis in {"published", "candidate"}, "invalid asset qualification basis")
     pin = (ROOT / "contract/CONTRACT_SHA256").read_text(encoding="utf-8").strip()
     inventory = (directory / "SHA256SUMS").read_bytes()
     require(sha(inventory) == sums_sha256, "published SHA256SUMS hash mismatch")
@@ -106,7 +107,8 @@ def verify_release(directory, version, revision, sums_sha256):
                     payloads[f"licenses/{platform}/{name}"] = archive.read(name)
     provenance = dict(contractSha256=pin, libraries=entries, release=dict(
         sourceCommit=revision, version=version, sha256sums=sha(inventory), assets=assets,
-        sourceFiles=len(files), basis="published release integrity; runtime hello is a separate platform gate"))
+        sourceFiles=len(files), basis=("published release integrity" if basis == "published"
+            else "locally qualified candidate") + "; runtime hello is a separate platform gate"))
     payloads["provenance.json"] = (json.dumps(provenance, indent=2) + "\n").encode()
     return payloads, provenance
 
@@ -118,12 +120,14 @@ def main():
     ap.add_argument("--version", required=True)
     ap.add_argument("--source-commit", required=True)
     ap.add_argument("--sums-sha256", required=True)
+    ap.add_argument("--basis", choices=["published", "candidate"], default="published",
+                    help="candidate identifies local qualification without claiming publication")
     args = ap.parse_args()
     try:
         require(not args.out.exists(), "output must be a new directory")
         require(re.fullmatch(r"[0-9a-f]{40}", args.source_commit), "invalid source commit")
         require(re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", args.version), "invalid release version")
-        payloads, provenance = verify_release(args.release_dir, args.version, args.source_commit, args.sums_sha256)
+        payloads, provenance = verify_release(args.release_dir, args.version, args.source_commit, args.sums_sha256, args.basis)
         # All validation precedes the first write. The final provenance is the commit marker.
         args.out.mkdir(parents=True)
         for name, data in payloads.items():

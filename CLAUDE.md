@@ -27,8 +27,11 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 ### 現況（0.4.0-dev，尚未發布）
 
 2026-09-10：使用者指定引擎另有人負責，本工作只做模組（D-047、`docs/V1_MODULE_PROGRAM.md`）。
-引擎維持正式 v1.3；本輪消費已交付的 #37 開發庫、契約 `4b11cc738790…`，沒有改引擎。
+引擎維持正式 v1.3；既有實跑證據使用 #37 `95a03e82`、契約 `4b11cc738790…`。
+新交付 #40 / 模組 #119 提供 `42e10f5` 雙平台候選；NCR 正在整合驗收，沒有改引擎。
 
+- NATIVE_CANDIDATE_RUNTIME 已凍判準並整合 #119 的候選 staging/check 腳本與來源 pin。
+  root SHA 已核對交付資料；目前版本的双平台真庫/真 jar/遊戲驗收尚未執行，不能沿用舊候選的420項結論。
 - `GAME_INPUT` 已接 engine-assigned vocabulary ID、SI 目錄與不可變 GameWorldSnapshot。
 - `GAME_RUNTIME` 已將 Forge 採集→worker→apply 換為真正的 BSI/JNA 原生 session。
   玩家宣告 axis；觀測六面 sturdy 接觸為 ground；舊方塊未宣告要明示拒絕。

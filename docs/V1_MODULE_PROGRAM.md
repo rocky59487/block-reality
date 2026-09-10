@@ -120,3 +120,8 @@ cached bootstrap/真拒絕清色已實見；材質方向與長訊息布局仍有
 HUD_READABILITY 已完成16份原場景相同讀數对照與2張大字級圖，長拒絕換行、讀數底板、
 原生警示優先及超量明示省略已實見；首次通知重疊保留並縮寬修正。只動客戶端布局與翻譯，
 未動引擎/封包。詳 `../evidence/HUD_READABILITY/RESULTS.md`；材質方向、真互動與CM/N25仍待完成。
+
+NATIVE_CANDIDATE_RUNTIME 已凍結 #120 與 #119 封裝候選的整合判準。交付來源42e10f5
+與目前契約相同；已納入候選staging/check脚本及pin，正在驗完整521項登錄與最新真jar/遊戲流程。
+#119的420 PASS/12 SKIP是較早模組來源的結果，不能替代本分支。引擎來源與資產保持唯讀，
+詳 `NATIVE_CANDIDATE_RUNTIME.md`；此處尚未宣告新候選通過或發布。

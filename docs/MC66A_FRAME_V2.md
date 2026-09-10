@@ -32,3 +32,9 @@ BSI833正常與334原生邊界/真C10回歸。原生開發庫重建，正式nati
 本輪 Linux server 使用原 #37 開發庫 `95a03e82`，不是 #39 重建的新庫；上述 frame_v2
 數值測試屬上游提供的紀錄，這次没有在模組工作中重跑或修改引擎。
 下一段模組可獨立處理 HUD/命令 revision 與局部屈曲警示；新庫發布驗收仍待引擎交付。
+
+## 新原生候選交付
+
+模組 #119 與引擎 #40 已交付來源42e10f5的雙平台自足候選；原交付資格見
+[NATIVE_CANDIDATE](NATIVE_CANDIDATE.md)。本整合分支保留已完成的GAME_RUNTIME/HUD/登錄資料路徑，
+按 [NATIVE_CANDIDATE_RUNTIME](NATIVE_CANDIDATE_RUNTIME.md) 驗新庫，不改或重建引擎。
