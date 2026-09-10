@@ -8,31 +8,32 @@ in META-INF/LICENSE inside the mod jar.
 THE ANALYSIS ENGINE
 ===================
 
-Structural analysis does not run in Java. It runs in native code that this mod carries
-inside its jar, and there are two shapes of that, one replacing the other:
+Structural analysis runs in the native ENGINE LIBRARY (`libbsi_tectonic.so`,
+`bsi_tectonic.dll`) bundled in the qualified mod jar. The game loads it through five
+C functions in `contract/bsi_capi.h`, bound with JNA; there is no custom JNI code.
+The library is unpacked without an execute bit. No sidecar executable is shipped or
+started by the game.
 
-  * The ENGINE LIBRARY (`libbsi_tectonic.so`, `bsi_tectonic.dll`) — the current shape.
-    A shared library the game LOADS. It is not a program, is not started as a process, and
-    is unpacked without an execute bit. The mod calls five C functions across a frozen
-    interface (`contract/bsi_capi.h`), bound with JNA; there is no custom JNI code. Which
-    engine a given jar carries, its version and the interface revision it speaks are all
-    recorded in `blockreality-engine/natives.manifest`, filled in by asking the library
-    itself rather than by asserting it.
+`blockreality-engine/natives.manifest` records each library's SHA-256, version and
+interface revision. Release builds stage already downloaded, verified SDK archives;
+the runtime checks the extracted bytes and performs an engine identity handshake.
+It does not download an engine. `META-INF/native-release/provenance.json` records
+the exact upstream source commit, source-archive checksum and native asset checksums;
+the per-platform provenance and licence texts are retained alongside it.
 
-  * The SIDECAR EXECUTABLE (`br-sidecar`, `br-sidecar.exe`) — the earlier shape, being
-    retired. A separate program unpacked from the jar and started as a child process.
-
-Nothing is downloaded, at build time or at run time. Both shapes are bytes already inside
-the jar the player chose to install, with their SHA-256 recorded beside them, and the
-runtime refuses anything whose hash does not match.
+For the published v1.5 SDK, the source is commit
+42ba7eb912bd7d763435ce48a945df6954b680ea at
+<https://github.com/rocky59487/tectonic2>. The corresponding source archive is
+<https://github.com/rocky59487/tectonic2/releases/download/v1.5/tectonic2-1.5.0-source.tar.gz>.
+Use the provenance inside a particular jar to identify the bytes that jar carries.
 
 
 THIRD-PARTY SOFTWARE
 ====================
 
-The components below are statically linked into one or other of those binaries, so their
-terms travel with every copy of it. Full texts are in `third_party/` in the repository and
-in `META-INF/third_party/` inside the jar.
+Full licence texts are in `third_party/` in the repository and `META-INF/third_party/`
+inside the jar. The verified SDK's platform-specific notices and dependency records
+are also preserved under `META-INF/third_party/native-release/`.
 
 In the ENGINE LIBRARY
 ---------------------
@@ -57,8 +58,8 @@ GCC runtime libraries — GPL-3.0-or-later WITH GCC-exception-3.1
     nothing but the C runtime. Permitted by the GCC Runtime Library Exception 3.1.
     `third_party/GCC-Runtime-Library-Exception.txt`
 
-In the SIDECAR EXECUTABLE
--------------------------
+Legacy test dependencies (sidecar executables are not in the mod jar)
+------------------------------------------------------------------
 FrameCore — MIT License
     The finite element solver. Consumed as an external source dependency that this
     repository does not carry; the three patches this project applies to it are in
