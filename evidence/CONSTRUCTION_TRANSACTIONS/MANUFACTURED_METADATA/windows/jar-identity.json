@@ -1,0 +1,25 @@
+{
+  "source": "4737e3c",
+  "jar_bytes": 15316390,
+  "jar_sha256": "1315dce1e785ebfe1c7d509d7c0a0d70ec12930ca4daa671b7f19cf86914f579",
+  "added_entries": [
+    "com/blockreality/core/transaction/ManufacturedPiece$Plan.class",
+    "com/blockreality/core/transaction/ManufacturedPiece$Status.class",
+    "com/blockreality/core/transaction/ManufacturedPiece.class",
+    "com/blockreality/core/transaction/ManufacturedRegistry$Batch.class",
+    "com/blockreality/core/transaction/ManufacturedRegistry$Birth.class",
+    "com/blockreality/core/transaction/ManufacturedRegistry$Cell.class",
+    "com/blockreality/core/transaction/ManufacturedRegistry$Prepared.class",
+    "com/blockreality/core/transaction/ManufacturedRegistry$Update.class",
+    "com/blockreality/core/transaction/ManufacturedRegistry.class",
+    "com/blockreality/core/transaction/MetadataCodec$Descriptor.class",
+    "com/blockreality/core/transaction/MetadataCodec$Operation.class",
+    "com/blockreality/core/transaction/MetadataCodec$Reader.class",
+    "com/blockreality/core/transaction/MetadataCodec$Writer.class",
+    "com/blockreality/core/transaction/MetadataCodec.class"
+  ],
+  "removed_entries": [],
+  "changed_entries": [],
+  "unchanged_entries": 387,
+  "unchanged_classes": 236
+}

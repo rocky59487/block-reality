@@ -282,7 +282,7 @@ Modrinth 對「內含原生執行檔」同樣要透明；第 1 節那段照貼�
 > longer drop a player's test load; and an over-long dimension id can no longer throw
 > while a result is being broadcast.
 >
-> Verification: 330 engine checks, 578 Java tests (454 core, 124 Forge-side; Windows: 566 pass, 12 platform skips), worst
+> Verification: 330 engine checks, 596 Java tests (472 core, 124 Forge-side; Windows: 584 pass, 12 platform skips), worst
 > closed-form relative error 1.216e-14, cross-platform determinism 8/8.
 
 ---

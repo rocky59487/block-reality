@@ -1,0 +1,217 @@
+{
+  "status": "RECORDED",
+  "sample_protocol": "8 warmups plus 40 measured iterations per phase/case; nearest-rank percentiles",
+  "execution": "Windows and WSL measurement JVMs ran concurrently on the same physical host; no CPU/storage isolation, cold-disk or FPS claim",
+  "summary": {
+    "windows": [
+      {
+        "phase": "reopen",
+        "pieces": 64,
+        "cells": 2048,
+        "samples": 40,
+        "p50_ms": 8.2082,
+        "p95_ms": 11.1071,
+        "allocated_p50": 1428336,
+        "allocated_p95": 1428400
+      },
+      {
+        "phase": "prepare-edit",
+        "pieces": 64,
+        "cells": 2048,
+        "samples": 40,
+        "p50_ms": 0.3852,
+        "p95_ms": 0.5862,
+        "allocated_p50": 32200,
+        "allocated_p95": 32200
+      },
+      {
+        "phase": "commit-metadata",
+        "pieces": 64,
+        "cells": 2048,
+        "samples": 40,
+        "p50_ms": 9.6441,
+        "p95_ms": 13.8744,
+        "allocated_p50": 62704,
+        "allocated_p95": 62704
+      },
+      {
+        "phase": "reopen",
+        "pieces": 1024,
+        "cells": 32768,
+        "samples": 40,
+        "p50_ms": 32.3329,
+        "p95_ms": 38.2658,
+        "allocated_p50": 22145920,
+        "allocated_p95": 22245704
+      },
+      {
+        "phase": "prepare-edit",
+        "pieces": 1024,
+        "cells": 32768,
+        "samples": 40,
+        "p50_ms": 0.1924,
+        "p95_ms": 0.2831,
+        "allocated_p50": 32056,
+        "allocated_p95": 32056
+      },
+      {
+        "phase": "commit-metadata",
+        "pieces": 1024,
+        "cells": 32768,
+        "samples": 40,
+        "p50_ms": 8.5502,
+        "p95_ms": 13.1443,
+        "allocated_p50": 62344,
+        "allocated_p95": 62472
+      },
+      {
+        "phase": "reopen",
+        "pieces": 4096,
+        "cells": 131072,
+        "samples": 40,
+        "p50_ms": 109.6275,
+        "p95_ms": 141.2255,
+        "allocated_p50": 88414800,
+        "allocated_p95": 88431304
+      },
+      {
+        "phase": "prepare-edit",
+        "pieces": 4096,
+        "cells": 131072,
+        "samples": 40,
+        "p50_ms": 0.2017,
+        "p95_ms": 0.2452,
+        "allocated_p50": 31376,
+        "allocated_p95": 31376
+      },
+      {
+        "phase": "commit-metadata",
+        "pieces": 4096,
+        "cells": 131072,
+        "samples": 40,
+        "p50_ms": 12.4735,
+        "p95_ms": 44.2599,
+        "allocated_p50": 57072,
+        "allocated_p95": 57200
+      }
+    ],
+    "linux": [
+      {
+        "phase": "reopen",
+        "pieces": 64,
+        "cells": 2048,
+        "samples": 40,
+        "p50_ms": 11.378392,
+        "p95_ms": 16.850245,
+        "allocated_p50": 1414008,
+        "allocated_p95": 1414112
+      },
+      {
+        "phase": "prepare-edit",
+        "pieces": 64,
+        "cells": 2048,
+        "samples": 40,
+        "p50_ms": 0.288958,
+        "p95_ms": 0.602218,
+        "allocated_p50": 32488,
+        "allocated_p95": 32488
+      },
+      {
+        "phase": "commit-metadata",
+        "pieces": 64,
+        "cells": 2048,
+        "samples": 40,
+        "p50_ms": 18.775286,
+        "p95_ms": 21.723642,
+        "allocated_p50": 56136,
+        "allocated_p95": 56136
+      },
+      {
+        "phase": "reopen",
+        "pieces": 1024,
+        "cells": 32768,
+        "samples": 40,
+        "p50_ms": 31.040011,
+        "p95_ms": 313.072608,
+        "allocated_p50": 22029088,
+        "allocated_p95": 22140480
+      },
+      {
+        "phase": "prepare-edit",
+        "pieces": 1024,
+        "cells": 32768,
+        "samples": 40,
+        "p50_ms": 0.175664,
+        "p95_ms": 0.285096,
+        "allocated_p50": 31968,
+        "allocated_p95": 31968
+      },
+      {
+        "phase": "commit-metadata",
+        "pieces": 1024,
+        "cells": 32768,
+        "samples": 40,
+        "p50_ms": 16.948918,
+        "p95_ms": 21.778858,
+        "allocated_p50": 54896,
+        "allocated_p95": 55104
+      },
+      {
+        "phase": "reopen",
+        "pieces": 4096,
+        "cells": 131072,
+        "samples": 40,
+        "p50_ms": 110.907154,
+        "p95_ms": 167.068575,
+        "allocated_p50": 88046408,
+        "allocated_p95": 88068776
+      },
+      {
+        "phase": "prepare-edit",
+        "pieces": 4096,
+        "cells": 131072,
+        "samples": 40,
+        "p50_ms": 0.281367,
+        "p95_ms": 0.487841,
+        "allocated_p50": 31808,
+        "allocated_p95": 31808
+      },
+      {
+        "phase": "commit-metadata",
+        "pieces": 4096,
+        "cells": 131072,
+        "samples": 40,
+        "p50_ms": 34.349306,
+        "p95_ms": 45.68951,
+        "allocated_p50": 53784,
+        "allocated_p95": 53784
+      }
+    ]
+  },
+  "fingerprints": {
+    "windows": {
+      "64/reopen": "2c537c7c6261f2149464af1bd5c075c7bdc0300011964350dcf0f294b245f5be",
+      "64/prepare-edit": "1940c808c26a7d5bb8562702639cc162a18ead8027b7b289fbb80ea0ab8ef91c",
+      "64/commit-metadata": "a94cf7b200f3099dcec0e170845ddbc58cd2703278701c21391962ea7f03b59e",
+      "1024/reopen": "2acc78e6594f91f268e02cadc2ca74b2050af774299dbf4555d6127fc6f69668",
+      "1024/prepare-edit": "63fef5e6307e03198ec7f3e2c3f6ebfbce023f3500f4bfc9be277a9c1c5adde8",
+      "1024/commit-metadata": "98fad937583e8a25cda67ae497e1e879af2f315fa6830532f811682598369bb4",
+      "4096/reopen": "656247c7e7654ad188c4304008bbe9eb52f22c74cbbbba40006cc0ae5f6ff1e1",
+      "4096/prepare-edit": "a45b68ad425ad309be201d99be48a2964efd0ca5860cc65e2097628d51335a42",
+      "4096/commit-metadata": "73cbd632f02c70cc159ba10dde577e2b1820c3090c892ff578c03707873dd000"
+    },
+    "linux": {
+      "64/reopen": "2c537c7c6261f2149464af1bd5c075c7bdc0300011964350dcf0f294b245f5be",
+      "64/prepare-edit": "1940c808c26a7d5bb8562702639cc162a18ead8027b7b289fbb80ea0ab8ef91c",
+      "64/commit-metadata": "a94cf7b200f3099dcec0e170845ddbc58cd2703278701c21391962ea7f03b59e",
+      "1024/reopen": "2acc78e6594f91f268e02cadc2ca74b2050af774299dbf4555d6127fc6f69668",
+      "1024/prepare-edit": "63fef5e6307e03198ec7f3e2c3f6ebfbce023f3500f4bfc9be277a9c1c5adde8",
+      "1024/commit-metadata": "98fad937583e8a25cda67ae497e1e879af2f315fa6830532f811682598369bb4",
+      "4096/reopen": "656247c7e7654ad188c4304008bbe9eb52f22c74cbbbba40006cc0ae5f6ff1e1",
+      "4096/prepare-edit": "a45b68ad425ad309be201d99be48a2964efd0ca5860cc65e2097628d51335a42",
+      "4096/commit-metadata": "73cbd632f02c70cc159ba10dde577e2b1820c3090c892ff578c03707873dd000"
+    }
+  },
+  "unchanged_seed_files": 51,
+  "identical_commit_copy_files_per_platform": 2400
+}

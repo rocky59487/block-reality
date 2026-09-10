@@ -1,0 +1,18 @@
+{
+  "source": "4737e3cf04e5dfdc9ce453795fab522f9c005110",
+  "profile_source": "19a36fbc9de2db5f2167fd805b18ebfd44529bb5",
+  "source_archive_sha256": "3412e4b963381713e538e91c578dc57daa15b1889e67b2bff8a3ad5c4dd434ae",
+  "profile_source_archive_sha256": "dbbd77002ef3be4bf588d8bc552fcf67dd71a759447c2359d73bf8e9e5031378",
+  "source_archive_paths": [
+    "mod",
+    "forge",
+    "gradle",
+    "scripts",
+    "contract",
+    "LICENSE",
+    "NOTICE",
+    "third_party"
+  ],
+  "engine_modified": false,
+  "formal_forge_construction_caller": false
+}

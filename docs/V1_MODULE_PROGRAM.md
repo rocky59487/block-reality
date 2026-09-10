@@ -121,9 +121,17 @@ CT_JOURNAL_BOOTSTRAP 補上鎖內領域ID發現、損壞/遺失marker拒絕新�
 578登錄：Windows566PASS/12平台SKIP、Linux577PASS/1平台SKIP；兩平台37個中斷/復原JVM及
 原生適用測試通過。最新開發jar73a491fba10e…只比前版改FileTransactionJournal.class，
 雙v1.5庫/契約/資源不變。詳 `../evidence/CONSTRUCTION_TRANSACTIONS/JOURNAL_BOOTSTRAP/RESULTS.md`。
-這仍不重播已提交world/player歷史，也不是已完成製造物件metadata或Forge施工入口。
+這仍不重播已提交world/player歷史；製造物件metadata後續進度如下，Forge施工入口仍開放。
 前置#128已使公開利用率顯示API必須收原生旗標；37組實際jar讀數不變，反例被抓到，
 6d1a0c2 CI四項通過/15原生步驟SKIP；#124須在實際Main整合後才關閉。
+
+CT_MANUFACTURED_METADATA 已使明確piece計畫取得永久UUID、COMMITTED日誌唯一權威與精確格所有權。
+切割/依賴編輯使舊piece不可逆失去整批undo資格，退役ID不復用；損壞history/即時核實失敗拒絕使用。
+18項新測試及兩個可編譯反例通過，完整596登錄：Windows584PASS/12平台SKIP、Linux595PASS/1平台SKIP。
+最新jar1315dce1e785…只新增14類別，原236類別、v1.5雙庫/契約/資源不變。
+雙平台同種子864次成本操作內容一致；同步提交p95約13–46ms，僅Recorded，未接受FPS。
+詳 `../evidence/CONSTRUCTION_TRANSACTIONS/MANUFACTURED_METADATA/RESULTS.md`；尚無Forge施工呼叫者。
+metadata只提供整批undo資格，不代替原world/item影像、權限/依賴或退款校驗；CT-1..9仍全開放。
 
 MODULE_PIPELINE_PROFILE 已將 metadata/gather/queue/BSI/解碼/封包/apply 分別量測，預設不收資料。
 A49/F576/M832 三場景各 40 次實跑，數字只作 Recorded 基線；M832 原生呼叫占主要成本，
