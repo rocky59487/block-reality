@@ -1,0 +1,5 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :core:compileJava
+
+BUILD SUCCESSFUL in 1s
+2 actionable tasks: 1 executed, 1 up-to-date

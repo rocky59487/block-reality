@@ -1,0 +1,8 @@
+{
+  "criteria": "1dafb52",
+  "base": "29c8d37",
+  "source_manifest_sha256": "ec4654424c93db1590967c1cbf5fa563800e4947f774f2ab61387232d15bf34f",
+  "module_files": 400,
+  "engine_source": "42e10f5",
+  "native_readonly": true
+}

@@ -1,0 +1,36 @@
+{
+  "source": "ee491960828d3734efbb4da241c15487815ea1ed",
+  "sha256": "ad68d5bbba22fa35e01cb0dac736eecdbea5342c93815993547315512a3e88a6",
+  "bytes": 15253621,
+  "base_jar_sha256": "8e587a715ebd3e169e4a0e6afa9d22cf60cac400eb7093aecf76b1a07f5c3c7a",
+  "unchanged_prior_entries": 356,
+  "removed": [],
+  "changed": [],
+  "added": [
+    "com/blockreality/core/transaction/",
+    "com/blockreality/core/transaction/AtomicConstructionCoordinator$Host.class",
+    "com/blockreality/core/transaction/AtomicConstructionCoordinator$Preparer.class",
+    "com/blockreality/core/transaction/AtomicConstructionCoordinator$RecoveryRequired.class",
+    "com/blockreality/core/transaction/AtomicConstructionCoordinator$ReplayConflict.class",
+    "com/blockreality/core/transaction/AtomicConstructionCoordinator$ValidationRefused.class",
+    "com/blockreality/core/transaction/AtomicConstructionCoordinator.class",
+    "com/blockreality/core/transaction/ConstructionTransaction$Change.class",
+    "com/blockreality/core/transaction/ConstructionTransaction$Entry.class",
+    "com/blockreality/core/transaction/ConstructionTransaction$Intent.class",
+    "com/blockreality/core/transaction/ConstructionTransaction$Phase.class",
+    "com/blockreality/core/transaction/ConstructionTransaction$Reason.class",
+    "com/blockreality/core/transaction/ConstructionTransaction$Receipt.class",
+    "com/blockreality/core/transaction/ConstructionTransaction$Request.class",
+    "com/blockreality/core/transaction/ConstructionTransaction$Value.class",
+    "com/blockreality/core/transaction/ConstructionTransaction.class",
+    "com/blockreality/core/transaction/FileTransactionJournal$Faults.class",
+    "com/blockreality/core/transaction/FileTransactionJournal$Stage.class",
+    "com/blockreality/core/transaction/FileTransactionJournal.class",
+    "com/blockreality/core/transaction/TransactionCodec.class",
+    "com/blockreality/core/transaction/TransactionJournal.class"
+  ],
+  "native_entries": {
+    "blockreality-engine/linux-x86_64/libbsi_tectonic.so": "53aae7156b94c0a761ef5abb2322ad47a708362f417a50ca3f04105d9c50abf1",
+    "blockreality-engine/windows-x86_64/bsi_tectonic.dll": "9761d73586277614a56132ec3492d324ae83c8489068c00c266c3d56f530acea"
+  }
+}
