@@ -457,3 +457,22 @@ Computed 世界因子由各 computed 島最小值導出；header 仍只有 kind/
 世界拒絕不抹除成功島的結果或 bit2；每格嚴格 double λ<1 的旗標仍對自己的島雙向核對。
 budgetDof 為 0..2147483647；0 取引擎預算。ABI 1 結構未變；tectonic eigen 此版採
 subdiv=2、maxIter=300、tol=1e-8，未提供這三項的 BSI 請求欄位。未知請求欄位依原規拒絕。
+
+## Part G — 2026-09-11：物理材料自重與 engine ABI2
+
+`bsi.solve.body.massModel` 為 `analysis`（預設）或 `physical`。physical 要求能力
+`bsi.mass.physical`，採實際材料格質量及一階矩計自重，包含分析端點外的半格；
+不修改中心線幾何、剛度或其他載荷。`selfWeight` 仍是獨立重力開關，預設 true。
+每次請求選模式，沒有延續上次的隱含狀態。沒有請求時保留原analysis行為與response。
+不新增equilibrium／quality記錄尺寸；不表示rope非線性、持久碎塊或動力能力。
+
+BSI wire major、T-A五函式及`BSI_CAPI_ABI`仍為1。**Engine adapter ABI升為2**，
+原vtable prefix、`bsi_solve_options` layout與其selfWeight非零語意保持。尾端的可選
+`solve_v2` 接收帶struct_size／原common選項／massModel的`bsi_solve_options_v2`。
+必須先確認struct_size涵蓋massModel欄位，才可讀common及massModel；未知massModel拒絕。
+缺新slot或只有ABI1，即使錯宣告physical能力也必須在呼叫前回UNSUPPORTED。
+
+新host先呼叫entry(2)，只有NULL才重試entry(1)，回覆abi_version須符合詢問值。
+ABI1時不能讀尾端solve_v2。analysis仍走原solve，physical才走solve_v2。
+新tectonic adapter支援entry(1)原prefix／原能力，也支援entry(2)的新slot／physical能力；
+其他引擎可維持ABI1，新host仍可使用它的原analysis功能。此版本與引擎產品v2不是同一編號。
