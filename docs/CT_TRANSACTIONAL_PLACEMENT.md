@@ -136,3 +136,15 @@ Minecraft screenshots before qualifying this UI; code or a browser mockup is ins
 The full goal stays active until all v1 requirements are verified. Completing this
 caller does not redefine blueprint, undo, engine dynamics, high performance or release
 around the simpler single-cell case.
+
+Implementation clarification before channel/UI qualification: ordinary world placement
+requires the player's inventory menu with an empty cursor and refuses block-entity
+replacement targets. These participants are not represented by this initial one-cell
+caller. The network handoff permits at most4 queued C2S jobs per connection/128 total
+and16 queued construction S2C jobs per connection/64 total, before main-thread enqueue.
+Overflow drops bounded work; explicit retry and the server admission status handle it.
+Persist the exact client confirmation before send, keyed by server/world and actor,
+with at most16 pending destinations and4096 bytes each. No silent eviction, overwrite
+of a different pending request, corrupt-file fallback or automatic new UUID on retry.
+Durable terminal outcomes clear only their own exact pending record. Transient failures
+retain it. Screens must state when a sent request remains unresolved after closing.
