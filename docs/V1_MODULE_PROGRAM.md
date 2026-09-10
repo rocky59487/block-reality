@@ -183,3 +183,13 @@ v1.5庫及資源逐位不變。省略force與遺失capability的可編譯反例�
 `../evidence/CONSTRUCTION_TRANSACTIONS/CHUNK_PARTICIPANT/RESULTS.md`。
 下一步正式host仍須解決ChunkSerializer吞掉capability例外、custom save資料擷取及原版
 NbtIo無上限讀取配置；canonical上限不等於解析前上限。尚無Forge施工呼叫者，CT-1..9不關閉。
+
+CT_BOUNDED_CHUNK_READ 已在原IOWorker/region cache讀取解壓16MiB+1上限後才建NBT tags，
+並拒絕pending影像、重複鍵/深度/不可能長度與trailing資料。雙平台Forge137PASS，13項
+區塊測試通過；stream cap/vanilla parser兩個可編譯反例被抓到。最新jar4bf732d83a1e…
+已在隔離安裝Forge的真Level上通過12項checkpoint/after/恢復/箱子原物品/損壞檔拒絕檢查，
+harness不含AT或正式類別，測試確實使用mods/內jar。專服正常exit0，原檔/完整收據保留。
+609登錄覆蓋：Windows597PASS/12平台SKIP、Linux608PASS/1平台SKIP；core來源不變沿用前次。
+詳 `../evidence/CONSTRUCTION_TRANSACTIONS/BOUNDED_CHUNK_READ/RESULTS.md`。這解決上一段的
+模組讀取配置邊界；下一步仍需完整live capture、吞錯capability/custom hooks、施工host、
+普通放置/藍圖/undo與UI。CT-1..9和v1仍開放，沒有Java物理或原生引擎改動。

@@ -1,0 +1,1 @@
+{"command": ["bash", "gradlew", "--no-daemon", "--console=plain", "-I", "/home/rocky/br-bounded-chunk-read/qualification/test.gradle", "-Dbr.chunkReadEvidence=/home/rocky/br-bounded-chunk-read/qualification/full-region-fixtures", "build", "-PbrNativesDir=/home/rocky/br-native-v15-consumer/staged"], "exit": 0}

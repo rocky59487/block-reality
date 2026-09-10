@@ -1,0 +1,22 @@
+{
+  "source": "bca242a",
+  "jar_bytes": 15326800,
+  "jar_sha256": "4bf732d83a1eccf81dbf30da57bf1955c9d69e8c67435c15c85431f57962efce",
+  "added_entries": [
+    "META-INF/accesstransformer.cfg",
+    "com/blockreality/impl/server/construction/BoundedChunkRead.class"
+  ],
+  "removed_entries": [],
+  "changed_entries": [
+    "com/blockreality/impl/server/construction/ChunkFileParticipant$1.class"
+  ],
+  "unchanged_entries": 404,
+  "unchanged_classes": 253,
+  "access_transformer": [
+    "public net.minecraft.world.level.chunk.storage.IOWorker f_63518_",
+    "public net.minecraft.world.level.chunk.storage.IOWorker f_63519_",
+    "public net.minecraft.world.level.chunk.storage.IOWorker m_63545_(Ljava/util/function/Supplier;)Ljava/util/concurrent/CompletableFuture;",
+    "public net.minecraft.world.level.chunk.storage.RegionFileStorage m_63711_(Lnet/minecraft/world/level/ChunkPos;)Lnet/minecraft/world/level/chunk/storage/RegionFile;"
+  ],
+  "access_transformer_sha256": "230f398dea92d754f81bbeacd172ea9abb764a7b2438e48ef0b7d9810d475a13"
+}

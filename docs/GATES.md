@@ -1675,3 +1675,20 @@ accounter before canonical admission, while ChunkSerializer can swallow capabili
 errors. These remain open live-integration limitations, not relaxed corrupt-disk
 bounds or accepted capture guarantees. No CT-1..9/FPS/v1 gate is lowered. See
 evidence/CONSTRUCTION_TRANSACTIONS/CHUNK_PARTICIPANT/RESULTS.md.
+
+### 2026-09-10 CT_BOUNDED_CHUNK_READ
+
+b8b3f7a precedes production0c95eea and source snapshot bca242a. The same-worker
+reader caps decoded bytes before NBT tag allocation, preserves strict parsing and
+refuses pending images. Both Forge137-test suites and13-test chunk controls pass;
+unchanged472-test core evidence is reused. Current609 registration has Windows597
+PASS/12 platform SKIP and Linux608 PASS/1 platform SKIP coverage. The compiled
+stream-cap and vanilla-parser mutants each fail their selected behavioral assertion;
+control/restored13 pass, and all raw region fixtures are retained.
+Ordinary jar4bf732d83a1e contains the exact four AT directives, changes only the
+storage delegate and adds one reader class. The separate installed harness has no
+AT or production classes;12 checks exercise actual mods/ classes, a real level's
+complete NBT checkpoint/after/restore, unchanged chest items and corrupt-file refusal.
+Normal server exit0/port release are verified. No Minecraft crash recovery, throwing
+capability/custom-hook capture, full construction, socket/UI, FPS or v1 gate is
+substituted or lowered. See evidence/CONSTRUCTION_TRANSACTIONS/BOUNDED_CHUNK_READ/RESULTS.md.
