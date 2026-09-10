@@ -101,6 +101,7 @@
   "br.product.unavailable": "Declared dimensions unavailable",
   "br.hud.input_waiting": "Waiting for structure and support chunks to load",
   "br.build.title": "Place one component",
+  "br.build.axis": "Axis: %s",
   "br.build.cost": "Material cost: 1 item",
   "br.build.creative": "Creative: no material consumed",
   "br.build.target": "Cell: %s, %s, %s",

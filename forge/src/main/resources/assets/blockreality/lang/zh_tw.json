@@ -101,6 +101,7 @@
   "br.product.unavailable": "無法讀取宣告尺寸",
   "br.hud.input_waiting": "等待結構與支承區塊載入",
   "br.build.title": "放置一個構件",
+  "br.build.axis": "軸向：%s",
   "br.build.cost": "材料用量：1 個",
   "br.build.creative": "創造模式：不消耗材料",
   "br.build.target": "位置：%s, %s, %s",

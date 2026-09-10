@@ -21,6 +21,7 @@ final class PlacementScreen extends Screen {
     private ItemStack icon=ItemStack.EMPTY;
     private List<net.minecraft.util.FormattedCharSequence> name=List.of(),rows=List.of();
     private int panelWidth,top,bottom,bodyTop,bodyBottom,scroll,maximumScroll;
+    private String lastNarration="";
     PlacementScreen(ClientConstruction.Session state) {super(Component.translatable("br.build.title"));this.state=state;}
     @Override public boolean isPauseScreen() {return false;}
     @Override protected void init() {
@@ -40,10 +41,13 @@ final class PlacementScreen extends Screen {
         close=addRenderableWidget(Button.builder(Component.translatable("gui.cancel"),button->onClose())
                 .bounds(12,0,available,20).build());
         layoutContent();updateButtons();setInitialFocus(primary.active?primary:close);
+        lastNarration=getNarrationMessage().getString();
     }
     @Override public void tick() {
         if(!ClientConstruction.current(state)){onClose();return;}
         ClientConstruction.tick(state);layoutContent();updateButtons();
+        String narration=getNarrationMessage().getString();
+        if(!narration.equals(lastNarration)){lastNarration=narration;triggerImmediateNarration(false);}
     }
     private void updateButtons() {
         for(int i=0;i<axes.size();i++) {
@@ -64,6 +68,18 @@ final class PlacementScreen extends Screen {
         icon=new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation(product)));
         name=font.split(icon.isEmpty()?title:icon.getHoverName().copy().withStyle(net.minecraft.ChatFormatting.BOLD),Math.max(1,textWidth-24));
         bodyTop=Math.max(top+6+name.size()*12,top+22)+4;
+        rows=new ArrayList<>();
+        for(Component line:details()){rows.addAll(font.split(line,textWidth));rows.add(Component.empty().getVisualOrderText());}
+        int controlHeight=state.terminal?48:72;
+        bottom=Math.min(height-6,bodyTop+rows.size()*12+controlHeight+4);
+        int controls=bottom-controlHeight;bodyBottom=controls-4;
+        for(Button axis:axes)axis.setY(controls);
+        primary.setY(controls+24);close.setY(controls+(state.terminal?24:48));
+        int viewport=Math.max(0,bodyBottom-bodyTop);
+        maximumScroll=Math.max(0,rows.size()*12-viewport);scroll=Math.min(scroll,maximumScroll);
+    }
+    /** Visible details and native narration describe the same server-authored placement. */
+    private List<Component> details() {
         List<Component> text=new ArrayList<>();
         text.add(Component.translatable(state.offer!=null && state.offer.creative()?"br.build.creative":"br.build.cost"));
         if(state.offer!=null) {
@@ -72,15 +88,16 @@ final class PlacementScreen extends Screen {
         }
         text.add(ClientConstruction.status(state));
         if(state.sent!=null && !state.terminal)text.add(Component.translatable("br.build.close_notice"));
-        rows=new ArrayList<>();
-        for(Component line:text){rows.addAll(font.split(line,textWidth));rows.add(Component.empty().getVisualOrderText());}
-        int controlHeight=state.terminal?48:72;
-        bottom=Math.min(height-6,bodyTop+rows.size()*12+controlHeight+4);
-        int controls=bottom-controlHeight;bodyBottom=controls-4;
-        for(Button axis:axes)axis.setY(controls);
-        primary.setY(controls+24);close.setY(controls+(state.terminal?24:48));
-        int viewport=Math.max(0,bodyBottom-bodyTop);
-        maximumScroll=Math.max(0,rows.size()*12-viewport);scroll=Math.min(scroll,maximumScroll);
+        return text;
+    }
+    @Override public Component getNarrationMessage() {
+        if(state==null)return title;
+        var message=title.copy();
+        if(!icon.isEmpty())message.append(". ").append(icon.getHoverName());
+        int axis=state.offer!=null?state.offer.axis():state.preview==null?-1:state.preview.axis();
+        if(axis>=0)message.append(". ").append(Component.translatable("br.build.axis","XYZ".substring(axis,axis+1)));
+        for(Component detail:details())message.append(". ").append(detail);
+        return message;
     }
     @Override public void render(GuiGraphics graphics,int mouseX,int mouseY,float partialTick) {
         graphics.fill(6,top,6+panelWidth,bottom,0xEB141B22);
