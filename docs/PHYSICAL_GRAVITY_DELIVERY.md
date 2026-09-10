@@ -16,8 +16,22 @@ Windows／Linux真JNA各235檢查，66frame×3逐位相同；遊戲生產Java入
 physical oracle後通過，硬容差未改。原始證據在
 [engine PGN evidence](https://github.com/rocky59487/tectonic2/tree/2bd898185f2c0cb9dd929b380c0f90d43212f905/gate/evidence/PHYSICAL_GRAVITY_NATIVE)。
 
-**尚未更新正式靜態native bundle或預設jar，不得當作可直接安裝的發布版。**
-這條候選可透過既有明確native路徑配置載入相容測試库；舊1.5庫的contract hash不符會拒絕，
-不能默默當physical。下一步沿既有NATIVE打包機制重建靜態雙庫、來源pin、完整依賴／license／
-provenance，重新驗jar換装後才合併影響預設發布物的改動。引擎版本仍1.5.0，#94、碎塊、
-壓碎／摩擦滾動／停止、非線性與完整v2未由此完成；本輪沒有真Forge視窗或FPS宣稱。
+## 靜態候選換裝
+
+2026-09-11：原 NATIVE 打包鏈現已建立同源
+`691651156881670d5ec67349b162dadbf81d1ce9` 的靜態雙庫，兩個consumer ref均釘此來源，
+契約hash不變；staging明示candidate。引擎版本仍1.5.0，未覆寫正式release。
+
+同一個Forge jar SHA256為 `e90453995d4213f7401c3c6ad255d3d5900065b87a1fdef0e5276dc35be9a745`。
+Windows/Linux均通過162個完整request（原96＋PGN66）的direct/jar DET3、兩JVM同cache，
+jar取出的庫執行production JNA235、原native Java20/0SKIP；jar前後hash不變。
+來源10破壞＋legacy profile、4 guard removal、bundle9及禁止類別3反例均拒絕。
+物理完整response來自同compiler/靜態依賴的typed與native，未跨backend冒稱bitwise相同。
+
+兩倉CI已修正舊ABI2拒絕測試，編譯真正未知ABI3並核對版本拒絕原因；ABI2控制實測接受。
+首次staging抓到CONTRACT_SHA256末尾CRLF；回復Git的LF，未更動pin或放寬比對。
+引擎可追溯證據見
+[PGP RESULTS](https://github.com/rocky59487/tectonic2/blob/82165e52bf9f672356bb5e8182702bd432e646d7/gate/evidence/PHYSICAL_GRAVITY_PACKAGE/RESULTS.md)。
+
+候選jar已可供後續遊戲整合，正式預設發布物尚未替換。#94、持久碎塊、壓碎、
+摩擦滾動／停止、非線性與完整v2仍開放；本單元沒有真Forge遊戲場景或FPS宣稱。

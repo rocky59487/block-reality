@@ -225,4 +225,5 @@ PR 上不符 = 變更**在途中** → 警告（否則每次合法的契約變�
 ## 2026-09-11 PGN候選
 
 PGN已接production GameWorldSnapshot的physical自重，舊public overload仍analysis；JNA與兩故障已驗。
-正式靜態native bundle／預設jar尚未換装，不能發佈新契約配舊庫。詳docs/PHYSICAL_GRAVITY_DELIVERY.md；#94與v2仍開放。
+6916511靜態雙庫候選已換入同一jar，雙平台162frame DET3／雙JVM／production JNA235與native Java20通過。
+正式release未替換，不能發佈新契約配舊庫。詳docs/PHYSICAL_GRAVITY_DELIVERY.md；#94與v2仍開放。
