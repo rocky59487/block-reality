@@ -5,6 +5,9 @@
 // result packing and error-code mapping (BSI.md Part C). An engine implements
 // the bsi_engine_vtable and nothing else.
 #pragma once
+#if (defined(BSI_TEST_PGN_CAP) || defined(BSI_TEST_PGN_ABI) || defined(BSI_TEST_PGN_ENTRY)) && !defined(BSI_HOST_TEST_MUTATIONS)
+#error "PGN host mutation requires BSI_HOST_TEST_MUTATIONS"
+#endif
 #include <cstdint>
 #include <memory>
 #include <string>

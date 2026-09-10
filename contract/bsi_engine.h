@@ -17,7 +17,8 @@ extern "C" {
 #endif
 
 #define BSI_MAJOR 1
-#define BSI_ENGINE_ABI 1u
+#define BSI_ENGINE_ABI 2u
+#define BSI_ENGINE_ABI_LEGACY 1u
 
 #if defined(_WIN32) && !defined(BSI_STATIC)
 #  ifdef BSI_ENGINE_BUILD
@@ -210,6 +211,15 @@ typedef struct bsi_solve_options {
   uint32_t includeMask;                   /* bit0 members, bit1 stations, bit2 shells, bit3 attrsEcho, bit4 memberGeometry (requires members), bit5 stationIdentity (requires members+stations) */
 } bsi_solve_options;
 
+enum bsi_mass_model { BSI_MASS_ANALYSIS = 0, BSI_MASS_PHYSICAL = 1 };
+/* ABI2 only. The ABI1 options above retain their original size and semantics.
+ * Check struct_size through massModel BEFORE reading common or massModel. */
+typedef struct bsi_solve_options_v2 {
+  uint32_t struct_size;
+  bsi_solve_options common;
+  uint8_t massModel;                     /* bsi_mass_model */
+} bsi_solve_options_v2;
+
 /* ---- host services & result writer ---------------------------------------- */
 typedef struct bsi_host   bsi_host;      /* opaque; logging, alloc, cancellation flag */
 typedef struct bsi_engine bsi_engine;    /* opaque; engine-owned */
@@ -254,6 +264,8 @@ typedef struct bsi_engine_vtable {
   int (*world_edit)(bsi_engine*, const bsi_edit* edits, uint32_t n, bsi_writer* w);   /* may be NULL */
   int (*solve)(bsi_engine*, const bsi_solve_options* o, const bsi_load* loads, uint32_t n, bsi_writer* w);
   int (*cancel)(bsi_engine*);                                                          /* may be NULL */
+  /* Read only when abi_version >= 2. Physical mode also requires its capability. */
+  int (*solve_v2)(bsi_engine*, const bsi_solve_options_v2* o, const bsi_load* loads, uint32_t n, bsi_writer* w); /* may be NULL */
 } bsi_engine_vtable;
 
 /* The single exported symbol an engine must provide. Returns NULL when
