@@ -46,3 +46,10 @@ jar guards and cross-platform adapter tests; record costs without an FPS claim.
 Real Minecraft restart, chunk durability, protection, manufactured metadata,
 network/client confirmation and undo remain full CT gates, not covered by these
 file-level or synthetic-host checks.
+
+Pre-implementation extension after the first14 Forge/3 new core checks:failed player
+temporary files also need bounded admission, independent of normal vanilla player
+files. Retain at most1024 such files and1GiB total; refuse writes that cannot reserve
+their full temporary bytes. Reopen scans and validates retained temporary files;
+unknown temporary sizes/types refuse, never auto-delete evidence. Exercise reduced
+package-local quotas against real files; production callers cannot raise these caps.
