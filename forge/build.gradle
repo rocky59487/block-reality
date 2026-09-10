@@ -90,6 +90,10 @@ tasks.register('bundleEngines') {
     description = 'Copies staged native libraries into the jar with provenance and a hash manifest.'
     group = 'build'
     def natSrc = brNativesDir == 'none' ? null : file(brNativesDir)
+    inputs.property('nativeStagingDirectory', brNativesDir)
+    inputs.file(rootProject.file('../contract/CONTRACT_SHA256')).withPropertyName('contractPin')
+    inputs.files(rootProject.file('../LICENSE'), rootProject.file('../NOTICE')).withPropertyName('distributionNotices')
+    inputs.files(fileTree(rootProject.file('../third_party'))).withPropertyName('thirdPartyNotices')
     if (natSrc != null) inputs.files(fileTree(natSrc))
     outputs.dir(brEngineOut)
     doLast {

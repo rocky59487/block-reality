@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "smoke_checks": 10,
+  "native_command_readouts_equal_after_restart": true,
+  "native_member_lines_equal_after_restart": 15,
+  "cache_bytes_path_mtime_unchanged": true,
+  "jar_sha256": "9d8cb6795e9c41514697a6eb2492fd00ef9eb484b4b5b30f627371967702de30",
+  "production_jar_class_origins": {
+    "first": 156,
+    "restart": 150
+  },
+  "both_owned_server_exits": 0,
+  "fresh_world_and_cache": true,
+  "actual_client": false
+}

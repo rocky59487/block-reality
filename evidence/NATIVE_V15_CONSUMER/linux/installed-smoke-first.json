@@ -1,0 +1,202 @@
+[
+  {
+    "command": "forceload add -16 -16 48 32",
+    "response": "Marked [-1, -1] chunks in minecraft:overworld from [-1, -1] to [3, 2] to be force loaded\n"
+  },
+  {
+    "command": "fill 35 199 0 35 251 0 minecraft:air",
+    "response": "No blocks were filled\n"
+  },
+  {
+    "command": "fill -2 198 -2 36 215 15 minecraft:air",
+    "response": "No blocks were filled\n"
+  },
+  {
+    "command": "execute positioned 0 200 0 run br scan 2",
+    "response": "Scanned 5x5 chunks: 0 structural blocks now tracked (0 total).\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          IDLE\n  native engine not loaded yet\n  revision        0   (rejected as stale: 0)\n  blocks          0   test loads: 0\n  analysis        EMPTY\n  last result     none yet\n"
+  },
+  {
+    "command": "br members",
+    "response": "No usable analysis. Try /br status.\n"
+  },
+  {
+    "command": "br section 1",
+    "response": "No usable analysis. Try /br status.\n"
+  },
+  {
+    "command": "setblock -1 200 0 minecraft:stone",
+    "response": "Changed the block at -1, 200, 0\n"
+  },
+  {
+    "command": "fill 0 200 0 4 200 0 blockreality:steel_beam[axis=x]",
+    "response": "Successfully filled 5 block(s)\n"
+  },
+  {
+    "command": "execute positioned 0 200 0 run br scan 2",
+    "response": "Scanned 5x5 chunks: 5 structural blocks now tracked (5 total).\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          IDLE\n  native engine not loaded yet\n  revision        11   (rejected as stale: 0)\n  blocks          5   test loads: 0\n  analysis        PENDING\n  last result     none yet\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        11   (rejected as stale: 0)\n  blocks          5   test loads: 0\n  analysis        RESULT\n  result revision 11  CURRENT\n  last result     1 members, 0 plate facets, max D/C 0.0264  (member #0)\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.476e-16\nNo positive buckling eigenvalue for this load\n"
+  },
+  {
+    "command": "br members",
+    "response": "  result revision 11  CURRENT\nmembers  1     plate facets  0\n  #0  steel steel_rect_200x400  L=4000mm  D/C=0.0264  CRUSH at x=0mm  peak 9.24 MPa\n"
+  },
+  {
+    "command": "setblock -1 200 0 minecraft:air",
+    "response": "Changed the block at -1, 200, 0\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        12   (rejected as stale: 0)\n  blocks          5   test loads: 0\n  analysis        PENDING\n  result revision 11  STALE — world changed; values below describe the previous model\n  last result     1 members, 0 plate facets, max D/C 0.0264  (member #0)\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.476e-16\nNo positive buckling eigenvalue for this load\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        12   (rejected as stale: 0)\n  blocks          5   test loads: 0\n  analysis        MODEL_REFUSED — BSI analysis: SOLVE_FAILED: no solved island\n  result revision 12  CURRENT\n  last result     FAILED — BSI analysis: SOLVE_FAILED: no solved island\n"
+  },
+  {
+    "command": "setblock -1 200 0 minecraft:stone",
+    "response": "Changed the block at -1, 200, 0\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        13   (rejected as stale: 0)\n  blocks          5   test loads: 0\n  analysis        PENDING\n  result revision 12  STALE — world changed; values below describe the previous model\n  last result     FAILED — BSI analysis: SOLVE_FAILED: no solved island\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        13   (rejected as stale: 0)\n  blocks          5   test loads: 0\n  analysis        RESULT\n  result revision 13  CURRENT\n  last result     1 members, 0 plate facets, max D/C 0.0264  (member #0)\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.476e-16\nNo positive buckling eigenvalue for this load\n"
+  },
+  {
+    "command": "setblock 10 199 0 minecraft:stone",
+    "response": "Changed the block at 10, 199, 0\n"
+  },
+  {
+    "command": "fill 10 200 0 10 204 0 blockreality:steel_beam[axis=y]",
+    "response": "Successfully filled 5 block(s)\n"
+  },
+  {
+    "command": "fill -1 210 10 -1 210 12 minecraft:stone",
+    "response": "Successfully filled 3 block(s)\n"
+  },
+  {
+    "command": "fill 0 210 10 3 210 12 blockreality:concrete_slab[axis=y]",
+    "response": "Successfully filled 12 block(s)\n"
+  },
+  {
+    "command": "fill 20 200 0 24 200 0 blockreality:steel_beam[axis=x]",
+    "response": "Successfully filled 5 block(s)\n"
+  },
+  {
+    "command": "execute positioned 0 200 0 run br scan 2",
+    "response": "Scanned 5x5 chunks: 27 structural blocks now tracked (27 total).\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        58   (rejected as stale: 0)\n  blocks          27   test loads: 0\n  analysis        PENDING\n  result revision 13  STALE — world changed; values below describe the previous model\n  last result     1 members, 0 plate facets, max D/C 0.0264  (member #0)\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.476e-16\nNo positive buckling eigenvalue for this load\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        58   (rejected as stale: 0)\n  blocks          27   test loads: 0\n  analysis        RESULT\n  result revision 58  CURRENT\n  last result     2 members, 12 plate facets, max D/C 0.7597  (shell #4)\n  structures      3 solved, 1 unrestrained\n  equilibrium     residual 8.861e-14\nWorld buckling incomplete: an ineligible structure\n  unassigned      5 blocks   part of a structure nothing is holding up (not a modelling fault)\n"
+  },
+  {
+    "command": "setblock 30 200 0 blockreality:steel_beam",
+    "response": "Changed the block at 30, 200, 0\n"
+  },
+  {
+    "command": "execute positioned 0 200 0 run br scan 2",
+    "response": "Scanned 5x5 chunks: 28 structural blocks now tracked (28 total).\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        61   (rejected as stale: 0)\n  blocks          28   test loads: 0\n  analysis        PENDING\n  result revision 58  STALE — world changed; values below describe the previous model\n  last result     2 members, 12 plate facets, max D/C 0.7597  (shell #4)\n  structures      3 solved, 1 unrestrained\n  equilibrium     residual 8.861e-14\nWorld buckling incomplete: an ineligible structure\n  unassigned      5 blocks   part of a structure nothing is holding up (not a modelling fault)\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        61   (rejected as stale: 0)\n  blocks          28   test loads: 0\n  analysis        MODEL_REFUSED — undeclared placement axis at (30,200,0) (1 blocks); sneak-right-click with an empty hand to declare X/Y/Z\n  result revision 61  CURRENT\n  last result     FAILED — undeclared placement axis at (30,200,0) (1 blocks); sneak-right-click with an empty hand to declare X/Y/Z\n"
+  },
+  {
+    "command": "setblock 30 200 0 minecraft:air",
+    "response": "Changed the block at 30, 200, 0\n"
+  },
+  {
+    "command": "execute positioned 0 200 0 run br scan 2",
+    "response": "Scanned 5x5 chunks: 27 structural blocks now tracked (27 total).\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        63   (rejected as stale: 0)\n  blocks          27   test loads: 0\n  analysis        PENDING\n  result revision 61  STALE — world changed; values below describe the previous model\n  last result     FAILED — undeclared placement axis at (30,200,0) (1 blocks); sneak-right-click with an empty hand to declare X/Y/Z\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        63   (rejected as stale: 0)\n  blocks          27   test loads: 0\n  analysis        RESULT\n  result revision 63  CURRENT\n  last result     2 members, 12 plate facets, max D/C 0.7597  (shell #4)\n  structures      3 solved, 1 unrestrained\n  equilibrium     residual 8.861e-14\nWorld buckling incomplete: an ineligible structure\n  unassigned      5 blocks   part of a structure nothing is holding up (not a modelling fault)\n"
+  },
+  {
+    "command": "br reset",
+    "response": "Engine reset; it will be started again on the next tick.\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          IDLE\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        64   (rejected as stale: 0)\n  blocks          27   test loads: 0\n  analysis        PENDING\n  result revision 63  STALE — world changed; values below describe the previous model\n  last result     2 members, 12 plate facets, max D/C 0.7597  (shell #4)\n  structures      3 solved, 1 unrestrained\n  equilibrium     residual 8.861e-14\nWorld buckling incomplete: an ineligible structure\n  unassigned      5 blocks   part of a structure nothing is holding up (not a modelling fault)\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        64   (rejected as stale: 0)\n  blocks          27   test loads: 0\n  analysis        RESULT\n  result revision 64  CURRENT\n  last result     2 members, 12 plate facets, max D/C 0.7597  (shell #4)\n  structures      3 solved, 1 unrestrained\n  equilibrium     residual 8.861e-14\nWorld buckling incomplete: an ineligible structure\n  unassigned      5 blocks   part of a structure nothing is holding up (not a modelling fault)\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        64   (rejected as stale: 0)\n  blocks          27   test loads: 0\n  analysis        RESULT\n  result revision 64  CURRENT\n  last result     2 members, 12 plate facets, max D/C 0.7597  (shell #4)\n  structures      3 solved, 1 unrestrained\n  equilibrium     residual 8.861e-14\nWorld buckling incomplete: an ineligible structure\n  unassigned      5 blocks   part of a structure nothing is holding up (not a modelling fault)\n"
+  },
+  {
+    "command": "br members",
+    "response": "  result revision 64  CURRENT\nmembers  2     plate facets  12\n  #0  steel steel_rect_200x400  L=4000mm  D/C=0.0264  CRUSH at x=0mm  peak 9.24 MPa\n  #2  steel steel_rect_200x400  L=4000mm  D/C=0.0009  CRUSH at x=0mm  peak 0.31 MPa\n  P0  concrete_slab_200  t=200mm  D/C=0.5057 (raw NaN)  top face  peak 1.60 MPa\n  P1  concrete_slab_200  t=200mm  D/C=0.5447 (raw NaN)  top face  peak 1.64 MPa\n  P2  concrete_slab_200  t=200mm  D/C=0.5057 (raw NaN)  top face  peak 1.60 MPa\n  P3  concrete_slab_200  t=200mm  D/C=0.7448 (raw NaN)  top face  peak 2.24 MPa\n  P4  concrete_slab_200  t=200mm  D/C=0.7597 (raw NaN)  top face  peak 2.29 MPa\n  P5  concrete_slab_200  t=200mm  D/C=0.7448 (raw NaN)  top face  peak 2.24 MPa\n  P6  concrete_slab_200  t=200mm  D/C=0.2937 (raw NaN)  top face  peak 0.95 MPa\n  P7  concrete_slab_200  t=200mm  D/C=0.2772 (raw NaN)  top face  peak 0.84 MPa\n  P8  concrete_slab_200  t=200mm  D/C=0.2937 (raw NaN)  top face  peak 0.95 MPa\n  P9  concrete_slab_200  t=200mm  D/C=0.0575 (raw NaN)  top face  peak 0.19 MPa\n  P10  concrete_slab_200  t=200mm  D/C=0.0594 (raw NaN)  top face  peak 0.18 MPa\n  P11  concrete_slab_200  t=200mm  D/C=0.0575 (raw NaN)  top face  peak 0.19 MPa\n"
+  },
+  {
+    "command": "br section 1",
+    "response": "  result revision 64  CURRENT\nNo member #1. Try /br members.\n"
+  },
+  {
+    "command": "setblock 35 199 0 minecraft:stone",
+    "response": "Changed the block at 35, 199, 0\n"
+  },
+  {
+    "command": "fill 35 200 0 35 249 0 blockreality:steel_beam_100x200[axis=y]",
+    "response": "Successfully filled 50 block(s)\n"
+  },
+  {
+    "command": "execute positioned 0 200 0 run br scan 2",
+    "response": "Scanned 5x5 chunks: 77 structural blocks now tracked (77 total).\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        165   (rejected as stale: 0)\n  blocks          77   test loads: 0\n  analysis        PENDING\n  result revision 64  STALE — world changed; values below describe the previous model\n  last result     2 members, 12 plate facets, max D/C 0.7597  (shell #4)\n  structures      3 solved, 1 unrestrained\n  equilibrium     residual 8.861e-14\nWorld buckling incomplete: an ineligible structure\n  unassigned      5 blocks   part of a structure nothing is holding up (not a modelling fault)\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        165   (rejected as stale: 0)\n  blocks          77   test loads: 0\n  analysis        RESULT\n  result revision 165  CURRENT\n  last result     3 members, 12 plate facets, max D/C 0.7597  (shell #4)\n  structures      4 solved, 1 unrestrained\n  equilibrium     residual 3.475e-14\nBUCKLING: linear onset reached in a structure\nWorld buckling incomplete: an ineligible structure\n  unassigned      5 blocks   part of a structure nothing is holding up (not a modelling fault)\n"
+  },
+  {
+    "command": "fill 35 199 0 35 251 0 minecraft:air",
+    "response": "Successfully filled 51 block(s)\n"
+  },
+  {
+    "command": "execute positioned 0 200 0 run br scan 2",
+    "response": "Scanned 5x5 chunks: 27 structural blocks now tracked (27 total).\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        216   (rejected as stale: 0)\n  blocks          27   test loads: 0\n  analysis        PENDING\n  result revision 165  STALE — world changed; values below describe the previous model\n  last result     3 members, 12 plate facets, max D/C 0.7597  (shell #4)\n  structures      4 solved, 1 unrestrained\n  equilibrium     residual 3.475e-14\nBUCKLING: linear onset reached in a structure\nWorld buckling incomplete: an ineligible structure\n  unassigned      5 blocks   part of a structure nothing is holding up (not a modelling fault)\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        216   (rejected as stale: 0)\n  blocks          27   test loads: 0\n  analysis        RESULT\n  result revision 216  CURRENT\n  last result     2 members, 12 plate facets, max D/C 0.7597  (shell #4)\n  structures      3 solved, 1 unrestrained\n  equilibrium     residual 8.861e-14\nWorld buckling incomplete: an ineligible structure\n  unassigned      5 blocks   part of a structure nothing is holding up (not a modelling fault)\n"
+  }
+]

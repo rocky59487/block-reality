@@ -1,0 +1,10 @@
+{
+  "status": "FAIL",
+  "gate": "packaged NOTICE equals source NOTICE",
+  "jar_sha256": "05d5d9e3d6eb4c064577fe8c7dcfdf799805a93c42e32fbc516be6c00a369b9d",
+  "packaged_notice_sha256": "74e3777b7c33322538caae4feb66ead874aa30fc59a5e2922cf25f6d49cc45e0",
+  "source_notice_sha256": "65e2468d931b1da2b859ab1d5db696e8352fdb51d03c7320e9f565d63e93b6b0",
+  "build_log": "notice-jar-final.log",
+  "cause": "bundleEngines did not declare root NOTICE/LICENSE/third_party/contract pin as inputs",
+  "replay_first": "Both replay launchers then failed before loading Java/native because the verified artifact copy was withheld. Their input frames and logs remain."
+}

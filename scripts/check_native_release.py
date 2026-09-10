@@ -19,17 +19,25 @@ def main():
     ap.add_argument('--sums-sha256',required=True)
     ap.add_argument('--version', default='1.3.0')
     ap.add_argument('--source-commit', default='c90b448194b52b9c7b4a48dc049581d4b640d2d4')
+    ap.add_argument('--inventory-profile', choices=['with-verification','sdk'], default='with-verification')
     args=ap.parse_args();args.out.mkdir(parents=True,exist_ok=False)
     spec=importlib.util.spec_from_file_location('stage',Path(__file__).with_name('stage_release_natives.py'))
     stage=importlib.util.module_from_spec(spec);spec.loader.exec_module(stage)
     revision=args.source_commit;version=args.version
-    payloads,provenance=stage.verify_release(args.release_dir,version,revision,args.sums_sha256)
+    payloads,provenance=stage.verify_release(args.release_dir,version,revision,args.sums_sha256,
+                                           inventory_profile=args.inventory_profile)
     assert len(provenance['libraries'])==2
     asset=f'tectonic2-{version}-windows-x86_64.zip'
     original=stage.sums((args.release_dir/'SHA256SUMS').read_bytes())
     with zipfile.ZipFile(args.release_dir/asset) as z:
         original_files={n:z.read(n) for n in z.namelist()}
     records={}
+    if args.inventory_profile=='sdk':
+        try:stage.verify_release(args.release_dir,version,revision,args.sums_sha256)
+        except ValueError as ex:
+            assert str(ex)=='release asset inventory mismatch',str(ex)
+            records['LEGACY_PROFILE']={'rejected':str(ex),'scope':'default still requires the verification JSON asset'}
+        else:raise AssertionError('Legacy profile accepted an SDK inventory without verification JSON')
     cases={
         'ROOT':'published SHA256SUMS hash mismatch',
         'ASSET':'release asset hash mismatch',
@@ -67,7 +75,7 @@ def main():
         (directory/'SHA256SUMS').write_bytes(inventory)
         trusted='0'*64 if name=='ROOT' else stage.sha(inventory)
         def expect_rejected():
-            try:stage.verify_release(directory,version,revision,trusted)
+            try:stage.verify_release(directory,version,revision,trusted,inventory_profile=args.inventory_profile)
             except ValueError as ex:
                 assert want in str(ex),(name,str(ex))
                 return str(ex)

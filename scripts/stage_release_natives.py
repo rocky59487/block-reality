@@ -47,15 +47,18 @@ def sums(data):
     return result
 
 
-def verify_release(directory, version, revision, sums_sha256, basis="published"):
+def verify_release(directory, version, revision, sums_sha256, basis="published", inventory_profile="with-verification"):
     require(basis in {"published", "candidate"}, "invalid asset qualification basis")
+    require(inventory_profile in {"with-verification", "sdk"}, "invalid release inventory profile")
     pin = (ROOT / "contract/CONTRACT_SHA256").read_text(encoding="utf-8").strip()
     inventory = (directory / "SHA256SUMS").read_bytes()
     require(sha(inventory) == sums_sha256, "published SHA256SUMS hash mismatch")
     assets = sums(inventory)
     expected = {f"tectonic2-{version}-{p}.zip" for p in PLATFORMS}
     source_name = f"tectonic2-{version}-source.tar.gz"
-    expected |= {source_name, f"tectonic2-{version}-verification.json"}
+    expected.add(source_name)
+    if inventory_profile == "with-verification":
+        expected.add(f"tectonic2-{version}-verification.json")
     require(set(assets) == expected, "release asset inventory mismatch")
     for name, digest in assets.items():
         require(sha((directory / name).read_bytes()) == digest, f"release asset hash mismatch: {name}")
@@ -107,6 +110,7 @@ def verify_release(directory, version, revision, sums_sha256, basis="published")
                     payloads[f"licenses/{platform}/{name}"] = archive.read(name)
     provenance = dict(contractSha256=pin, libraries=entries, release=dict(
         sourceCommit=revision, version=version, sha256sums=sha(inventory), assets=assets,
+        inventoryProfile=inventory_profile,
         sourceFiles=len(files), basis=("published release integrity" if basis == "published"
             else "locally qualified candidate") + "; runtime hello is a separate platform gate"))
     payloads["provenance.json"] = (json.dumps(provenance, indent=2) + "\n").encode()
@@ -122,12 +126,15 @@ def main():
     ap.add_argument("--sums-sha256", required=True)
     ap.add_argument("--basis", choices=["published", "candidate"], default="published",
                     help="candidate identifies local qualification without claiming publication")
+    ap.add_argument("--inventory-profile", choices=["with-verification", "sdk"], default="with-verification",
+                    help="sdk explicitly accepts exactly two native ZIPs and the source archive; default also requires a verification JSON")
     args = ap.parse_args()
     try:
         require(not args.out.exists(), "output must be a new directory")
         require(re.fullmatch(r"[0-9a-f]{40}", args.source_commit), "invalid source commit")
         require(re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", args.version), "invalid release version")
-        payloads, provenance = verify_release(args.release_dir, args.version, args.source_commit, args.sums_sha256, args.basis)
+        payloads, provenance = verify_release(args.release_dir, args.version, args.source_commit, args.sums_sha256,
+                                             args.basis, args.inventory_profile)
         # All validation precedes the first write. The final provenance is the commit marker.
         args.out.mkdir(parents=True)
         for name, data in payloads.items():

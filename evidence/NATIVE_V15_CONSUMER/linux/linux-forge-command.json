@@ -1,0 +1,13 @@
+{
+  "command": [
+    "bash",
+    "gradlew",
+    "--no-daemon",
+    "--console=plain",
+    "build",
+    "-PbrNativesDir=/home/rocky/br-native-v15-consumer/staged"
+  ],
+  "cwd": "/home/rocky/br-native-v15-consumer/forge",
+  "BR_ENGINE": "/home/rocky/br-native-v15-consumer/staged/linux-x86_64/libbsi_tectonic.so",
+  "source": "fc5424fc2b7a6376047ded560201d1eb0f0e69bc"
+}

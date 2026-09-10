@@ -15,7 +15,14 @@ def main():
     parser.add_argument('--out', required=True, type=Path)
     parser.add_argument('--baseline', type=Path)
     parser.add_argument('--stop', action='store_true')
+    parser.add_argument('--expected-native-sha256', default='53aae7156b94c0a761ef5abb2322ad47a708362f417a50ca3f04105d9c50abf1')
+    parser.add_argument('--expected-jar-sha256')
+    parser.add_argument('--expected-version')
+    parser.add_argument('--expected-contract')
     args = parser.parse_args()
+    for digest in [args.expected_native_sha256, args.expected_jar_sha256, args.expected_contract]:
+        if digest is not None and re.fullmatch('[0-9a-f]{64}', digest) is None:
+            parser.error('expected hashes must be full lowercase SHA256 values')
     root = args.config.resolve().parent
     props = dict(line.split('=', 1) for line in args.config.read_text(encoding='utf-8').splitlines()
                  if line and not line.startswith('#') and '=' in line)
@@ -45,6 +52,10 @@ def main():
             time.sleep(.5)
         members = command('br members')
         assert 'CURRENT' in members
+        if args.expected_version:
+            assert 'native engine READY: tectonic '+args.expected_version+' contract=' in status, status
+        if args.expected_contract:
+            assert 'contract='+args.expected_contract in status, status
         # Compare observable native values, not manager/session revision identities.
         result = next(line.strip() for line in status.splitlines() if '2 members, 12 plate facets' in line)
         verdicts = [line.strip() for line in status.splitlines() if 'World buckling' in line]
@@ -53,12 +64,14 @@ def main():
         assert len(libraries) == 1
         library = libraries[0]
         digest = hashlib.sha256(library.read_bytes()).hexdigest()
-        assert digest == '53aae7156b94c0a761ef5abb2322ad47a708362f417a50ca3f04105d9c50abf1'
+        assert digest == args.expected_native_sha256
         receipt['cache'] = {'path':str(library.relative_to(root)), 'sha256':digest,
                             'bytes':library.stat().st_size, 'mtime_ns':library.stat().st_mtime_ns}
         jars = sorted((root/'mods').glob('*.jar'))
         assert len(jars) == 1 and jars[0].name == 'blockreality-0.4.0-dev.jar'
         receipt['jar_sha256'] = hashlib.sha256(jars[0].read_bytes()).hexdigest()
+        if args.expected_jar_sha256:
+            assert receipt['jar_sha256'] == args.expected_jar_sha256
         if args.baseline:
             baseline = json.loads(args.baseline.read_text(encoding='utf-8'))
             assert receipt['native_readouts'] == baseline['native_readouts'], 'restart changed native readouts'

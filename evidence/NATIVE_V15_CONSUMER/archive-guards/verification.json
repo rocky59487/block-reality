@@ -1,0 +1,72 @@
+{
+  "LEGACY_PROFILE": {
+    "rejected": "release asset inventory mismatch",
+    "scope": "default still requires the verification JSON asset"
+  },
+  "ROOT": {
+    "rejected": "published SHA256SUMS hash mismatch",
+    "sums_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "asset_sha256": "733c1182889e1ac8669b8c9ffcd2789ba8be775dd562c25b48d7eb32189b50be"
+  },
+  "ASSET": {
+    "rejected": "release asset hash mismatch: tectonic2-1.5.0-windows-x86_64.zip",
+    "sums_sha256": "563ab25e52b993a9d905f978a9c391795c2e0f47a58237640d9653273b95f0ff",
+    "asset_sha256": "d56a71e189e78311a0e733d0733287646d08b627e34cf271506268f677935b9a"
+  },
+  "MISSING_PLATFORM": {
+    "rejected": "release asset inventory mismatch",
+    "sums_sha256": "239db7ba8133b390789b82bf59e1bd0f31e328ea6e7d669515534d5c2f36f0d1",
+    "asset_sha256": "6c783cfc8bb0e29244427e88161e39e878d309c4a67cf117e2253088a19ae14f"
+  },
+  "PATH": {
+    "rejected": "unsafe path: ../escape",
+    "sums_sha256": "0318769d778c8c356be71cee8bb144d4cde2c58b4b46f199888ee030dddf4349",
+    "asset_sha256": "f4c15b04705d5ed09a418b6cfc6139b1a4c9c55f0353eb3dd8953c6af9e9a98a"
+  },
+  "DUPLICATE": {
+    "rejected": "duplicate native archive entry",
+    "sums_sha256": "e912c916e43a57434ff1153088ce3188f90966a24d17585551561e2ee8e56771",
+    "asset_sha256": "d602187f9e957bff65f9fe8e5fca8f9374007fdbed123e14e4230aa47a7c7572"
+  },
+  "INNER": {
+    "rejected": "native archive hash mismatch: bsi_tectonic.dll",
+    "sums_sha256": "006c07b120d5b0c26eca349cf438ad6423ae5e1aa66bb9ddcbcef75576ba3683",
+    "asset_sha256": "b5ecb745d9fb598b688d650894b3e83482f6ddadbe5bdac176aec2f0c760a587"
+  },
+  "REVISION": {
+    "rejected": "native provenance identity mismatch: windows-x86_64",
+    "sums_sha256": "8715f33394ad6b77fd2cd9bf91e8ba3896b52d6eb1917e2a136deeaf90a97ce5",
+    "asset_sha256": "1dfb88a0a625a9a14313dcd1fd3af91b2ed9d274c7c7ad6509766950b4336374",
+    "guard_removal": {
+      "failure_type": "AssertionError",
+      "message": "REVISION corruption accepted"
+    }
+  },
+  "CONTRACT": {
+    "rejected": "native provenance identity mismatch: windows-x86_64",
+    "sums_sha256": "dc6ee1093f73cf0ea2d6670e369033d5b52cf1a1087e766f51d14287d2d7d122",
+    "asset_sha256": "8fa40a501f9f15477aaf81fafba12e635fb09c40a469aee4c5f93da930f72540",
+    "guard_removal": {
+      "failure_type": "AssertionError",
+      "message": "CONTRACT corruption accepted"
+    }
+  },
+  "BINARY": {
+    "rejected": "binary provenance mismatch: windows-x86_64",
+    "sums_sha256": "6839aa9f2a119d8d758718b1424621ccd65378951833124cb1fb7dbe724bfbdb",
+    "asset_sha256": "50e3a1c84589564807c91530af4bf8c48cc0f791f17a0d7393fa63ff494715d0",
+    "guard_removal": {
+      "failure_type": "AssertionError",
+      "message": "BINARY corruption accepted"
+    }
+  },
+  "SDK": {
+    "rejected": "SDK mismatch: bsi.schema.json",
+    "sums_sha256": "1c7cdcaebffe3061433311af0aefc6ad1c001df50a260f128c621b7f6ffb2aa0",
+    "asset_sha256": "a6272375e8bb72b92c1830a774bbf691f10ea4172f4a5835409153b17a636dd9",
+    "guard_removal": {
+      "failure_type": "AssertionError",
+      "message": "SDK corruption accepted"
+    }
+  }
+}

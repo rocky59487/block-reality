@@ -1,0 +1,21 @@
+{
+  "command": [
+    "C:\\Users\\wmc02\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\python.exe",
+    "-X",
+    "utf8",
+    "C:\\Users\\wmc02\\Desktop\\block-reality\\contract\\conformance\\run.py",
+    "--adapter",
+    "capi",
+    "--lib",
+    "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-v1.5-consumer\\staged\\windows-x86_64\\bsi_tectonic.dll",
+    "--case",
+    "C14-shell-wall-buckling",
+    "--repeat",
+    "3",
+    "--record",
+    "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-v1.5-consumer\\c14-corpus.json"
+  ],
+  "cwd": "C:\\Users\\wmc02\\Desktop\\block-reality",
+  "BR_ENGINE": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-v1.5-consumer\\staged\\windows-x86_64\\bsi_tectonic.dll",
+  "source": "fc5424fc2b7a6376047ded560201d1eb0f0e69bc"
+}

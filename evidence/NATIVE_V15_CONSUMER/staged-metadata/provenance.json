@@ -1,0 +1,48 @@
+{
+  "contractSha256": "5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd",
+  "libraries": [
+    {
+      "platform": "windows-x86_64",
+      "os": "windows",
+      "arch": "x86_64",
+      "file": "bsi_tectonic.dll",
+      "sha256": "749ceebe5aa382f1c25a5d28797ababed9f1d7c9750009a3d957fb7c74d0bd15",
+      "size": 31786496,
+      "engineVersion": "tectonic-1.5.0+42ba7eb",
+      "engine": "tectonic",
+      "version": "1.5.0",
+      "buildSha": "42ba7eb",
+      "contractSha256": "5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd",
+      "releaseAsset": "tectonic2-1.5.0-windows-x86_64.zip",
+      "releaseAssetSha256": "f4da1657f6c74bce5c562428a287b61b6867feffba778cae7f4f5f18b9f2add0"
+    },
+    {
+      "platform": "linux-x86_64",
+      "os": "linux",
+      "arch": "x86_64",
+      "file": "libbsi_tectonic.so",
+      "sha256": "2d048b9bfaf971d6b1971b7b0c36cc4942238448652735ba264dfbddf7d440a4",
+      "size": 28500368,
+      "engineVersion": "tectonic-1.5.0+42ba7eb",
+      "engine": "tectonic",
+      "version": "1.5.0",
+      "buildSha": "42ba7eb",
+      "contractSha256": "5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd",
+      "releaseAsset": "tectonic2-1.5.0-linux-x86_64.zip",
+      "releaseAssetSha256": "3a1b19ef6825ce67650e830953950b9f19ea29385ca3f3f447c1cb28ac4b7f94"
+    }
+  ],
+  "release": {
+    "sourceCommit": "42ba7eb912bd7d763435ce48a945df6954b680ea",
+    "version": "1.5.0",
+    "sha256sums": "faa4d03dcbc973ed56904339dfe4297056d41348e77d5cbdaf823c2aa48539eb",
+    "assets": {
+      "tectonic2-1.5.0-linux-x86_64.zip": "3a1b19ef6825ce67650e830953950b9f19ea29385ca3f3f447c1cb28ac4b7f94",
+      "tectonic2-1.5.0-source.tar.gz": "ab943cdce0dc6367a9ff8e975910810cef27bb39e3026868152ae6b4b643fc25",
+      "tectonic2-1.5.0-windows-x86_64.zip": "f4da1657f6c74bce5c562428a287b61b6867feffba778cae7f4f5f18b9f2add0"
+    },
+    "inventoryProfile": "sdk",
+    "sourceFiles": 5659,
+    "basis": "published release integrity; runtime hello is a separate platform gate"
+  }
+}
