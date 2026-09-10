@@ -113,8 +113,9 @@ bool Schema::valueEquals(const json::Value& a, const json::Value& b) {
 }
 
 bool Schema::patternMatches(const std::string& pattern, const std::string& s) {
-    if (pattern == "^[0-9a-f]{64}$") {
-        if (s.size() != 64) return false;
+    if (pattern == "^[0-9a-f]{64}$" || pattern == "^[0-9a-f]{32}$" || pattern == "^[0-9a-f]{16}$") {
+        const size_t width = pattern == "^[0-9a-f]{64}$" ? 64 : pattern == "^[0-9a-f]{32}$" ? 32 : 16;
+        if (s.size() != width) return false;
         for (char c : s) if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))) return false;
         return true;
     }

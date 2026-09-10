@@ -512,3 +512,41 @@ COM tensor項不取负，全部SI f64。任何wire bytes須複製至合格typed 
 view的借用資料在成功世界修改、成功替換、discard或close時失效，caller須事先複製。
 只有native位址生命週期，沒有永久指標／磁碟journal；CAPI未知dispatch失敗仍須關閉
 失效handle後重新同步，NEED_BIGGER精確重試只重送已保存reply。
+
+### 2026-09-11：ABI3 identified world 與 fracture 的共用 wire
+
+本加法把上述 typed 候選接至同一 shared Session；ABI3 新宣告
+`bsi.world.identity`、`bsi.fracture`，ABI1/2 的能力集合不變。
+`world.declare.body.identity` 為 `{domain,revision,artifactNamespace,owners}`，
+`attrs` 必為0，payload為 blocks40×B + artifactOwners20×O；
+`world.edit.body.identity` 為 `{domain,revision,owners}`，payload為 edits41×N +
+完整after-world的owners20×O。domain/namespace/requestId以非零32位lowercase hex表示，
+高64位在前；revision為非負i64。body identity中的revision才是expected base，
+envelope revision只回音。輸入可亂序，source/owners按xyz正規化；update不存在的格不新增。
+回應維持原diag/edit欄位，末尾新增 `identity:{domain,revision,artifactNamespace}`。
+
+`bsi.fracture.prepare` 的body固定為 `{expected:{domain,revision},requestId,gravity,
+budget,tier,numThreads?}`；payload空，gravity有限vec3，budget1..4096、tier只能commit，
+threads0..256（省略時用host default）。不接受未接的loads/nonlinear選項。
+回應欄位與schema順序一致：base、status=prepared、requestId、before、after、
+artifactNamespace、token、steps、flags、remainingBlocks、sections。
+token=`{context:32位hex,sequence:16位hex}`，兩者非零；after revision恰為before+1。
+固定包含全部七個section，即使count0亦不可省略：physicalTotals80×3（before、remaining、
+broken）、fractureCells144、fractureFragments96、fractureParents8、fractureEvents24、
+fractureEventCells4、fractureMechanism12。全部為上述typed格式、LE/SI/f64、reserved0；
+offset相對payload，沒有pointer與浮點JSON。cell/group/parents/events必完整且來源一致。
+
+`bsi.fracture.finish` 的body為 `{expected,requestId,token,resultRevision,action}`，
+action為commit/discard，payload空；回應base、status=committed/replayed/discarded、
+requestId、token、identity。identity回當前已提交world；discard不撤銷先前commit。
+host只在Committed移交預建的remaining source/owners快取，Replayed不再修改。
+新入口嚴格拒絕重複JSON keys。input與output header≤4096、payload≤256MiB−4096−12；
+完整frame≤256MiB。無法完整交付不裁資料。成功native dispatch後發現壞receipt/diag或
+包裝失敗，session失效必須重開；native明示拒絕則保留host的已提交快取。
+
+arena新增 `fracturePrepare`／`fractureFinish` doors；identified declare的world region
+為block40、attrs region為owner20，identified edit的world region為完整edits+owners。
+先驗region bounds，再按method驗record長度。無identity的arena edit仍UNSUPPORTED。
+回覆空間不足時保留原request/reply；相同header/payload重試可改doorbell seq，只複製原
+reply，禁止重新dispatch。不同pending request拒絕，原reply保留。CAPI沿原pending機制。
+這是原生資料/提交入口；跨restart持久去重仍由消費者journal負責。
