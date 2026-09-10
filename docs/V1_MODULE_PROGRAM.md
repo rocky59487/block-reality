@@ -54,13 +54,21 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 
 ## 現況
 
+最新交付已更新為v1.5，模組Main #126的契約同步已整合。本工作只消費來源42ba7eb9、
+契約5d4367f40de8的發布SDK；引擎倉未修改/建置/合併/發布。
+目前開發jar15,286,415B、SHA9d8cb6795e9c…；來源/授權/封裝/JNA及真安裝專服門檻1–5通過。
+完整573登錄：Windows561PASS/12平台SKIP、Linux572PASS/1平台SKIP；兩平台96frame×3直連
+與3次jar/JNA回覆一致，涵蓋C14原生殼indicative警示。真專服10項與重啟讀數/快取通過。
+詳 `../evidence/NATIVE_V15_CONSUMER/RESULTS.md`；本版client重驗和exact-head CI仍待完成。
+最新SDK是線性挫屈交付，不代表倒塌/壓碎/接觸/剛體已可用。以下保留較早單元證據。
+
 MATERIAL_GEOMETRY 已在模組來源b10884b完成矩形產品外觀/目標/碰撞形狀、端面方向、
 未宣告警示及原生取樣映射。真Linux127項模型檢查、14項程式驅動原版客戶端互動、
 原16圖/45項守門及6張補充圖通過；Windows516PASS/12平台SKIP、Linux527PASS/1平台SKIP。
-目前jar15,216,948B、SHA8e587a715ebd…，兩庫仍42e10f5。來源/封裝/首敗見
+該單元jar15,216,948B、SHA8e587a715ebd…，兩庫為當時的42e10f5。來源/封裝/首敗見
 `../evidence/MATERIAL_GEOMETRY/RESULTS.md`。這不是Windows CM/N25/FPS或v1資格。
 
-本輪同步：引擎#40仍e20b416（交付庫42e10f5），沒有引擎側修改。
+最新唯讀同步：引擎#40在e20b416已關閉未合併；發布v1.5取代先前42e10f5候選。
 新模組分支`claude/security-functionality-review-yftgf8`/cde57d5只補CI METIS下載pin，
 已讀差異，待獨立凍門檻/驗收後整合；本單元不編譯或修改引擎。
 
@@ -72,7 +80,7 @@ GAME_INPUT #106 與 GAME_RUNTIME #108 已接真原生迴圈；#121以交付42e10
 SOLVE_FAILED，typed機構展示、原Windows CM/N25、材質方向互動及倒塌動態仍未完成，沒有v1發布。
 
 上游 #107（文件）已合入目前模組分支，對位引擎 #39 frame_v2；本輪沒有改引擎。
-正式引擎仍 v1.3；歷史實跑來源 #37 `95a03e82` 的證據保留，本次使用同契約的42e10f5候選。
+歷史v1.3來源 #37 `95a03e82` 與同契約42e10f5候選證據保留；最新v1.5資格見本節開頭。
 混合世界 HUD/命令警示已接並用真 server 驗文字；客戶端視覺仍待 N25。
 STATE_DELIVERY 已接空模型/停用與來源/順序/revision 通知；真 server 16 項、24 個 synthetic
 玩家事件與 native→封包→clock 已驗，詳 `../evidence/STATE_DELIVERY/RESULTS.md`。
@@ -103,8 +111,11 @@ CONSTRUCTION_IDENTITY 已接永久 namespace/單調 ID、產品/宣告軸分組�
 
 CONSTRUCTION_TRANSACTIONS 已先凍完整 CT-1..9 與 D-048：每次確認的新 piece 都用新 UUID，
 不默默延長舊身分。第一步實作模組核心日誌、原子決策與復原協調器；尚未接入 Forge 生產入口。
-檔案/JVM 故障測試只驗核心，不等於遊戲庫存/區塊交易或 undo/UI 完成。接合限制與原版存檔
-API 的失敗/回呼行為見 `CONSTRUCTION_TRANSACTION_ADAPTER.md`；完整門檻仍全部保持開放。
+已有30項核心與15項Forge玩家持久化測試；精確NBT/欄位、完整基線checkpoint、原子替換、
+保留孤兒檔配額及故障路徑已驗。兩平台37個中斷/恢復JVM與3個新可編譯反例通過；
+玩家存檔成本仍是Recorded，Windows小fixture p95尾延遲照登。詳 `CT_PLAYER_PARTICIPANT.md`。
+尚無正式Forge施工呼叫者；檔案/JVM故障測試不等於遊戲庫存/區塊交易或undo/UI完成。
+接合限制見 `CONSTRUCTION_TRANSACTION_ADAPTER.md`；CT-1..9完整門檻仍全部保持開放。
 
 MODULE_PIPELINE_PROFILE 已將 metadata/gather/queue/BSI/解碼/封包/apply 分別量測，預設不收資料。
 A49/F576/M832 三場景各 40 次實跑，數字只作 Recorded 基線；M832 原生呼叫占主要成本，
@@ -127,9 +138,8 @@ SAVE_COMPRESSION 已完成固定SP對照，900次內容一致、36條時間/36�
 仍同步完成 gzip/fsync/atomic replace 後才清 dirty，不把100ms級呼叫當作v1 tick資格。
 詳 `../evidence/SAVE_COMPRESSION/RESULTS.md`；沒有引擎或遊戲時序改動。
 
-本輪再核對兩倉正式主分支：均為契約 `4977f57308e6…`；開發模組為 `4b11cc738790…`。
-最新整合分支 #116/#117 保留開發契約與本地真庫證據；合併 Main 前須與引擎交付對齊，
-不能先讓兩倉正式契約漂移。Linux 真客戶端已完成16張補充基準圖與45項守門，
+較早 #116/#117 的主分支契約4977f57308e6與開發契約4b11cc738790已由模組Main #126
+同步至5d4367f40de8；本分支整合其歷史並保留舊原生證據。Linux 真客戶端曾完成16張補充基準圖與45項守門，
 cached bootstrap/真拒絕清色已實見；材質方向與長訊息布局仍有缺陷。
 詳 `../evidence/CLIENT_RENDER_PROBE/RESULTS.md`；原 Windows 安裝版驗收仍待安全性視窗。
 

@@ -1587,3 +1587,24 @@ First installer HTTP403 and first bundle-child encoding failure remain FAIL; the
 official installer hash and unchanged9 negative arms pass with corrected transport/encoding.
 This accepts a Linux installed dedicated-server candidate only. Windows CM/N25, installed
 client, visuals/input/FPS and v1 are not lowered. See evidence/INSTALLED_NATIVE_SERVER/RESULTS.md.
+
+
+### 2026-09-10 NATIVE_V15_CONSUMER and CT player persistence
+
+Native criteria1972f7f preceded the Main #126 merge and SDK profile/replay edits.
+Gates1–5 pass with published source42ba7eb9, contract5d4367f40de8 and jar9d8cb6795e9c.
+573 registered tests: Windows561 PASS/12 platform SKIP, Linux572 PASS/1 platform SKIP.
+Both platforms preserve96 full-frame responses across3 CAPI and3 production jar/JNA
+sessions. Installed Linux Forge passes10 checks and normal restart/cache comparison.
+The first stale-NOTICE incremental artifact, withheld-copy replay setup failures and
+incorrect JNA source-jar selection are retained. Incremental input criteriaa132e32
+preceded fix1a60418; successful-build/stale-artifact mutation is caught. Gates6 client
+and7 exact-head CI remain open. No Windows CM/N25/FPS or v1 requirement is lowered.
+See evidence/NATIVE_V15_CONSUMER/RESULTS.md for source/artifact/raw-byte scope.
+
+CT criteria60f02f6/cf0a22f/4dbff5a preceded player adapter changes.30 core and15 Forge
+participant tests,37 interrupted/recovery JVM pairs per platform and3 compiled arms
+pass. First archive-helper failures and exact-head CI docs-count failure remain
+recorded; corrected9976fc0 CI has4 successful jobs and15 skipped native steps.
+Player adapters have no production Forge construction caller; CT-1..9 remain open.
+Recorded save costs, including the Windows small-fixture p95 loss, are not FPS gates.

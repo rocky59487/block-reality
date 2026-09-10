@@ -1,0 +1,9 @@
+{
+  "jar_sha256": "9d8cb6795e9c41514697a6eb2492fd00ef9eb484b4b5b30f627371967702de30",
+  "native_sha256": "2d048b9bfaf971d6b1971b7b0c36cc4942238448652735ba264dfbddf7d440a4",
+  "server": "/home/rocky/br-native-v15-consumer/installed-server",
+  "source": "/home/rocky/br-installed-native-server/final-server",
+  "fresh_world": true,
+  "fresh_cache": true,
+  "libraries": "copied verified official Forge1.20.1-47.4.13 installation; no old worlds, player data or native cache copied"
+}

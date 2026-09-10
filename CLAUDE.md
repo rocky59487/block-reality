@@ -15,7 +15,7 @@ Block Reality 開發指引。**寫的是現況**，不是歷史。
 
 Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析。
 
-**力學不在這個 process 裡算，但引擎在這個 process 裡跑。** 這句話不矛盾，是 v0.4 的形狀：
+**原生引擎在同一 JVM process 內計算力學；Java 負責模組整合。** v0.4 的形狀：
 本倉是 **Minecraft 側**（方塊、材料、工法狀態機、CAD 工具、渲染），力學引擎是
 **jar 內的原生共享庫**（`libbsi_tectonic.so` / `bsi_tectonic.dll`），以 JNA 綁 `contract/bsi_capi.h`
 的五個 C 函式**進程內載入**（D-044）。**jar 零可執行檔、零子行程。**
@@ -27,8 +27,17 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 ### 現況（0.4.0-dev，尚未發布）
 
 2026-09-10：使用者指定引擎另有人負責，本工作只做模組（D-047、`docs/V1_MODULE_PROGRAM.md`）。
-引擎維持正式 v1.3；既有實跑證據使用 #37 `95a03e82`、契約 `4b11cc738790…`。
-新交付 #40 / 模組 #119 提供 `42e10f5` 雙平台候選；NCR 已驗目前 HUD/模組候選，沒有改引擎。
+引擎最新正式交付為 v1.5（runtime1.5.0），來源 `42ba7eb9`、契約 `5d4367f40de8…`。
+模組 Main #126 已整合；本分支已封裝並驗證該 SDK，沒有修改、建置或發布引擎。
+
+- NATIVE_V15_CONSUMER 的來源/完整測試/封裝/JNA/真安裝專服門檻1–5已通過。
+  同一顆15,286,415B jar、SHA9d8cb6795e9c…带 v1.5 双平台庫，236類別與46資源對CT前版逐位不變。
+  Windows561PASS/12平台SKIP、Linux572PASS/1平台SKIP；573登錄，原生適用測試全部執行。
+  兩平台各96frame×3直連與3個jar/JNA工作階段一致，涵蓋C14旋轉/鏡像/厚殼indicative原生回覆。
+  真安裝Linux Forge10項遊戲守門及重啟讀數/快取一致通過。NOTICE增量封裝缺陷已修，首敗照存。
+  詳 `evidence/NATIVE_V15_CONSUMER/RESULTS.md`；本版真client重驗及CI尚待完成。
+  v1.5提供線性梁殼共同挫屈，未交付非線性倒塌/壓碎/接觸/剛體運動；不以Java補做。
+  以下NCR/INS/MG是保留的較早候選證據，不代表最新引擎版本。
 
 - NATIVE_CANDIDATE_RUNTIME 已整合 #119 及其最新交付文件，保留 #120 HUD。
   同一顆15,203,560B jar帶雙平台42e10f5庫，兩平台48frame×3、解包/快取/權限/雙JVM通過；
@@ -56,11 +65,14 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 - 生產 SidecarClient/SidecarProcess/SidecarConfig/ShmRegion 已退到 test；NoSubprocess ALLOWED={}。
   預設 jar 無 exe、無 process launcher；Gradle 已拒絕 executable 封裝。
 - CONSTRUCTION_TRANSACTIONS 已先凍 CT-1..9/D-048，新增核心日誌與復原協調器，尚未接 Forge 施工入口。
-  27項核心測試、兩平台各37個真JVM中斷/復原與跨程序鎖通過；3個可編譯反例被抓到。
+  核心現有30項測試，新增15項Forge玩家檔/NBT/精確欄位持久化測試；兩平台各37個真JVM
+  中斷/復原與跨程序鎖通過。先checkpoint完整玩家基線再PREPARED；3個新可編譯反例被抓到。
+  這些玩家adapter仍沒有正式Forge施工呼叫者；不是已完成遊戲庫存/區塊原子交易。
   日誌驗證規則快取使4096格配置約9MB→3.36MB，144份/平台檔案逐位相同；時間僅Recorded，
   Windows p95增加、Linux降低，不能稱FPS資格。完整材料/區塊/身分/undo/UI仍待接合，#12/#17不關閉。
-  詳 `docs/CONSTRUCTION_TRANSACTION_ADAPTER.md` 與 `docs/CT_JOURNAL_ALLOCATION.md`。
-- Windows core446/Forge109：555登錄、543PASS、12平台SKIP；Linux554PASS、1平台SKIP。
+  詳 `docs/CT_PLAYER_PARTICIPANT.md`、`evidence/CONSTRUCTION_TRANSACTIONS/PLAYER_PARTICIPANT/RESULTS.md`。
+  #125仍是draft；9976fc0的4項CI通過、15項native step跳過，不能代替本地原生實跑。
+- Windows core449/Forge124：573登錄、561PASS、12平台SKIP；Linux572PASS、1平台SKIP。
   20項 native 相關全部執行。新庫Linux真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
   完整結果 `evidence/GAME_RUNTIME/RESULTS.md`，首敗保留、三故障臂具名咬合。
 - 全部失去支承時原生只回 SOLVE_FAILED；Java 保留拒絕，不能從 message 捏造 MECHANISM。
@@ -95,8 +107,8 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   真 Linux server 的 A49/F576/M832 各 10 次暖身、40 次量測完成，14 項功能檢查通過。
   M832 背景分析 p95 65.6 ms、apply 1.6 ms；含原生工作，不是 FPS 或 v1 高性能資格。
   詳 `evidence/MODULE_PIPELINE_PROFILE/RESULTS.md`；量測啟停不改 world/result revision。
-- 尚未完成：最新雙平台合格庫的正式 jar、獨立區域排程 #86、
-  材質方向/互動實測、效能量測、引擎 lifecycle/剛體姿態消費。
+- 尚未完成：模組正式發布、Forge施工交易與undo/UI、獨立區域排程 #86、
+  原Windows CM/N25與最新SDK客戶端重驗、FPS/soak、引擎 lifecycle/剛體姿態消費。
   #89 仍開放；既有公式已退出出貨來源，v1 全部基礎能力仍未完成。
 - REGISTRY_SCALING 的原始基線與四版候選都已保存；最終 `0736baa` 通過原定相對性能與
   配置預算，600 份 bytes 一致。131K/ONE capture p95 714→6.0 ms、reconcile 9522→283 ms；
@@ -153,8 +165,8 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 ## 兩條原則
 
 **算的歸算，演的歸演。**
-FEA 決定失效集合；`FallingBlockEntity`、粒子、碎塊只負責演出。演出層永遠不回頭影響判定。
-（取自前身 `教育程式_需求與任務規劃_v3` 對「遊戲物理 vs 工程力學」的裁決。）
+引擎交付權威事件與姿態後，Java 消費、同步並繪製它們。Java 不從D/C自行觸發破壞，
+不以 FallingBlockEntity 或手寫重力/碰撞補出引擎尚未交付的動態；視覺插值不回頭影響判定。
 
 **玩法即離散化的合法性條件。**
 玩家用材料宣告結構角色，因此「照工序蓋」不只是遊戲規則，同時保證了模型可解。

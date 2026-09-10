@@ -1,0 +1,44 @@
+> Task :downloadMcpConfig
+> Task :extractSrg UP-TO-DATE
+> Task :createMcpToSrg UP-TO-DATE
+> Task :compileJava UP-TO-DATE
+> Task :bundleEngines UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jar
+> Task :reobfJar
+
+> Task :checkNativeOnlyJar
+{
+  "classes": 236,
+  "errors": [],
+  "sha256": "05d5d9e3d6eb4c064577fe8c7dcfdf799805a93c42e32fbc516be6c00a369b9d",
+  "mutations": [
+    {
+      "arm": "bundled-legacy",
+      "compileExit": 0,
+      "refused": [
+        "forbidden entry: com/blockreality/testlegacy/Forbidden.class",
+        "forbidden constant: com/blockreality/testlegacy/Forbidden.class -> com/blockreality/testlegacy/"
+      ]
+    },
+    {
+      "arm": "dormant-reference",
+      "compileExit": 0,
+      "refused": [
+        "forbidden constant: com/blockreality/impl/ResurrectedReference.class -> com/blockreality/testlegacy/"
+      ]
+    },
+    {
+      "arm": "construction-process-driver",
+      "compileExit": 0,
+      "refused": [
+        "forbidden entry: com/blockreality/core/transaction/TransactionProcessLeak.class",
+        "forbidden constant: com/blockreality/core/transaction/TransactionProcessLeak.class -> com/blockreality/core/transaction/TransactionProcess"
+      ]
+    }
+  ]
+}
+
+BUILD SUCCESSFUL in 10s
+9 actionable tasks: 4 executed, 5 up-to-date

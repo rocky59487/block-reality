@@ -1,0 +1,16 @@
+{
+  "criteria": "1972f7f",
+  "artifact_source": "1a60418bc9e747ab93fb79b01549e70e74d76bc8",
+  "artifact_sha256": "9d8cb6795e9c41514697a6eb2492fd00ef9eb484b4b5b30f627371967702de30",
+  "gates": {
+    "1": "PASS",
+    "2": "PASS",
+    "3": "PASS",
+    "4": "PASS",
+    "5": "PASS",
+    "6": "OPEN",
+    "7": "OPEN"
+  },
+  "engine_modified": false,
+  "formal_v1": false
+}

@@ -1,0 +1,30 @@
+{
+  "windows": {
+    "core": {
+      "registered": 449,
+      "passed": 437,
+      "skipped": 12,
+      "failed": 0
+    },
+    "forge": {
+      "registered": 124,
+      "passed": 124,
+      "skipped": 0,
+      "failed": 0
+    }
+  },
+  "linux": {
+    "core": {
+      "registered": 449,
+      "passed": 448,
+      "skipped": 1,
+      "failed": 0
+    },
+    "forge": {
+      "registered": 124,
+      "passed": 124,
+      "skipped": 0,
+      "failed": 0
+    }
+  }
+}

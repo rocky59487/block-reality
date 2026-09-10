@@ -1,0 +1,27 @@
+{
+ "engine": "tectonic/1.5.0",
+ "capabilities": [
+  "bsi.buckling.eigen",
+  "bsi.buckling.eigen.shells",
+  "bsi.core",
+  "bsi.precision.f32",
+  "bsi.readback.memberGeometry",
+  "bsi.readback.members",
+  "bsi.readback.shells",
+  "bsi.readback.stationIdentity",
+  "bsi.readback.stations"
+ ],
+ "assumed": [],
+ "transports": [
+  "capi"
+ ],
+ "cases": [
+  {
+   "case": "C14-shell-wall-buckling",
+   "family": "C-14",
+   "grade": "hard",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}
