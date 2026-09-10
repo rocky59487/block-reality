@@ -54,3 +54,13 @@ Required gates:
 Timing/allocation remains Recorded unless separately frozen before optimization.
 Any unexpected native result is retained and diagnosed on the module boundary;
 do not edit engine code, invent new result fields or implement Java physical correction.
+
+Gate3 first observation:after NOTICE changed, normal checkNativeOnlyJar reused the
+bundleEngines output and shipped the old NOTICE. Source/native checks held the jar
+copy back; first replay launchers therefore failed before any native load. Preserve
+that jar/log/input set. Before fixing the build, make gate3 concrete:NOTICE,LICENSE,
+third_party files, contract pin and selected staging input are declared Gradle inputs;
+an actual incremental NOTICE change must update the generated and packaged bytes,
+restoring it must update again, and an unchanged rerun should be up-to-date. Removing
+that input declaration must make the artifact-equality oracle fail after a successful
+Gradle task. This is an incremental packaging fault, not a Java compilation negative.
