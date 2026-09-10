@@ -1,0 +1,82 @@
+[
+  {
+    "file": "beam-en_us-1280.png",
+    "bytes": 145259,
+    "sha256": "cd4e86c83cbdac22efc94a1b2640cdd0643a49b5cd53ebca9fb61c13ac599d2c"
+  },
+  {
+    "file": "beam-en_us-1920.png",
+    "bytes": 136052,
+    "sha256": "1c2d84eca1d26a176f9a715cd82508842a4431b7190210754e31e86888345301"
+  },
+  {
+    "file": "beam-zh_tw-1280.png",
+    "bytes": 91479,
+    "sha256": "5147a18ea5403f412a7970550d3c40e76b20360905c7d8f38b6dd2100f09d6fe"
+  },
+  {
+    "file": "beam-zh_tw-1920.png",
+    "bytes": 136879,
+    "sha256": "b7698ece9fb87b725791f05f4b26e121f14358615d8abfb30944ffb7751c8ed5"
+  },
+  {
+    "file": "catalogue-en_us-1280.png",
+    "bytes": 107495,
+    "sha256": "4578b104a4347c623519f337d73c14ebdcefd20f0971047ef10be98fada10624"
+  },
+  {
+    "file": "catalogue-en_us-1920.png",
+    "bytes": 191603,
+    "sha256": "31a84c51286715be23cd083c037bf906fa2fb30d2e1ad9cf8b8aa22206e1e4b2"
+  },
+  {
+    "file": "catalogue-zh_tw-1280.png",
+    "bytes": 112466,
+    "sha256": "9fdab358acf2ca2bdc5e4b32733b83315f9e1b731b49872a5bc2e20002a7fffe"
+  },
+  {
+    "file": "catalogue-zh_tw-1920.png",
+    "bytes": 187475,
+    "sha256": "274aa40ad5257f6f1194dc4f8bf597c060ce6a92419699939d879bf8ab5e2efc"
+  },
+  {
+    "file": "column-en_us-1280.png",
+    "bytes": 73495,
+    "sha256": "56ac4e44f45ee15502eb7d7a42960071a1f25c987ab6b8487a0e0d8e9b494213"
+  },
+  {
+    "file": "column-en_us-1920.png",
+    "bytes": 132390,
+    "sha256": "b63ef883eec7e997225f0b7f0c157c36e3a676f06cfbec95e30b615b19f63a77"
+  },
+  {
+    "file": "column-zh_tw-1280.png",
+    "bytes": 75211,
+    "sha256": "cdef30fc63946b98de2c2ab0e24932b5f679f0eced1e59c6076ae257a5d9dc56"
+  },
+  {
+    "file": "column-zh_tw-1920.png",
+    "bytes": 136656,
+    "sha256": "6b63a63e3335b5bee339894e3246e623e98346ecd7dce4ffa510caa49d940232"
+  },
+  {
+    "file": "panel-en_us-1280.png",
+    "bytes": 61480,
+    "sha256": "b231c3e79b4ae25a5f920ed9ec8484a4996f2e454c03a729d54df404c62c4fff"
+  },
+  {
+    "file": "panel-en_us-1920.png",
+    "bytes": 135201,
+    "sha256": "483c9345a09f20549942adbe644537af3e2645b3b5cb2a7301d096be54fab9c1"
+  },
+  {
+    "file": "panel-zh_tw-1280.png",
+    "bytes": 65469,
+    "sha256": "6b6b469d9989e473050a8ce016264767a03b45d1339d13b208f30605dcc24ee3"
+  },
+  {
+    "file": "panel-zh_tw-1920.png",
+    "bytes": 140149,
+    "sha256": "d6b6ce3e848a662ac60ea994e42e5f073291fff9fee40ee6df3eebd573982a61"
+  }
+]

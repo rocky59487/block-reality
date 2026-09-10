@@ -5,6 +5,7 @@
   "br.scan.mode.utilization": "利用率",
   "br.scan.mode.stress": "應力",
   "br.scan.mode.material": "材料",
+  "br.hud.more_details": "還有未顯示資訊：/br status",
   "br.hud.mode": "鏡頭：%s",
   "br.hud.maxdc": "最大 D/C  %s",
   "br.hud.members": "%s 根構件",

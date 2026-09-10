@@ -1548,3 +1548,14 @@ Revision44 cached bootstrap and revision116 model refusal were observed over the
 actual socket. Direction models and1280px long-message readability visibly fail
 in the baseline. This permits supplemental source candidates, not CM/N25 acceptance.
 See evidence/CLIENT_RENDER_PROBE/RESULTS.md; no production engine/delivery edit.
+
+### 2026-09-10 HUD_READABILITY
+
+`59e7809` froze the supplemental HUD criteria before the display edit. The first
+completed candidate passes the16 original scenes but its extra scale3 capture
+exposes a vanilla login-toast overlap; retain it. Final `299750b` narrows to44%
+inside the original48% maximum and passes the same45 assertions,16 identical
+observed-state comparisons, and2 additional real large-GUI captures with the toast
+still visible and separated. The first missing-key build and launcher setup error
+remain recorded. No CM/N25, unobserved state or native release gate is lowered.
+See evidence/HUD_READABILITY/RESULTS.md for exact scope and original failures.

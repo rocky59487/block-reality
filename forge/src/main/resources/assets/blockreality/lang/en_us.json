@@ -5,6 +5,7 @@
   "br.scan.mode.utilization": "Utilisation",
   "br.scan.mode.stress": "Stress",
   "br.scan.mode.material": "Material",
+  "br.hud.more_details": "More details: /br status",
   "br.hud.mode": "Lens: %s",
   "br.hud.maxdc": "max D/C  %s",
   "br.hud.members": "%s members",

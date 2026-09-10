@@ -1,0 +1,13 @@
+{
+  "worldRevision": 152,
+  "resultRevision": 152,
+  "kind": "RESULT",
+  "detail": "",
+  "objectsReady": true,
+  "cells": 22,
+  "members": 2,
+  "shells": 12,
+  "maxDc": 0.7597396436387274,
+  "overCapacity": false,
+  "bucklingCritical": false
+}
