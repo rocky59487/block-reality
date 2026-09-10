@@ -62,3 +62,5 @@ macOS、Minecraft client/server 實景、FPS 沒有在本單元驗收。GAME_RUN
 该證據的18da0e77… jar只對應舊#106來源；最新來源與ed3eeb58… jar證據另封在
 `gate/evidence/MC66A_NATIVE_LATEST/RESULTS.md`，不改舊證據。下一步依V1_MODULE_PROGRAM
 接真client缺口、獨立排程及引擎damage/lifecycle依賴；不重做已完成的原生遊戲流程。
+
+本輪整合head492dc9b的GitHub CI已完成4 job成功；15個native建置/JNA/stage/jar步驟因缺TECTONIC2_TOKEN跳過，不能取代上述本地真庫驗證。引擎head51b8076的7 job因帳務未起跑；詳細收據在引擎gate/evidence/MC66A_NATIVE_CI。後續文件提交不冒充該CI head。
