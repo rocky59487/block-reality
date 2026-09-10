@@ -101,11 +101,13 @@ public final class ManufacturedMetadataProfile {
                     var request = new Request(new UUID(40,start/128+1),ACTOR,SESSION,journal.domain(),revision,"ab".repeat(32));
                     var prepared = registry.prepareBuild(request,DIMENSION,false,plans);
                     // Input order is part of the fixture oracle, independent of the registry's map ordering.
+                    var byFirst = new HashMap<BlockKey,UUID>();
+                    for (Change change : prepared.metadata()) if (change.resource().startsWith("piece/")) {
+                        var p = MetadataCodec.piece(change.after());
+                        require(byFirst.put(p.cells().get(0),p.id()) == null,"duplicate explicit plan");
+                    }
                     for (int i = start; i < Math.min(start+128,count); i++) {
-                        BlockKey first = cells(i,false).get(0); UUID id = null;
-                        for (Change change : prepared.metadata()) if (change.resource().startsWith("piece/")) {
-                            var p = MetadataCodec.piece(change.after()); if (p.cells().get(0).equals(first)) id = p.id();
-                        }
+                        UUID id = byFirst.get(cells(i,false).get(0));
                         require(id != null,"missing explicit plan"); ids.add(id);
                     }
                     journal.create(Entry.prepared(prepared.withParticipants(List.of())));
