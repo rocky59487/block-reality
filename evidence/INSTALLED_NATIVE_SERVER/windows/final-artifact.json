@@ -1,0 +1,15 @@
+{
+  "source": "ae6a4eb",
+  "control_sha256": "5a93c66bfe5f5a3dd8c1104a6e97fe000a2a0d2a8e66bf602821993d2a4c9b79",
+  "jar_sha256": "7bdfce5d1581bfadf43b769d8aeabc0cec06e7f73fe48cd1c9b1fd6c5fdb7b3c",
+  "jar_bytes": 15203634,
+  "changed_entries": [
+    "META-INF/mods.toml"
+  ],
+  "identical_class_entries": 204,
+  "native_hashes": {
+    "blockreality-engine/linux-x86_64/libbsi_tectonic.so": "53aae7156b94c0a761ef5abb2322ad47a708362f417a50ca3f04105d9c50abf1",
+    "blockreality-engine/windows-x86_64/bsi_tectonic.dll": "9761d73586277614a56132ec3492d324ae83c8489068c00c266c3d56f530acea"
+  },
+  "test_reuse": "NCR full Windows509/12SKIP, Linux520/1SKIP and protocol gates; all class/native/resource bytes except mods.toml identical"
+}

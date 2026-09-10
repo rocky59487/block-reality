@@ -1,0 +1,8 @@
+{
+  "url": "https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.4.13/forge-1.20.1-47.4.13-installer.jar",
+  "sha1": "790949ee0cb4671175a806befa370d69008b4b4e",
+  "sha256": "cce3c47e532ab19442435ad8c817ef4c9a76ea1cde9802fcdeb9bff9e39e8289",
+  "bytes": 8806153,
+  "criteria": "474fb12",
+  "download": "Windows curl HTTPS; WSL urllib first attempt HTTP403"
+}

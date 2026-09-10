@@ -1,0 +1,28 @@
+caught   N24-a1  the library renamed to .exe
+           FAIL N24-a1: blockreality-engine/linux-x86_64/renamed.exe is an executable in the jar (its name ends in .exe). The in-pr
+caught   N24-a1  an ELF binary under an innocent name
+           FAIL N24-a1: assets/blockreality/helper is an executable in the jar (it is an ELF binary and its name does not say libra
+caught   N24-a1  a shell script
+           FAIL N24-a1: assets/blockreality/setup is an executable in the jar (it starts with a #! interpreter line). The in-proces
+Exception in thread Thread-9 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\Lib\threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\Lib\threading.py", line 1012, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\Lib\subprocess.py", line 1599, in _readerthread
+    buffer.append(fh.read())
+                  ^^^^^^^^^
+  File "<frozen codecs>", line 322, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xa1 in position 109: invalid start byte
+Traceback (most recent call last):
+  File "C:\Users\wmc02\Desktop\block-reality\scripts\check_bundle_selftest.py", line 197, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "C:\Users\wmc02\Desktop\block-reality\scripts\check_bundle_selftest.py", line 178, in main
+    rc, out = run_case(stage, jar_name, lib, mutate, work)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\wmc02\Desktop\block-reality\scripts\check_bundle_selftest.py", line 144, in run_case
+    return r.returncode, (r.stdout + r.stderr)
+                          ~~~~~~~~~^~~~~~~~~~
+TypeError: unsupported operand type(s) for +: 'NoneType' and 'str'

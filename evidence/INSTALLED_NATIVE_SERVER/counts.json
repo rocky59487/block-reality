@@ -1,0 +1,21 @@
+{
+  "control": {
+    "server_status_pass": 10,
+    "restart": "PASS",
+    "installed_jar": true
+  },
+  "final": {
+    "server_status_pass": 10,
+    "restart": "PASS",
+    "installed_jar": true
+  },
+  "forge_dependency_artifacts_verified": 63,
+  "identical_production_classes": 204,
+  "identical_native_libraries": 2,
+  "bundle_negatives": 9,
+  "owned_ports_released": [
+    25596,
+    25597
+  ],
+  "qualification_scope": "Linux installed dedicated servers; NCR executable-byte test results reused explicitly"
+}

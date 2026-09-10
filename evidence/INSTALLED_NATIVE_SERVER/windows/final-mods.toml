@@ -1,0 +1,47 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+license = "Apache-2.0"
+logoFile = "blockreality_icon.png"
+# The icon is pixel art. Forge smooths logos by default, which turns crisp block
+# edges into mush at the size the mod list draws them.
+logoBlur = false
+issueTrackerURL = "https://github.com/rocky59487/block-reality/issues"
+
+[[mods]]
+modId = "blockreality"
+version = "0.4.0-dev"
+displayName = "Block Reality"
+# Shown as the mod list's link. Point it at the project site once that is the page
+# you want a curious player to land on; the repository is the honest default.
+displayURL = "https://github.com/rocky59487/block-reality"
+authors = "rocky59487"
+description = '''
+Structural analysis for Minecraft, powered by Tectonic2.
+
+Declare structural materials and placement directions, then use the stress glasses to
+read engine-provided section stresses, demand over capacity and buckling warnings.
+Incomplete or refused models are identified explicitly.
+
+Engine-equipped builds include native libraries for Windows and Linux x86_64. The mod
+verifies and extracts the matching library when analysis first needs it. Tectonic2 runs
+inside the game process; a native crash can terminate the game or dedicated server.
+Java displays the engine's results rather than calculating structural physics.
+
+The current candidate has no bundled engine for macOS or ARM. Building remains available
+when an engine is unavailable, with analysis reported as unavailable. This development
+version does not yet provide engine-driven fracture, crushing or rigid-body motion.
+'''
+
+[[dependencies.blockreality]]
+    modId = "forge"
+    mandatory = true
+    versionRange = "[47,48)"
+    ordering = "NONE"
+    side = "BOTH"
+
+[[dependencies.blockreality]]
+    modId = "minecraft"
+    mandatory = true
+    versionRange = "[1.20.1]"
+    ordering = "NONE"
+    side = "BOTH"

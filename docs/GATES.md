@@ -1573,3 +1573,17 @@ OFF and seeds the required model before the unchanged smoke passes. No criteria
 were lowered. Installed-jar/Windows CM/N25, general file-watch reliability, physics
 independence, FPS and v1 are not established by these checks. See
 evidence/NATIVE_CANDIDATE_RUNTIME/RESULTS.md and its exact-source raw receipts.
+
+### 2026-09-10 INSTALLED_NATIVE_SERVER
+
+`474fb12` froze ordinary installed-jar checks before installation or metadata changes.
+Control NCR jar and final `ae6a4eb` jar each pass10 native server statuses, normal save/
+shutdown and identical displayed native readouts/cache reuse after restart. All4 starts
+use generated Forge run.sh and installed mods/ classes, with source=BUNDLED and expected
+SO bytes; no development classpath or probe enters the jar.63 official profile dependencies
+are independently rechecked. The sole changed jar entry is mods.toml:204 classes and both
+native libraries remain byte-identical, so NCR executable tests are explicitly reused.
+First installer HTTP403 and first bundle-child encoding failure remain FAIL; the same
+official installer hash and unchanged9 negative arms pass with corrected transport/encoding.
+This accepts a Linux installed dedicated-server candidate only. Windows CM/N25, installed
+client, visuals/input/FPS and v1 are not lowered. See evidence/INSTALLED_NATIVE_SERVER/RESULTS.md.

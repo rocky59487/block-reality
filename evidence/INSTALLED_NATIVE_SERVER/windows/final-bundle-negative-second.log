@@ -1,0 +1,20 @@
+caught   N24-a1  the library renamed to .exe
+           FAIL N24-a1: blockreality-engine/linux-x86_64/renamed.exe is an executable in the jar (its name ends in .exe). The in-pr
+caught   N24-a1  an ELF binary under an innocent name
+           FAIL N24-a1: assets/blockreality/helper is an executable in the jar (it is an ELF binary and its name does not say libra
+caught   N24-a1  a shell script
+           FAIL N24-a1: assets/blockreality/setup is an executable in the jar (it starts with a #! interpreter line). The in-proces
+caught   N24-a3  one byte of the library flipped
+           FAIL blockreality-engine/linux-x86_64/libbsi_tectonic.so: jar has bc2455e4f7e8…, manifest says 53aae7156b94…
+caught   N24-a3  the manifest claiming a foreign contract
+           FAIL blockreality-engine/linux-x86_64/libbsi_tectonic.so: built against contract ffffffffffff… but the mod pins 4b11cc73
+caught   N24-a5  the OpenBLAS and METIS licence texts dropped
+           FAIL N24-a5: the library shape statically links OpenBLAS and the jar carries no licence text naming it
+caught           one jar carrying two engine shapes
+           FAIL blockreality-0.4.0-dev.jar carries BOTH engine.manifest and natives.manifest. Whichever engine the runtime picks, t
+caught   NATIVE  published licence changed
+           FAIL release licence differs from published bytes: META-INF/third_party/native-release/linux-x86_64/licenses/Ubuntu-GCC.
+caught   NATIVE  unregistered large licence
+           FAIL unexpected 68 KB payload in the jar: META-INF/third_party/unregistered-license.txt
+
+SELFTEST ALL PASS (9 injections, 0 slipped)
