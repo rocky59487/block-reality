@@ -47,3 +47,17 @@ tasks.register('bsiRetryGate', JavaExec) {
 
 // Legacy protocol/formula models are shared by tests only.
 sourceSets.test.java.srcDir "src/testFixtures/java"
+
+// Real JVM interruption/recovery with file participants. This is not Minecraft restart qualification.
+tasks.register('constructionRecoveryGate', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.blockreality.core.transaction.TransactionProcessGate'
+    doFirst {
+        def output = System.getProperty('br.transactionEvidence', '')
+        if (!output || !new File(output).isAbsolute()) {
+            throw new GradleException('constructionRecoveryGate requires absolute -Dbr.transactionEvidence=<fresh output directory>')
+        }
+        args output
+    }
+}

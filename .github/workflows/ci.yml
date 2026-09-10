@@ -91,6 +91,15 @@ jobs:
         run: |
           chmod +x dist/br-sidecar mod/gradlew
           cd mod && ./gradlew --no-daemon test "-Dbr.sidecar=$GITHUB_WORKSPACE/dist/br-sidecar"
+      - name: construction journal survives interrupted JVMs (file participants)
+        working-directory: mod
+        run: ./gradlew --no-daemon :core:constructionRecoveryGate "-Dbr.transactionEvidence=$RUNNER_TEMP/construction-recovery"
+      - name: preserve construction process interruption receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: construction-core-recovery
+          path: ${{ runner.temp }}/construction-recovery
       - name: forge build and tests
         run: |
           chmod +x forge/gradlew
