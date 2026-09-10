@@ -75,7 +75,7 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   CT_JOURNAL_BOOTSTRAP 已在同一鎖內讀回原領域ID，缺manifest而有資料時拒絕新建；
   提供有界不可變交易key清單、先核實未知寫入結果。5項新檔案測試及兩平台37次中斷/復原通過。
   詳 `evidence/CONSTRUCTION_TRANSACTIONS/JOURNAL_BOOTSTRAP/RESULTS.md`；製造物件metadata後續進度見下一段，Forge入口仍待接合。
-  目前開發jar15,324,472B/SHAb5a9bab7e7b6…保留v1.5雙庫；沒有正式v1發布。
+  目前開發jar15,326,800B/SHA4bf732d83a1e…保留v1.5雙庫；沒有正式v1發布。
 - CT_MANUFACTURED_METADATA 已用COMMITTED日誌重建永久製造ID、精確所有權、不可逆編輯/退休與整批undo資格。
   18項新測試、兩平台完整測試及37次中斷/復原通過；所有權與undo兩個可編譯反例被抓到。
   原236類別與引擎/資源逐位不變，只增加14個metadata類別。雙平台864次日誌成本操作內容一致；
@@ -85,12 +85,18 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 - CT_CHUNK_PARTICIPANT 已新增同一IOWorker上的整批NBT保存、全部future排空、強制落盤及完整讀回比對。
   7項新測試含真region檔案重開，雙平台Forge131PASS；省略force/遺失capability兩反例被抓到。
   原250類別與v1.5庫/資源逐位不變，只增加4類別；core沿用4737e3c已實跑的相同來源。
-  完整NBT需由host提供；原版序列化吞錯與無上限disk NBT解析仍是正式接入前的限制。
+  完整NBT需由host提供；原版序列化吞錯仍是正式接入前的限制；解析上限後續進度見下一段。
   詳 `evidence/CONSTRUCTION_TRANSACTIONS/CHUNK_PARTICIPANT/RESULTS.md`；尚無Forge施工呼叫者，CT仍開放。
+- CT_BOUNDED_CHUNK_READ 已在同一IOWorker內限制解壓讀取16MiB+1，再用嚴格NBT解析，拒絕pending影像。
+  13項區塊測試、雙平台Forge137PASS；省略stream cap與換回vanilla parser的可編譯反例被抓到。
+  普通jar在隔離已安裝Forge專服12項檢查通過：真chunk完整checkpoint/after/恢復、箱子原NBT不變，
+  duplicate/超量region拒絕且原檔不變。AT只由正式jar提供，harness不含它；專服正常exit0。
+  既有253類別/雙庫與資源不變，只改storage轉接、新增reader與精確4條AT。core仍沿用相同來源實跑。
+  詳 `evidence/CONSTRUCTION_TRANSACTIONS/BOUNDED_CHUNK_READ/RESULTS.md`；完整live capture/施工/undo/UI仍待接合。
 - NATIVE_VERDICT_API 已刪除只看數字的未使用影線API，公開利用率配色必須收原生overload旗標。
   37組顯示讀數不變，忽略旗標的可編譯反例被抓到；#128/6d1a0c2的4項CI通過、15原生步驟SKIP。
   #124未於Main整合前仍保持開放；詳 `evidence/NATIVE_VERDICT_API/RESULTS.md`。
-- Windows core472/Forge131：603登錄、591PASS、12平台SKIP；Linux602PASS、1平台SKIP。
+- Windows core472/Forge137：609登錄、597PASS、12平台SKIP；Linux608PASS、1平台SKIP。
   20項 native 相關全部執行。新庫Linux真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
   完整結果 `evidence/GAME_RUNTIME/RESULTS.md`，首敗保留、三故障臂具名咬合。
 - 全部失去支承時原生只回 SOLVE_FAILED；Java 保留拒絕，不能從 message 捏造 MECHANISM。

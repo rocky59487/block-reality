@@ -1,0 +1,29 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Task :compileJava
+[15:09:49] [main/INFO]: Writing debug log file accesstransform.log
+[15:09:49] [main/INFO]: Access Transformer processor running version 8.2.14
+[15:09:49] [main/INFO]: Command line arguments [--inJar, C:\Users\wmc02\Desktop\block-reality\forge\build\fg_cache\net\minecraftforge\forge\1.20.1-47.4.13\forge-1.20.1-47.4.13-injected.jar, --outJar, C:\Users\wmc02\Desktop\block-reality\forge\build\fg_cache\net\minecraftforge\forge\1.20.1-47.4.13_mapped_official_1.20.1\forge-1.20.1-47.4.13_mapped_official_1.20.1.jar, --logFile, accesstransform.log, --atFile, C:\Users\wmc02\Desktop\block-reality\forge\src\main\resources\META-INF\accesstransformer.cfg, --atFile, C:\Users\wmc02\Desktop\block-reality\forge\build\_atJar_4\parent_at.cfg]
+[15:09:49] [main/INFO]: Reading from C:\Users\wmc02\Desktop\block-reality\forge\build\fg_cache\net\minecraftforge\forge\1.20.1-47.4.13\forge-1.20.1-47.4.13-injected.jar
+[15:09:49] [main/INFO]: Writing to C:\Users\wmc02\Desktop\block-reality\forge\build\fg_cache\net\minecraftforge\forge\1.20.1-47.4.13_mapped_official_1.20.1\forge-1.20.1-47.4.13_mapped_official_1.20.1.jar
+[15:09:49] [main/INFO]: Transformer file C:\Users\wmc02\Desktop\block-reality\forge\src\main\resources\META-INF\accesstransformer.cfg
+[15:09:49] [main/INFO]: Transformer file C:\Users\wmc02\Desktop\block-reality\forge\build\_atJar_4\parent_at.cfg
+[15:09:49] [main/WARN]: Found existing output jar C:\Users\wmc02\Desktop\block-reality\forge\build\fg_cache\net\minecraftforge\forge\1.20.1-47.4.13_mapped_official_1.20.1\forge-1.20.1-47.4.13_mapped_official_1.20.1.jar, overwriting
+[15:09:54] [main/INFO]: JAR transformation complete C:\Users\wmc02\Desktop\block-reality\forge\build\fg_cache\net\minecraftforge\forge\1.20.1-47.4.13_mapped_official_1.20.1\forge-1.20.1-47.4.13_mapped_official_1.20.1.jar
+Creating SRG -> MCP TSRG
+C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\BlockRealityMod.java:28: warning: [removal] get() in FMLJavaModLoadingContext has been deprecated and marked for removal
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+                                                ^
+C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\BlockRealityMod.java:32: warning: [removal] get() in ModLoadingContext has been deprecated and marked for removal
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                                                ^
+C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\net\BRNetwork.java:54: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation(BlockRealityMod.MOD_ID, "main"),
+            ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+3 warnings
+
+BUILD SUCCESSFUL in 1m 25s
+1 actionable task: 1 executed
