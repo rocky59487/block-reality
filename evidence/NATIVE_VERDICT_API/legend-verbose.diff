@@ -1,0 +1,83 @@
+--- before
++++ after
+@@ -1,6 +1,6 @@
+-Classfile jar:file:///C:/Users/wmc02/Desktop/block-reality/build/native-v1.5-consumer/blockreality-0.4.0-dev-v1.5.jar!/com/blockreality/api/render/StressPalette$LegendStop.class
++Classfile jar:file:///C:/Users/wmc02/Desktop/block-reality/build/native-verdict-cleanup/blockreality-0.4.0-dev-native-verdict.jar!/com/blockreality/api/render/StressPalette$LegendStop.class
+   Last modified 2026�~9��10��; size 2222 bytes
+-  SHA-256 checksum 197ea3b34831870f583acc90d2e1560583726da16c638d68c6c88ce28f945285
++  SHA-256 checksum a80a222d0af398d1dbae3d7c73c6907bf488541f2714b02c4eeb546c1bc4ee34
+   Compiled from "StressPalette.java"
+ public final class com.blockreality.api.render.StressPalette$LegendStop extends java.lang.Record
+   minor version: 0
+@@ -126,7 +126,7 @@
+         23: putfield      #34                 // Field hatch:Lcom/blockreality/api/render/Hatch;
+         26: return
+       LineNumberTable:
+-        line 180: 0
++        line 169: 0
+       LocalVariableTable:
+         Start  Length  Slot  Name   Signature
+             0      27     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+@@ -150,7 +150,7 @@
+          1: invokedynamic #54,  0             // InvokeDynamic #0:toString:(Lcom/blockreality/api/render/StressPalette$LegendStop;)Ljava/lang/String;
+          6: areturn
+       LineNumberTable:
+-        line 180: 0
++        line 169: 0
+       LocalVariableTable:
+         Start  Length  Slot  Name   Signature
+             0       7     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+@@ -164,7 +164,7 @@
+          1: invokedynamic #59,  0             // InvokeDynamic #0:hashCode:(Lcom/blockreality/api/render/StressPalette$LegendStop;)I
+          6: ireturn
+       LineNumberTable:
+-        line 180: 0
++        line 169: 0
+       LocalVariableTable:
+         Start  Length  Slot  Name   Signature
+             0       7     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+@@ -179,7 +179,7 @@
+          2: invokedynamic #64,  0             // InvokeDynamic #0:equals:(Lcom/blockreality/api/render/StressPalette$LegendStop;Ljava/lang/Object;)Z
+          7: ireturn
+       LineNumberTable:
+-        line 180: 0
++        line 169: 0
+       LocalVariableTable:
+         Start  Length  Slot  Name   Signature
+             0       8     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+@@ -194,7 +194,7 @@
+          1: getfield      #28                 // Field translationKey:Ljava/lang/String;
+          4: areturn
+       LineNumberTable:
+-        line 180: 0
++        line 169: 0
+       LocalVariableTable:
+         Start  Length  Slot  Name   Signature
+             0       5     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+@@ -208,7 +208,7 @@
+          1: getfield      #30                 // Field value:D
+          4: dreturn
+       LineNumberTable:
+-        line 180: 0
++        line 169: 0
+       LocalVariableTable:
+         Start  Length  Slot  Name   Signature
+             0       5     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+@@ -222,7 +222,7 @@
+          1: getfield      #32                 // Field colour:Lcom/blockreality/api/render/Rgb;
+          4: areturn
+       LineNumberTable:
+-        line 180: 0
++        line 169: 0
+       LocalVariableTable:
+         Start  Length  Slot  Name   Signature
+             0       5     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+@@ -236,7 +236,7 @@
+          1: getfield      #34                 // Field hatch:Lcom/blockreality/api/render/Hatch;
+          4: areturn
+       LineNumberTable:
+-        line 180: 0
++        line 169: 0
+       LocalVariableTable:
+         Start  Length  Slot  Name   Signature
+             0       5     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;

@@ -1616,3 +1616,16 @@ records. Gate6 geometry/HUD passes; actual-game shell-indicative warning remains
 unobserved/open. No native C14 result is relabeled as a client observation. CI
 f7f9533/run34441250786 passes4 jobs with15 native step SKIPs. See
 evidence/NATIVE_V15_CONSUMER/client/RESULTS.md. No original gate is lowered.
+
+### 2026-09-10 NATIVE_VERDICT_API
+
+Criteria d386ced precede9558351. Public result colours now require the supplied
+native overload flag; unused numeric hatch is removed. Windows561 PASS/12 platform
+SKIP, Forge packet/jar checks and37 ordinary-jar display readouts pass unchanged.
+Linux15-test control/restored pass; the compiled ignored-flag mutant fails the
+boundary assertion. The first single-changed-class expectation FAILS because
+LegendStop.class also has8 line-number bytes changed180→169. Its complete code,
+descriptors and remaining bytes are identical. This follows the frozen criterion's
+extra-entry investigation, not a hidden replacement of the original assertion.
+Qualified artifact scope explicitly includes that debug delta. See
+evidence/NATIVE_VERDICT_API/RESULTS.md; no native, UI scene or v1 gate is lowered.

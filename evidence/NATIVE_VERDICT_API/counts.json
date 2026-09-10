@@ -1,0 +1,14 @@
+{
+  "core": {
+    "tests": 449,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 12
+  },
+  "forge": {
+    "tests": 124,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

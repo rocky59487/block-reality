@@ -1,0 +1,11 @@
+{
+  "source": "9558351c1bfa8f45fa9f64d418b7d4112ded8467",
+  "jar_bytes": 15286370,
+  "jar_sha256": "03fff6f83036c7ab6d254db1b9577c72895053d5b86810b82d7ec5bf0ea5d492",
+  "changed_entries": [
+    "com/blockreality/api/render/StressPalette$LegendStop.class",
+    "com/blockreality/api/render/StressPalette.class"
+  ],
+  "unchanged_entries": 385,
+  "readouts_identical": 37
+}

@@ -1,0 +1,57 @@
+{
+  "source": "9558351c1bfa8f45fa9f64d418b7d4112ded8467",
+  "jar_bytes": 15286370,
+  "jar_sha256": "03fff6f83036c7ab6d254db1b9577c72895053d5b86810b82d7ec5bf0ea5d492",
+  "changed_entries": [
+    "com/blockreality/api/render/StressPalette$LegendStop.class",
+    "com/blockreality/api/render/StressPalette.class"
+  ],
+  "unchanged_entries": 385,
+  "readouts_identical": 37,
+  "status": "PASS with disclosed debug metadata delta",
+  "unchanged_classes": 234,
+  "legend_record_changed_bytes": [
+    {
+      "offset": 1598,
+      "before": 180,
+      "after": 169
+    },
+    {
+      "offset": 1724,
+      "before": 180,
+      "after": 169
+    },
+    {
+      "offset": 1787,
+      "before": 180,
+      "after": 169
+    },
+    {
+      "offset": 1851,
+      "before": 180,
+      "after": 169
+    },
+    {
+      "offset": 1922,
+      "before": 180,
+      "after": 169
+    },
+    {
+      "offset": 1983,
+      "before": 180,
+      "after": 169
+    },
+    {
+      "offset": 2044,
+      "before": 180,
+      "after": 169
+    },
+    {
+      "offset": 2105,
+      "before": 180,
+      "after": 169
+    }
+  ],
+  "first_strict_single_class_assertion": "FAIL: nested record has line-number metadata changes; original identity retained",
+  "all_native_resources_and_packets_unchanged": true
+}

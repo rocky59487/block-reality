@@ -1,0 +1,270 @@
+Classfile jar:file:///C:/Users/wmc02/Desktop/block-reality/build/native-verdict-cleanup/blockreality-0.4.0-dev-native-verdict.jar!/com/blockreality/api/render/StressPalette$LegendStop.class
+  Last modified 2026¦~9¤ë10¤é; size 2222 bytes
+  SHA-256 checksum a80a222d0af398d1dbae3d7c73c6907bf488541f2714b02c4eeb546c1bc4ee34
+  Compiled from "StressPalette.java"
+public final class com.blockreality.api.render.StressPalette$LegendStop extends java.lang.Record
+  minor version: 0
+  major version: 61
+  flags: (0x0031) ACC_PUBLIC, ACC_FINAL, ACC_SUPER
+  this_class: #2                          // com/blockreality/api/render/StressPalette$LegendStop
+  super_class: #4                         // java/lang/Record
+  interfaces: 0, fields: 4, methods: 8, attributes: 5
+Constant pool:
+   #1 = Utf8               com/blockreality/api/render/StressPalette$LegendStop
+   #2 = Class              #1             // com/blockreality/api/render/StressPalette$LegendStop
+   #3 = Utf8               java/lang/Record
+   #4 = Class              #3             // java/lang/Record
+   #5 = Utf8               StressPalette.java
+   #6 = Utf8               com/blockreality/api/render/StressPalette
+   #7 = Class              #6             // com/blockreality/api/render/StressPalette
+   #8 = Utf8               LegendStop
+   #9 = Utf8               java/lang/invoke/MethodHandles$Lookup
+  #10 = Class              #9             // java/lang/invoke/MethodHandles$Lookup
+  #11 = Utf8               java/lang/invoke/MethodHandles
+  #12 = Class              #11            // java/lang/invoke/MethodHandles
+  #13 = Utf8               Lookup
+  #14 = Utf8               translationKey
+  #15 = Utf8               Ljava/lang/String;
+  #16 = Utf8               value
+  #17 = Utf8               D
+  #18 = Utf8               colour
+  #19 = Utf8               Lcom/blockreality/api/render/Rgb;
+  #20 = Utf8               hatch
+  #21 = Utf8               Lcom/blockreality/api/render/Hatch;
+  #22 = Utf8               <init>
+  #23 = Utf8               (Ljava/lang/String;DLcom/blockreality/api/render/Rgb;Lcom/blockreality/api/render/Hatch;)V
+  #24 = Utf8               ()V
+  #25 = NameAndType        #22:#24        // "<init>":()V
+  #26 = Methodref          #4.#25         // java/lang/Record."<init>":()V
+  #27 = NameAndType        #14:#15        // translationKey:Ljava/lang/String;
+  #28 = Fieldref           #2.#27         // com/blockreality/api/render/StressPalette$LegendStop.translationKey:Ljava/lang/String;
+  #29 = NameAndType        #16:#17        // value:D
+  #30 = Fieldref           #2.#29         // com/blockreality/api/render/StressPalette$LegendStop.value:D
+  #31 = NameAndType        #18:#19        // colour:Lcom/blockreality/api/render/Rgb;
+  #32 = Fieldref           #2.#31         // com/blockreality/api/render/StressPalette$LegendStop.colour:Lcom/blockreality/api/render/Rgb;
+  #33 = NameAndType        #20:#21        // hatch:Lcom/blockreality/api/render/Hatch;
+  #34 = Fieldref           #2.#33         // com/blockreality/api/render/StressPalette$LegendStop.hatch:Lcom/blockreality/api/render/Hatch;
+  #35 = Utf8               this
+  #36 = Utf8               Lcom/blockreality/api/render/StressPalette$LegendStop;
+  #37 = Utf8               toString
+  #38 = Utf8               ()Ljava/lang/String;
+  #39 = Utf8               translationKey;value;colour;hatch
+  #40 = String             #39            // translationKey;value;colour;hatch
+  #41 = MethodHandle       1:#28          // REF_getField com/blockreality/api/render/StressPalette$LegendStop.translationKey:Ljava/lang/String;
+  #42 = MethodHandle       1:#30          // REF_getField com/blockreality/api/render/StressPalette$LegendStop.value:D
+  #43 = MethodHandle       1:#32          // REF_getField com/blockreality/api/render/StressPalette$LegendStop.colour:Lcom/blockreality/api/render/Rgb;
+  #44 = MethodHandle       1:#34          // REF_getField com/blockreality/api/render/StressPalette$LegendStop.hatch:Lcom/blockreality/api/render/Hatch;
+  #45 = Utf8               java/lang/runtime/ObjectMethods
+  #46 = Class              #45            // java/lang/runtime/ObjectMethods
+  #47 = Utf8               bootstrap
+  #48 = Utf8               (Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/TypeDescriptor;Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/invoke/MethodHandle;)Ljava/lang/Object;
+  #49 = NameAndType        #47:#48        // bootstrap:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/TypeDescriptor;Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/invoke/MethodHandle;)Ljava/lang/Object;
+  #50 = Methodref          #46.#49        // java/lang/runtime/ObjectMethods.bootstrap:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/TypeDescriptor;Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/invoke/MethodHandle;)Ljava/lang/Object;
+  #51 = MethodHandle       6:#50          // REF_invokeStatic java/lang/runtime/ObjectMethods.bootstrap:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/TypeDescriptor;Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/invoke/MethodHandle;)Ljava/lang/Object;
+  #52 = Utf8               (Lcom/blockreality/api/render/StressPalette$LegendStop;)Ljava/lang/String;
+  #53 = NameAndType        #37:#52        // toString:(Lcom/blockreality/api/render/StressPalette$LegendStop;)Ljava/lang/String;
+  #54 = InvokeDynamic      #0:#53         // #0:toString:(Lcom/blockreality/api/render/StressPalette$LegendStop;)Ljava/lang/String;
+  #55 = Utf8               hashCode
+  #56 = Utf8               ()I
+  #57 = Utf8               (Lcom/blockreality/api/render/StressPalette$LegendStop;)I
+  #58 = NameAndType        #55:#57        // hashCode:(Lcom/blockreality/api/render/StressPalette$LegendStop;)I
+  #59 = InvokeDynamic      #0:#58         // #0:hashCode:(Lcom/blockreality/api/render/StressPalette$LegendStop;)I
+  #60 = Utf8               equals
+  #61 = Utf8               (Ljava/lang/Object;)Z
+  #62 = Utf8               (Lcom/blockreality/api/render/StressPalette$LegendStop;Ljava/lang/Object;)Z
+  #63 = NameAndType        #60:#62        // equals:(Lcom/blockreality/api/render/StressPalette$LegendStop;Ljava/lang/Object;)Z
+  #64 = InvokeDynamic      #0:#63         // #0:equals:(Lcom/blockreality/api/render/StressPalette$LegendStop;Ljava/lang/Object;)Z
+  #65 = Utf8               o
+  #66 = Utf8               Ljava/lang/Object;
+  #67 = Utf8               ()D
+  #68 = Utf8               ()Lcom/blockreality/api/render/Rgb;
+  #69 = Utf8               ()Lcom/blockreality/api/render/Hatch;
+  #70 = Utf8               Code
+  #71 = Utf8               LineNumberTable
+  #72 = Utf8               LocalVariableTable
+  #73 = Utf8               MethodParameters
+  #74 = Utf8               InnerClasses
+  #75 = Utf8               SourceFile
+  #76 = Utf8               BootstrapMethods
+  #77 = Utf8               NestHost
+  #78 = Utf8               Record
+{
+  private final java.lang.String translationKey;
+    descriptor: Ljava/lang/String;
+    flags: (0x0012) ACC_PRIVATE, ACC_FINAL
+
+  private final double value;
+    descriptor: D
+    flags: (0x0012) ACC_PRIVATE, ACC_FINAL
+
+  private final com.blockreality.api.render.Rgb colour;
+    descriptor: Lcom/blockreality/api/render/Rgb;
+    flags: (0x0012) ACC_PRIVATE, ACC_FINAL
+
+  private final com.blockreality.api.render.Hatch hatch;
+    descriptor: Lcom/blockreality/api/render/Hatch;
+    flags: (0x0012) ACC_PRIVATE, ACC_FINAL
+
+  public com.blockreality.api.render.StressPalette$LegendStop(java.lang.String, double, com.blockreality.api.render.Rgb, com.blockreality.api.render.Hatch);
+    descriptor: (Ljava/lang/String;DLcom/blockreality/api/render/Rgb;Lcom/blockreality/api/render/Hatch;)V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=3, locals=6, args_size=5
+         0: aload_0
+         1: invokespecial #26                 // Method java/lang/Record."<init>":()V
+         4: aload_0
+         5: aload_1
+         6: putfield      #28                 // Field translationKey:Ljava/lang/String;
+         9: aload_0
+        10: dload_2
+        11: putfield      #30                 // Field value:D
+        14: aload_0
+        15: aload         4
+        17: putfield      #32                 // Field colour:Lcom/blockreality/api/render/Rgb;
+        20: aload_0
+        21: aload         5
+        23: putfield      #34                 // Field hatch:Lcom/blockreality/api/render/Hatch;
+        26: return
+      LineNumberTable:
+        line 169: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      27     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+            0      27     1 translationKey   Ljava/lang/String;
+            0      27     2 value   D
+            0      27     4 colour   Lcom/blockreality/api/render/Rgb;
+            0      27     5 hatch   Lcom/blockreality/api/render/Hatch;
+    MethodParameters:
+      Name                           Flags
+      translationKey
+      value
+      colour
+      hatch
+
+  public final java.lang.String toString();
+    descriptor: ()Ljava/lang/String;
+    flags: (0x0011) ACC_PUBLIC, ACC_FINAL
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokedynamic #54,  0             // InvokeDynamic #0:toString:(Lcom/blockreality/api/render/StressPalette$LegendStop;)Ljava/lang/String;
+         6: areturn
+      LineNumberTable:
+        line 169: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       7     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+
+  public final int hashCode();
+    descriptor: ()I
+    flags: (0x0011) ACC_PUBLIC, ACC_FINAL
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokedynamic #59,  0             // InvokeDynamic #0:hashCode:(Lcom/blockreality/api/render/StressPalette$LegendStop;)I
+         6: ireturn
+      LineNumberTable:
+        line 169: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       7     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+
+  public final boolean equals(java.lang.Object);
+    descriptor: (Ljava/lang/Object;)Z
+    flags: (0x0011) ACC_PUBLIC, ACC_FINAL
+    Code:
+      stack=2, locals=2, args_size=2
+         0: aload_0
+         1: aload_1
+         2: invokedynamic #64,  0             // InvokeDynamic #0:equals:(Lcom/blockreality/api/render/StressPalette$LegendStop;Ljava/lang/Object;)Z
+         7: ireturn
+      LineNumberTable:
+        line 169: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       8     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+            0       8     1     o   Ljava/lang/Object;
+
+  public java.lang.String translationKey();
+    descriptor: ()Ljava/lang/String;
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: getfield      #28                 // Field translationKey:Ljava/lang/String;
+         4: areturn
+      LineNumberTable:
+        line 169: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+
+  public double value();
+    descriptor: ()D
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=2, locals=1, args_size=1
+         0: aload_0
+         1: getfield      #30                 // Field value:D
+         4: dreturn
+      LineNumberTable:
+        line 169: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+
+  public com.blockreality.api.render.Rgb colour();
+    descriptor: ()Lcom/blockreality/api/render/Rgb;
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: getfield      #32                 // Field colour:Lcom/blockreality/api/render/Rgb;
+         4: areturn
+      LineNumberTable:
+        line 169: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+
+  public com.blockreality.api.render.Hatch hatch();
+    descriptor: ()Lcom/blockreality/api/render/Hatch;
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: getfield      #34                 // Field hatch:Lcom/blockreality/api/render/Hatch;
+         4: areturn
+      LineNumberTable:
+        line 169: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcom/blockreality/api/render/StressPalette$LegendStop;
+}
+InnerClasses:
+  public static final #8= #2 of #7;       // LegendStop=class com/blockreality/api/render/StressPalette$LegendStop of class com/blockreality/api/render/StressPalette
+  public static final #13= #10 of #12;    // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
+SourceFile: "StressPalette.java"
+BootstrapMethods:
+  0: #51 REF_invokeStatic java/lang/runtime/ObjectMethods.bootstrap:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/TypeDescriptor;Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/invoke/MethodHandle;)Ljava/lang/Object;
+    Method arguments:
+      #2 com/blockreality/api/render/StressPalette$LegendStop
+      #40 translationKey;value;colour;hatch
+      #41 REF_getField com/blockreality/api/render/StressPalette$LegendStop.translationKey:Ljava/lang/String;
+      #42 REF_getField com/blockreality/api/render/StressPalette$LegendStop.value:D
+      #43 REF_getField com/blockreality/api/render/StressPalette$LegendStop.colour:Lcom/blockreality/api/render/Rgb;
+      #44 REF_getField com/blockreality/api/render/StressPalette$LegendStop.hatch:Lcom/blockreality/api/render/Hatch;
+NestHost: class com/blockreality/api/render/StressPalette
+Record:
+  java.lang.String translationKey;
+    descriptor: Ljava/lang/String;
+
+  double value;
+    descriptor: D
+
+  com.blockreality.api.render.Rgb colour;
+    descriptor: Lcom/blockreality/api/render/Rgb;
+
+  com.blockreality.api.render.Hatch hatch;
+    descriptor: Lcom/blockreality/api/render/Hatch;
+
