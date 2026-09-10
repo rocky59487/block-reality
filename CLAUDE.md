@@ -64,10 +64,10 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   native 工作若不返回，Java 不能強殺；cleanup 僅在 worker/daemon，D-044 崩潰代價仍成立。
 - 生產 SidecarClient/SidecarProcess/SidecarConfig/ShmRegion 已退到 test；NoSubprocess ALLOWED={}。
   預設 jar 無 exe、無 process launcher；Gradle 已拒絕 executable 封裝。
-- CONSTRUCTION_TRANSACTIONS 已凍 CT-1..9/D-048，核心日誌/復原已接首個軸向入口；一般施工仍未完成。
-  核心現有35項測試，新增15項Forge玩家檔/NBT/精確欄位持久化測試；兩平台各37個真JVM
+- CONSTRUCTION_TRANSACTIONS 已凍 CT-1..9/D-048，核心日誌/復原已接軸向EDIT與單格BUILD；一般施工驗收仍未完成。
+  基礎檔案單元含35項核心與15項Forge玩家檔/NBT/精確欄位持久化測試；兩平台各37個真JVM
   中斷/復原與跨程序鎖通過。先checkpoint完整玩家基線再PREPARED；3個新可編譯反例被抓到。
-  這些玩家adapter仍沒有正式Forge施工呼叫者；不是已完成遊戲庫存/區塊原子交易。
+  玩家adapter已由後續單格BUILD呼叫；完整多格世界/庫存交易與undo仍未完成。
   日誌驗證規則快取使4096格配置約9MB→3.36MB，144份/平台檔案逐位相同；時間僅Recorded，
   Windows p95增加、Linux降低，不能稱FPS資格。完整材料/區塊/身分/undo/UI仍待接合，#12/#17不關閉。
   詳 `docs/CT_PLAYER_PARTICIPANT.md`、`evidence/CONSTRUCTION_TRANSACTIONS/PLAYER_PARTICIPANT/RESULTS.md`。
@@ -75,12 +75,12 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   CT_JOURNAL_BOOTSTRAP 已在同一鎖內讀回原領域ID，缺manifest而有資料時拒絕新建；
   提供有界不可變交易key清單、先核實未知寫入結果。5項新檔案測試及兩平台37次中斷/復原通過。
   詳 `evidence/CONSTRUCTION_TRANSACTIONS/JOURNAL_BOOTSTRAP/RESULTS.md`；製造metadata與首個軸向Forge入口進度見後續段落。
-  目前開發jar15,355,886B/SHA828d24b47b23…保留v1.5雙庫；沒有正式v1發布。
+  目前開發jar15,439,737B/SHA7cda56e40cc0…保留v1.5雙庫；沒有正式v1發布。
 - CT_MANUFACTURED_METADATA 已用COMMITTED日誌重建永久製造ID、精確所有權、不可逆編輯/退休與整批undo資格。
   18項新測試、兩平台完整測試及37次中斷/復原通過；所有權與undo兩個可編譯反例被抓到。
   原236類別與引擎/資源逐位不變，只增加14個metadata類別。雙平台864次日誌成本操作內容一致；
   單格準備p95≤0.61ms，持久提交約13–46ms，131K重建約141/167ms；同主機並行量測僅Recorded。
-  BUILD/undo仍無Forge呼叫者；metadata資格不單獨授權世界修改或退款，完整CT-1..9/undo/UI仍開放。
+  單格BUILD已接Forge，undo仍無呼叫者；metadata資格不單獨授權世界修改或退款，完整CT-1..9/undo/UI仍開放。
   詳 `evidence/CONSTRUCTION_TRANSACTIONS/MANUFACTURED_METADATA/RESULTS.md`。
 - CT_CHUNK_PARTICIPANT 已新增同一IOWorker上的整批NBT保存、全部future排空、強制落盤及完整讀回比對。
   7項新測試含真region檔案重開，雙平台Forge131PASS；省略force/遺失capability兩反例被抓到。
@@ -104,11 +104,21 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   3個真Minecraft JVM中斷與各2次重啟通過，提交前回滾、提交後保留、終態日誌不重寫。
   時鐘保留與觀測洩漏兩個可編譯反例被抓到；首敗與原始日誌照存。
   詳 `evidence/CONSTRUCTION_TRANSACTIONS/FORGE_AXIS_TRANSACTIONS/RESULTS.md`；玩家為synthetic，
-  一般放置/庫存消耗/blueprint/undo/C2S確認與真socket/UI仍開放，不能稱完整CT或高性能。
-- NATIVE_VERDICT_API 已刪除只看數字的未使用影線API，公開利用率配色必須收原生overload旗標。
+  這批軸向證據不包含一般放置/庫存消耗/blueprint/undo/C2S確認或真socket/UI；一般放置進度如下。
+- CT_TRANSACTIONAL_PLACEMENT 已實作單格材料預覽、獨立C2S確認、完整玩家/區塊checkpoint、
+  PREPARED私有寫入、COMMITTED後單次身分/revision發布，以及送出前持久保存的精確重試。
+  普通jar隔離實裝控制277項、重啟209項通過，各含100次admitted重送；玩家為synthetic。
+  8個真Minecraft SIGKILL中斷點、16次重啟及原始region/完整玩家檔解析通過；5個編譯反例被抓到。
+  真Linux開發client對普通jar專服的首輪48項/修正版52項通過，每輪2個client JVM與8張原始圖；
+  含三軸、取消、材料同步、箱子優先、保護取消、遺失回覆後跨client重啟的逐位相同確認重送。
+  面板隨內容收合，終態移除重試並把鍵盤焦點交給完成；原始大視窗空白與翻譯守門首敗照存。
+  詳 `evidence/CONSTRUCTION_TRANSACTIONS/TRANSACTIONAL_PLACEMENT/RESULTS.md`；領域/actor/slot/
+  容量/expiry等額外實裝案例、Recorded成本及exact-head CI仍待補，尚未完成本單元全部判準。
+  blueprint/undo/一般拆除所有權整理、高性能與v1保持開放；沒有Java物理補做。
+- NATIVE_VERDICT_API 已刪除只看數字的未使用影線API，公開利用率配色必須收原生overload旗標.
   37組顯示讀數不變，忽略旗標的可編譯反例被抓到；#128/6d1a0c2的4項CI通過、15原生步驟SKIP。
   #124未於Main整合前仍保持開放；詳 `evidence/NATIVE_VERDICT_API/RESULTS.md`。
-- Windows core477/Forge145：622登錄、610PASS、12平台SKIP；Linux621PASS、1平台SKIP。
+- Windows core487/Forge152：639登錄、627PASS、12平台SKIP；Linux638PASS、1平台SKIP。
   20項 native 相關全部執行。新庫Linux真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
   完整結果 `evidence/GAME_RUNTIME/RESULTS.md`，首敗保留、三故障臂具名咬合。
 - 全部失去支承時原生只回 SOLVE_FAILED；Java 保留拒絕，不能從 message 捏造 MECHANISM。

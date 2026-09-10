@@ -1,0 +1,9 @@
+{
+  "classes": 291,
+  "test_placement_harness_absent": true,
+  "native_libraries": {
+    "blockreality-engine/linux-x86_64/libbsi_tectonic.so": "2d048b9bfaf971d6b1971b7b0c36cc4942238448652735ba264dfbddf7d440a4",
+    "blockreality-engine/windows-x86_64/bsi_tectonic.dll": "749ceebe5aa382f1c25a5d28797ababed9f1d7c9750009a3d957fb7c74d0bd15"
+  },
+  "jar_sha256": "7cda56e40cc0c85edff815a26d2361e98f7287fc60bd2443a7ad788e829e7285"
+}

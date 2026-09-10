@@ -56,15 +56,19 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 
 最新交付已更新為v1.5，模組Main #126的契約同步已整合。本工作只消費來源42ba7eb9、
 契約5d4367f40de8的發布SDK；引擎倉未修改/建置/合併/發布。
-目前模組來源338c490，開發jar15,355,886B、SHA828d24b47b23…；保留同一v1.5雙平台庫。
-核心477項於d720995雙平台完整實跑，338c490核心來源逐位相同而沿用；Forge145項本輪雙平台全過。
-合計622登錄：Windows610PASS/12平台SKIP，Linux621PASS/1平台SKIP。首個空手軸向EDIT已接
-Forge交易服務，先checkpoint完整區塊/舊覆蓋，提交後才公開一次，啟動時先復原再開放分析。
-普通jar隔離實裝控制與恢復控制各60項通過，完整庫存NBT不變；三個Minecraft JVM中斷
-各兩次重啟通過，兩個可編譯反例被抓到。來源、首敗與證據見
-`../evidence/CONSTRUCTION_TRANSACTIONS/FORGE_AXIS_TRANSACTIONS/RESULTS.md`。
-`codex/forge-axis-transactions`接續PR133；一般放置/消耗庫存/blueprint/undo與C2S確認仍待接合，
-完整CT-1..9及#12/#17保持開放。玩家是synthetic；真socket/client、FPS/soak與正式v1仍待驗。
+目前模組候選FOURTH為15,439,737B、SHA7cda56e40cc0…，保留同一v1.5雙平台庫。
+核心487項、Forge152項：639登錄，Windows627PASS/12平台SKIP，Linux638PASS/1平台SKIP。
+`codex/transactional-placement`接續PR134，已實作單格BUILD與材料消耗、伺服器預覽/C2S確認、
+送出前持久保存的client重試、完整玩家/區塊barrier、提交後單次metadata/revision。
+普通jar隔離實裝277項與重啟209項通過，各含100次admitted精確重送；8個Minecraft SIGKILL
+中斷點、16次重啟，以及原始region與完整玩家檔解析通過。5個編譯行為反例都被預定断言抓到。
+真Linux開發client對普通jar專服首輪48項/修正版52項，每輪2個client JVM與8張原始圖；
+驗證三軸、取消、鍵盤、材料同步、箱子優先、保護取消和丟失回覆後跨client重啟的精確重送。
+面板高度依內容收合，終態隱藏重試並移交完成焦點。來源、首敗與原始證據見
+`../evidence/CONSTRUCTION_TRANSACTIONS/TRANSACTIONAL_PLACEMENT/RESULTS.md`。
+這是單格呼叫者的進行中驗收；額外領域/actor/slot/capacity/expiry案例、Recorded成本及
+exact-head CI仍待補。完整CT-1..9/#12/#17、blueprint/undo/一般拆除所有權整理、高性能、
+Windows CM/N25、引擎權威動態消費與正式v1都保持開放。
 
 原v1.5換裝單元jar15,286,415B、SHA9d8cb6795e9c…的來源/授權/封裝/JNA及真安裝專服門檻1–5通過。
 完整573登錄：Windows561PASS/12平台SKIP、Linux572PASS/1平台SKIP；兩平台96frame×3直連

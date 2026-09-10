@@ -1,0 +1,317 @@
+[
+  {
+    "point": "prepared",
+    "step": 0,
+    "command": [
+      "python3",
+      "/home/rocky/br-transactional-placement/qualification/setup-crash-prepared-first.py"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-prepared-0.log"
+  },
+  {
+    "point": "prepared",
+    "step": 1,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-crash-first.py",
+      "prepared"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-prepared-1.log"
+  },
+  {
+    "point": "prepared",
+    "step": 2,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-recovery.py",
+      "prepared",
+      "first"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-prepared-2.log"
+  },
+  {
+    "point": "prepared",
+    "step": 3,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-recovery.py",
+      "prepared",
+      "second"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-prepared-3.log"
+  },
+  {
+    "point": "player-applied",
+    "step": 0,
+    "command": [
+      "python3",
+      "/home/rocky/br-transactional-placement/qualification/setup-crash-player-applied-first.py"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-player-applied-0.log"
+  },
+  {
+    "point": "player-applied",
+    "step": 1,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-crash-first.py",
+      "player-applied"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-player-applied-1.log"
+  },
+  {
+    "point": "player-applied",
+    "step": 2,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-recovery.py",
+      "player-applied",
+      "first"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-player-applied-2.log"
+  },
+  {
+    "point": "player-applied",
+    "step": 3,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-recovery.py",
+      "player-applied",
+      "second"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-player-applied-3.log"
+  },
+  {
+    "point": "world-durable",
+    "step": 0,
+    "command": [
+      "python3",
+      "/home/rocky/br-transactional-placement/qualification/setup-crash-world-durable-first.py"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-world-durable-0.log"
+  },
+  {
+    "point": "world-durable",
+    "step": 1,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-crash-first.py",
+      "world-durable"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-world-durable-1.log"
+  },
+  {
+    "point": "world-durable",
+    "step": 2,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-recovery.py",
+      "world-durable",
+      "first"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-world-durable-2.log"
+  },
+  {
+    "point": "world-durable",
+    "step": 3,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-recovery.py",
+      "world-durable",
+      "second"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-world-durable-3.log"
+  },
+  {
+    "point": "player-durable",
+    "step": 0,
+    "command": [
+      "python3",
+      "/home/rocky/br-transactional-placement/qualification/setup-crash-player-durable-first.py"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-player-durable-0.log"
+  },
+  {
+    "point": "player-durable",
+    "step": 1,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-crash-first.py",
+      "player-durable"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-player-durable-1.log"
+  },
+  {
+    "point": "player-durable",
+    "step": 2,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-recovery.py",
+      "player-durable",
+      "first"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-player-durable-2.log"
+  },
+  {
+    "point": "player-durable",
+    "step": 3,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-recovery.py",
+      "player-durable",
+      "second"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-player-durable-3.log"
+  },
+  {
+    "point": "committed-temp",
+    "step": 0,
+    "command": [
+      "python3",
+      "/home/rocky/br-transactional-placement/qualification/setup-crash-committed-temp-first.py"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-committed-temp-0.log"
+  },
+  {
+    "point": "committed-temp",
+    "step": 1,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-crash-first.py",
+      "committed-temp"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-committed-temp-1.log"
+  },
+  {
+    "point": "committed-temp",
+    "step": 2,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-recovery.py",
+      "committed-temp",
+      "first"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-committed-temp-2.log"
+  },
+  {
+    "point": "committed-temp",
+    "step": 3,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-recovery.py",
+      "committed-temp",
+      "second"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-committed-temp-3.log"
+  },
+  {
+    "point": "committed",
+    "step": 0,
+    "command": [
+      "python3",
+      "/home/rocky/br-transactional-placement/qualification/setup-crash-committed-first.py"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-committed-0.log"
+  },
+  {
+    "point": "committed",
+    "step": 1,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-crash-first.py",
+      "committed"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-committed-1.log"
+  },
+  {
+    "point": "committed",
+    "step": 2,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-recovery.py",
+      "committed",
+      "first"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-committed-2.log"
+  },
+  {
+    "point": "committed",
+    "step": 3,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-recovery.py",
+      "committed",
+      "second"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-committed-3.log"
+  },
+  {
+    "point": "published",
+    "step": 0,
+    "command": [
+      "python3",
+      "/home/rocky/br-transactional-placement/qualification/setup-crash-published-first.py"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-published-0.log"
+  },
+  {
+    "point": "published",
+    "step": 1,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-crash-first.py",
+      "published"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-published-1.log"
+  },
+  {
+    "point": "published",
+    "step": 2,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-recovery.py",
+      "published",
+      "first"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-published-2.log"
+  },
+  {
+    "point": "published",
+    "step": 3,
+    "command": [
+      "python3",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/transactional-placement/launch-recovery.py",
+      "published",
+      "second"
+    ],
+    "exit": 0,
+    "log": "/home/rocky/br-transactional-placement/qualification/matrix-first-published-3.log"
+  }
+]

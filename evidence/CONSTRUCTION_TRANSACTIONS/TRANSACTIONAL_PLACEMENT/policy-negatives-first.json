@@ -1,0 +1,74 @@
+[
+  {
+    "expected_behavioral_failure": true,
+    "probe_status": "FAIL",
+    "completed_checks": 20,
+    "guard": "COMMITTED world and material at correct barrier",
+    "driver_exit": 1,
+    "server_exit": {
+      "exit": 0,
+      "timeout": false
+    },
+    "ordinary_class_origins": [
+      "ordinary jar origin ConstructionService",
+      "ordinary jar origin PlayerInventoryParticipant",
+      "ordinary jar origin ConstructionProtocol",
+      "ordinary jar origin StructuralBlockItem"
+    ],
+    "source_jar": "blockreality-policy-debit-two-first.jar"
+  },
+  {
+    "expected_behavioral_failure": true,
+    "probe_status": "FAIL",
+    "completed_checks": 28,
+    "guard": "all inventory fields preserved around one-item debit",
+    "driver_exit": 1,
+    "server_exit": {
+      "exit": 0,
+      "timeout": false
+    },
+    "ordinary_class_origins": [
+      "ordinary jar origin ConstructionService",
+      "ordinary jar origin PlayerInventoryParticipant",
+      "ordinary jar origin ConstructionProtocol",
+      "ordinary jar origin StructuralBlockItem"
+    ],
+    "source_jar": "blockreality-policy-lose-tag-first.jar"
+  },
+  {
+    "expected_behavioral_failure": true,
+    "probe_status": "FAIL",
+    "completed_checks": 78,
+    "guard": "replay 1 changes no items journal identity revision or publication",
+    "driver_exit": 1,
+    "server_exit": {
+      "exit": 0,
+      "timeout": false
+    },
+    "ordinary_class_origins": [
+      "ordinary jar origin ConstructionService",
+      "ordinary jar origin PlayerInventoryParticipant",
+      "ordinary jar origin ConstructionProtocol",
+      "ordinary jar origin StructuralBlockItem"
+    ],
+    "source_jar": "blockreality-policy-replay-debit-first.jar"
+  },
+  {
+    "expected_behavioral_failure": true,
+    "probe_status": "FAIL",
+    "completed_checks": 36,
+    "guard": "EntityPlace cancellation produces durable ABORTED: COMMITTED",
+    "driver_exit": 1,
+    "server_exit": {
+      "exit": 0,
+      "timeout": false
+    },
+    "ordinary_class_origins": [
+      "ordinary jar origin ConstructionService",
+      "ordinary jar origin PlayerInventoryParticipant",
+      "ordinary jar origin ConstructionProtocol",
+      "ordinary jar origin StructuralBlockItem"
+    ],
+    "source_jar": "blockreality-policy-ignore-protection-first.jar"
+  }
+]

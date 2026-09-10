@@ -1,0 +1,8 @@
+{
+  "sha256": "7cda56e40cc0c85edff815a26d2361e98f7287fc60bd2443a7ad788e829e7285",
+  "bytes": 15439737,
+  "only_changed_entries_from_second": [
+    "com/blockreality/impl/client/PlacementScreen.class"
+  ],
+  "native_and_all_other_entries_byte_identical": true
+}
