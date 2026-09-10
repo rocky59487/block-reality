@@ -116,3 +116,7 @@ SAVE_COMPRESSION 已完成固定SP對照，900次內容一致、36條時間/36�
 不能先讓兩倉正式契約漂移。Linux 真客戶端已完成16張補充基準圖與45項守門，
 cached bootstrap/真拒絕清色已實見；材質方向與長訊息布局仍有缺陷。
 詳 `../evidence/CLIENT_RENDER_PROBE/RESULTS.md`；原 Windows 安裝版驗收仍待安全性視窗。
+
+HUD_READABILITY 已完成16份原場景相同讀數对照與2張大字級圖，長拒絕換行、讀數底板、
+原生警示優先及超量明示省略已實見；首次通知重疊保留並縮寬修正。只動客戶端布局與翻譯，
+未動引擎/封包。詳 `../evidence/HUD_READABILITY/RESULTS.md`；材質方向、真互動與CM/N25仍待完成。

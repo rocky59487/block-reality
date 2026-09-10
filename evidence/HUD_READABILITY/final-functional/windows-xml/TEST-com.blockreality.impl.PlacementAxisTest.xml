@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.PlacementAxisTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-10T00:04:49" hostname="ROCKYLAPTOP" time="0.258">
+  <properties/>
+  <testcase name="gameSourceUsesNativeSnapshotsAndObservedContactFaces()" classname="com.blockreality.impl.PlacementAxisTest" time="0.006"/>
+  <testcase name="rotationsAndCyclingKeepExplicitThreeAxisDeclarations()" classname="com.blockreality.impl.PlacementAxisTest" time="0.247"/>
+  <testcase name="undeclaredLegacyBlocksNeverInventAWorldAxis()" classname="com.blockreality.impl.PlacementAxisTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

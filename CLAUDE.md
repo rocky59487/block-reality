@@ -53,6 +53,9 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 - CLIENT_RENDER_PROBE 已取得隔離 Linux 真客戶端16張基準圖、45項讀數/尺寸守門通過。
   登入即收到既有原生 revision44；未宣告目錄真拒絕並清除舊色面。原HUD長訊息截斷、
   文字對比及方向模型缺口已實見；首兩次探針失敗保留。這只是補充，CM/N25仍待驗。
+- HUD_READABILITY 已用原16場景加2張大字級圖驗換行、底板、原生警示與明示省略。
+  45項原始守門及16份完整讀數對照通過；首版與原生通知重疊已縮寬修正，首敗仍保留。
+  Windows Forge108 PASS/1 SKIP、12封包golden與jar守門通過；詳 evidence/HUD_READABILITY。
 - NATIVE_ONLY_RESULTS 已把舊 beam/shell 公式、JSON/shm codec 與數值推導 verdict 的相容 API
   移到 test/fixtures。正式快照只接受原生樣本/旗標；12 組封包 bytes 不變，Linux recovery/packet
   22 項無跳過通過。jar/class 常數池檢查與兩條可編譯故障臂通過，詳 `evidence/NATIVE_ONLY_RESULTS/RESULTS.md`。
