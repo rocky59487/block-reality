@@ -36,6 +36,10 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   真Forge開發環境由bundled資源解包，16項server狀態、24個合成玩家事件、45項client守門/16圖通過。
   首次空世界前置錯誤與漏通知失敗保留；詳 `evidence/NATIVE_CANDIDATE_RUNTIME/RESULTS.md`。
   這是候選與dev遊戲驗收，未替換正式資產，也不等於installed-jar/Windows CM/N25/FPS合格。
+- INSTALLED_NATIVE_SERVER 已把同一候選裝進普通 Linux Forge 47.4.13，control/final 各10項
+  server守門及重啟讀數/原生快取恢復通過，類別實際來自mods/中的jar。最終只修mods.toml舊介紹，
+  204類別與兩庫bytes不變；jar15,203,634B、SHA7bdfce5d1581…，安裝文字同步改正。
+  詳 `evidence/INSTALLED_NATIVE_SERVER/RESULTS.md`；Windows/真安裝客戶端、材質方向與v1仍待驗。
 - `GAME_INPUT` 已接 engine-assigned vocabulary ID、SI 目錄與不可變 GameWorldSnapshot。
 - `GAME_RUNTIME` 已將 Forge 採集→worker→apply 換為真正的 BSI/JNA 原生 session。
   玩家宣告 axis；觀測六面 sturdy 接觸為 ground；舊方塊未宣告要明示拒絕。

@@ -1,0 +1,71 @@
+2026-09-10 08:56:01,320 main WARN Advanced terminal features are not available in this environment
+[08:56:01] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeserver, --fml.forgeVersion, 47.4.13, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, --nogui]
+[08:56:01] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.20 by Ubuntu; OS Linux arch amd64 version 6.6.87.2-microsoft-standard-WSL2
+[08:56:01] [main/INFO] [ne.mi.fm.lo.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgeserver
+[08:56:01] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/home/rocky/br-installed-native-server/server/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar%2365!/ Service=ModLauncher Env=SERVER
+[08:56:02] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/rocky/br-installed-native-server/server/libraries/net/minecraftforge/fmlcore/1.20.1-47.4.13/fmlcore-1.20.1-47.4.13.jar is missing mods.toml file
+[08:56:02] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/rocky/br-installed-native-server/server/libraries/net/minecraftforge/javafmllanguage/1.20.1-47.4.13/javafmllanguage-1.20.1-47.4.13.jar is missing mods.toml file
+[08:56:02] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/rocky/br-installed-native-server/server/libraries/net/minecraftforge/lowcodelanguage/1.20.1-47.4.13/lowcodelanguage-1.20.1-47.4.13.jar is missing mods.toml file
+[08:56:02] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/rocky/br-installed-native-server/server/libraries/net/minecraftforge/mclanguage/1.20.1-47.4.13/mclanguage-1.20.1-47.4.13.jar is missing mods.toml file
+[08:56:02] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
+[08:56:04] [main/INFO] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeserver' with arguments [--nogui]
+[08:56:13] [modloading-worker-0/INFO] [ne.mi.co.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.13, for MC 1.20.1 with MCP 20230612.114412
+[08:56:13] [modloading-worker-0/INFO] [ne.mi.co.MinecraftForge/FORGE]: MinecraftForge v47.4.13 Initialized
+[08:56:13] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[08:56:14] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Found status: OUTDATED Current: 47.4.13 Target: 47.4.23
+[08:56:14] [main/INFO] [mojang/YggdrasilAuthenticationService]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[08:56:15] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/home/rocky/br-installed-native-server/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23103!/assets/.mcassetsroot' uses unexpected schema
+[08:56:15] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/home/rocky/br-installed-native-server/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23103!/data/.mcassetsroot' uses unexpected schema
+[08:56:18] [main/INFO] [minecraft/RecipeManager]: Loaded 7 recipes
+[08:56:18] [main/INFO] [minecraft/AdvancementList]: Loaded 1271 advancements
+[08:56:18] [Server thread/INFO] [minecraft/DedicatedServer]: Starting minecraft server version 1.20.1
+[08:56:18] [Server thread/INFO] [minecraft/DedicatedServer]: Loading properties
+[08:56:18] [Server thread/INFO] [minecraft/DedicatedServer]: Default game type: SURVIVAL
+[08:56:18] [Server thread/INFO] [minecraft/MinecraftServer]: Generating keypair
+[08:56:19] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:25596
+[08:56:19] [Server thread/INFO] [minecraft/ServerConnectionListener]: Using epoll channel type
+[08:56:19] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[08:56:19] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.
+[08:56:19] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[08:56:19] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set "online-mode" to "true" in the server.properties file.
+[08:56:19] [Server thread/INFO] [minecraft/DedicatedServer]: Preparing level "runtime-smoke"
+[08:56:19] [Server thread/INFO] [minecraft/MinecraftServer]: Preparing start region for dimension minecraft:overworld
+[08:56:23] [Worker-Main-3/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[08:56:23] [Worker-Main-3/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[08:56:23] [Worker-Main-11/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[08:56:23] [Worker-Main-11/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[08:56:23] [Worker-Main-9/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[08:56:23] [Worker-Main-3/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[08:56:23] [Worker-Main-11/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[08:56:23] [Worker-Main-9/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[08:56:23] [Worker-Main-3/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[08:56:24] [Worker-Main-14/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 4%
+[08:56:24] [Worker-Main-14/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 33%
+[08:56:25] [Worker-Main-11/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 78%
+[08:56:25] [Server thread/INFO] [minecraft/LoggerChunkProgressListener]: Time elapsed: 5799 ms
+[08:56:25] [Server thread/INFO] [minecraft/DedicatedServer]: Done (6.135s)! For help, type "help"
+[08:56:25] [Server thread/INFO] [minecraft/DedicatedServer]: Starting remote control listener
+[08:56:25] [Server thread/INFO] [minecraft/GenericThread]: Thread RCON Listener started
+[08:56:25] [Server thread/INFO] [minecraft/RconThread]: RCON running on 127.0.0.1:25597
+[08:56:25] [Server thread/INFO] [ne.mi.se.pe.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+[08:56:26] [br-analysis-1/INFO] [BlockReality/]: [minecraft:overworld] native engine source=BUNDLED path=/home/rocky/br-installed-native-server/server/blockreality/engine/lib/linux-x86_64/53aae7156b94c0a761ef5abb2322ad47a708362f417a50ca3f04105d9c50abf1/libbsi_tectonic.so fileSha256=53aae7156b94c0a761ef5abb2322ad47a708362f417a50ca3f04105d9c50abf1
+[08:56:26] [br-analysis-1/INFO] [BlockReality/]: [minecraft:overworld] native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801
+[08:57:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[08:57:05] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (runtime-smoke): All chunks are saved
+[08:57:05] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[08:57:05] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[08:57:05] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+[08:57:05] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Saved the game]
+[08:57:05] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Stopping the server]
+[08:57:05] [RCON Client /127.0.0.1 #2/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[08:57:05] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[08:57:05] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[08:57:05] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[08:57:07] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[runtime-smoke]'/minecraft:overworld
+[08:57:10] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[runtime-smoke]'/minecraft:the_nether
+[08:57:10] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[runtime-smoke]'/minecraft:the_end
+[08:57:10] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (runtime-smoke): All chunks are saved
+[08:57:10] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[08:57:10] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[08:57:10] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+[08:57:11] [Server thread/INFO] [minecraft/GenericThread]: Thread RCON Listener stopped

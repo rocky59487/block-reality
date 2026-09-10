@@ -54,14 +54,14 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 
 ## 現況
 
-GAME_INPUT 已在 #106，GAME_RUNTIME 已接 Forge 採集與真正原生迴圈；Linux server 混合
-梁柱板/機構與地面變更/重設已驗，Windows core412/Forge109=492PASS/29SKIP。
-判準及證據見 `GAME_RUNTIME.md`、`../evidence/GAME_RUNTIME/RESULTS.md`。
-全未支承原生只回 SOLVE_FAILED，typed 機構展示未完成；客戶端、最新雙平台 native jar、
-持久世界及倒塌動態仍待完成。沒有新遊戲版本發布。
+GAME_INPUT #106 與 GAME_RUNTIME #108 已接真原生迴圈；#121以交付42e10f5雙平台庫驗
+目前HUD/持久化/資料路徑。Windows core412/Forge109=509PASS/12平台SKIP，Linux520PASS/1平台SKIP。
+判準與舊來源證據見 `GAME_RUNTIME.md`；目前新庫與jar資格见 `../evidence/NATIVE_CANDIDATE_RUNTIME/RESULTS.md`。
+持久已知格/建造身份已完成，其後仍欠原子施工交易與獨立區域排程。全未支承原生只回
+SOLVE_FAILED，typed機構展示、原Windows CM/N25、材質方向互動及倒塌動態仍未完成，沒有v1發布。
 
 上游 #107（文件）已合入目前模組分支，對位引擎 #39 frame_v2；本輪沒有改引擎。
-正式引擎仍 v1.3，本次實跑來源仍 #37 `95a03e82` / contract `4b11cc738790…`。
+正式引擎仍 v1.3；歷史實跑來源 #37 `95a03e82` 的證據保留，本次使用同契約的42e10f5候選。
 混合世界 HUD/命令警示已接並用真 server 驗文字；客戶端視覺仍待 N25。
 STATE_DELIVERY 已接空模型/停用與來源/順序/revision 通知；真 server 16 項、24 個 synthetic
 玩家事件與 native→封包→clock 已驗，詳 `../evidence/STATE_DELIVERY/RESULTS.md`。
@@ -127,3 +127,9 @@ Linux520PASS/1平台SKIP。兩平台同jar48frame×3/快取/權限/雙JVM，來�
 新庫真Forge開發环境16項狀態/24合成玩家事件/45項client守門與16張畫面通過，bundled資源自動解包。
 首個空世界前置與漏通知失敗照存；不替代installed-jar/Windows CM/N25/FPS，不替換正式引擎。
 詳 `../evidence/NATIVE_CANDIDATE_RUNTIME/RESULTS.md`；#119先後兩個候選的歷史數字/hash各自保留。
+
+INSTALLED_NATIVE_SERVER 已用普通Forge安裝的Linux專服驗目前jar，沒有dev sourceSet/probe。
+control與最終各10項原生守門及重啟/原生快取恢復通過；修正出貨介紹的舊FrameCore/子程序隔離說法。
+最終jar15,203,634B、SHA7bdfce5d1581…；比NCR只有mods.toml不同，204類別與兩原生庫逐位相同。
+其完整程式測試明示沿用NCR，未冒充重跑；新安裝與封裝證據見 `../evidence/INSTALLED_NATIVE_SERVER/RESULTS.md`。
+這只補Linux安裝專服，不取代Windows安裝客戶端、CM/N25、材質方向/互動、FPS與引擎動態依賴。

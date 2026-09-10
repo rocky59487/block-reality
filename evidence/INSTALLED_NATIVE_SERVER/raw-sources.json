@@ -1,0 +1,324 @@
+[
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/archive-final.py",
+    "source_bytes": 3604,
+    "source_sha256": "82c0efbb44e356b679562f7c1be363af62792e4a4d66c9663c695b4df67abf0a",
+    "stored": "windows/archive-final.py",
+    "stored_sha256": "82c0efbb44e356b679562f7c1be363af62792e4a4d66c9663c695b4df67abf0a"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/compare-final-jar.py",
+    "source_bytes": 1742,
+    "source_sha256": "60f70a253e81468b7516472a60d88b4f46dfbea8e8e0594ced1649ea1c9adf33",
+    "stored": "windows/compare-final-jar.py",
+    "stored_sha256": "60f70a253e81468b7516472a60d88b4f46dfbea8e8e0594ced1649ea1c9adf33"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/distribution.json",
+    "source_bytes": 161,
+    "source_sha256": "b8df9ab2f54f98f13785a0ae6f635c250b4369d221b7324a0128cf66423e79e1",
+    "stored": "windows/distribution.json",
+    "stored_sha256": "b8df9ab2f54f98f13785a0ae6f635c250b4369d221b7324a0128cf66423e79e1"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/download-second.log",
+    "source_bytes": 634,
+    "source_sha256": "8a99f5dc1ea1580dcdc35d40d8b9c622c23c1d7edffb1e0e8d467a21e3bf282c",
+    "stored": "windows/download-second.log",
+    "stored_sha256": "8a99f5dc1ea1580dcdc35d40d8b9c622c23c1d7edffb1e0e8d467a21e3bf282c"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/final-artifact.json",
+    "source_bytes": 745,
+    "source_sha256": "634a42183bc8fd33759ff59d9ce7dccf8e53c5c9dad02095ce24a559712eb6f7",
+    "stored": "windows/final-artifact.json",
+    "stored_sha256": "634a42183bc8fd33759ff59d9ce7dccf8e53c5c9dad02095ce24a559712eb6f7"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/final-build-first.log",
+    "source_bytes": 1081,
+    "source_sha256": "8655b74c24219cebbb1a6453191f2d5e66ec98ea912f8591c9aa760900d03a24",
+    "stored": "windows/final-build-first.log",
+    "stored_sha256": "8655b74c24219cebbb1a6453191f2d5e66ec98ea912f8591c9aa760900d03a24"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/final-bundle-first-exit.json",
+    "source_bytes": 42,
+    "source_sha256": "e814af5a08d4a951f07c9e8c27aad792b2cd883fb0589df415cd6e5a75dcb263",
+    "stored": "windows/final-bundle-first-exit.json",
+    "stored_sha256": "e814af5a08d4a951f07c9e8c27aad792b2cd883fb0589df415cd6e5a75dcb263"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/final-bundle-first.log",
+    "source_bytes": 133,
+    "source_sha256": "0215de3c71c9ebfe623db0effd64978da570c75f5fcbef1f08bbab1f8c2f788b",
+    "stored": "windows/final-bundle-first.log",
+    "stored_sha256": "0215de3c71c9ebfe623db0effd64978da570c75f5fcbef1f08bbab1f8c2f788b"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/final-bundle-negative-first-exit.json",
+    "source_bytes": 51,
+    "source_sha256": "b4ad2972172e158150c8e4ac28ad0fce580f80db0c75d8a49352129a67f4e458",
+    "stored": "windows/final-bundle-negative-first-exit.json",
+    "stored_sha256": "b4ad2972172e158150c8e4ac28ad0fce580f80db0c75d8a49352129a67f4e458"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/final-bundle-negative-first.log",
+    "source_bytes": 1999,
+    "source_sha256": "71c1aca3da3467e1718c960f475ec161a4a159c368eed43fa63d3a353d95ba7d",
+    "stored": "windows/final-bundle-negative-first.log",
+    "stored_sha256": "71c1aca3da3467e1718c960f475ec161a4a159c368eed43fa63d3a353d95ba7d"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/final-bundle-negative-second.log",
+    "source_bytes": 1635,
+    "source_sha256": "7aa1b80d5c48486ea57fcc2fd473acdfb1091ee2b79a01b92df00a465ffecb72",
+    "stored": "windows/final-bundle-negative-second.log",
+    "stored_sha256": "7aa1b80d5c48486ea57fcc2fd473acdfb1091ee2b79a01b92df00a465ffecb72"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/final-mods.toml",
+    "source_bytes": 1880,
+    "source_sha256": "bb599b788c1b8b1d88978b0acdbcbfb83aca99058c8b01d1ca6e65b42b6375ae",
+    "stored": "windows/final-mods.toml",
+    "stored_sha256": "bb599b788c1b8b1d88978b0acdbcbfb83aca99058c8b01d1ca6e65b42b6375ae"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/install-first.py",
+    "source_bytes": 1232,
+    "source_sha256": "cdd89e658d8c0f357f8435b0361888d6b5a69af488b13dc66b646fe8ffeb1415",
+    "stored": "windows/install-first.py",
+    "stored_sha256": "cdd89e658d8c0f357f8435b0361888d6b5a69af488b13dc66b646fe8ffeb1415"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/install-second.py",
+    "source_bytes": 1641,
+    "source_sha256": "f801934cf97fbdbcfb10cf9c0a27877011a26bc7e102329c37b7f3614b68801b",
+    "stored": "windows/install-second.py",
+    "stored_sha256": "f801934cf97fbdbcfb10cf9c0a27877011a26bc7e102329c37b7f3614b68801b"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/package-final.py",
+    "source_bytes": 2497,
+    "source_sha256": "11ae9801af27f84d2fb43510a1673ed7f4f65d3871d2ef987096d3f947296c86",
+    "stored": "windows/package-final.py",
+    "stored_sha256": "11ae9801af27f84d2fb43510a1673ed7f4f65d3871d2ef987096d3f947296c86"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/setup-control.py",
+    "source_bytes": 1859,
+    "source_sha256": "e641ce5cabe4dfbe5ac5c3813f399391750941927a9a09ed38d9928a5f387279",
+    "stored": "windows/setup-control.py",
+    "stored_sha256": "e641ce5cabe4dfbe5ac5c3813f399391750941927a9a09ed38d9928a5f387279"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/setup-final.py",
+    "source_bytes": 1521,
+    "source_sha256": "080f08b3b22ccb104a81dbc3c071ac511411b251a4490ecef455b297b4c7ed00",
+    "stored": "windows/setup-final.py",
+    "stored_sha256": "080f08b3b22ccb104a81dbc3c071ac511411b251a4490ecef455b297b4c7ed00"
+  },
+  {
+    "source": "/mnt/c/Users/wmc02/Desktop/block-reality/build/installed-native-server/verify-install.py",
+    "source_bytes": 2166,
+    "source_sha256": "ae574ee63d727b4636715820f84b0d27da599afe067794957eedd07c0091ab8f",
+    "stored": "windows/verify-install.py",
+    "stored_sha256": "ae574ee63d727b4636715820f84b0d27da599afe067794957eedd07c0091ab8f"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/control-after-restart.json",
+    "source_bytes": 2867,
+    "source_sha256": "8c094e93cdb859ea6faf1a8d2dffb44582b068f0147fa9d2314ade3d844a41b8",
+    "stored": "linux/control-after-restart.json",
+    "stored_sha256": "8c094e93cdb859ea6faf1a8d2dffb44582b068f0147fa9d2314ade3d844a41b8"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/control-before-restart.json",
+    "source_bytes": 2841,
+    "source_sha256": "ffe8b3e641bf242e93d018415be48145611e5986e6084aa1574a4a26bdc4b0c8",
+    "stored": "linux/control-before-restart.json",
+    "stored_sha256": "ffe8b3e641bf242e93d018415be48145611e5986e6084aa1574a4a26bdc4b0c8"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/control-classload.log",
+    "source_bytes": 3586993,
+    "source_sha256": "3489fb516741b0c167bc472ebd94fe441b9f49578a8324f2dbc312e384a37055",
+    "stored": "linux/control-classload.log.gz",
+    "stored_sha256": "db47205e719c2397fda2202f4ef0707e1289c15748f886041b8eafd131002382"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/control-identity.json",
+    "source_bytes": 598,
+    "source_sha256": "65c3b39d06babf98299e64e819fb7104b96befd5db8c30ad2d73a8282a77375e",
+    "stored": "linux/control-identity.json",
+    "stored_sha256": "65c3b39d06babf98299e64e819fb7104b96befd5db8c30ad2d73a8282a77375e"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/control-mod-class-origins.txt",
+    "source_bytes": 27063,
+    "source_sha256": "3caf0fba82125536b2c594a73ff8490fa166175469f44dfe01dd4039bc8d99f3",
+    "stored": "linux/control-mod-class-origins.txt",
+    "stored_sha256": "3caf0fba82125536b2c594a73ff8490fa166175469f44dfe01dd4039bc8d99f3"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/control-mods.toml",
+    "source_bytes": 1740,
+    "source_sha256": "323a34ad319a27d7cdd48e4d03f26f0e62301136311f93f45f30abc8e93c6211",
+    "stored": "linux/control-mods.toml",
+    "stored_sha256": "323a34ad319a27d7cdd48e4d03f26f0e62301136311f93f45f30abc8e93c6211"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/control-restart-classload.log",
+    "source_bytes": 3575537,
+    "source_sha256": "871651117b4b071aaf662f67c3301ee52076bcde4d55de6632f725c037f70161",
+    "stored": "linux/control-restart-classload.log.gz",
+    "stored_sha256": "d33b6b883ed5ddabe1b1c7fca0ef7b2f4dd7bc2a855436631632150cffbc7404"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/control-server-first.log",
+    "source_bytes": 14090,
+    "source_sha256": "943d43fd4f28d5544d1284d5223a01053ddb003681769b942e1f53e1d8bae850",
+    "stored": "linux/control-server-first.log",
+    "stored_sha256": "943d43fd4f28d5544d1284d5223a01053ddb003681769b942e1f53e1d8bae850"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/control-server-restart.log",
+    "source_bytes": 9284,
+    "source_sha256": "6da40038f291d0ac52840a6c8f5163973425a82971133ee5ae4cf578125aafbb",
+    "stored": "linux/control-server-restart.log",
+    "stored_sha256": "6da40038f291d0ac52840a6c8f5163973425a82971133ee5ae4cf578125aafbb"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/control-smoke-first.json",
+    "source_bytes": 18268,
+    "source_sha256": "62fd61241af2a03346bb416b094a836bd9841e209ec5bd0916d15589a1ec752a",
+    "stored": "linux/control-smoke-first.json",
+    "stored_sha256": "62fd61241af2a03346bb416b094a836bd9841e209ec5bd0916d15589a1ec752a"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/control-smoke-first.log",
+    "source_bytes": 432,
+    "source_sha256": "208e3e46229cab2ed93dd1101d77fd7c37c95517f3ade36da4bbd837ca9a8494",
+    "stored": "linux/control-smoke-first.log",
+    "stored_sha256": "208e3e46229cab2ed93dd1101d77fd7c37c95517f3ade36da4bbd837ca9a8494"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/download-first-error.txt",
+    "source_bytes": 213,
+    "source_sha256": "92d5090a8c8180be01ff703fc08acb001dc25a9b96a025d60908677822d3194d",
+    "stored": "linux/download-first-error.txt",
+    "stored_sha256": "92d5090a8c8180be01ff703fc08acb001dc25a9b96a025d60908677822d3194d"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/final-after-restart.json",
+    "source_bytes": 2867,
+    "source_sha256": "3631cfc9b60121d86472001fcee5af5150d5d8a53dd599d70f9f3e7a5abdb837",
+    "stored": "linux/final-after-restart.json",
+    "stored_sha256": "3631cfc9b60121d86472001fcee5af5150d5d8a53dd599d70f9f3e7a5abdb837"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/final-before-restart.json",
+    "source_bytes": 2841,
+    "source_sha256": "f4fc34e591c1d5811675d19e6541a13c068b68d310b0f2c5abcba45e7602bce7",
+    "stored": "linux/final-before-restart.json",
+    "stored_sha256": "f4fc34e591c1d5811675d19e6541a13c068b68d310b0f2c5abcba45e7602bce7"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/final-classload.log",
+    "source_bytes": 3638485,
+    "source_sha256": "2ea1510bc8628ae0dd2838fd10559530a83f810578f059199ae31be70e72dcd0",
+    "stored": "linux/final-classload.log.gz",
+    "stored_sha256": "ae55d22f3a3af17543d3e3668cc1be807f68049aa13bd20100ed40eb91dff701"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/final-install.json",
+    "source_bytes": 352,
+    "source_sha256": "019e4d22b24bc25e3f1fda22f9bf25c330c264c6cf5f1ed44ebd9ed8a2ed722c",
+    "stored": "linux/final-install.json",
+    "stored_sha256": "019e4d22b24bc25e3f1fda22f9bf25c330c264c6cf5f1ed44ebd9ed8a2ed722c"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/final-mod-class-origins.txt",
+    "source_bytes": 27987,
+    "source_sha256": "cde33f58f810fe3a715273d8ff3aad0b6afa2ad5c56d0733413468bc0bb20905",
+    "stored": "linux/final-mod-class-origins.txt",
+    "stored_sha256": "cde33f58f810fe3a715273d8ff3aad0b6afa2ad5c56d0733413468bc0bb20905"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/final-restart-classload.log",
+    "source_bytes": 3623680,
+    "source_sha256": "610091259bca46fa89bbd10aa5d26688e77eab41f27d8e8a0eeca8eec4e60ca1",
+    "stored": "linux/final-restart-classload.log.gz",
+    "stored_sha256": "e6d62f918f07fd27870bc41b699a0ace6adb3fad5f84998628bd7900db4552ed"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/final-server-first.log",
+    "source_bytes": 14161,
+    "source_sha256": "022c14092aaf43e57f80e73e69ea468ed5f2b611483effbd28257712ec5bc970",
+    "stored": "linux/final-server-first.log",
+    "stored_sha256": "022c14092aaf43e57f80e73e69ea468ed5f2b611483effbd28257712ec5bc970"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/final-server-restart.log",
+    "source_bytes": 9139,
+    "source_sha256": "0d6eef971b670a1b05c2f59edcb68136062d1b2cd6e65833fa84470a19462d46",
+    "stored": "linux/final-server-restart.log",
+    "stored_sha256": "0d6eef971b670a1b05c2f59edcb68136062d1b2cd6e65833fa84470a19462d46"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/final-smoke-first.json",
+    "source_bytes": 18271,
+    "source_sha256": "f01eb1661feeebb8b68ce449edabdb55ed98a8f40bdf13ca2370e43a36c8b951",
+    "stored": "linux/final-smoke-first.json",
+    "stored_sha256": "f01eb1661feeebb8b68ce449edabdb55ed98a8f40bdf13ca2370e43a36c8b951"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/final-smoke-first.log",
+    "source_bytes": 432,
+    "source_sha256": "208e3e46229cab2ed93dd1101d77fd7c37c95517f3ade36da4bbd837ca9a8494",
+    "stored": "linux/final-smoke-first.log",
+    "stored_sha256": "208e3e46229cab2ed93dd1101d77fd7c37c95517f3ade36da4bbd837ca9a8494"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/forge-dependencies.json",
+    "source_bytes": 16098,
+    "source_sha256": "459532be26cf5aa89aeba55ba5ff44f5ca41d2c446d30f2b0f9b777caa288bac",
+    "stored": "linux/forge-dependencies.json",
+    "stored_sha256": "459532be26cf5aa89aeba55ba5ff44f5ca41d2c446d30f2b0f9b777caa288bac"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/install-second-exit.json",
+    "source_bytes": 186,
+    "source_sha256": "2cb965a02bff3dad3a633428fd159d10249aac8eae6be982d2868dfd2203eba8",
+    "stored": "linux/install-second-exit.json",
+    "stored_sha256": "2cb965a02bff3dad3a633428fd159d10249aac8eae6be982d2868dfd2203eba8"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/install-second.log",
+    "source_bytes": 1194134,
+    "source_sha256": "1fe64c763ecc9a4b0868dd706f07ce1f4f3490fd68254573a2e453142a0108ee",
+    "stored": "linux/install-second.log.gz",
+    "stored_sha256": "2c65c3dc2da05930deaa6a508b0385b06cf7b7e447e00abed41ed237d27a74fd"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/install_profile.json",
+    "source_bytes": 39149,
+    "source_sha256": "f100f36256897a7ad3825affca7586d0a09a76ab2a64112a7b0b757d4a92d0f1",
+    "stored": "linux/install_profile.json",
+    "stored_sha256": "f100f36256897a7ad3825affca7586d0a09a76ab2a64112a7b0b757d4a92d0f1"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/installer.json",
+    "source_bytes": 372,
+    "source_sha256": "c6535e10f0adf11d02435e5ec83c8ac72827f604f9a88afbba5e2e653c49bfa1",
+    "stored": "linux/installer.json",
+    "stored_sha256": "c6535e10f0adf11d02435e5ec83c8ac72827f604f9a88afbba5e2e653c49bfa1"
+  },
+  {
+    "source": "/home/rocky/br-installed-native-server/qualification/version.json",
+    "source_bytes": 16554,
+    "source_sha256": "44f17c82d921bc98c48018b21529fff4eddc3e647063ec234216822a3070e414",
+    "stored": "linux/version.json",
+    "stored_sha256": "44f17c82d921bc98c48018b21529fff4eddc3e647063ec234216822a3070e414"
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "module": "ae6a4eb",
+  "jar_sha256": "7bdfce5d1581bfadf43b769d8aeabc0cec06e7f73fe48cd1c9b1fd6c5fdb7b3c",
+  "server": "/home/rocky/br-installed-native-server/final-server",
+  "fresh_world": true,
+  "initial_cache_exists": false,
+  "forge_installation": "copy of verified official installation libraries/run scripts; no control world/cache copied"
+}
