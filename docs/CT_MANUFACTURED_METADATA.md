@@ -80,3 +80,13 @@ remain required. Preserve first failures and raw results; update quoted counts o
 after measurement. Record cold bootstrap/live metadata costs without FPS claims.
 This does not qualify real Forge atomicity, player/chunk persistence, protection,
 network ordering, client confirmation or full v1. No old gate is replaced.
+
+Pre-qualification review extension after the first14 file/codec tests pass: a live
+registry that observes an inconsistent COMMITTED record or a journal verification
+failure must latch unavailable before any further proposal/public readout. Last
+typed data stays private, not advertised as current over a corrupt history. An
+ordinary attempted publication of PREPARED/missing/foreign records refuses without
+poisoning an otherwise valid instance. Exercise forged whole-undo subsets/creative
+changes, retired-ID resurrection, and journal UUID order differing from commit
+order. Preserve the first14 source/XML as the pre-extension control. No acceptance
+or performance threshold is relaxed by these additional failure checks.
