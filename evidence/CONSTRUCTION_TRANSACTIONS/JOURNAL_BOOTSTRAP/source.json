@@ -1,0 +1,16 @@
+{
+  "source": "471fad98f9f208f1d3635560820e84b5a1260f8c",
+  "source_archive_sha256": "ba27a9be7a09f77e08560458429f15c58e9488f42454d1730aaf9245ab32000e",
+  "source_archive_paths": [
+    "mod",
+    "forge",
+    "gradle",
+    "scripts",
+    "contract",
+    "LICENSE",
+    "NOTICE",
+    "third_party"
+  ],
+  "engine_modified": false,
+  "formal_forge_construction_caller": false
+}

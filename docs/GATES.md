@@ -1629,3 +1629,15 @@ descriptors and remaining bytes are identical. This follows the frozen criterion
 extra-entry investigation, not a hidden replacement of the original assertion.
 Qualified artifact scope explicitly includes that debug delta. See
 evidence/NATIVE_VERDICT_API/RESULTS.md; no native, UI scene or v1 gate is lowered.
+
+### 2026-09-10 CT_JOURNAL_BOOTSTRAP
+
+019ca33 froze domain discovery and bounded key inventory before471fad9. New5
+file tests pass on both platforms; malformed-manifest integrity bypass compiles
+and is caught, with5-test control/restored passing. Full578 registered:
+Windows566 PASS/12 platform SKIP; Linux577 PASS/1 platform SKIP. Both existing37
+interrupted/recovery JVM runs and owner checks pass; those remain synthetic file
+participants. Ordinary jar changes only FileTransactionJournal.class;386 entries
+including both native libraries/resources remain identical. No game transaction,
+metadata replay, FPS or CT-1..9 completion claim. See
+evidence/CONSTRUCTION_TRANSACTIONS/JOURNAL_BOOTSTRAP/RESULTS.md.

@@ -111,11 +111,19 @@ CONSTRUCTION_IDENTITY 已接永久 namespace/單調 ID、產品/宣告軸分組�
 
 CONSTRUCTION_TRANSACTIONS 已先凍完整 CT-1..9 與 D-048：每次確認的新 piece 都用新 UUID，
 不默默延長舊身分。第一步實作模組核心日誌、原子決策與復原協調器；尚未接入 Forge 生產入口。
-已有30項核心與15項Forge玩家持久化測試；精確NBT/欄位、完整基線checkpoint、原子替換、
+已有35項核心與15項Forge玩家持久化測試；精確NBT/欄位、完整基線checkpoint、原子替換、
 保留孤兒檔配額及故障路徑已驗。兩平台37個中斷/恢復JVM與3個新可編譯反例通過；
 玩家存檔成本仍是Recorded，Windows小fixture p95尾延遲照登。詳 `CT_PLAYER_PARTICIPANT.md`。
 尚無正式Forge施工呼叫者；檔案/JVM故障測試不等於遊戲庫存/區塊交易或undo/UI完成。
 接合限制見 `CONSTRUCTION_TRANSACTION_ADAPTER.md`；CT-1..9完整門檻仍全部保持開放。
+
+CT_JOURNAL_BOOTSTRAP 補上鎖內領域ID發現、損壞/遺失marker拒絕新身分及有界不可變交易key清單。
+578登錄：Windows566PASS/12平台SKIP、Linux577PASS/1平台SKIP；兩平台37個中斷/復原JVM及
+原生適用測試通過。最新開發jar73a491fba10e…只比前版改FileTransactionJournal.class，
+雙v1.5庫/契約/資源不變。詳 `../evidence/CONSTRUCTION_TRANSACTIONS/JOURNAL_BOOTSTRAP/RESULTS.md`。
+這仍不重播已提交world/player歷史，也不是已完成製造物件metadata或Forge施工入口。
+前置#128已使公開利用率顯示API必須收原生旗標；37組實際jar讀數不變，反例被抓到，
+6d1a0c2 CI四項通過/15原生步驟SKIP；#124須在實際Main整合後才關閉。
 
 MODULE_PIPELINE_PROFILE 已將 metadata/gather/queue/BSI/解碼/封包/apply 分別量測，預設不收資料。
 A49/F576/M832 三場景各 40 次實跑，數字只作 Recorded 基線；M832 原生呼叫占主要成本，
