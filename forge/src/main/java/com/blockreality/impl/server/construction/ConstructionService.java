@@ -274,7 +274,9 @@ public final class ConstructionService {
                 throw new IOException("Incomplete construction participant barrier");
         }
         @Override public void checkpoint(List<String> resources) throws IOException {
-            requireResources(resources); persistCurrent(); checkAccess();
+            requireResources(resources);
+            StructureManager.of(level).checkpointConstructionCoverage(level,before.keySet());
+            persistCurrent(); checkAccess();
         }
         @Override public void write(String key, Value value) throws IOException {
             checkAccess(); Change change = changes.get(key);

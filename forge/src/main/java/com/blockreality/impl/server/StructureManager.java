@@ -94,6 +94,7 @@ public final class StructureManager {
     private long probedRevision = -1;
 
     private final WorldIndexData structural;
+    private final java.nio.file.Path coverageFile;
     private String registryFailureSeen = "";
     private final ChunkAvailability availability = new ChunkAvailability();
     /**
@@ -161,6 +162,7 @@ public final class StructureManager {
         this.server = level.getServer();
         var root = level.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT);
         var folder = net.minecraft.world.level.dimension.DimensionType.getStorageFolder(dimension, root).resolve("data");
+        this.coverageFile = folder.resolve(WorldIndexData.NAME + ".dat");
         this.structural = WorldIndexData.open(level.getDataStorage(), folder);
         dirty = !structural.isEmpty() || !structural.failure().isEmpty();
         notice = dirty ? Kind.PENDING : Kind.EMPTY;
@@ -480,11 +482,9 @@ public final class StructureManager {
     public static void onChunkUnload(ChunkEvent.Unload e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
         StructureManager m = BY_DIMENSION.get(level.dimension());
+        if (m != null) m.deferredChunks.remove(e.getChunk().getPos());
         if (ConstructionService.suppressObservation(level)) {
-            if (m != null) {
-                if (m.deferredChunks.size() >= 65536 && !m.deferredChunks.contains(e.getChunk().getPos())) m.deferredChunkOverflow = true;
-                else m.deferredChunks.add(e.getChunk().getPos());
-            }
+            // The normal availability poll rechecks persisted coverage after the owner releases.
             return;
         }
         if (m != null && m.structural.index().observesChunk(e.getChunk().getPos().x, e.getChunk().getPos().z))
@@ -535,7 +535,15 @@ public final class StructureManager {
             }
             dirty = false; return;
         }
-        if (!deferredChunks.isEmpty()) { reconcileDeferredChunks(level); markDirty(); }
+        if (!deferredChunks.isEmpty()) {
+            int waiting = deferredChunks.size(); reconcileDeferredChunks(level);
+            if (deferredChunks.size() < waiting) markDirty();
+            if (!deferredChunks.isEmpty()) {
+                if (notice != Kind.PENDING || !noticeDetail.equals("Waiting for loaded chunk coverage"))
+                    announce(level,Kind.PENDING,"Waiting for loaded chunk coverage");
+                return;
+            }
+        }
         structural.tickObjects(level.getServer(), () -> !level.getServer().isStopped()
                 && ConstructionService.available(server) && BY_DIMENSION.get(dimension) == this, profile);
         ticksSinceSolve++;
@@ -903,8 +911,7 @@ public final class StructureManager {
         if (deferredChunkOverflow) throw new IllegalStateException("Construction deferred chunk capacity exceeded");
         for (var pos : List.copyOf(deferredChunks)) {
             var chunk = level.getChunkSource().getChunkNow(pos.x,pos.z);
-            if (chunk != null) scanChunk(this,chunk);
-            deferredChunks.remove(pos);
+            if (chunk != null) { scanChunk(this,chunk); deferredChunks.remove(pos); }
         }
     }
     /** Startup only: committed ownership adds conservative coverage without loading its chunks. */
@@ -914,8 +921,20 @@ public final class StructureManager {
         for (BlockKey cell : ownedCells) structural.add(new BlockPos(cell.x(),cell.y(),cell.z()));
         reconcileDeferredChunks(level);
         if (!structural.failure().isEmpty()) throw new IllegalStateException("Construction coverage cannot be restored");
-        gate.restoreMinimum(floor); clearAnalysis(); dirty = !structural.isEmpty();
+        gate.restoreMinimum(floor); clearAnalysis(); dirty = !structural.isEmpty() || !deferredChunks.isEmpty();
         notice = dirty ? Kind.PENDING : Kind.EMPTY; noticeDetail = "";
+    }
+    /** The legacy cells being edited must already be durable known coverage before PREPARED. */
+    public void checkpointConstructionCoverage(ServerLevel level, java.util.Collection<BlockPos> positions) throws java.io.IOException {
+        if (!server.isSameThread() || !ConstructionService.busy(server) || level.getServer() != server || level.dimension() != dimension)
+            throw new java.io.IOException("Construction coverage owner mismatch");
+        for (BlockPos pos : positions) {
+            var chunk = level.getChunkSource().getChunkNow(pos.getX() >> 4,pos.getZ() >> 4);
+            if (chunk == null || !(chunk.getBlockState(pos).getBlock() instanceof StructuralBlock))
+                throw new java.io.IOException("Construction baseline cell is unavailable");
+            structural.observe(pos,declaration(chunk.getBlockState(pos)));
+        }
+        structural.checkpoint(coverageFile);
     }
     /** Only the service can publish its already committed complete final cell set. */
     public void publishConstructionState(ServerLevel level, Map<BlockPos,BlockState> cells, long baseRevision) {
