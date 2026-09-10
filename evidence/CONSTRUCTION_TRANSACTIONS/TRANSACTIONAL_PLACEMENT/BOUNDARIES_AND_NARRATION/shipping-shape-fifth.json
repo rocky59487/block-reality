@@ -1,0 +1,19 @@
+{
+  "jar": {
+    "sha256": "87bb2ed0d34cb6adcf6cc3bbf7508acfbde663c3d20e6956a2017f7fa57892d2",
+    "bytes": 15440153,
+    "only_changed_entries_from_fourth": [
+      "assets/blockreality/lang/en_us.json",
+      "assets/blockreality/lang/zh_tw.json",
+      "com/blockreality/impl/client/PlacementScreen.class"
+    ],
+    "native_and_all_other_entries_byte_identical": true
+  },
+  "classes": 291,
+  "native_libraries": {
+    "blockreality-engine/linux-x86_64/libbsi_tectonic.so": "2d048b9bfaf971d6b1971b7b0c36cc4942238448652735ba264dfbddf7d440a4",
+    "blockreality-engine/windows-x86_64/bsi_tectonic.dll": "749ceebe5aa382f1c25a5d28797ababed9f1d7c9750009a3d957fb7c74d0bd15"
+  },
+  "ordinary_jar_has_no_test_probes": true,
+  "unchanged_guard_mutation_evidence": "fourth class guard 3 compiled arms; bundle 9 injections; scripts byte-identical in source snapshots"
+}

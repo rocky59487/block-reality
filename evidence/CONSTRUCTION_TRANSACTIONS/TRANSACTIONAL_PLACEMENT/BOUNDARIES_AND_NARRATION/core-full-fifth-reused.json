@@ -1,0 +1,10 @@
+{
+  "changed_from_fourth": [
+    "forge/src/main/java/com/blockreality/impl/client/PlacementScreen.java",
+    "forge/src/main/resources/assets/blockreality/lang/en_us.json",
+    "forge/src/main/resources/assets/blockreality/lang/zh_tw.json"
+  ],
+  "all_mod_files_byte_identical": true,
+  "windows_core": "core-full-third",
+  "linux_core": "linux-core-full-fourth"
+}

@@ -1,0 +1,114 @@
+{
+  "boundary-costs-first-separated.json": {
+    "bytes": 6463,
+    "sha256": "f6189e7aab40960a8a55ce95dbb043e27e972a780951f454ffa96d1c1821c8c8"
+  },
+  "boundary-costs-second-separated.json": {
+    "bytes": 6460,
+    "sha256": "02c217b23eb002353515aaf30cff7d6b5f4ac926a367b9e83a6ae58c49f9ac82"
+  },
+  "boundary-first-final-world-after-stop.zip": {
+    "bytes": 57047,
+    "sha256": "96839914df174f3d26013d288ab7b7c23b02f0a611fe1e017ca5d187aaf507d1"
+  },
+  "boundary-second-final-world-after-stop.zip": {
+    "bytes": 56951,
+    "sha256": "be69adcafbb31cb3e23ad66fd79e56994c2f63ebdcb4a34ecd5a63b76bda5640"
+  },
+  "candidate-fifth-identity.json": {
+    "bytes": 355,
+    "sha256": "4cad5c75ad9388a78cbcfc9b49e2d00d8ee9be6c743b8124b8cff49af130d6bb"
+  },
+  "ci-587786b-first.json": {
+    "bytes": 13675,
+    "sha256": "9bd6bf2fe9ee731bec1a98a09fce6ffa4588ca157afc626811e7f15a8f105c53"
+  },
+  "ci-587786b-summary.json": {
+    "bytes": 2404,
+    "sha256": "596157a0aa16e524b57907a2b73e6f2ed722fbb3a1e0f6de04cb71a7afa5d2f4"
+  },
+  "core-full-fifth-reused.json": {
+    "bytes": 374,
+    "sha256": "26421cbbd9a61fd9d39a1781ba8c0bb8ffaaf576ef5e674a775c64846e38b327"
+  },
+  "documentation-check.zip": {
+    "bytes": 1783,
+    "sha256": "c11705ba219865de62da3f3a145211b710aa13e071c663dc1769d7b6d0044417"
+  },
+  "dual-platform-tests-fifth.json": {
+    "bytes": 2543,
+    "sha256": "5133f9677a0eacf3b8aff99dc8e2da0e916d55b5eeef86b38f2173f983869a7a"
+  },
+  "helpers-and-probes.zip": {
+    "bytes": 121625,
+    "sha256": "4c9ce4f1a7061ff239cde71ce8cf50a06037c94d16abaa6c9274a72c119bd732"
+  },
+  "linux-forge-full-fifth.zip": {
+    "bytes": 42352,
+    "sha256": "20086b3af6e96fbb3d1392db6b8e939b20b456d9722f129cbf2f43d304e62d75"
+  },
+  "probe-build-history.zip": {
+    "bytes": 138221,
+    "sha256": "ee81b4194ed069c956ddc6a348c8a0c128632bd64fd24ee9bae01f0b9bb7044c"
+  },
+  "RESULTS.md": {
+    "bytes": 7530,
+    "sha256": "448f609b1509035907df698811ae2fbd6ecb19cd52f231dce492919e5c2ed1b9"
+  },
+  "runtime-boundaries-first-boundaries.zip": {
+    "bytes": 307928,
+    "sha256": "b65d4f9aec63c3309628aa89f0ae83af209fd88a6d4a792323c00e48e06a5bd7"
+  },
+  "runtime-boundaries-second-boundaries.zip": {
+    "bytes": 304923,
+    "sha256": "3a02cf3623ff78ba5758acd6612170781b83ce1ccc66ffdffb779356bcc40836"
+  },
+  "shipping-gates-fifth.zip": {
+    "bytes": 1502,
+    "sha256": "9917efaf98fd77aadfe1df0849564be62638d1a7a3bb7cde38de16751822c74c"
+  },
+  "shipping-shape-fifth.json": {
+    "bytes": 880,
+    "sha256": "f12a9cc05543564f2671f9e432645ca3fd6b5d38339901fcb518b1c2f39504f9"
+  },
+  "source-candidate-fifth.zip": {
+    "bytes": 980065,
+    "sha256": "4bba722d973cd556711e50308cf090960b1c374320dedf3619887aa6398590ea"
+  },
+  "source-identity.json": {
+    "bytes": 18932,
+    "sha256": "5e4beef89e88941123b5c92799b1d9752a70c4f5ee45472b2ca1f27b62728d30"
+  },
+  "ui-run-third.zip": {
+    "bytes": 600033,
+    "sha256": "daab2b41371fdde641bb98b97ec01299f778ea6ce8f7c6cfa0eb15826ffedc60"
+  },
+  "upstream-latest-readonly.json": {
+    "bytes": 147,
+    "sha256": "53c115e08f72ff131a573d8691d6707ecace1cfc6d5e6c25e550040e44f5150d"
+  },
+  "windows-forge-full-fifth.zip": {
+    "bytes": 41572,
+    "sha256": "8e63f54fa3c6bbf5789d42739c91b58f534fabe0fb561da66ffb5601d3df32b0"
+  },
+  "screenshots/committed-zh-large.png": {
+    "bytes": 146857,
+    "sha256": "e01d1e2ba3feaad1968f821eb2bf0c4ca4fb3edccfa4e03f6a6f423803af6f45"
+  },
+  "screenshots/expired-zh-small.png": {
+    "bytes": 93795,
+    "sha256": "8fa5f68c344f53f544d33e582f0b87319b395292a81a6be0e3662169e3c798d4"
+  },
+  "screenshots/pending-en-narrow-down.png": {
+    "bytes": 72016,
+    "sha256": "af3442a6bd1c7cb89252264f57b09ec028f124327270b4ec5639584d7a24bd90"
+  },
+  "screenshots/pending-en-narrow-top.png": {
+    "bytes": 72568,
+    "sha256": "23c4604980fe1c1ec4e72c46efa4a93d96fdf81d50e411b49ce1228a1b3cbe25"
+  },
+  "screenshots/ready-zh-large.png": {
+    "bytes": 214301,
+    "sha256": "3701795276435a7d95e46ca39c51ed11236fb73cdeefbf66151888d87ecba76e"
+  }
+}

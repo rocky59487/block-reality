@@ -75,7 +75,7 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   CT_JOURNAL_BOOTSTRAP 已在同一鎖內讀回原領域ID，缺manifest而有資料時拒絕新建；
   提供有界不可變交易key清單、先核實未知寫入結果。5項新檔案測試及兩平台37次中斷/復原通過。
   詳 `evidence/CONSTRUCTION_TRANSACTIONS/JOURNAL_BOOTSTRAP/RESULTS.md`；製造metadata與首個軸向Forge入口進度見後續段落。
-  目前開發jar15,439,737B/SHA7cda56e40cc0…保留v1.5雙庫；沒有正式v1發布。
+  目前開發jar15,440,153B/SHA87bb2ed0d34c…保留v1.5雙庫；沒有正式v1發布。
 - CT_MANUFACTURED_METADATA 已用COMMITTED日誌重建永久製造ID、精確所有權、不可逆編輯/退休與整批undo資格。
   18項新測試、兩平台完整測試及37次中斷/復原通過；所有權與undo兩個可編譯反例被抓到。
   原236類別與引擎/資源逐位不變，只增加14個metadata類別。雙平台864次日誌成本操作內容一致；
@@ -112,8 +112,14 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   真Linux開發client對普通jar專服的首輪48項/修正版52項通過，每輪2個client JVM與8張原始圖；
   含三軸、取消、材料同步、箱子優先、保護取消、遺失回覆後跨client重啟的逐位相同確認重送。
   面板隨內容收合，終態移除重試並把鍵盤焦點交給完成；原始大視窗空白與翻譯守門首敗照存。
-  詳 `evidence/CONSTRUCTION_TRANSACTIONS/TRANSACTIONAL_PLACEMENT/RESULTS.md`；領域/actor/slot/
-  容量/expiry等額外實裝案例、Recorded成本及exact-head CI仍待補，尚未完成本單元全部判準。
+  後續普通jar边界首輪328項、逐actor容量守門加強版455項通過，含完整確認欄位、slot/NBT/
+  target變動、200tick過期、限流、64人容量、副手與最後一個材料；原生時鐘與admission未繞過。
+  真client第三輪46項/5圖通過：server EXPIRED保留舊紀錄，明確新預覽後另次確認才施工；
+  320×240GUI實際30px溢出可捲動，原生朗讀包括產品/軸向/用量/位置/狀態與焦點按鈕。
+  詳 `evidence/CONSTRUCTION_TRANSACTIONS/TRANSACTIONAL_PLACEMENT/BOUNDARIES_AND_NARRATION/RESULTS.md`。
+  六次計時新提交143–199ms/約7.1MB，僅Recorded，仍待優化；首個helper缺import編譯失敗照存。
+  額外capability/巢狀完整玩家資料/reentrant副作用仍待驗。587786b CI四工作成功/15原生SKIP，
+  最新來源56541f4已通過雙平台Forge完整測試，core逐位相同沿用；新版exact-head CI發布後核實。
   blueprint/undo/一般拆除所有權整理、高性能與v1保持開放；沒有Java物理補做。
 - NATIVE_VERDICT_API 已刪除只看數字的未使用影線API，公開利用率配色必須收原生overload旗標.
   37組顯示讀數不變，忽略旗標的可編譯反例被抓到；#128/6d1a0c2的4項CI通過、15原生步驟SKIP。

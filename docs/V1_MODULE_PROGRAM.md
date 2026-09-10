@@ -56,7 +56,7 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 
 最新交付已更新為v1.5，模組Main #126的契約同步已整合。本工作只消費來源42ba7eb9、
 契約5d4367f40de8的發布SDK；引擎倉未修改/建置/合併/發布。
-目前模組候選FOURTH為15,439,737B、SHA7cda56e40cc0…，保留同一v1.5雙平台庫。
+目前模組候選FIFTH為15,440,153B、SHA87bb2ed0d34c…，保留同一v1.5雙平台庫。
 核心487項、Forge152項：639登錄，Windows627PASS/12平台SKIP，Linux638PASS/1平台SKIP。
 `codex/transactional-placement`接續PR134，已實作單格BUILD與材料消耗、伺服器預覽/C2S確認、
 送出前持久保存的client重試、完整玩家/區塊barrier、提交後單次metadata/revision。
@@ -66,8 +66,13 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 驗證三軸、取消、鍵盤、材料同步、箱子優先、保護取消和丟失回覆後跨client重啟的精確重送。
 面板高度依內容收合，終態隱藏重試並移交完成焦點。來源、首敗與原始證據見
 `../evidence/CONSTRUCTION_TRANSACTIONS/TRANSACTIONAL_PLACEMENT/RESULTS.md`。
-這是單格呼叫者的進行中驗收；額外領域/actor/slot/capacity/expiry案例、Recorded成本及
-exact-head CI仍待補。完整CT-1..9/#12/#17、blueprint/undo/一般拆除所有權整理、高性能、
+後續普通jar邊界首輪328項、逐actor容量守門加強版455項通過，領域/actor/slot/NBT/target/
+expiry/rate/capacity與Count1/offhand都有直接實裝證據。真client第三輪46項/5圖通過，含
+server EXPIRED後明確新預覽與另次確認、320×240GUI實際溢出捲動和原生朗讀文字/焦點。
+新提交六次143–199ms與約7.1MB配置僅Recorded，尚待優化；額外capability/巢狀玩家資料/
+reentrant副作用仍待驗。新版來源56541f4雙平台Forge完整測試通過，core逐位相同沿用。
+詳 `../evidence/CONSTRUCTION_TRANSACTIONS/TRANSACTIONAL_PLACEMENT/BOUNDARIES_AND_NARRATION/RESULTS.md`。
+587786b的四項CI成功/15原生SKIP照存，新head發布後核實。完整CT-1..9/#12/#17、blueprint/undo/一般拆除所有權整理、高性能、
 Windows CM/N25、引擎權威動態消費與正式v1都保持開放。
 
 原v1.5換裝單元jar15,286,415B、SHA9d8cb6795e9c…的來源/授權/封裝/JNA及真安裝專服門檻1–5通過。
