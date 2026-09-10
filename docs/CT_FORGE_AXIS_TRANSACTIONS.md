@@ -52,6 +52,13 @@ floor, never lower an already higher revision or accept a result from the former
 revision. Coverage from committed owned cells augments the conservative known-cell
 index without forcing their chunks to load.
 
+Recovery clarification before the restart implementation is qualified: a verified
+ABORTED intent also retains its before-revision floor. Otherwise a prepared first
+transaction can roll back correctly once, then lose that public clock on the next
+restart. REJECTED request revisions confer no floor. The floor affects the host's
+public clock, not manufactured metadata order or ownership. Deferred chunk callbacks
+are bounded to65536 distinct chunks per dimension; overflow keeps the service closed.
+
 ## Participant schema and durability
 
 Cell resources have bounded canonical coordinates and exact vanilla block-state NBT.
