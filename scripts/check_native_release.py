@@ -17,13 +17,15 @@ def main():
     ap.add_argument('--release-dir',type=Path,required=True)
     ap.add_argument('--out',type=Path,required=True)
     ap.add_argument('--sums-sha256',required=True)
+    ap.add_argument('--version', default='1.3.0')
+    ap.add_argument('--source-commit', default='c90b448194b52b9c7b4a48dc049581d4b640d2d4')
     args=ap.parse_args();args.out.mkdir(parents=True,exist_ok=False)
     spec=importlib.util.spec_from_file_location('stage',Path(__file__).with_name('stage_release_natives.py'))
     stage=importlib.util.module_from_spec(spec);spec.loader.exec_module(stage)
-    revision='c90b448194b52b9c7b4a48dc049581d4b640d2d4';version='1.3.0'
+    revision=args.source_commit;version=args.version
     payloads,provenance=stage.verify_release(args.release_dir,version,revision,args.sums_sha256)
     assert len(provenance['libraries'])==2
-    asset='tectonic2-1.3.0-windows-x86_64.zip'
+    asset=f'tectonic2-{version}-windows-x86_64.zip'
     original=stage.sums((args.release_dir/'SHA256SUMS').read_bytes())
     with zipfile.ZipFile(args.release_dir/asset) as z:
         original_files={n:z.read(n) for n in z.namelist()}
@@ -60,7 +62,7 @@ def main():
             for n,b in files.items():z.writestr(n,b)
             if name=='DUPLICATE':z.writestr('provenance.json',files['provenance.json'])
         if name!='ASSET':hashes[asset]=stage.sha((directory/asset).read_bytes())
-        if name=='MISSING_PLATFORM':del hashes['tectonic2-1.3.0-linux-x86_64.zip']
+        if name=='MISSING_PLATFORM':del hashes[f'tectonic2-{version}-linux-x86_64.zip']
         inventory=''.join(h+'  '+n+'\n' for n,h in hashes.items()).encode()
         (directory/'SHA256SUMS').write_bytes(inventory)
         trusted='0'*64 if name=='ROOT' else stage.sha(inventory)

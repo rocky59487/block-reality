@@ -21,3 +21,5 @@ BSI833正常與334原生邊界/真C10回歸。原生開發庫重建，正式nati
 [#106](https://github.com/rocky59487/block-reality/pull/106)已分別補共用結果的各島保存、
 詞彙ID與遊戲輸入快照。本文件分支仍基於#103，只對位引擎；下一次整合先核對
 上述分支及其docs/V1_MODULE_PROGRAM.md，不另建重疊實作。本輪沒有checkout或重验它們。
+
+2026-09-10 接續：本地整合分支已納入#105/#106並驗兩平台自足候選jar，詳見 [NATIVE_CANDIDATE](NATIVE_CANDIDATE.md)。正式v1.3未替換。

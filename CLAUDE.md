@@ -26,20 +26,14 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 
 ### 現況（v0.4 進行中）
 
-**2026-09-10 模組限定 v1 推進**：使用者指示引擎另有人做，本工作只做模組（D-047）。
-總綱 `docs/V1_MODULE_PROGRAM.md`。已接 engine-assigned vocab ID、SI 產品目錄與不可變
-GameWorldSnapshot；完整每格 axis/rotation/joint、六面 ground 觀測整理、載重/revision。
-Windows core350/Forge82=404PASS/28SKIP；Linux真JNA選集18/18；三個輸入故障臂具名FAIL。
-結果 `evidence/GAME_INPUT/RESULTS.md`。這是輸入消費層，Forge採集/遊戲仍待換裝。
-下一步只改模組 GAME_RUNTIME；不做引擎 frame_v2，不在Java寫剛體/碰撞/物理後處理。
-
-**最新接續（2026-09-09）**：沿模組 #103 / 引擎 #37 的 opt-in BSI eigen，
-共用 AnalysisResult 現在保留完整不可變 IslandBuckling 列表；直接映射 BsiBuckling，
-不另寫聚合器、不變更契約/pin、不重算Critical。Windows core339/Forge81，394PASS/26SKIP；
-Linux JNA相關16項全過（含真eigen/混合世界），真語料C10在內9PASS/1SKIP。
-判準/結果 docs/BUCKLING_RESULT_RETENTION.md、evidence/BUCKLING_RETENTION/RESULTS.md。
-下一步為frame_v2同快照、雙平台native封裝與混合世界HUD；遊戲仍SidecarClient。
-
+**2026-09-10 整合候選包**：模組責任仍依D-047與docs/V1_MODULE_PROGRAM.md。
+已接#105的完整IslandBuckling與#106的GameWorldSnapshot/引擎詞彙ID，未在Java重算力學。
+本分支codex/mc66a-native-package整合兩者與#107文件，使用乾淨引擎42e10f5的Win/Linux自足庫。
+Windows core350/Forge82=420PASS/12平台SKIP，Linux真JNA18/18；同一jar兩平台48frame×3
+與兩JVM解包競爭通過。判準docs/MC66A_NATIVE_PACKAGE.md、產物/來源見docs/NATIVE_CANDIDATE.md。
+原各分支首敗與故障證據留在BUCKLING_RETENTION/GAME_INPUT，沒有改寫。
+正式引擎v1.3/模組0.4.0-dev未發布新版；候選以buildSha42e10f5/fullSHA區分。
+下一步為混合世界局部Critical HUD、Forge觀測採集與GAME_RUNTIME；遊戲仍SidecarClient。
 
 - **已落地**：`contract/`（BSI v1 + 共用 host，逐位鏡像 tectonic2）；Java 側 `mod/core/.../bsi/`（frame/header/codec）
   與 `.../engine/`（`InProcessEngine` + JNA 綁定）；N19–N24 判準已凍；CI 跑契約、打包、跨倉漂移。
@@ -206,4 +200,4 @@ headers/solve/analyze新增EigenBuckling budget選項，舊簽章保留。core33
 原13+新2真JNA全部執行，八Java故障有具名反例。contract55檔/hash4b11cc738790與引擎同步。
 目前開發庫已驗，正式v1.3 jar未更新；遊戲仍Sidecar，HUD hasFactor分支尚需局部critical明示。
 引擎frame_v2 eigen已local_verified：504項/十故障臂三箱DET3、60份舊frame逐位，見docs/MC66A_FRAME_V2.md。
-下一單元更新兩平台native包與來源鏈/真JNA，再接混合世界局部Critical HUD/GAME_SWAP；BUCK_MEMBERS保持active。
+兩平台native候選包與來源鏈/真JNA已在MC66A_NATIVE驗證；下一段接混合世界局部Critical HUD/GAME_RUNTIME。

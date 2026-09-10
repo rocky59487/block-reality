@@ -54,6 +54,8 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 
 ## 現況
 
-GAME_INPUT 的純 Java 輸入/詞彙/真 JNA 入口已驗（`evidence/GAME_INPUT/RESULTS.md`）；
-Forge 軸向/接觸採集與 GAME_RUNTIME 尚待接線。正式引擎仍 v1.3，開發配對為引擎 #37
-`95a03e82` 與契約 `4b11cc738790…`。沒有新遊戲版本發布。
+GAME_INPUT 的純 Java 輸入/詞彙/真 JNA 入口已驗（evidence/GAME_INPUT/RESULTS.md）；
+本地整合分支codex/mc66a-native-package接#105/#106，更新候選原生包並完成兩平台真jar。
+引擎來源42e10f5、契約4b11cc738790…；Windows420PASS/12平台SKIP，Linux真JNA18/18。
+精確DLL/SO/jar/root checksum與重現方式見docs/NATIVE_CANDIDATE.md。
+正式v1.3與遊戲版本沒有更新；Forge軸向/接觸採集、局部Critical HUD及GAME_RUNTIME仍待接線。

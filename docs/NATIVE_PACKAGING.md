@@ -1,5 +1,7 @@
 # v1.3 原生庫 jar 封裝
 
+新版開發候選包與MC66a eigen資格見 [NATIVE_CANDIDATE](NATIVE_CANDIDATE.md)；下文保留正式v1.3的重現方式。
+
 2026-09-09，consumer 0.4.0-dev。此流程產生含正式 Windows/Linux x86_64 原生庫的開發 jar。
 Minecraft 遊戲迴圈仍為 SidecarClient；此 jar 尚未通過 GAME_SWAP/N25 真世界驗收，不是新的遊戲發布。
 引擎正式版本仍 [v1.3](https://github.com/rocky59487/tectonic2/releases/tag/v1.3)，不宣稱 v2/v4 完成。
