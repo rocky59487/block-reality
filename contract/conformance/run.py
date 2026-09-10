@@ -25,7 +25,7 @@ import argparse, ast, base64, ctypes, glob, hashlib, json, math, mmap, os, re, s
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONTRACT = os.path.dirname(HERE)
-MECHANICS_FAMILIES = {"C-4", "C-5", "C-6", "C-7", "C-8", "C-10", "C-12", "C-13"}
+MECHANICS_FAMILIES = {"C-4", "C-5", "C-6", "C-7", "C-8", "C-10", "C-12", "C-13", "C-14"}
 
 # ----------------------------------------------------------------------------- contract
 def load_schema():
