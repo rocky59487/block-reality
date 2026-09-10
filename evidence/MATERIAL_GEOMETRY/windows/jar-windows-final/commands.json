@@ -1,0 +1,56 @@
+{
+  "jar-0": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar",
+      "build\\material-geometry\\jar-windows-final\\cache",
+      "build\\material-geometry\\jar-windows-final\\inputs",
+      "build\\material-geometry\\jar-windows-final\\jar-0"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gYnVpbGRcbWF0ZXJpYWwtZ2VvbWV0cnlcamFyLXdpbmRvd3MtZmluYWxcY2FjaGVcbGliXHdpbmRvd3MteDg2XzY0XDk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWFcYnNpX3RlY3RvbmljLmRsbCAoMzE3Njk2MDAgYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0xLjMuMCs0MmUxMGY1LCBjb250cmFjdCA0YjExY2M3Mzg3OTChSykNClBBU1MgamFyIHJlcGxheSA0OCBmcmFtZXM7IGJ1aWxkXG1hdGVyaWFsLWdlb21ldHJ5XGphci13aW5kb3dzLWZpbmFsXGNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFw5NzYxZDczNTg2Mjc3NjE0YTU2MTMyZWMzNDkyZDMyNGFlODNjODQ4OTA2OGMwMGMyNjZjM2Q1NmY1MzBhY2VhXGJzaV90ZWN0b25pYy5kbGwgc2hhMjU2PTk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWENCg==",
+    "stdout_sha256": "59d5442be41099f06ae5079581d2fcbfdf8bd273b9eed14ce1dd8d657d6954ab",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "jar-1": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar",
+      "build\\material-geometry\\jar-windows-final\\cache",
+      "build\\material-geometry\\jar-windows-final\\inputs",
+      "build\\material-geometry\\jar-windows-final\\jar-1"
+    ],
+    "exit": 0,
+    "stdout_base64": "UEFTUyBqYXIgcmVwbGF5IDQ4IGZyYW1lczsgYnVpbGRcbWF0ZXJpYWwtZ2VvbWV0cnlcamFyLXdpbmRvd3MtZmluYWxcY2FjaGVcbGliXHdpbmRvd3MteDg2XzY0XDk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWFcYnNpX3RlY3RvbmljLmRsbCBzaGEyNTY9OTc2MWQ3MzU4NjI3NzYxNGE1NjEzMmVjMzQ5MmQzMjRhZTgzYzg0ODkwNjhjMDBjMjY2YzNkNTZmNTMwYWNlYQ0K",
+    "stdout_sha256": "2c2405911a4a2765297ed3fd9914bd4854f5ab9986a062d0b92a931c71007688",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "jar-2": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar",
+      "build\\material-geometry\\jar-windows-final\\cache",
+      "build\\material-geometry\\jar-windows-final\\inputs",
+      "build\\material-geometry\\jar-windows-final\\jar-2"
+    ],
+    "exit": 0,
+    "stdout_base64": "UEFTUyBqYXIgcmVwbGF5IDQ4IGZyYW1lczsgYnVpbGRcbWF0ZXJpYWwtZ2VvbWV0cnlcamFyLXdpbmRvd3MtZmluYWxcY2FjaGVcbGliXHdpbmRvd3MteDg2XzY0XDk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWFcYnNpX3RlY3RvbmljLmRsbCBzaGEyNTY9OTc2MWQ3MzU4NjI3NzYxNGE1NjEzMmVjMzQ5MmQzMjRhZTgzYzg0ODkwNjhjMDBjMjY2YzNkNTZmNTMwYWNlYQ0K",
+    "stdout_sha256": "2c2405911a4a2765297ed3fd9914bd4854f5ab9986a062d0b92a931c71007688",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

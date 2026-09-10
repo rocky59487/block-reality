@@ -1,0 +1,5 @@
+{
+  "parent": "blockreality:block/concrete_beam",
+  "loader": "blockreality:product",
+  "undeclared": true
+}

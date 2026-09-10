@@ -1,0 +1,78 @@
+{
+  "request": {
+    "id": 5,
+    "action": "interact",
+    "name": "mg-cycle-y"
+  },
+  "scope": "opt-in real client; observations or programmatic vanilla interaction; no result injection",
+  "before": {
+    "shift": true,
+    "mainHand": "minecraft:air",
+    "hitType": "BLOCK",
+    "position": [
+      45.0,
+      200.0,
+      44.0
+    ],
+    "hitLocation": [
+      46.0,
+      200.40120186981537,
+      44.5
+    ],
+    "face": "east",
+    "block": "blockreality:steel_beam",
+    "axis": "x",
+    "shape": [
+      0.0,
+      0.3,
+      0.4,
+      1.0,
+      0.7,
+      0.6
+    ],
+    "collision": [
+      0.0,
+      0.3,
+      0.4,
+      1.0,
+      0.7,
+      0.6
+    ]
+  },
+  "entryPoint": "MultiPlayerGameMode.useItemOn(real mc.hitResult)",
+  "returned": "SUCCESS",
+  "afterClientPrediction": {
+    "shift": true,
+    "mainHand": "minecraft:air",
+    "hitType": "BLOCK",
+    "position": [
+      45.0,
+      200.0,
+      44.0
+    ],
+    "hitLocation": [
+      46.0,
+      200.40120186981537,
+      44.5
+    ],
+    "face": "east",
+    "block": "blockreality:steel_beam",
+    "axis": "x",
+    "shape": [
+      0.0,
+      0.3,
+      0.4,
+      1.0,
+      0.7,
+      0.6
+    ],
+    "collision": [
+      0.0,
+      0.3,
+      0.4,
+      1.0,
+      0.7,
+      0.6
+    ]
+  }
+}

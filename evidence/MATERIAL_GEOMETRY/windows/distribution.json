@@ -1,0 +1,53 @@
+{
+  "jar": {
+    "bytes": 15216948,
+    "sha256": "8e587a715ebd3e169e4a0e6afa9d22cf60cac400eb7093aecf76b1a07f5c3c7a"
+  },
+  "native_bytes_identical_to_INS": [
+    "blockreality-engine/linux-x86_64/libbsi_tectonic.so",
+    "blockreality-engine/windows-x86_64/bsi_tectonic.dll"
+  ],
+  "changed_jar_entries": [
+    "assets/blockreality/blockstates/brick_pier.json",
+    "assets/blockreality/blockstates/concrete_beam.json",
+    "assets/blockreality/blockstates/concrete_slab.json",
+    "assets/blockreality/blockstates/concrete_slab_150.json",
+    "assets/blockreality/blockstates/steel_beam.json",
+    "assets/blockreality/blockstates/steel_beam_100x200.json",
+    "assets/blockreality/blockstates/steel_beam_150x300.json",
+    "assets/blockreality/blockstates/steel_plate.json",
+    "assets/blockreality/blockstates/timber_beam.json",
+    "assets/blockreality/models/block/brick_pier.json",
+    "assets/blockreality/models/block/brick_pier_undeclared.json",
+    "assets/blockreality/models/block/concrete_beam.json",
+    "assets/blockreality/models/block/concrete_beam_undeclared.json",
+    "assets/blockreality/models/block/concrete_slab.json",
+    "assets/blockreality/models/block/concrete_slab_150.json",
+    "assets/blockreality/models/block/concrete_slab_150_undeclared.json",
+    "assets/blockreality/models/block/concrete_slab_undeclared.json",
+    "assets/blockreality/models/block/steel_beam.json",
+    "assets/blockreality/models/block/steel_beam_100x200.json",
+    "assets/blockreality/models/block/steel_beam_100x200_undeclared.json",
+    "assets/blockreality/models/block/steel_beam_150x300.json",
+    "assets/blockreality/models/block/steel_beam_150x300_undeclared.json",
+    "assets/blockreality/models/block/steel_beam_undeclared.json",
+    "assets/blockreality/models/block/steel_plate.json",
+    "assets/blockreality/models/block/steel_plate_undeclared.json",
+    "assets/blockreality/models/block/timber_beam.json",
+    "assets/blockreality/models/block/timber_beam_undeclared.json",
+    "com/blockreality/core/engine/ProductForm$Box.class",
+    "com/blockreality/core/engine/ProductForm.class",
+    "com/blockreality/core/render/BeamSurfacePatch.class",
+    "com/blockreality/impl/block/StructuralBlock$1.class",
+    "com/blockreality/impl/block/StructuralBlock$Axis.class",
+    "com/blockreality/impl/block/StructuralBlock.class",
+    "com/blockreality/impl/client/ProductModelLoader.class",
+    "com/blockreality/impl/client/StressSurfaceRenderer$1.class",
+    "com/blockreality/impl/client/StressSurfaceRenderer.class"
+  ],
+  "archive": {
+    "file": "blockreality-0.4.0-dev-material-geometry-candidate.zip",
+    "bytes": 15103538,
+    "sha256": "4f1dbb83901df2f8e60e3e3eca26fe8b3a3f50f2a568fd2768decc2f3869ab78"
+  }
+}

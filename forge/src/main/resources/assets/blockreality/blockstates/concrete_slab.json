@@ -1,5 +1,19 @@
 {
   "variants": {
-    "": { "model": "blockreality:block/concrete_slab" }
+    "axis=x": {
+      "model": "blockreality:block/concrete_slab",
+      "y": 90
+    },
+    "axis=y": {
+      "model": "blockreality:block/concrete_slab",
+      "x": 90,
+      "y": 90
+    },
+    "axis=z": {
+      "model": "blockreality:block/concrete_slab"
+    },
+    "axis=undeclared": {
+      "model": "blockreality:block/concrete_slab_undeclared"
+    }
   }
 }

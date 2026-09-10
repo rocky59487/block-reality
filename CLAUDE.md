@@ -40,6 +40,14 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   server守門及重啟讀數/原生快取恢復通過，類別實際來自mods/中的jar。最終只修mods.toml舊介紹，
   204類別與兩庫bytes不變；jar15,203,634B、SHA7bdfce5d1581…，安裝文字同步改正。
   詳 `evidence/INSTALLED_NATIVE_SERVER/RESULTS.md`；Windows/真安裝客戶端、材質方向與v1仍待驗。
+- MATERIAL_GEOMETRY 已使4種矩形產品依宣告尺寸呈現，模型/目標/碰撞框共用bounds，
+  X/Y/Z端面與未宣告警示可見，原生掃描保留寬深與站點不連續。Java不增加力學/運動。
+  真Linux客戶端127項模型、14項原版入口互動、原16圖/45項守門與6張補充圖通過。
+  最終528登錄：Windows516PASS/12平台SKIP、Linux527PASS/1平台SKIP；3個可編譯反例被抓到。
+  jar15,216,948B/SHA8e587a715ebd…帶原42e10f5雙庫；207class/2負向臂與bundle9反例通過。
+  Windows首個直連/jar逐位比較因兩程序BLAS設定不同而失敗，設定一致後48frame×3通過；
+  首次只改Python環境仍失敗，後以啟動環境統一測試driver。原始回覆/失敗照存。
+  詳 evidence/MATERIAL_GEOMETRY；panel仍是材料格，Windows CM/N25/FPS/動態仍未接受。
 - `GAME_INPUT` 已接 engine-assigned vocabulary ID、SI 目錄與不可變 GameWorldSnapshot。
 - `GAME_RUNTIME` 已將 Forge 採集→worker→apply 換為真正的 BSI/JNA 原生 session。
   玩家宣告 axis；觀測六面 sturdy 接觸為 ground；舊方塊未宣告要明示拒絕。
@@ -47,8 +55,8 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   native 工作若不返回，Java 不能強殺；cleanup 僅在 worker/daemon，D-044 崩潰代價仍成立。
 - 生產 SidecarClient/SidecarProcess/SidecarConfig/ShmRegion 已退到 test；NoSubprocess ALLOWED={}。
   預設 jar 無 exe、無 process launcher；Gradle 已拒絕 executable 封裝。
-- Windows core412/Forge109：521登錄、509PASS、12平台SKIP；Linux520PASS、1平台SKIP。
-  19項 native 相關全部執行。新庫Linux真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
+- Windows core419/Forge109：528登錄、516PASS、12平台SKIP；Linux527PASS、1平台SKIP。
+  20項 native 相關全部執行。新庫Linux真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
   完整結果 `evidence/GAME_RUNTIME/RESULTS.md`，首敗保留、三故障臂具名咬合。
 - 全部失去支承時原生只回 SOLVE_FAILED；Java 保留拒絕，不能從 message 捏造 MECHANISM。
   高性能、全機構 typed 展示、真客戶端 N25 尚未驗收。

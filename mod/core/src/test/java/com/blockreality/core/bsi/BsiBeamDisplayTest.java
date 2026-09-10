@@ -117,6 +117,23 @@ class BsiBeamDisplayTest {
         assertEquals(2,thin.get(0).stream().filter(v->v.positionMm().x()==0 && v.positionMm().z()==0).findFirst().orElseThrow().sigmaMpa());
         assertEquals(32,thin.get(1).stream().filter(v->v.positionMm().x()==2e-8 && v.positionMm().z()==0).findFirst().orElseThrow().sigmaMpa());
     }
+    @Test void unequalVisualExtentsRetainIndependentNativeFacesAndBothSidesOfAJump() {
+        var f = sample().display().orElseThrow();
+        // 200 mm depth half-extent and 100 mm width half-extent: explicit native face values.
+        var tile = List.of(new Vec3d(3000, 64700, -3500), new Vec3d(4000, 64700, -3500),
+                new Vec3d(4000, 64500, -3400), new Vec3d(3000, 64500, -3400));
+        var parts = BeamSurfacePatch.sample(f, tile, 200, 100);
+        assertEquals(2, parts.size());
+        for (int side = 0; side < 2; side++) for (var v : parts.get(side)) if (v.positionMm().x() == 3500) {
+            double expected = v.positionMm().y() == 64700 ? (side == 0 ? 12 : 22) : (side == 0 ? 16 : 26);
+            assertEquals(expected, v.sigmaMpa(), 1e-12, "the Y/Z face values and station sides cannot be swapped");
+        }
+        assertEquals(BeamSurfacePatch.sample(f, tile, 500), BeamSurfacePatch.sample(f, tile, 500, 500));
+        for (double bad : new double[]{0, -1, Double.NaN, Double.POSITIVE_INFINITY}) {
+            assertThrows(IllegalArgumentException.class, () -> BeamSurfacePatch.sample(f, tile, bad, 100));
+            assertThrows(IllegalArgumentException.class, () -> BeamSurfacePatch.sample(f, tile, 200, bad));
+        }
+    }
     @Test void nativeVerdictNeverDependsOnDisplayedDc() {
         for(int flag:new int[]{0,1}) {
             byte[] bytes=fixture();bytes[154]=(byte)flag;var m=decode(bytes);

@@ -1,6 +1,12 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/block",
+  "loader": "blockreality:product",
+  "material": "concrete",
+  "section": "concrete_slab_200",
   "textures": {
-    "all": "minecraft:block/smooth_stone"
+    "side": "minecraft:block/smooth_stone",
+    "end": "minecraft:block/polished_andesite",
+    "particle": "#side",
+    "warning": "minecraft:block/yellow_concrete"
   }
 }

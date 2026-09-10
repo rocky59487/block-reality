@@ -1,0 +1,14 @@
+x actual clicked face: PASS
+x server revision advanced: PASS
+y actual clicked face: PASS
+y server revision advanced: PASS
+z actual clicked face: PASS
+z server revision advanced: PASS
+x actual empty-hand sneak target: PASS
+y server cycle revision advanced: PASS
+y actual empty-hand sneak target: PASS
+z server cycle revision advanced: PASS
+z actual empty-hand sneak target: PASS
+x server cycle revision advanced: PASS
+real ray passes empty part of beam cell: PASS
+real ray targets visible beam section: PASS

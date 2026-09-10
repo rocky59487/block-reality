@@ -17,9 +17,8 @@ import net.minecraft.util.StringRepresentable;
  * the boundary, and a block that cached any of it would immediately become a second,
  * disagreeing source of truth.
  *
- * <p>The section token is also what makes D-004 real: section is decoupled from block
- * size. A one-metre cube declares a 200x400 section, and the engine believes the token,
- * not the cube.
+ * <p>One metre of a declared product occupies each material cell. Presentation bounds
+ * come from the product catalogue; engine input still uses tokens, never the voxel shape.
  */
 public class StructuralBlock extends Block {
 
@@ -40,12 +39,34 @@ public class StructuralBlock extends Block {
 
     private final String materialToken;
     private final String sectionToken;
+    private final com.blockreality.core.engine.ProductForm[] forms;
+    private final net.minecraft.world.phys.shapes.VoxelShape[] shapes;
 
     public StructuralBlock(String materialToken, String sectionToken, BlockBehaviour.Properties props) {
         super(props);
         this.materialToken = materialToken;
         this.sectionToken = sectionToken;
+        forms = new com.blockreality.core.engine.ProductForm[4];
+        shapes = new net.minecraft.world.phys.shapes.VoxelShape[4];
+        var geometry = com.blockreality.core.engine.GameVocabulary.geometry(materialToken, sectionToken);
+        for (Axis axis : Axis.values()) {
+            var form = com.blockreality.core.engine.ProductForm.of(geometry, axis.ordinal() - 1);
+            forms[axis.ordinal()] = form;
+            var b = form.box();
+            shapes[axis.ordinal()] = Block.box(b.minX()*16, b.minY()*16, b.minZ()*16,
+                    b.maxX()*16, b.maxY()*16, b.maxZ()*16);
+        }
         registerDefaultState(stateDefinition.any().setValue(AXIS, Axis.UNDECLARED));
+    }
+
+    public com.blockreality.core.engine.ProductForm form(BlockState state) {
+        return forms == null ? com.blockreality.core.engine.ProductForm.UNRESOLVED : forms[state.getValue(AXIS).ordinal()];
+    }
+
+    @Override public net.minecraft.world.phys.shapes.VoxelShape getShape(BlockState state,
+            net.minecraft.world.level.BlockGetter level, net.minecraft.core.BlockPos pos,
+            net.minecraft.world.phys.shapes.CollisionContext context) {
+        return shapes == null ? net.minecraft.world.phys.shapes.Shapes.block() : shapes[state.getValue(AXIS).ordinal()];
     }
 
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {

@@ -1,0 +1,210 @@
+{
+  "jar-0": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar",
+      "build\\material-geometry\\jar-windows-startup-fixed\\cache",
+      "build\\material-geometry\\jar-windows-startup-fixed\\inputs",
+      "build\\material-geometry\\jar-windows-startup-fixed\\jar-0"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gYnVpbGRcbWF0ZXJpYWwtZ2VvbWV0cnlcamFyLXdpbmRvd3Mtc3RhcnR1cC1maXhlZFxjYWNoZVxsaWJcd2luZG93cy14ODZfNjRcOTc2MWQ3MzU4NjI3NzYxNGE1NjEzMmVjMzQ5MmQzMjRhZTgzYzg0ODkwNjhjMDBjMjY2YzNkNTZmNTMwYWNlYVxic2lfdGVjdG9uaWMuZGxsICgzMTc2OTYwMCBieXRlcywgZW5naW5lIHRlY3RvbmljLTEuMy4wKzQyZTEwZjUsIGNvbnRyYWN0IDRiMTFjYzczODc5MKFLKQ0KUEFTUyBqYXIgcmVwbGF5IDQ4IGZyYW1lczsgYnVpbGRcbWF0ZXJpYWwtZ2VvbWV0cnlcamFyLXdpbmRvd3Mtc3RhcnR1cC1maXhlZFxjYWNoZVxsaWJcd2luZG93cy14ODZfNjRcOTc2MWQ3MzU4NjI3NzYxNGE1NjEzMmVjMzQ5MmQzMjRhZTgzYzg0ODkwNjhjMDBjMjY2YzNkNTZmNTMwYWNlYVxic2lfdGVjdG9uaWMuZGxsIHNoYTI1Nj05NzYxZDczNTg2Mjc3NjE0YTU2MTMyZWMzNDkyZDMyNGFlODNjODQ4OTA2OGMwMGMyNjZjM2Q1NmY1MzBhY2VhDQo=",
+    "stdout_sha256": "2232821d991b7cd548c3e464e2ca1471d6087bab9f4b95ed9be8def27763abb2",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "jar-1": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar",
+      "build\\material-geometry\\jar-windows-startup-fixed\\cache",
+      "build\\material-geometry\\jar-windows-startup-fixed\\inputs",
+      "build\\material-geometry\\jar-windows-startup-fixed\\jar-1"
+    ],
+    "exit": 0,
+    "stdout_base64": "UEFTUyBqYXIgcmVwbGF5IDQ4IGZyYW1lczsgYnVpbGRcbWF0ZXJpYWwtZ2VvbWV0cnlcamFyLXdpbmRvd3Mtc3RhcnR1cC1maXhlZFxjYWNoZVxsaWJcd2luZG93cy14ODZfNjRcOTc2MWQ3MzU4NjI3NzYxNGE1NjEzMmVjMzQ5MmQzMjRhZTgzYzg0ODkwNjhjMDBjMjY2YzNkNTZmNTMwYWNlYVxic2lfdGVjdG9uaWMuZGxsIHNoYTI1Nj05NzYxZDczNTg2Mjc3NjE0YTU2MTMyZWMzNDkyZDMyNGFlODNjODQ4OTA2OGMwMGMyNjZjM2Q1NmY1MzBhY2VhDQo=",
+    "stdout_sha256": "e62d8a947ab1d05d6510e1f25e288e25398e81a96c7f865b0f2137be45ebe0a0",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "jar-2": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar",
+      "build\\material-geometry\\jar-windows-startup-fixed\\cache",
+      "build\\material-geometry\\jar-windows-startup-fixed\\inputs",
+      "build\\material-geometry\\jar-windows-startup-fixed\\jar-2"
+    ],
+    "exit": 0,
+    "stdout_base64": "UEFTUyBqYXIgcmVwbGF5IDQ4IGZyYW1lczsgYnVpbGRcbWF0ZXJpYWwtZ2VvbWV0cnlcamFyLXdpbmRvd3Mtc3RhcnR1cC1maXhlZFxjYWNoZVxsaWJcd2luZG93cy14ODZfNjRcOTc2MWQ3MzU4NjI3NzYxNGE1NjEzMmVjMzQ5MmQzMjRhZTgzYzg0ODkwNjhjMDBjMjY2YzNkNTZmNTMwYWNlYVxic2lfdGVjdG9uaWMuZGxsIHNoYTI1Nj05NzYxZDczNTg2Mjc3NjE0YTU2MTMyZWMzNDkyZDMyNGFlODNjODQ4OTA2OGMwMGMyNjZjM2Q1NmY1MzBhY2VhDQo=",
+    "stdout_sha256": "e62d8a947ab1d05d6510e1f25e288e25398e81a96c7f865b0f2137be45ebe0a0",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "faults": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "faults",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar",
+      "build\\material-geometry\\jar-windows-startup-fixed\\fault-cache",
+      "build\\material-geometry\\jar-windows-startup-fixed\\inputs",
+      "build\\material-geometry\\jar-windows-startup-fixed\\faults"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gYnVpbGRcbWF0ZXJpYWwtZ2VvbWV0cnlcamFyLXdpbmRvd3Mtc3RhcnR1cC1maXhlZFxmYXVsdC1jYWNoZVxsaWJcd2luZG93cy14ODZfNjRcOTc2MWQ3MzU4NjI3NzYxNGE1NjEzMmVjMzQ5MmQzMjRhZTgzYzg0ODkwNjhjMDBjMjY2YzNkNTZmNTMwYWNlYVxic2lfdGVjdG9uaWMuZGxsICgzMTc2OTYwMCBieXRlcywgZW5naW5lIHRlY3RvbmljLTEuMy4wKzQyZTEwZjUsIGNvbnRyYWN0IDRiMTFjYzczODc5MKFLKQ0KYnVuZGxlZCBlbmdpbmUgY29udHJhY3QgZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZiAhPSBtb2QgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMQ0KYnVuZGxlZCBlbmdpbmUgY29udHJhY3QgZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZiAhPSBtb2QgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMQ0KdW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gYnVpbGRcbWF0ZXJpYWwtZ2VvbWV0cnlcamFyLXdpbmRvd3Mtc3RhcnR1cC1maXhlZFxmYXVsdC1jYWNoZVxsaWJcd2luZG93cy14ODZfNjRcZmMzNzg3NDhmZWUzNzEwYmYzZTgzNWE1OGM5MzM0MWNlMDFjYzljOGU4OWVmMGU5Y2Q5NmQ3YmU0NTg2ZGVhNFxic2lfdGVjdG9uaWMuZGxsICgzMTc2OTYwMCBieXRlcywgZW5naW5lIHRlY3RvbmljLTEuMy4wKzQyZTEwZjUsIGNvbnRyYWN0IDRiMTFjYzczODc5MKFLKQ0KdW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gYnVpbGRcbWF0ZXJpYWwtZ2VvbWV0cnlcamFyLXdpbmRvd3Mtc3RhcnR1cC1maXhlZFxmYXVsdC1jYWNoZVxsaWJcd2luZG93cy14ODZfNjRcOTc2MWQ3MzU4NjI3NzYxNGE1NjEzMmVjMzQ5MmQzMjRhZTgzYzg0ODkwNjhjMDBjMjY2YzNkNTZmNTMwYWNlYVxic2lfdGVjdG9uaWMuZGxsICgzMTc2OTYwMCBieXRlcywgZW5naW5lIHRlY3RvbmljLTEuMy4wKzQyZTEwZjUsIGNvbnRyYWN0IDRiMTFjYzczODc5MKFLKQ0KY291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5pby5JT0V4Y2VwdGlvbjogYnVuZGxlZCBic2lfdGVjdG9uaWMuZGxsIGlzIDMxNzY5NjAwIGJ5dGVzIC8gZmMzNzg3NDhmZWUzNzEwYmYzZTgzNWE1OGM5MzM0MWNlMDFjYzljOGU4OWVmMGU5Y2Q5NmQ3YmU0NTg2ZGVhNCwgbWFuaWZlc3Qgc2F5cyAzMTc2OTYwMCAvIDk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWENCmNvdWxkIG5vdCB1bnBhY2sgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnk6IGphdmEuaW8uSU9FeGNlcHRpb246IGJ1bmRsZWQgYnNpX3RlY3RvbmljLmRsbCBpcyAzMTc2OTU5OSBieXRlcyAvIDNlZjg3ZGQ0MzgyYmFmYzU4ODA1YjIzZGZiOWEyNWM1MzljMzQxNDY1YmU2OTA3MGQxOWFhNzg2NjQ5MDNmZWIsIG1hbmlmZXN0IHNheXMgMzE3Njk2MDAgLyA5NzYxZDczNTg2Mjc3NjE0YTU2MTMyZWMzNDkyZDMyNGFlODNjODQ4OTA2OGMwMGMyNjZjM2Q1NmY1MzBhY2VhDQpjb3VsZCBub3QgdW5wYWNrIHRoZSBidW5kbGVkIGVuZ2luZSBsaWJyYXJ5OiBqYXZhLmlvLklPRXhjZXB0aW9uOiBidW5kbGVkIGJzaV90ZWN0b25pYy5kbGwgZXhjZWVkcyBtYW5pZmVzdCBzaXplIDMxNzY5NjAwDQpjb3VsZCBub3QgdW5wYWNrIHRoZSBidW5kbGVkIGVuZ2luZSBsaWJyYXJ5OiBqYXZhLmlvLkludGVycnVwdGVkSU9FeGNlcHRpb246IGluamVjdGVkIHJlYWwtcmVzb3VyY2UgaW50ZXJydXB0aW9uDQpQQVNTIHJlYWwgYnl0ZXM6IGNhY2hlIGFkb3B0aW9uLCBjb250cmFjdCBwcmVjaGVjaywgdmVyc2lvbiByZXRlbnRpb24sIGNvcnJ1cHRpb24gcmVwYWlyLCBoYXNoL3Nob3J0L292ZXJsb25nL2ludGVycnVwdGlvbiwgdGVtcG9yYXJ5IGNsZWFudXANCg==",
+    "stdout_sha256": "129a858621095c6a4a0e01c3ee51f7bcc4f47c072b1146ceb50dd74f3a10f949",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deny-acl": {
+    "command": [
+      "icacls",
+      "build\\material-geometry\\jar-windows-startup-fixed\\denied-cache",
+      "/deny",
+      "ROCKYLAPTOP\\wmc02:(OI)(CI)(W)"
+    ],
+    "exit": 0,
+    "stdout_base64": "cHJvY2Vzc2VkIGZpbGU6IGJ1aWxkXG1hdGVyaWFsLWdlb21ldHJ5XGphci13aW5kb3dzLXN0YXJ0dXAtZml4ZWRcZGVuaWVkLWNhY2hlDQpTdWNjZXNzZnVsbHkgcHJvY2Vzc2VkIDEgZmlsZXM7IEZhaWxlZCBwcm9jZXNzaW5nIDAgZmlsZXMNCg==",
+    "stdout_sha256": "647678bfa61d61d810ed0fd0e5a542e127662dddefceb78f621c892015739ce1",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "denied": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "denied",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar",
+      "build\\material-geometry\\jar-windows-startup-fixed\\denied-cache",
+      "build\\material-geometry\\jar-windows-startup-fixed\\inputs",
+      "build\\material-geometry\\jar-windows-startup-fixed\\denied"
+    ],
+    "exit": 0,
+    "stdout_base64": "Y291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5uaW8uZmlsZS5BY2Nlc3NEZW5pZWRFeGNlcHRpb246IEM6XFVzZXJzXHdtYzAyXERlc2t0b3BcYmxvY2stcmVhbGl0eVxidWlsZFxtYXRlcmlhbC1nZW9tZXRyeVxqYXItd2luZG93cy1zdGFydHVwLWZpeGVkXGRlbmllZC1jYWNoZVxsaWINClBBU1MgZGVuaWVkIGNhY2hlDQo=",
+    "stdout_sha256": "ce179e3785c09ffff8df6df7066a7507417aafaa23f53704da4d25daef7992d8",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "restore-acl": {
+    "command": [
+      "icacls",
+      "build\\material-geometry\\jar-windows-startup-fixed\\denied-cache",
+      "/remove:d",
+      "ROCKYLAPTOP\\wmc02"
+    ],
+    "exit": 0,
+    "stdout_base64": "cHJvY2Vzc2VkIGZpbGU6IGJ1aWxkXG1hdGVyaWFsLWdlb21ldHJ5XGphci13aW5kb3dzLXN0YXJ0dXAtZml4ZWRcZGVuaWVkLWNhY2hlDQpTdWNjZXNzZnVsbHkgcHJvY2Vzc2VkIDEgZmlsZXM7IEZhaWxlZCBwcm9jZXNzaW5nIDAgZmlsZXMNCg==",
+    "stdout_sha256": "647678bfa61d61d810ed0fd0e5a542e127662dddefceb78f621c892015739ce1",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "race-0": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "race",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar",
+      "build\\material-geometry\\jar-windows-startup-fixed\\race\\cache",
+      "build\\material-geometry\\jar-windows-startup-fixed\\inputs",
+      "build\\material-geometry\\jar-windows-startup-fixed\\race\\0",
+      "0"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gYnVpbGRcbWF0ZXJpYWwtZ2VvbWV0cnlcamFyLXdpbmRvd3Mtc3RhcnR1cC1maXhlZFxyYWNlXGNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFw5NzYxZDczNTg2Mjc3NjE0YTU2MTMyZWMzNDkyZDMyNGFlODNjODQ4OTA2OGMwMGMyNjZjM2Q1NmY1MzBhY2VhXGJzaV90ZWN0b25pYy5kbGwgKDMxNzY5NjAwIGJ5dGVzLCBlbmdpbmUgdGVjdG9uaWMtMS4zLjArNDJlMTBmNSwgY29udHJhY3QgNGIxMWNjNzM4NzkwoUspDQpQQVNTIGphciByZXBsYXkgNDggZnJhbWVzOyBidWlsZFxtYXRlcmlhbC1nZW9tZXRyeVxqYXItd2luZG93cy1zdGFydHVwLWZpeGVkXHJhY2VcY2FjaGVcbGliXHdpbmRvd3MteDg2XzY0XDk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWFcYnNpX3RlY3RvbmljLmRsbCBzaGEyNTY9OTc2MWQ3MzU4NjI3NzYxNGE1NjEzMmVjMzQ5MmQzMjRhZTgzYzg0ODkwNjhjMDBjMjY2YzNkNTZmNTMwYWNlYQ0K",
+    "stdout_sha256": "8da6618c2f0333cafc0593ca868c2f95838f557b0bf6f9e35ebf7079ac6e90a9",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "race-1": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "race",
+      "build\\material-geometry\\blockreality-0.4.0-dev.jar",
+      "build\\material-geometry\\jar-windows-startup-fixed\\race\\cache",
+      "build\\material-geometry\\jar-windows-startup-fixed\\inputs",
+      "build\\material-geometry\\jar-windows-startup-fixed\\race\\1",
+      "1"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gYnVpbGRcbWF0ZXJpYWwtZ2VvbWV0cnlcamFyLXdpbmRvd3Mtc3RhcnR1cC1maXhlZFxyYWNlXGNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFw5NzYxZDczNTg2Mjc3NjE0YTU2MTMyZWMzNDkyZDMyNGFlODNjODQ4OTA2OGMwMGMyNjZjM2Q1NmY1MzBhY2VhXGJzaV90ZWN0b25pYy5kbGwgKDMxNzY5NjAwIGJ5dGVzLCBlbmdpbmUgdGVjdG9uaWMtMS4zLjArNDJlMTBmNSwgY29udHJhY3QgNGIxMWNjNzM4NzkwoUspDQpQQVNTIGphciByZXBsYXkgNDggZnJhbWVzOyBidWlsZFxtYXRlcmlhbC1nZW9tZXRyeVxqYXItd2luZG93cy1zdGFydHVwLWZpeGVkXHJhY2VcY2FjaGVcbGliXHdpbmRvd3MteDg2XzY0XDk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWFcYnNpX3RlY3RvbmljLmRsbCBzaGEyNTY9OTc2MWQ3MzU4NjI3NzYxNGE1NjEzMmVjMzQ5MmQzMjRhZTgzYzg0ODkwNjhjMDBjMjY2YzNkNTZmNTMwYWNlYQ0K",
+    "stdout_sha256": "8da6618c2f0333cafc0593ca868c2f95838f557b0bf6f9e35ebf7079ac6e90a9",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "missing-pin": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\material-geometry\\jar-windows-startup-fixed\\missing.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "build\\material-geometry\\jar-windows-startup-fixed\\missing.jar",
+      "build\\material-geometry\\jar-windows-startup-fixed\\missing-cache",
+      "build\\material-geometry\\jar-windows-startup-fixed\\inputs",
+      "build\\material-geometry\\jar-windows-startup-fixed\\missing-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMSAhPSBtb2QgY29udHJhY3QgbnVsbA0KUEFTUyBtaXNzaW5nL2JhZCBwaW4NCg==",
+    "stdout_sha256": "045ea4f2860e11783394b405ce1d63964ebd3cb6d886ab8515ab525f6b003377",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "invalid-pin": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\material-geometry\\jar-windows-startup-fixed\\invalid.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "build\\material-geometry\\jar-windows-startup-fixed\\invalid.jar",
+      "build\\material-geometry\\jar-windows-startup-fixed\\invalid-cache",
+      "build\\material-geometry\\jar-windows-startup-fixed\\inputs",
+      "build\\material-geometry\\jar-windows-startup-fixed\\invalid-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMSAhPSBtb2QgY29udHJhY3QgbnVsbA0KUEFTUyBtaXNzaW5nL2JhZCBwaW4NCg==",
+    "stdout_sha256": "045ea4f2860e11783394b405ce1d63964ebd3cb6d886ab8515ab525f6b003377",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "overlong-pin": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\material-geometry\\jar-windows-startup-fixed\\overlong.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "build\\material-geometry\\jar-windows-startup-fixed\\overlong.jar",
+      "build\\material-geometry\\jar-windows-startup-fixed\\overlong-cache",
+      "build\\material-geometry\\jar-windows-startup-fixed\\inputs",
+      "build\\material-geometry\\jar-windows-startup-fixed\\overlong-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMSAhPSBtb2QgY29udHJhY3QgbnVsbA0KUEFTUyBtaXNzaW5nL2JhZCBwaW4NCg==",
+    "stdout_sha256": "045ea4f2860e11783394b405ce1d63964ebd3cb6d886ab8515ab525f6b003377",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

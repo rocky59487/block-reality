@@ -1,6 +1,12 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/block",
+  "loader": "blockreality:product",
+  "material": "brick",
+  "section": "brick_rect_230x350",
   "textures": {
-    "all": "minecraft:block/bricks"
+    "side": "minecraft:block/bricks",
+    "end": "minecraft:block/red_terracotta",
+    "particle": "#side",
+    "warning": "minecraft:block/yellow_concrete"
   }
 }

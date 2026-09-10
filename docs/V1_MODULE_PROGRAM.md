@@ -54,6 +54,17 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 
 ## 現況
 
+MATERIAL_GEOMETRY 已在模組來源b10884b完成矩形產品外觀/目標/碰撞形狀、端面方向、
+未宣告警示及原生取樣映射。真Linux127項模型檢查、14項程式驅動原版客戶端互動、
+原16圖/45項守門及6張補充圖通過；Windows516PASS/12平台SKIP、Linux527PASS/1平台SKIP。
+目前jar15,216,948B、SHA8e587a715ebd…，兩庫仍42e10f5。來源/封裝/首敗見
+`../evidence/MATERIAL_GEOMETRY/RESULTS.md`。這不是Windows CM/N25/FPS或v1資格。
+
+本輪同步：引擎#40仍e20b416（交付庫42e10f5），沒有引擎側修改。
+新模組分支`claude/security-functionality-review-yftgf8`/cde57d5只補CI METIS下載pin，
+已讀差異，待獨立凍門檻/驗收後整合；本單元不編譯或修改引擎。
+
+
 GAME_INPUT #106 與 GAME_RUNTIME #108 已接真原生迴圈；#121以交付42e10f5雙平台庫驗
 目前HUD/持久化/資料路徑。Windows core412/Forge109=509PASS/12平台SKIP，Linux520PASS/1平台SKIP。
 判準與舊來源證據見 `GAME_RUNTIME.md`；目前新庫與jar資格见 `../evidence/NATIVE_CANDIDATE_RUNTIME/RESULTS.md`。

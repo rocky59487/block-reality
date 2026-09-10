@@ -1,0 +1,30 @@
+[
+  {
+    "arm": "swapped-depth-width",
+    "exit": 1,
+    "cases": 5,
+    "failed": [
+      "changedCatalogueDimensionsReachTheShapeAndBothSamplingExtents()",
+      "unequalDeclaredWidthsAndDepthsKeepTheirAxesInAllThreeOrientations()"
+    ],
+    "expectedFailure": "unequalDeclaredWidthsAndDepthsKeepTheirAxesInAllThreeOrientations()"
+  },
+  {
+    "arm": "noncontact-face-cull",
+    "exit": 1,
+    "cases": 5,
+    "failed": [
+      "onlyFullFaceContactHidesAScanSurface()"
+    ],
+    "expectedFailure": "onlyFullFaceContactHidesAScanSurface()"
+  },
+  {
+    "arm": "equalized-sample-extents",
+    "exit": 1,
+    "cases": 9,
+    "failed": [
+      "unequalVisualExtentsRetainIndependentNativeFacesAndBothSidesOfAJump()"
+    ],
+    "expectedFailure": "unequalVisualExtentsRetainIndependentNativeFacesAndBothSidesOfAJump()"
+  }
+]

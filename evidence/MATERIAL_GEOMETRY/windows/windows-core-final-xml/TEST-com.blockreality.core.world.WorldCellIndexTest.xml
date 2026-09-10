@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.world.WorldCellIndexTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:49:14" hostname="ROCKYLAPTOP" time="0.469">
+  <properties/>
+  <testcase name="coverageIncludesOnlyActualGroundBordersWithoutInventingDiagonalContacts()" classname="com.blockreality.core.world.WorldCellIndexTest" time="0.003"/>
+  <testcase name="oppositeObservationOrdersAndReloadHaveIdenticalBytes()" classname="com.blockreality.core.world.WorldCellIndexTest" time="0.001"/>
+  <testcase name="emptyReconciliationOnlyRemovesItsOwnChunkAndSnapshotsStayImmutable()" classname="com.blockreality.core.world.WorldCellIndexTest" time="0.0"/>
+  <testcase name="encodedSnapshotsAreCallerOwnedAndInvalidateAfterCoverageEdits()" classname="com.blockreality.core.world.WorldCellIndexTest" time="0.0"/>
+  <testcase name="capacityFailureDoesNotEvictAndSurvivesRestart()" classname="com.blockreality.core.world.WorldCellIndexTest" time="0.462"/>
+  <testcase name="invalidChunkObservationsAreAtomic()" classname="com.blockreality.core.world.WorldCellIndexTest" time="0.001"/>
+  <testcase name="damagedChecksumsAndEveryTruncationFailClosed()" classname="com.blockreality.core.world.WorldCellIndexTest" time="0.001"/>
+  <testcase name="validDigestCannotAuthorizeUnknownSchemaDuplicatesOrderingOrOutOfWorldCells()" classname="com.blockreality.core.world.WorldCellIndexTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

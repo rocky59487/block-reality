@@ -1,0 +1,51 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes
+> Task :core:compileTestJava
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses
+
+> Task :core:test
+
+BsiBeamDisplayTest > surfaceTilesSplitWithoutSmearingAcrossTheJump() PASSED
+
+BsiBeamDisplayTest > neutralAxisIsSuppliedDataAndSegmentsDoNotCrossMissingOrDuplicateStations() PASSED
+
+BsiBeamDisplayTest > malformedDataAndExternalMutationCannotReachTheDisplay() PASSED
+
+BsiBeamDisplayTest > unequalVisualExtentsRetainIndependentNativeFacesAndBothSidesOfAJump() PASSED
+
+BsiBeamDisplayTest > boundedInterpolationUsesFaceCentresAndClamps() PASSED
+
+BsiBeamDisplayTest > samplesUnitsAndDiagnosticConventionComeFromWire() PASSED
+
+BsiBeamDisplayTest > revisionSectionsAndCatalogueAreRequiredButRequestedZeroIsValid() PASSED
+
+BsiBeamDisplayTest > duplicateStationsRetainBothSidesAndNeverInventAGoverningSide() PASSED
+
+BsiBeamDisplayTest > nativeVerdictNeverDependsOnDisplayedDc() PASSED
+
+GameInputNativeTest > refusedVocabularyRedeclarationInvalidatesOldWorldAndNames() PASSED
+
+GameInputNativeTest > profilingObservesTheRealBridgeWithoutChangingNativeResults() PASSED
+
+GameInputNativeTest > declaredRectangularPresentationAxesAgreeWithDeliveredNativeFrames() PASSED
+
+GameInputNativeTest > fullGameVocabularyAndSnapshotReachTheRealEngine() PASSED
+
+ProductFormTest > materialCellsNeverTurnLegacySectionNamesOrPanelAxesIntoPhysicalDimensions() PASSED
+
+ProductFormTest > undeclaredMissingAndUnsupportedProductsRemainExplicitlyUnresolved() PASSED
+
+ProductFormTest > changedCatalogueDimensionsReachTheShapeAndBothSamplingExtents() PASSED
+
+ProductFormTest > onlyFullFaceContactHidesAScanSurface() PASSED
+
+ProductFormTest > unequalDeclaredWidthsAndDepthsKeepTheirAxesInAllThreeOrientations() PASSED
+
+BUILD SUCCESSFUL in 4s
+7 actionable tasks: 3 executed, 4 up-to-date

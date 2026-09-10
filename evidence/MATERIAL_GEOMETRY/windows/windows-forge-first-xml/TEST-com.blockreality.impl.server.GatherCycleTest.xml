@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.server.GatherCycleTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:37:59" hostname="ROCKYLAPTOP" time="0.012">
+  <properties/>
+  <testcase name="aCycleWithinBudgetCompletesInOneStep()" classname="com.blockreality.impl.server.GatherCycleTest" time="0.004"/>
+  <testcase name="aRevisionChangeAbandonsTheParkedCycle()" classname="com.blockreality.impl.server.GatherCycleTest" time="0.002"/>
+  <testcase name="anOverBudgetCycleYieldsAndResumesWhereItStopped()" classname="com.blockreality.impl.server.GatherCycleTest" time="0.001"/>
+  <testcase name="stepWithNoCycleIsIdle()" classname="com.blockreality.impl.server.GatherCycleTest" time="0.001"/>
+  <testcase name="zeroBudgetStillGuaranteesMinimumProgress()" classname="com.blockreality.impl.server.GatherCycleTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

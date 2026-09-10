@@ -53,6 +53,36 @@ class GameInputNativeTest {
         }
     }
 
+    @Test void declaredRectangularPresentationAxesAgreeWithDeliveredNativeFrames() {
+        String[] materials = {"steel", "steel", "steel", "timber"};
+        String[] sections = {"steel_rect_200x400", "steel_rect_150x300", "steel_rect_100x200", "timber_rect_140x240"};
+        double[] depths = {200, 150, 100, 120}, widths = {100, 75, 50, 70};
+        for (int product = 0; product < 4; product++) for (int axis = 0; axis < 3; axis++) {
+            try (var engine = InProcessEngine.open(library(), 1)) {
+                assertTrue(engine.declareVocabulary(GameVocabulary.declaration()));
+                var cells = new ArrayList<GameWorldSnapshot.Cell>();
+                for (int n = 0; n < 5; n++) cells.add(GameWorldSnapshot.Cell.of(
+                        new BlockKey(axis == 0 ? n : 0, axis == 1 ? n : 0, axis == 2 ? n : 0),
+                        materials[product], sections[product], axis));
+                var input = new GameWorldSnapshot(new WorldRevision(41), cells,
+                        List.of(new BlockKey(axis == 0 ? -1 : 0, axis == 1 ? -1 : 0, axis == 2 ? -1 : 0)), List.of());
+                var result = engine.analyze(input, 1, BsiHeaders.Storage.F64, new BsiHeaders.EigenBuckling(0));
+                assertTrue(result.ok(), result.diagnostic()); assertEquals(1, result.members().size());
+                var f = result.members().get(0).display().orElseThrow();
+                double[] ax = {Math.abs(f.ax().x()), Math.abs(f.ax().y()), Math.abs(f.ax().z())};
+                double[] ay = {Math.abs(f.ay().x()), Math.abs(f.ay().y()), Math.abs(f.ay().z())};
+                double[] az = {Math.abs(f.az().x()), Math.abs(f.az().y()), Math.abs(f.az().z())};
+                assertArrayEquals(axis == 0 ? new double[]{1,0,0} : axis == 1 ? new double[]{0,1,0} : new double[]{0,0,1}, ax, 1e-12);
+                assertArrayEquals(axis == 1 ? new double[]{1,0,0} : new double[]{0,1,0}, ay, 1e-12);
+                assertArrayEquals(axis == 2 ? new double[]{1,0,0} : new double[]{0,0,1}, az, 1e-12);
+                assertEquals(depths[product], f.halfYMm(), 1e-9); assertEquals(widths[product], f.halfZMm(), 1e-9);
+                var form = ProductForm.of(GameVocabulary.geometry(materials[product], sections[product]), axis);
+                assertEquals(f.halfYMm(), form.depthHalfMetres()*1000, 1e-9);
+                assertEquals(f.halfZMm(), form.widthHalfMetres()*1000, 1e-9);
+            }
+        }
+    }
+
     @Test void refusedVocabularyRedeclarationInvalidatesOldWorldAndNames() {
         try(var engine=InProcessEngine.open(library(),1)) {
             assertTrue(engine.declareVocabulary(GameVocabulary.declaration()));

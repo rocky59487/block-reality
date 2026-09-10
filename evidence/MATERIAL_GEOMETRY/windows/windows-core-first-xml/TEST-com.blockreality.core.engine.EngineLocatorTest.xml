@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.engine.EngineLocatorTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:35:43" hostname="ROCKYLAPTOP" time="0.053">
+  <properties/>
+  <testcase name="thePropertyOutranksTheOverrideDirectoryAndTheEnvironmentOutranksTheBundledCopy(Path)" classname="com.blockreality.core.engine.EngineLocatorTest" time="0.015"/>
+  <testcase name="platformAndFileNameFollowTheManifestSpelling()" classname="com.blockreality.core.engine.EngineLocatorTest" time="0.001"/>
+  <testcase name="theSystemFormReadsTheSamePropertyTheBuildForwards(Path)" classname="com.blockreality.core.engine.EngineLocatorTest" time="0.006"/>
+  <testcase name="theOverrideDirectoryWinsOverTheBundledCopy(Path)" classname="com.blockreality.core.engine.EngineLocatorTest" time="0.009"/>
+  <testcase name="anInvalidExplicitPathCannotSelectADifferentBundledEngine(Path)" classname="com.blockreality.core.engine.EngineLocatorTest" time="0.009"/>
+  <testcase name="theBundledCopyIsUsedWhenNothingOverridesIt(Path)" classname="com.blockreality.core.engine.EngineLocatorTest" time="0.004"/>
+  <testcase name="configAndPropertyOutrankEverythingAndAbsenceIsReportedNotGuessed(Path)" classname="com.blockreality.core.engine.EngineLocatorTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,5 @@
+{
+  "parent": "blockreality:block/steel_plate",
+  "loader": "blockreality:product",
+  "undeclared": true
+}

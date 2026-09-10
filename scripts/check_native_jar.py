@@ -99,9 +99,16 @@ def main():
     ap.add_argument("--build-sha", default="c90b448")
     ap.add_argument("--eigen", action="store_true", help="also replay all C10 buckling variants")
     args = ap.parse_args()
+    blas_environment = {"OPENBLAS_CORETYPE": "Haswell", "OPENBLAS_NUM_THREADS": "1"}
+    env = dict(os.environ, **blas_environment)
+    if any(os.environ.get(key) != value for key, value in blas_environment.items()):
+        # MG observed that changing Python's os.environ after interpreter startup did
+        # not make Windows direct replies match the controlled child JVMs. Start the
+        # test driver itself with the same environment, before any native runtime loads.
+        print("Restarting replay test driver with identical BLAS process settings", flush=True)
+        raise SystemExit(subprocess.run([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]], env=env).returncode)
     args.out.mkdir(parents=True, exist_ok=False)
     log = {}
-    env = dict(os.environ, OPENBLAS_CORETYPE="Haswell", OPENBLAS_NUM_THREADS="1")
     def record(name, cmd, p):
         row = {"command": list(map(str, cmd)), "exit": p.returncode}
         for key, data in [("stdout", p.stdout), ("stderr", p.stderr)]:
@@ -187,7 +194,7 @@ def main():
         run(mode+"-pin", command("missing-pin",args.out/(mode+"-cache"),args.out/(mode+"-pin"),jar=bad_jar))
     summary = dict(platform=platform, jar_sha256=sha(args.jar.read_bytes()), native_sha256=entry[3],
                    requests=snapshot(args.out/"inputs"), replies=reference, det_repeats=3,
-                   concurrent_jvms=2, numThreads=1, version=args.version, buildSha=args.build_sha,
+                   concurrent_jvms=2, numThreads=1, blas_environment=blas_environment, version=args.version, buildSha=args.build_sha,
                    eigen=args.eigen, scope="jar extraction + BSI replay; not a Minecraft game run")
     (args.out / "verification.json").write_text(json.dumps(summary, indent=2)+"\n",encoding="utf-8")
     print(json.dumps(summary,indent=2))

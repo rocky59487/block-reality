@@ -1,0 +1,9 @@
+{
+  "tests": 419,
+  "failed": 0,
+  "skipped": 1,
+  "skips": [
+    "com.blockreality.core.sidecar.SidecarPathsTest.aStringThatCannotBeAPathIsReportedAndNotThrown()"
+  ],
+  "passed": 418
+}
