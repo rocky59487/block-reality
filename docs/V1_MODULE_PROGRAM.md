@@ -56,7 +56,15 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 
 最新交付已更新為v1.5，模組Main #126的契約同步已整合。本工作只消費來源42ba7eb9、
 契約5d4367f40de8的發布SDK；引擎倉未修改/建置/合併/發布。
-目前開發jar15,286,415B、SHA9d8cb6795e9c…；來源/授權/封裝/JNA及真安裝專服門檻1–5通過。
+目前模組來源5e5920d，開發jar15,332,097B、SHA06e6355bc11d…；保留同一v1.5雙平台庫。
+核心472項沿用相同來源4737e3c的雙平台實跑，Forge142項本輪雙平台全過，合計614登錄；
+Windows602PASS/12平台SKIP，Linux613PASS/1平台SKIP。製造metadata、區塊持久化、有界讀取
+與live capture已驗；本輪普通jar真安裝專服44項檢查涵蓋capability吞錯、save-hook與完整讀回。
+詳 `../evidence/CONSTRUCTION_TRANSACTIONS/LIVE_CHUNK_CAPTURE/RESULTS.md`。
+`codex/forge-construction-capture`接續PR132；正式施工入口、更新抑制、提交後單次發布、undo/UI仍未接合，
+完整CT-1..9及#12/#17保持開放。引擎動態能力、真客戶端/FPS/soak與正式v1仍待驗。
+
+原v1.5換裝單元jar15,286,415B、SHA9d8cb6795e9c…的來源/授權/封裝/JNA及真安裝專服門檻1–5通過。
 完整573登錄：Windows561PASS/12平台SKIP、Linux572PASS/1平台SKIP；兩平台96frame×3直連
 與3次jar/JNA回覆一致，涵蓋C14原生殼indicative警示。真專服10項與重啟讀數/快取通過。
 詳 `../evidence/NATIVE_V15_CONSUMER/RESULTS.md`；本版client127模型/14互動/45守門及22圖通過，厚殼警示遊戲輸入仍未觀測；CI f7f9533四項通過/15原生步驟SKIP。

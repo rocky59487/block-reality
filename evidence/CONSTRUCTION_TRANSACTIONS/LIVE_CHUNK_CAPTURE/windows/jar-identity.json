@@ -1,0 +1,20 @@
+{
+  "source": "5e5920db7dac9938580f935fc046c09c96ff9554",
+  "jar_bytes": 15332097,
+  "jar_sha256": "06e6355bc11df1442194d88babd42b62bac75d3ca31c29b27f245cfb34851c91",
+  "added_entries": [
+    "com/blockreality/impl/server/construction/LiveChunkCapture.class"
+  ],
+  "removed_entries": [],
+  "changed_entries": [
+    "com/blockreality/impl/server/construction/ChunkFileParticipant$1.class",
+    "com/blockreality/impl/server/construction/ChunkFileParticipant$Batch.class",
+    "com/blockreality/impl/server/construction/ChunkFileParticipant.class"
+  ],
+  "unchanged_entries": 404,
+  "unchanged_classes": 252,
+  "companion_bytecode": {
+    "com/blockreality/impl/server/construction/ChunkFileParticipant$1.class": "identical javap -p -c -s; debug line metadata differs",
+    "com/blockreality/impl/server/construction/ChunkFileParticipant$Batch.class": "identical javap -p -c -s; debug line metadata differs"
+  }
+}

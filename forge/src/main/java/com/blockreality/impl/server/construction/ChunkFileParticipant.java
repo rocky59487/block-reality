@@ -30,6 +30,7 @@ final class ChunkFileParticipant {
     private final int dataVersion;
     private final int chunkLimit;
     private final long byteLimit;
+    private final ServerLevel boundLevel;
     private boolean ready;
 
     static ChunkFileParticipant bind(ServerLevel level) throws IOException {
@@ -37,7 +38,8 @@ final class ChunkFileParticipant {
         if (!level.getServer().isSameThread()) throw new IOException("Chunk persistence requires the server thread");
         if (!(level.getChunkSource().chunkMap.chunkScanner() instanceof IOWorker worker))
             throw new IOException("Unsupported chunk storage worker");
-        return new ChunkFileParticipant(storage(worker), SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+        return new ChunkFileParticipant(storage(worker), SharedConstants.getCurrentVersion().getDataVersion().getVersion(),
+                MAX_CHUNKS,MAX_BATCH_BYTES,level);
     }
 
     static Storage storage(IOWorker worker) {
@@ -53,7 +55,11 @@ final class ChunkFileParticipant {
         this(storage,dataVersion,MAX_CHUNKS,MAX_BATCH_BYTES);
     }
     ChunkFileParticipant(Storage storage, int dataVersion, int chunkLimit, long byteLimit) throws IOException {
+        this(storage,dataVersion,chunkLimit,byteLimit,null);
+    }
+    private ChunkFileParticipant(Storage storage, int dataVersion, int chunkLimit, long byteLimit, ServerLevel boundLevel) throws IOException {
         this.storage = Objects.requireNonNull(storage); this.dataVersion = dataVersion;
+        this.boundLevel = boundLevel;
         if (dataVersion < 1 || chunkLimit < 1 || chunkLimit > MAX_CHUNKS || byteLimit < 1 || byteLimit > MAX_BATCH_BYTES)
             throw new IllegalArgumentException("Invalid chunk persistence bounds");
         this.chunkLimit = chunkLimit; this.byteLimit = byteLimit;
@@ -86,6 +92,29 @@ final class ChunkFileParticipant {
             images.put(entry.getKey(),encoded);
         }
         return new Batch(this,images);
+    }
+
+    /** Capture the entire bounded loaded set before the caller can persist any part of it. */
+    Batch capture(ServerLevel level, Collection<ChunkPos> positions) throws IOException {
+        check(); Objects.requireNonNull(level); Objects.requireNonNull(positions);
+        if (level != boundLevel || !level.getServer().isSameThread() || positions.isEmpty() || positions.size() > chunkLimit)
+            throw new IOException("Invalid live chunk capture batch");
+        var chunks = new LinkedHashMap<ChunkPos,net.minecraft.world.level.chunk.LevelChunk>();
+        for (ChunkPos pos : positions) {
+            position(pos);
+            var chunk = level.getChunkSource().getChunkNow(pos.x,pos.z);
+            if (chunk == null || chunks.putIfAbsent(pos,chunk) != null)
+                throw new IOException("Unloaded or duplicate live chunk participant");
+            LiveChunkCapture.requireCurrent(level,chunk);
+        }
+        var images = new LinkedHashMap<ChunkPos,CompoundTag>(); long bytes = 0;
+        for (var entry : chunks.entrySet()) {
+            CompoundTag image = LiveChunkCapture.capture(level,entry.getValue());
+            bytes += encode(entry.getKey(),image).length;
+            if (bytes > byteLimit) throw new IOException("Live chunk capture byte capacity exceeded");
+            images.put(entry.getKey(),image);
+        }
+        return prepare(images);
     }
 
     /** Checkpoint, after-image and rollback writes share the same durability path. */

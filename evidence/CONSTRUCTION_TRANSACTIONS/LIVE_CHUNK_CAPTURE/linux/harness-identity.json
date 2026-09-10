@@ -1,0 +1,16 @@
+{
+  "sha256": "12fcff663f03beb6bb174a43611c63a35df1b3684ff3a656745a8a318e1f0316",
+  "bytes": 13067,
+  "entries": [
+    "META-INF/",
+    "META-INF/MANIFEST.MF",
+    "META-INF/mods.toml",
+    "com/",
+    "com/blockreality/",
+    "com/blockreality/testcaptureprobe/",
+    "com/blockreality/testcaptureprobe/LiveCaptureProbe$Checked.class",
+    "com/blockreality/testcaptureprobe/LiveCaptureProbe$ProbeCapability.class",
+    "com/blockreality/testcaptureprobe/LiveCaptureProbe.class"
+  ],
+  "no_production_classes_or_access_transformer": true
+}
