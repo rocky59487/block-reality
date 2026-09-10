@@ -76,6 +76,15 @@ COMMITTED decision is the metadata durability boundary; a second SavedData is no
 an alternative authority. No player file write is needed when no inventory value
 changes. This does not claim inventory-transaction durability.
 
+Before PREPARED, also checkpoint the existing observational known-cell index for
+the edited legacy structural cells. Such cells may have no manufactured owner;
+their previously unsaved coverage must not vanish after a committed crash. Await
+the existing atomic SavedData write, force its target (and supported directory),
+and verify the exact complete decoded NBT stream against the bounded in-memory
+encoding. This is unchanged observational baseline data, not a second manufactured
+authority or a new physical model. Registry bootstrap tests run in real Forge where
+the transformed event bus exists; a plain JUnit JVM is not a substitute for it.
+
 ## Evidence required
 
 1. Behavioral tests for strict cell round trips/schema/bounds, monotonic revision
