@@ -55,7 +55,12 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
   native 工作若不返回，Java 不能強殺；cleanup 僅在 worker/daemon，D-044 崩潰代價仍成立。
 - 生產 SidecarClient/SidecarProcess/SidecarConfig/ShmRegion 已退到 test；NoSubprocess ALLOWED={}。
   預設 jar 無 exe、無 process launcher；Gradle 已拒絕 executable 封裝。
-- Windows core419/Forge109：528登錄、516PASS、12平台SKIP；Linux527PASS、1平台SKIP。
+- CONSTRUCTION_TRANSACTIONS 已先凍 CT-1..9/D-048，新增核心日誌與復原協調器，尚未接 Forge 施工入口。
+  27項核心測試、兩平台各37個真JVM中斷/復原與跨程序鎖通過；3個可編譯反例被抓到。
+  日誌驗證規則快取使4096格配置約9MB→3.36MB，144份/平台檔案逐位相同；時間僅Recorded，
+  Windows p95增加、Linux降低，不能稱FPS資格。完整材料/區塊/身分/undo/UI仍待接合，#12/#17不關閉。
+  詳 `docs/CONSTRUCTION_TRANSACTION_ADAPTER.md` 與 `docs/CT_JOURNAL_ALLOCATION.md`。
+- Windows core446/Forge109：555登錄、543PASS、12平台SKIP；Linux554PASS、1平台SKIP。
   20項 native 相關全部執行。新庫Linux真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
   完整結果 `evidence/GAME_RUNTIME/RESULTS.md`，首敗保留、三故障臂具名咬合。
 - 全部失去支承時原生只回 SOLVE_FAILED；Java 保留拒絕，不能從 message 捏造 MECHANISM。

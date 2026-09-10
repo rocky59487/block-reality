@@ -1,0 +1,3 @@
+Journal-only canonical synthetic images and file barriers. No Forge world/player flush, full construction validation, UI, native analysis, FPS, or acceptance performance claim. Input Intent construction is outside the timed interval.
+JDK=17.0.20+8-1-22.04-Ubuntu
+OS=Linux

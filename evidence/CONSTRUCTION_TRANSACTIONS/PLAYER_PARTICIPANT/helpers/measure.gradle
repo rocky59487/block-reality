@@ -1,0 +1,15 @@
+gradle.projectsEvaluated {
+    def project = gradle.rootProject
+    def source = new File(System.getProperty('br.playerCostSource', ''))
+    def output = new File(System.getProperty('br.playerCostOutput', ''))
+    if (!source.isAbsolute() || !source.isDirectory() || !output.isAbsolute() || output.exists()) {
+        throw new GradleException('Measurement requires an existing absolute source and a fresh absolute output directory')
+    }
+    project.sourceSets.test.java.srcDir(source)
+    project.tasks.register('constructionPlayerCost', JavaExec) {
+        dependsOn project.tasks.named('testClasses')
+        classpath = project.sourceSets.test.runtimeClasspath
+        mainClass = 'com.blockreality.impl.server.construction.PlayerPersistenceCost'
+        args output.absolutePath
+    }
+}

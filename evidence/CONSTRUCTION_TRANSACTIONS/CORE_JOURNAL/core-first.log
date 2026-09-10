@@ -1,0 +1,75 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava UP-TO-DATE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+
+> Task :core:compileTestJava
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\transaction\FileTransactionJournalTest.java:20: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            assertThrows(IOException.class, () -> { try (var ignored = new FileTransactionJournal(root, DOMAIN)) { fail(); } });
+                                                             ^
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\transaction\FileTransactionJournalTest.java:34: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+        assertThrows(IOException.class, () -> { try (var ignored = new FileTransactionJournal(root, foreign)) { fail(); } });
+                                                         ^
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\transaction\FileTransactionJournalTest.java:98: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            assertThrows(IOException.class, () -> { try (var ignored = new FileTransactionJournal(directory, DOMAIN)) { fail(mode); } }, mode);
+                                                             ^
+3 warnings
+
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses
+
+> Task :core:test
+
+AtomicConstructionCoordinatorTest > everyPrepareAndCommitStorageStageFailureEitherAbortsOrRetainsDurableCommit() PASSED
+
+AtomicConstructionCoordinatorTest > decisionVerificationFailureDoesNotGuessRollbackAndMissingPreparedFileDoesNotReopenWrites() PASSED
+
+AtomicConstructionCoordinatorTest > everyParticipantWriteAndFlushFailureRestoresAllBeforeImagesWithoutPublication() PASSED
+
+AtomicConstructionCoordinatorTest > secondPlayerOnSameBaseIsRejectedAndOrderedNonconflictingCommitAdvancesOnlyOnce() PASSED
+
+AtomicConstructionCoordinatorTest > unknownExternalValueOrRevisionPreventsAnyRecoveryWrite() PASSED
+
+AtomicConstructionCoordinatorTest > commitConsumesAllImagesOnceAndReplaySurvivesRestartAndLaterEdits() PASSED
+
+AtomicConstructionCoordinatorTest > collisionsBindActorSessionDomainPayloadAndBaseWithoutChangingOriginalDecision() PASSED
+
+AtomicConstructionCoordinatorTest > lostPublicationKeepsCommittedDecisionAndRecoveryPublishesBaselineWithoutApplyingAgain() PASSED
+
+AtomicConstructionCoordinatorTest > callbacksCannotReenterCoordinatorAndBaselineFailureLeavesItClosed() PASSED
+
+AtomicConstructionCoordinatorTest > validationStaleBaseAndConflictingImagesRefuseBeforeWritesAndRetainReplay() PASSED
+
+AtomicConstructionCoordinatorTest > missingRevisionParticipantCannotCommitEvenWhenEverySuppliedImageMatches() PASSED
+
+AtomicConstructionCoordinatorTest > failedRollbackRetainsPreparedAndBlocksUntilExplicitSuccessfulRecovery() PASSED
+
+FileTransactionJournalTest > refusedAndAbortedKeysAreNeverEvictedAndClosedStoresCannotMutate() PASSED
+
+FileTransactionJournalTest > everyAtomicWriteFaultIsResolvedFromRealFilesAndTempsRemainEvidence() PASSED
+
+FileTransactionJournalTest > onlyOnePreparedIntentAndNoForeignDomainOrPrematureTerminalCreation() PASSED
+
+FileTransactionJournalTest > corruptRecordsUnknownSchemaTruncationAndDomainMarkerArePreservedAndRefused() PASSED
+
+FileTransactionJournalTest > exclusiveOwnerDomainPinAndLazyRestartReplayRetainOriginalImages() PASSED
+
+FileTransactionJournalTest > readThroughDetectsDeletionAndCorruptionInsteadOfServingCachedSuccess() PASSED
+
+TransactionCodecTest > aggregateSizeAndIndividualResourcePieceAndBindingBoundsApplyBeforeEncoding() PASSED
+
+TransactionCodecTest > imagesAndListsAreImmutableAndMissingIsNotEmpty() PASSED
+
+TransactionCodecTest > resignedSchemaPhaseReasonRevisionCountsAndNoncanonicalKeysRefuse() PASSED
+
+TransactionCodecTest > phasesRoundTripCanonicallyAndOnlyCommittedReceiptsExposePieceIds() PASSED
+
+TransactionCodecTest > terminalPhasesCannotChangeOrSmuggleDifferentImages() PASSED
+
+TransactionCodecTest > everyCorruptedByteEveryTruncationAndTrailingDataRefuse() PASSED
+
+BUILD SUCCESSFUL in 3s
+7 actionable tasks: 2 executed, 5 up-to-date

@@ -1,0 +1,43 @@
+> Task :compileJava UP-TO-DATE
+
+> Task :bundleEngines
+bundleEngines: no native library requested (development build)
+
+> Task :processResources
+> Task :classes
+> Task :compileTestJava
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+
+> Task :test
+
+CanonicalNbtTest > truncationTrailingDuplicateUnknownAndImpossibleLengthsRefuse() PASSED
+
+CanonicalNbtTest > everyTagTypeRoundTripsWithVanillaAndIndependentImages() PASSED
+
+CanonicalNbtTest > byteDepthAndTagBudgetsRefuseBeforeLargeAllocation() PASSED
+
+CanonicalNbtTest > compoundInsertionOrderDoesNotChangeImageAndSmallGoldenIsExact() PASSED
+
+CanonicalNbtTest > numericPayloadBitsSurviveAndUnrepresentableNegativeZeroRefuses() PASSED
+
+PlayerFileParticipantTest > nonFileTargetAndNonFileDirectoryRefuseWithoutReplacement() PASSED
+
+PlayerFileParticipantTest > corruptionTruncationTrailingGzipAndInflationCapacityPreserveOriginals() PASSED
+
+PlayerFileParticipantTest > exactFullPlayerSurvivesVanillaAndOfflineReloadWithInventoryOnlyChange() PASSED
+
+PlayerFileParticipantTest > staleForeignAndMissingIdentityCannotOverwriteExistingPlayer() PASSED
+
+PlayerFileParticipantTest > failuresAtEveryRealStorageBoundaryRemainResolvable() PASSED
+
+PlayerFileParticipantTest > changeDuringStagingIsDetectedBeforeAtomicReplacement() PASSED
+
+PlayerInventoryImageTest > rejectsDuplicateUnknownMistypedAndMalformedInventoryWithoutMutation() PASSED
+
+PlayerInventoryImageTest > mapsAllVanillaSlotsAndPreservesExactItemData() PASSED
+
+PlayerInventoryImageTest > modifiesOnlyRequestedSlotsAndNeverAliasesInput() PASSED
+
+BUILD SUCCESSFUL in 6s
+5 actionable tasks: 4 executed, 1 up-to-date

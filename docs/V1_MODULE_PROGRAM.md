@@ -101,6 +101,11 @@ CONSTRUCTION_IDENTITY 已接永久 namespace/單調 ID、產品/宣告軸分組�
 不能以身份保存/分組測試代替。施工邊界/接頭、延長既有 piece 的規則，也須在該交易入口
 明確化；觀測式分組與原生預覽連結不能直接授權破壞、掉落、損傷或材料產出。
 
+CONSTRUCTION_TRANSACTIONS 已先凍完整 CT-1..9 與 D-048：每次確認的新 piece 都用新 UUID，
+不默默延長舊身分。第一步實作模組核心日誌、原子決策與復原協調器；尚未接入 Forge 生產入口。
+檔案/JVM 故障測試只驗核心，不等於遊戲庫存/區塊交易或 undo/UI 完成。接合限制與原版存檔
+API 的失敗/回呼行為見 `CONSTRUCTION_TRANSACTION_ADAPTER.md`；完整門檻仍全部保持開放。
+
 MODULE_PIPELINE_PROFILE 已將 metadata/gather/queue/BSI/解碼/封包/apply 分別量測，預設不收資料。
 A49/F576/M832 三場景各 40 次實跑，數字只作 Recorded 基線；M832 原生呼叫占主要成本，
 不能把背景 65.6 ms p95 說成 client frame time。尚未量 FPS、真玩家 socket、存檔或 registry 上界。

@@ -27,6 +27,8 @@ FORBIDDEN = (
     "com/blockreality/impl/client/ClientRenderProbe",
     "com/blockreality/impl/client/MaterialGeometryProbe",
     "com/blockreality/impl/server/RenderServerProbe",
+    "com/blockreality/core/transaction/TransactionProcess",
+    "com/blockreality/core/transaction/TransactionFixtures",
 )
 REQUIRED = {"com/blockreality/api/" + name + ".class"
             for name in ("AnalysisResult", "MemberSnapshot", "ShellSnapshot")}
@@ -99,7 +101,7 @@ def inspect_jar(path):
 
 
 def mutation_checks(jar_path, javac):
-    """Two valid compiled classes: one bundled legacy type, one dormant field reference only."""
+    """Compiled legacy entry, dormant reference and construction crash-driver entry negatives."""
     with tempfile.TemporaryDirectory(prefix="br-native-only-") as temp:
         work = Path(temp)
         legacy = work / "Forbidden.java"
@@ -107,14 +109,17 @@ def mutation_checks(jar_path, javac):
         reference = work / "ResurrectedReference.java"
         reference.write_text("package com.blockreality.impl; public class ResurrectedReference {"
                              "public com.blockreality.testlegacy.Forbidden dependency;}", encoding="utf-8")
+        process = work / "TransactionProcessLeak.java"
+        process.write_text("package com.blockreality.core.transaction; public class TransactionProcessLeak {}", encoding="utf-8")
         compilation = subprocess.run([str(javac), "--release", "17", "-d", str(work),
-                                      str(legacy), str(reference)], capture_output=True, text=True)
+                                      str(legacy), str(reference), str(process)], capture_output=True, text=True)
         if compilation.returncode:
             raise RuntimeError("mutation compilation failed; not an oracle: " + compilation.stderr)
         reports = []
         for arm, name, expected in (
                 ("bundled-legacy", "com/blockreality/testlegacy/Forbidden.class", "forbidden entry:"),
-                ("dormant-reference", "com/blockreality/impl/ResurrectedReference.class", "forbidden constant:")):
+                ("dormant-reference", "com/blockreality/impl/ResurrectedReference.class", "forbidden constant:"),
+                ("construction-process-driver", "com/blockreality/core/transaction/TransactionProcessLeak.class", "forbidden entry:")):
             mutated = work / (arm + ".jar")
             shutil.copyfile(jar_path, mutated)
             with zipfile.ZipFile(mutated, "a") as jar:

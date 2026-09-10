@@ -1,0 +1,18 @@
+{
+  "core": {
+    "registered": 446,
+    "failed": 0,
+    "skipped": 1,
+    "skips": [
+      "com.blockreality.core.sidecar.SidecarPathsTest.aStringThatCannotBeAPathIsReportedAndNotThrown()"
+    ],
+    "passed": 445
+  },
+  "forge": {
+    "registered": 109,
+    "failed": 0,
+    "skipped": 0,
+    "skips": [],
+    "passed": 109
+  }
+}

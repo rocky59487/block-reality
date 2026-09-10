@@ -1,0 +1,15 @@
+{
+  "command": [
+    "cmd",
+    "/c",
+    "gradlew.bat",
+    "--no-daemon",
+    "--console=plain",
+    "check",
+    ":core:constructionRecoveryGate",
+    "-Dbr.transactionEvidence=C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\player-participant\\process"
+  ],
+  "cwd": "C:\\Users\\wmc02\\Desktop\\block-reality\\mod",
+  "BR_ENGINE": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-candidate-runtime\\staged\\windows-x86_64\\bsi_tectonic.dll",
+  "BR_SIDECAR": "C:\\Users\\wmc02\\Desktop\\block-reality\\dist\\br-sidecar.exe"
+}
