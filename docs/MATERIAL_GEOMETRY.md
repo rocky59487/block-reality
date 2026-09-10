@@ -66,3 +66,14 @@ Existing current limits remain: the Linux renderer is software, the installed Wi
 baseline remains unaccepted, in-process native crashes can terminate the JVM, and engine
 fracture/crushing/rigid-body dynamics are not implemented in Java. This unit advances
 material geometry and interaction; it does not redefine those remaining v1 requirements.
+
+## Qualification harness correction gate (before its implementation)
+
+MG's first Windows jar replay found six C10 f32/f64 replies differ between Python and
+Java. The harness controlled OpenBLAS in child JVMs but left its own Python process at
+the caller's defaults. Repeating with Haswell/one thread in both processes passed;
+all first JVM replies match the controlled direct replies. Preserve those first files.
+The module qualification script must set the same environment before loading a native
+library in either process. Verify from a parent with neither variable set, with the
+unchanged candidate jar and libraries. This fixes test isolation, not engine arithmetic
+or the byte-equality oracle; a mismatch must still fail. No engine source is changed.
