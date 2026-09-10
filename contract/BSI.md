@@ -476,3 +476,39 @@ BSI wire major、T-A五函式及`BSI_CAPI_ABI`仍為1。**Engine adapter ABI升�
 ABI1時不能讀尾端solve_v2。analysis仍走原solve，physical才走solve_v2。
 新tectonic adapter支援entry(1)原prefix／原能力，也支援entry(2)的新slot／physical能力；
 其他引擎可維持ABI1，新host仍可使用它的原analysis功能。此版本與引擎產品v2不是同一編號。
+
+## Part G — 2026-09-11：engine ABI3 identified fracture typed出口
+
+Engine adapter ABI3在ABI2之後追加四個可選slot：world_declare_identified、
+world_edit_identified、fracture_prepare、fracture_finish，型別見bsi_fracture.h。
+host依3→2→1協商，僅entry回NULL才能降版；回錯版本立即拒絕。ABI1/2原prefix
+與物理自重語意保持。這是typed準備點；本批未新增wire動詞或宣告bsi.fracture，
+對應shared-host與consumer接線完成後才開啟能力。
+
+所有新input先核對struct_size涵蓋最後已知欄位，才讀剩餘內容；未知tier/action拒絕。
+world identity含非零128-bit domain、非負signed-i64 revision、非零artifact namespace，
+及完整structural格的positive signed-i64 owner，座標不是analysis index。
+identified edit成功恰增revision1，仍沿引擎同一A/B/C編譯路徑；失敗不半提交。
+prepare要求非零request、commit tier、有限gravity、budget1..4096、threads0..256，
+0 threads依引擎預設；第一版為物理材料自重的靜力級聯，沒有外加荷載／非線性選項。
+缺本構所需的有限正capacity輸入須明示拒絕，不得當成永不失效。
+
+prepare不改世界，回傳instance context128+positive sequence64的暫態token。
+同request/basis/完整選項重試保留原候選；同ID換選項拒絕。每instance至多一候選，
+新prepare成功才替換，失敗保留。commit核對token/request/before/after revision，
+一次發布原候選；當前同handle重放回replayed，後續世界／另一instance／舊token拒絕。
+discard釋放候選、不撤销已提交世界。identity及持久request去重由caller journal擁有。
+
+view保存原PFT材料分割、全部source cells與artifact、逐格mass/COM/完整COM tensor、
+broken事件的source索引／capacity face／utilization、detached fragments與去重parents、
+mechanism回滾格、steps/exhausted。group0為remaining、1為broken、2起為fragment index+2；
+unrepresented只能屬remaining。capacity face不得冒名材料種類或concrete crush。
+來源格以x/y/z規範序；碎塊順序與其來源格序對位，parents數值升序；事件保留級聯順序。
+fragments的release/tensionOnly/coupling flags不是剛體資格或接觸／滾動能力。
+
+新的physical records自然8-byte alignment：properties80B、cell144B（physical offset64）、
+fragment96B、event24B；reserved皆0。owner沿packed20B。tensor順序為xx/yy/zz/xy/xz/yz，
+COM tensor項不取负，全部SI f64。任何wire bytes須複製至合格typed storage再存取。
+view的借用資料在成功世界修改、成功替換、discard或close時失效，caller須事先複製。
+只有native位址生命週期，沒有永久指標／磁碟journal；CAPI未知dispatch失敗仍須關閉
+失效handle後重新同步，NEED_BIGGER精確重試只重送已保存reply。

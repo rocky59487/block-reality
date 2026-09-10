@@ -17,7 +17,8 @@ extern "C" {
 #endif
 
 #define BSI_MAJOR 1
-#define BSI_ENGINE_ABI 2u
+#define BSI_ENGINE_ABI 3u
+#define BSI_ENGINE_ABI_PHYSICAL 2u
 #define BSI_ENGINE_ABI_LEGACY 1u
 
 #if defined(_WIN32) && !defined(BSI_STATIC)
@@ -250,6 +251,7 @@ BSI_EXPORT int bsi_writer_diag(bsi_writer*, uint32_t nodes, uint32_t members, ui
 BSI_EXPORT int bsi_writer_error(bsi_writer*, const char* code, const char* message, const int32_t* atXyzOrNull);
 
 /* ---- the engine vtable (append-only; host reads up to abi_version) -------- */
+#include "bsi_fracture.h"
 typedef struct bsi_engine_vtable {
   uint32_t abi_version;                                        /* = BSI_ENGINE_ABI */
   const char* (*name)(void);
@@ -266,6 +268,14 @@ typedef struct bsi_engine_vtable {
   int (*cancel)(bsi_engine*);                                                          /* may be NULL */
   /* Read only when abi_version >= 2. Physical mode also requires its capability. */
   int (*solve_v2)(bsi_engine*, const bsi_solve_options_v2* o, const bsi_load* loads, uint32_t n, bsi_writer* w); /* may be NULL */
+  /* ABI3 only; optional until bsi.world.identity / bsi.fracture are declared. */
+  int (*world_declare_identified)(bsi_engine*, const bsi_block*, uint32_t,
+                                  const bsi_world_identity*, bsi_writer*);
+  int (*world_edit_identified)(bsi_engine*, const bsi_edit*, uint32_t,
+                               const bsi_identified_edit*, bsi_writer*);
+  int (*fracture_prepare)(bsi_engine*, const bsi_fracture_options*,
+                         const bsi_fracture_view**, bsi_writer*);
+  int (*fracture_finish)(bsi_engine*, const bsi_fracture_finish*, uint8_t*, bsi_writer*);
 } bsi_engine_vtable;
 
 /* The single exported symbol an engine must provide. Returns NULL when
