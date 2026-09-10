@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.engine.InProcessEngineTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:35:54" hostname="rockylaptop" time="0.011">
+  <properties/>
+  <testcase name="thisBuildKnowsWhichContractItSpeaks()" classname="com.blockreality.core.engine.InProcessEngineTest" time="0.0"/>
+  <testcase name="aCantileverUnderItsOwnWeightComesBackWithTheClosedFormReaction()" classname="com.blockreality.core.engine.InProcessEngineTest" time="0.002"/>
+  <testcase name="aForeignContractHashIsRefusedAndNothingElseIsSent()" classname="com.blockreality.core.engine.InProcessEngineTest" time="0.001"/>
+  <testcase name="anEngineThatIsNotOneIsRefusedWithAReason()" classname="com.blockreality.core.engine.InProcessEngineTest" time="0.004"/>
+  <testcase name="openOptionsStayInsideWhatTheContractAccepts()" classname="com.blockreality.core.engine.InProcessEngineTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

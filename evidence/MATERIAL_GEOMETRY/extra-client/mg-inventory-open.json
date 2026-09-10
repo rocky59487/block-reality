@@ -1,0 +1,9 @@
+{
+  "request": {
+    "id": 16,
+    "action": "inventory",
+    "name": "mg-inventory-open",
+    "down": true
+  },
+  "scope": "opt-in real client; observations or programmatic vanilla interaction; no result injection"
+}

@@ -1,0 +1,9 @@
+{
+  "request": {
+    "id": 4,
+    "action": "crouch",
+    "name": "mg-crouch-on",
+    "down": true
+  },
+  "scope": "opt-in real client; observations or programmatic vanilla interaction; no result injection"
+}

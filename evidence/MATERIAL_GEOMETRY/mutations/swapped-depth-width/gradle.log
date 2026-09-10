@@ -1,0 +1,85 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :api:compileJava
+> Task :api:processResources NO-SOURCE
+> Task :api:classes
+> Task :api:jar
+
+> Task :core:compileJava
+/home/rocky/br-mg-mutations/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:136: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+        try (var ignored = profile.begin(WORLD_ENCODE)) { payload = BsiRecords.encodeBlocks(blocks); }
+                 ^
+/home/rocky/br-mg-mutations/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:149: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(WORLD_MAP)) { blocks = snapshot.blocks(vocabulary); }
+                     ^
+/home/rocky/br-mg-mutations/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:175: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+        try (var ignored = profile.begin(RESULT_DECODE)) {
+                 ^
+/home/rocky/br-mg-mutations/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:210: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(FRAME_ENCODE)) { request = BsiFrame.encode(header, payload); }
+                     ^
+/home/rocky/br-mg-mutations/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:213: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(FRAME_DECODE)) {
+                     ^
+/home/rocky/br-mg-mutations/mod/core/src/main/java/com/blockreality/core/engine/BsiNative.java:118: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+                try (var ignored = profile.begin(REPLY_COPY)) {
+                         ^
+6 warnings
+
+> Task :core:processResources
+> Task :core:classes
+
+> Task :core:compileTestJava
+/home/rocky/br-mg-mutations/mod/core/src/test/java/com/blockreality/core/diagnostics/PipelineProfileTest.java:60: warning: [try] auto-closeable resource s is never referenced in body of corresponding try statement
+        p.run(first,()->{try(var s=p.begin(RESULT_DECODE)){
+                                 ^
+1 warning
+
+> Task :core:processTestResources
+> Task :core:testClasses
+
+> Task :core:test FAILED
+
+ProductFormTest > materialCellsNeverTurnLegacySectionNamesOrPanelAxesIntoPhysicalDimensions() PASSED
+
+ProductFormTest > undeclaredMissingAndUnsupportedProductsRemainExplicitlyUnresolved() PASSED
+
+ProductFormTest > changedCatalogueDimensionsReachTheShapeAndBothSamplingExtents() FAILED
+    org.opentest4j.AssertionFailedError: array contents differ at index [1], expected: <0.405> but was: <0.315>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertArrayEquals.failArraysNotEqual(AssertArrayEquals.java:440)
+        at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:323)
+        at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:147)
+        at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:143)
+        at app//org.junit.jupiter.api.Assertions.assertArrayEquals(Assertions.java:1422)
+        at app//com.blockreality.core.engine.ProductFormTest.bounds(ProductFormTest.java:15)
+        at app//com.blockreality.core.engine.ProductFormTest.changedCatalogueDimensionsReachTheShapeAndBothSamplingExtents(ProductFormTest.java:32)
+
+ProductFormTest > onlyFullFaceContactHidesAScanSurface() PASSED
+
+ProductFormTest > unequalDeclaredWidthsAndDepthsKeepTheirAxesInAllThreeOrientations() FAILED
+    org.opentest4j.AssertionFailedError: array contents differ at index [1], expected: <0.3> but was: <0.4>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertArrayEquals.failArraysNotEqual(AssertArrayEquals.java:440)
+        at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:323)
+        at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:147)
+        at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:143)
+        at app//org.junit.jupiter.api.Assertions.assertArrayEquals(Assertions.java:1422)
+        at app//com.blockreality.core.engine.ProductFormTest.bounds(ProductFormTest.java:15)
+        at app//com.blockreality.core.engine.ProductFormTest.unequalDeclaredWidthsAndDepthsKeepTheirAxesInAllThreeOrientations(ProductFormTest.java:20)
+
+5 tests completed, 2 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:test'.
+> There were failing tests. See the report at: file:///home/rocky/br-mg-mutations/mod/core/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 11s
+7 actionable tasks: 7 executed

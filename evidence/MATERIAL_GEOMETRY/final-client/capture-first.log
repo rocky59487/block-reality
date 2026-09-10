@@ -1,0 +1,45 @@
+cached native result arrives without edit or resolve: PASS
+beam-en_us-1280 actual framebuffer and server revision: PASS
+beam-en_us-1280 no intervening structure edit: PASS
+beam-en_us-1280 native payload values: PASS
+beam-zh_tw-1280 actual framebuffer and server revision: PASS
+beam-zh_tw-1280 no intervening structure edit: PASS
+beam-zh_tw-1280 native payload values: PASS
+beam-en_us-1920 actual framebuffer and server revision: PASS
+beam-en_us-1920 no intervening structure edit: PASS
+beam-en_us-1920 native payload values: PASS
+beam-zh_tw-1920 actual framebuffer and server revision: PASS
+beam-zh_tw-1920 no intervening structure edit: PASS
+beam-zh_tw-1920 native payload values: PASS
+column-en_us-1280 actual framebuffer and server revision: PASS
+column-en_us-1280 no intervening structure edit: PASS
+column-en_us-1280 native payload values: PASS
+column-zh_tw-1280 actual framebuffer and server revision: PASS
+column-zh_tw-1280 no intervening structure edit: PASS
+column-zh_tw-1280 native payload values: PASS
+column-en_us-1920 actual framebuffer and server revision: PASS
+column-en_us-1920 no intervening structure edit: PASS
+column-en_us-1920 native payload values: PASS
+column-zh_tw-1920 actual framebuffer and server revision: PASS
+column-zh_tw-1920 no intervening structure edit: PASS
+column-zh_tw-1920 native payload values: PASS
+panel-en_us-1280 actual framebuffer and server revision: PASS
+panel-en_us-1280 no intervening structure edit: PASS
+panel-en_us-1280 native payload values: PASS
+panel-zh_tw-1280 actual framebuffer and server revision: PASS
+panel-zh_tw-1280 no intervening structure edit: PASS
+panel-zh_tw-1280 native payload values: PASS
+panel-en_us-1920 actual framebuffer and server revision: PASS
+panel-en_us-1920 no intervening structure edit: PASS
+panel-en_us-1920 native payload values: PASS
+panel-zh_tw-1920 actual framebuffer and server revision: PASS
+panel-zh_tw-1920 no intervening structure edit: PASS
+panel-zh_tw-1920 native payload values: PASS
+catalogue-en_us-1280 actual framebuffer and server revision: PASS
+catalogue-en_us-1280 no intervening structure edit: PASS
+catalogue-zh_tw-1280 actual framebuffer and server revision: PASS
+catalogue-zh_tw-1280 no intervening structure edit: PASS
+catalogue-en_us-1920 actual framebuffer and server revision: PASS
+catalogue-en_us-1920 no intervening structure edit: PASS
+catalogue-zh_tw-1920 actual framebuffer and server revision: PASS
+catalogue-zh_tw-1920 no intervening structure edit: PASS

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.protocol.BinaryCodecTest" tests="18" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:35:55" hostname="rockylaptop" time="0.1">
+  <properties/>
+  <testcase name="aRevisionMismatchIsRejected()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.005"/>
+  <testcase name="aNonFiniteDemandCapacityIsRejected()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.001"/>
+  <testcase name="decodeNeverThrowsForAnyTruncationOfAValidFrame()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.068"/>
+  <testcase name="theBucklingFlagBitFollowsTheRequest()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.002"/>
+  <testcase name="aTokenOutsideTheCatalogueCannotTravelAsAnIndex()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.001"/>
+  <testcase name="aBadMagicIsRejected()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.0"/>
+  <testcase name="tokenRolesAreEnforcedNotJustRanges()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.001"/>
+  <testcase name="unknownShellFlagBitsAreRejected()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.0"/>
+  <testcase name="aFrameShorterThanItsContentIsRejected()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.001"/>
+  <testcase name="aNonOkFrameInTheRegionIsRejected()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.001"/>
+  <testcase name="aWellFormedFrameDecodesCompletely()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.002"/>
+  <testcase name="nanNeutralAxisMeansAbsentNotError()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.001"/>
+  <testcase name="aFrameLongerThanItsContentIsRejected()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.002"/>
+  <testcase name="aHostileCountFailsBeforeAllocating()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.001"/>
+  <testcase name="encodeReturnsTheExactByteCountTheDoorbellNeeds()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.002"/>
+  <testcase name="aNegativeCountIsRejected()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.002"/>
+  <testcase name="anUnknownFibreOrdinalIsRejectedNotMapped()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.001"/>
+  <testcase name="aBooleanWireFieldMustBeExactlyZeroOrOne()" classname="com.blockreality.core.protocol.BinaryCodecTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

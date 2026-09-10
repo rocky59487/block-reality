@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Users\wmc02\Desktop\block-reality\scripts\check_native_jar.py", line 201, in <module>
+    main()
+  File "C:\Users\wmc02\Desktop\block-reality\scripts\check_native_jar.py", line 140, in main
+    assert snapshot(args.out / arm) == reference, ("direct/jar DET mismatch", arm)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('direct/jar DET mismatch', 'jar-0')

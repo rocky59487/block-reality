@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.engine.ProductFormTest" tests="5" skipped="0" failures="1" errors="0" timestamp="2026-09-10T01:47:18" hostname="rockylaptop" time="0.05">
+  <properties/>
+  <testcase name="materialCellsNeverTurnLegacySectionNamesOrPanelAxesIntoPhysicalDimensions()" classname="com.blockreality.core.engine.ProductFormTest" time="0.035"/>
+  <testcase name="undeclaredMissingAndUnsupportedProductsRemainExplicitlyUnresolved()" classname="com.blockreality.core.engine.ProductFormTest" time="0.002"/>
+  <testcase name="changedCatalogueDimensionsReachTheShapeAndBothSamplingExtents()" classname="com.blockreality.core.engine.ProductFormTest" time="0.002"/>
+  <testcase name="onlyFullFaceContactHidesAScanSurface()" classname="com.blockreality.core.engine.ProductFormTest" time="0.007">
+    <failure message="org.opentest4j.AssertionFailedError: neighbor does not reach the shared boundary ==&gt; expected: &lt;false&gt; but was: &lt;true&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: neighbor does not reach the shared boundary ==&gt; expected: &lt;false&gt; but was: &lt;true&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertFalse.failNotFalse(AssertFalse.java:63)
+	at app//org.junit.jupiter.api.AssertFalse.assertFalse(AssertFalse.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertFalse(Assertions.java:239)
+	at app//com.blockreality.core.engine.ProductFormTest.onlyFullFaceContactHidesAScanSurface(ProductFormTest.java:65)
+	at java.base@17.0.20/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base@17.0.20/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.20/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="unequalDeclaredWidthsAndDepthsKeepTheirAxesInAllThreeOrientations()" classname="com.blockreality.core.engine.ProductFormTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

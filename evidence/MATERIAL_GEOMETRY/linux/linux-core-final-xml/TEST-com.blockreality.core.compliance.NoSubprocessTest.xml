@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.compliance.NoSubprocessTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:49:13" hostname="rockylaptop" time="0.048">
+  <properties/>
+  <testcase name="theInProcessEngineStartsNothing()" classname="com.blockreality.core.compliance.NoSubprocessTest" time="0.013"/>
+  <testcase name="theShippedCodeStartsNoProcessesExceptTheOnesNamedHere()" classname="com.blockreality.core.compliance.NoSubprocessTest" time="0.034"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

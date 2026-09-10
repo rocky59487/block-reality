@@ -1,0 +1,76 @@
+{
+  "request": {
+    "id": 2,
+    "action": "interact",
+    "name": "mg-place-y"
+  },
+  "scope": "opt-in real client; observations or programmatic vanilla interaction; no result injection",
+  "before": {
+    "shift": false,
+    "mainHand": "blockreality:steel_beam",
+    "hitType": "BLOCK",
+    "position": [
+      44.0,
+      202.0,
+      48.0
+    ],
+    "hitLocation": [
+      44.5,
+      202.0,
+      48.5
+    ],
+    "face": "down",
+    "block": "minecraft:stone",
+    "shape": [
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "collision": [
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  "entryPoint": "MultiPlayerGameMode.useItemOn(real mc.hitResult)",
+  "returned": "SUCCESS",
+  "afterClientPrediction": {
+    "shift": false,
+    "mainHand": "blockreality:steel_beam",
+    "hitType": "BLOCK",
+    "position": [
+      44.0,
+      202.0,
+      48.0
+    ],
+    "hitLocation": [
+      44.5,
+      202.0,
+      48.5
+    ],
+    "face": "down",
+    "block": "minecraft:stone",
+    "shape": [
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "collision": [
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      1.0,
+      1.0
+    ]
+  }
+}

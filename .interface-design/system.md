@@ -31,3 +31,17 @@ evidence/CLIENT_RENDER_PROBE and evidence/HUD_READABILITY. This supplements the 
 Windows acceptance, which remains open. Preserve first failures, including the initial
 large-GUI overlap with a vanilla login toast; no tutorial/security notice is dismissed to
 make a screenshot look better. Directional materials, user input and N25 remain separate gates.
+
+
+## Declared material geometry (MATERIAL_GEOMETRY)
+
+Four rectangular member products use the SI catalogue bounds for atlas model baking,
+target outline and collision. Steel sizes 200×400,150×300,100×200 mm and timber140×240 mm
+must remain visibly unequal. Cut/end faces follow the declared X/Y/Z axis; the other
+faces retain longitudinal material texture. Undeclared cells show an ochre ! on each face.
+Concrete/brick remain material cubes; panel placement axis is not a physical normal.
+Keep panel cells honest until their physical form is supplied by the input/engine path.
+Scans fit these presentation bounds and interpolate native samples with separate width
+and depth extents. Changing product/axis suppresses incompatible old surfaces.
+Actual baked quads, target/collision boxes, item models and vanilla interaction receipts
+are in evidence/MATERIAL_GEOMETRY. Original installed Windows acceptance remains open.

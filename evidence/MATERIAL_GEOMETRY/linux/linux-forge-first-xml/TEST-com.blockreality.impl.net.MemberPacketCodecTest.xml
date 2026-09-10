@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.net.MemberPacketCodecTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:38:06" hostname="rockylaptop" time="0.239">
+  <properties/>
+  <testcase name="allSampledPacketTruncationsAreRejected()" classname="com.blockreality.impl.net.MemberPacketCodecTest" time="0.119"/>
+  <testcase name="absentDisplayDoesNotEraseSamplesOrDiagnostics()" classname="com.blockreality.impl.net.MemberPacketCodecTest" time="0.008"/>
+  <testcase name="fullPacketPreservesEverySampleCellFlagAndGoverningIndex()" classname="com.blockreality.impl.net.MemberPacketCodecTest" time="0.01"/>
+  <testcase name="oversizedCollectionsRejectInsteadOfDroppingTailSamples()" classname="com.blockreality.impl.net.MemberPacketCodecTest" time="0.003"/>
+  <testcase name="exactIdentityAndMissingGoverningSurviveTheFullPacket()" classname="com.blockreality.impl.net.MemberPacketCodecTest" time="0.003"/>
+  <testcase name="identifiedPacketTruncationsAndInvalidIdentityAreRejected()" classname="com.blockreality.impl.net.MemberPacketCodecTest" time="0.088"/>
+  <testcase name="nonFiniteMetadataAndSamplesAreRejected()" classname="com.blockreality.impl.net.MemberPacketCodecTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

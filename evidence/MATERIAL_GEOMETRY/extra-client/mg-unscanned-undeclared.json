@@ -1,0 +1,52 @@
+{
+  "connected": true,
+  "screen": "none",
+  "worldRevision": 134,
+  "resultRevision": -1,
+  "kind": "MODEL_REFUSED",
+  "notice": "MODEL_REFUSED",
+  "hasData": false,
+  "stale": false,
+  "members": 0,
+  "shells": 0,
+  "maxDc": 0.0,
+  "width": 1920,
+  "height": 1080,
+  "guiWidth": 960,
+  "guiHeight": 540,
+  "guiScale": 2.0,
+  "language": "en_us",
+  "mode": "MATERIAL",
+  "interaction": {
+    "shift": false,
+    "mainHand": "minecraft:air",
+    "hitType": "MISS",
+    "position": [
+      6.0,
+      204.0,
+      35.0
+    ],
+    "hitLocation": [
+      6.5,
+      204.08126966655254,
+      35.72874793410301
+    ],
+    "face": "north",
+    "block": "minecraft:air"
+  },
+  "glRenderer": "llvmpipe (LLVM 15.0.7, 256 bits)",
+  "glVersion": "4.5 (Core Profile) Mesa 23.2.1-1ubuntu3.1~22.04.4",
+  "request": {
+    "id": 13,
+    "action": "capture",
+    "name": "mg-unscanned-undeclared",
+    "width": 1920,
+    "height": 1080,
+    "scale": 2,
+    "language": "en_us",
+    "mode": "MATERIAL",
+    "worldRevision": 134,
+    "kind": "MODEL_REFUSED"
+  },
+  "png_bytes": 155898
+}

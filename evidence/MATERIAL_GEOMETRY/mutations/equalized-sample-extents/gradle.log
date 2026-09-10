@@ -1,0 +1,80 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :api:compileJava
+> Task :api:processResources NO-SOURCE
+> Task :api:classes
+> Task :api:jar
+
+> Task :core:compileJava
+/home/rocky/br-mg-mutations/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:136: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+        try (var ignored = profile.begin(WORLD_ENCODE)) { payload = BsiRecords.encodeBlocks(blocks); }
+                 ^
+/home/rocky/br-mg-mutations/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:149: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(WORLD_MAP)) { blocks = snapshot.blocks(vocabulary); }
+                     ^
+/home/rocky/br-mg-mutations/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:175: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+        try (var ignored = profile.begin(RESULT_DECODE)) {
+                 ^
+/home/rocky/br-mg-mutations/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:210: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(FRAME_ENCODE)) { request = BsiFrame.encode(header, payload); }
+                     ^
+/home/rocky/br-mg-mutations/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:213: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(FRAME_DECODE)) {
+                     ^
+/home/rocky/br-mg-mutations/mod/core/src/main/java/com/blockreality/core/engine/BsiNative.java:118: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+                try (var ignored = profile.begin(REPLY_COPY)) {
+                         ^
+6 warnings
+
+> Task :core:processResources
+> Task :core:classes
+
+> Task :core:compileTestJava
+/home/rocky/br-mg-mutations/mod/core/src/test/java/com/blockreality/core/diagnostics/PipelineProfileTest.java:60: warning: [try] auto-closeable resource s is never referenced in body of corresponding try statement
+        p.run(first,()->{try(var s=p.begin(RESULT_DECODE)){
+                                 ^
+1 warning
+
+> Task :core:processTestResources
+> Task :core:testClasses
+
+> Task :core:test FAILED
+
+BsiBeamDisplayTest > surfaceTilesSplitWithoutSmearingAcrossTheJump() PASSED
+
+BsiBeamDisplayTest > neutralAxisIsSuppliedDataAndSegmentsDoNotCrossMissingOrDuplicateStations() PASSED
+
+BsiBeamDisplayTest > malformedDataAndExternalMutationCannotReachTheDisplay() PASSED
+
+BsiBeamDisplayTest > unequalVisualExtentsRetainIndependentNativeFacesAndBothSidesOfAJump() FAILED
+    org.opentest4j.AssertionFailedError: the Y/Z face values and station sides cannot be swapped ==> expected: <16.0> but was: <7.5>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:86)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1024)
+        at app//com.blockreality.core.bsi.BsiBeamDisplayTest.unequalVisualExtentsRetainIndependentNativeFacesAndBothSidesOfAJump(BsiBeamDisplayTest.java:129)
+
+BsiBeamDisplayTest > boundedInterpolationUsesFaceCentresAndClamps() PASSED
+
+BsiBeamDisplayTest > samplesUnitsAndDiagnosticConventionComeFromWire() PASSED
+
+BsiBeamDisplayTest > revisionSectionsAndCatalogueAreRequiredButRequestedZeroIsValid() PASSED
+
+BsiBeamDisplayTest > duplicateStationsRetainBothSidesAndNeverInventAGoverningSide() PASSED
+
+BsiBeamDisplayTest > nativeVerdictNeverDependsOnDisplayedDc() PASSED
+
+9 tests completed, 1 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:test'.
+> There were failing tests. See the report at: file:///home/rocky/br-mg-mutations/mod/core/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 10s
+7 actionable tasks: 7 executed

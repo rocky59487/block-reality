@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.bsi.BsiMemberGeometryTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:49:07" hostname="ROCKYLAPTOP" time="0.05">
+  <properties/>
+  <testcase name="handPackedGeometryKeepsSiAndSampleOrder()" classname="com.blockreality.core.bsi.BsiMemberGeometryTest" time="0.001"/>
+  <testcase name="snapshotsAndSourceListsAreImmutable()" classname="com.blockreality.core.bsi.BsiMemberGeometryTest" time="0.004"/>
+  <testcase name="invalidFramesAreRejected()" classname="com.blockreality.core.bsi.BsiMemberGeometryTest" time="0.005"/>
+  <testcase name="everyNonfiniteAndMisorderedSampleIsRejected()" classname="com.blockreality.core.bsi.BsiMemberGeometryTest" time="0.027"/>
+  <testcase name="missingAndEmptyAreDistinctAndTruncationsFail()" classname="com.blockreality.core.bsi.BsiMemberGeometryTest" time="0.008"/>
+  <testcase name="idsAndReservedBitsMustMatch()" classname="com.blockreality.core.bsi.BsiMemberGeometryTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

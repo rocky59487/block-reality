@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.sidecar.SidecarEngineTest" tests="28" skipped="28" failures="0" errors="0" timestamp="2026-09-10T01:35:55" hostname="rockylaptop" time="0.061">
+  <properties/>
+  <testcase name="theWorstSectionCanBeInTheMiddleAndTheScreenMustSeeIt()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.009">
+    <skipped/>
+  </testcase>
+  <testcase name="aLoadInsideAMemberSplitsItAtThatPoint()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="anUnknownSectionIsRefusedRatherThanDefaulted()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="aSectionChangeSplitsTheMemberButKeepsItConnected()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="theSupportMomentIsRecoveredAndNeverLowersADemand()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="repeatedSolvesAtTheSameRevisionAreIdentical()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="aFloorCarriesNoMembraneForceUnderItsOwnWeight()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="aShearWallCarriesLoadInItsOwnPlane()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="overloadingTheMemberPushesDemandOverCapacity()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.005">
+    <skipped/>
+  </testcase>
+  <testcase name="shmAndJsonTransportsAgree()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.003">
+    <skipped/>
+  </testcase>
+  <testcase name="everyBlockCentreIsInsideTheMeshAndOnlyTheOuterHalfBlockIsClamped()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="aLoadOnNoElementAtAllIsStillRefused()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="everySolveCarriesItsOwnEquilibriumCheck()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="shmTransportCarriesShellsIdentically()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="anUnsupportedStructureIsReportedAsAMechanism()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="oneUnsupportedBuildingDoesNotSilenceTheOthers()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="everyStationMatchesTheClosedFormBendingStress()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="aRunOfBlocksBecomesOneMemberNotFive()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="aSlabBecomesPlateFacetsAndNotAGridOfBeams()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="aSlenderColumnIsCalledSafeByStressAndUnstableByBuckling()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="handshakeReportsTheCatalogue()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="theSpanMomentMatchesTimoshenko()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="aSingleBlockIsNotABeam()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="aColumnSharesItsTopNodeWithTheFloorItHoldsUp()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="theFreeEndCarriesNoBendingStress()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="aBeamHeldAtBothEndsHogsAtTheSupportAndSagsBetween()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="theOverlayDrawnFromRealEngineOutputIsBlueOnTopAndRedBelow()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="topFibreIsInTensionAndBottomInCompression()" classname="com.blockreality.core.sidecar.SidecarEngineTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

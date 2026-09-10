@@ -1,0 +1,182 @@
+[
+  {
+    "command": "gamemode creative BRRenderProbe",
+    "response": "Set BRRenderProbe's game mode to Creative Mode\n"
+  },
+  {
+    "command": "fill 40 198 40 63 198 63 minecraft:stone",
+    "response": "Successfully filled 576 block(s)\n"
+  },
+  {
+    "command": "setblock 44 200 44 minecraft:stone",
+    "response": "Changed the block at 44, 200, 44\n"
+  },
+  {
+    "command": "setblock 44 202 48 minecraft:stone",
+    "response": "Changed the block at 44, 202, 48\n"
+  },
+  {
+    "command": "setblock 44 200 52 minecraft:stone",
+    "response": "Changed the block at 44, 200, 52\n"
+  },
+  {
+    "command": "item replace entity BRRenderProbe weapon.mainhand with blockreality:steel_beam",
+    "response": "Replaced a slot on BRRenderProbe with [Structural Steel]\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":116,\"resultRevision\":116,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":58,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "command": "tp BRRenderProbe 47.5 199 44.5 90 0",
+    "response": "Teleported BRRenderProbe to 47.500000, 199.000000, 44.500000\n"
+  },
+  {
+    "gate": "x actual clicked face",
+    "pass": true
+  },
+  {
+    "command": "execute if block 45 200 44 blockreality:steel_beam[axis=x]",
+    "response": "Test passed\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":119,\"resultRevision\":119,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":59,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "x server revision advanced",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":119,\"resultRevision\":119,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":59,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "command": "tp BRRenderProbe 44.5 199 48.5 0 -90",
+    "response": "Teleported BRRenderProbe to 44.500000, 199.000000, 48.500000\n"
+  },
+  {
+    "gate": "y actual clicked face",
+    "pass": true
+  },
+  {
+    "command": "execute if block 44 201 48 blockreality:steel_beam[axis=y]",
+    "response": "Test passed\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":122,\"resultRevision\":122,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":60,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "y server revision advanced",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":122,\"resultRevision\":122,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":60,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "command": "tp BRRenderProbe 44.5 199 49.5 0 0",
+    "response": "Teleported BRRenderProbe to 44.500000, 199.000000, 49.500000\n"
+  },
+  {
+    "gate": "z actual clicked face",
+    "pass": true
+  },
+  {
+    "command": "execute if block 44 200 51 blockreality:steel_beam[axis=z]",
+    "response": "Test passed\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":125,\"resultRevision\":125,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":61,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "z server revision advanced",
+    "pass": true
+  },
+  {
+    "command": "item replace entity BRRenderProbe weapon.mainhand with minecraft:air",
+    "response": "Replaced a slot on BRRenderProbe with [Air]\n"
+  },
+  {
+    "command": "tp BRRenderProbe 47.5 199 44.5 90 -5",
+    "response": "Teleported BRRenderProbe to 47.500000, 199.000000, 44.500000\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":125,\"resultRevision\":125,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":61,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "x actual empty-hand sneak target",
+    "pass": true
+  },
+  {
+    "command": "execute if block 45 200 44 blockreality:steel_beam[axis=y]",
+    "response": "Test passed\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":128,\"resultRevision\":128,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":61,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "y server cycle revision advanced",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":128,\"resultRevision\":128,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":61,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "y actual empty-hand sneak target",
+    "pass": true
+  },
+  {
+    "command": "execute if block 45 200 44 blockreality:steel_beam[axis=z]",
+    "response": "Test passed\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":131,\"resultRevision\":131,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":61,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "z server cycle revision advanced",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":131,\"resultRevision\":131,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":61,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "z actual empty-hand sneak target",
+    "pass": true
+  },
+  {
+    "command": "execute if block 45 200 44 blockreality:steel_beam[axis=x]",
+    "response": "Test passed\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":134,\"resultRevision\":134,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":61,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "x server cycle revision advanced",
+    "pass": true
+  },
+  {
+    "command": "tp BRRenderProbe 47.5 199 44.1 90 0",
+    "response": "Teleported BRRenderProbe to 47.500000, 199.000000, 44.100000\n"
+  },
+  {
+    "gate": "real ray passes empty part of beam cell",
+    "pass": true
+  },
+  {
+    "command": "tp BRRenderProbe 47.5 199 44.5 90 0",
+    "response": "Teleported BRRenderProbe to 47.500000, 199.000000, 44.500000\n"
+  },
+  {
+    "gate": "real ray targets visible beam section",
+    "pass": true
+  }
+]
