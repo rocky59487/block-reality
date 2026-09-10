@@ -5,7 +5,10 @@ qualification does not complete CT-1..9 or claim an ordinary gameplay entry exis
 
 Use vanilla named-root compound NBT and gzip player files. Canonical transaction
 images sort compound keys, retain all tag types, list order, numeric bits and exact
-item data. The reader rejects duplicate keys, unknown tags, trailing/truncated data,
+item data. The pinned FloatTag/DoubleTag factories normalize negative zero; reject
+that unrepresentable raw input instead of silently changing its bits. Other numeric
+bit patterns, including NaN payloads, remain exact in this adapter. The reader rejects
+duplicate keys, unknown tags, trailing/truncated data,
 negative/impossible lengths and excessive nesting before unbounded allocation.
 Frozen limits:64 container levels,262144 tags per document,1MiB per item image,
 16MiB decoded player document and17MiB compressed player file. Refuse larger data;
