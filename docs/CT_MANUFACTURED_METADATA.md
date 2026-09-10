@@ -90,3 +90,18 @@ poisoning an otherwise valid instance. Exercise forged whole-undo subsets/creati
 changes, retired-ID resurrection, and journal UUID order differing from commit
 order. Preserve the first14 source/XML as the pre-extension control. No acceptance
 or performance threshold is relaxed by these additional failure checks.
+
+Recorded cost protocol, frozen before its driver:one measurement JVM per platform,
+three dense fixtures of64/1024/4096 explicit32-cell frame pieces (2048/32768/131072
+owned cells). Births use batches of at most128 pieces/4096 cells. Seed once, preserve
+and hash that journal tree, and copy those exact bytes to the other platform.
+Each phase has8 warmups and40 measured iterations: fresh journal open/registry load/
+close; private preparation of a one-cell edit; and PREPARED write/COMMITTED decision/
+verified metadata publication on a fresh fixture copy. Copying, loading and preparing
+the commit case are outside its timed interval. Close is included only in reopen.
+Keep all iterations, thread-allocated bytes and content fingerprints. Verify all
+piece cells/birth IDs/status and exact prepare/after fingerprints outside timing.
+This is warmed OS storage with fresh Java objects, not a cold-disk benchmark, game
+transaction, world/player fsync or FPS. Report nearest-rank p50/p95 without a pass
+threshold. Failed/refused samples remain failures; no timing substitution or retry
+selection. Fixture copies and source byte identities remain available for audit.
