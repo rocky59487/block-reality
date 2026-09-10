@@ -39,6 +39,7 @@ public final class BlockRealityMod {
         bus.addListener(BRNetwork::onCommonSetup);
 
         MinecraftForge.EVENT_BUS.register(StructureManager.class);
+        MinecraftForge.EVENT_BUS.register(com.blockreality.impl.server.construction.ConstructionService.class);
         MinecraftForge.EVENT_BUS.register(com.blockreality.impl.command.BRCommand.class);
         MinecraftForge.EVENT_BUS.addListener(BlockRealityMod::onServerStopping);
 

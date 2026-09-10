@@ -82,6 +82,7 @@
   "br.buckling.not_eligible_scale": "全域挫屈未完整評估：引擎自由度預算",
   "br.buckling.solver_failed": "全域挫屈計算失敗",
   "br.placement.axis": "放置軸向：%s",
+  "br.construction.refused": "暫時無法更改方向，請稍後再試。",
   "br.placement.hint": "放置面決定軸向；空手潛行右鍵切換。",
   "br.buckling.local_critical": "挫屈警示：已有結構達到線性臨界狀態",
   "br.buckling.world_factor": "全域挫屈 λ_cr %s（線性臨界值）",

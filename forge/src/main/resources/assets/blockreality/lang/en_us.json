@@ -82,6 +82,7 @@
   "br.buckling.not_eligible_scale": "World buckling incomplete: engine DOF budget",
   "br.buckling.solver_failed": "World buckling computation failed",
   "br.placement.axis": "Placement axis: %s",
+  "br.construction.refused": "The direction could not be changed. Please try again later.",
   "br.placement.hint": "Place on a face to set axis; sneak-use empty-handed to cycle.",
   "br.buckling.local_critical": "BUCKLING: linear onset reached in a structure",
   "br.buckling.world_factor": "World buckling λ_cr %s (linear onset)",

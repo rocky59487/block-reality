@@ -104,11 +104,13 @@ public class StructuralBlock extends Block {
             net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hit) {
         if (!player.isShiftKeyDown() || !player.getItemInHand(hand).isEmpty() || !player.mayBuild())
             return net.minecraft.world.InteractionResult.PASS;
-        if (!level.isClientSide && level instanceof net.minecraft.server.level.ServerLevel server) {
+        if (!level.isClientSide && level instanceof net.minecraft.server.level.ServerLevel server
+                && player instanceof net.minecraft.server.level.ServerPlayer actor) {
             Axis axis = state.getValue(AXIS).next();
-            if (level.setBlock(pos, state.setValue(AXIS, axis), 3)) {
-                com.blockreality.impl.server.StructureManager.observedStructure(server, pos, state.setValue(AXIS, axis));
+            if (com.blockreality.impl.server.construction.ConstructionService.cycleAxis(actor,pos,state,hand)) {
                 player.displayClientMessage(net.minecraft.network.chat.Component.translatable("br.placement.axis", axis.name()), true);
+            } else {
+                player.displayClientMessage(net.minecraft.network.chat.Component.translatable("br.construction.refused"), true);
             }
         }
         return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);

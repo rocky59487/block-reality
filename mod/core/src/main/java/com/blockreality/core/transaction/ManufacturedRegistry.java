@@ -63,6 +63,32 @@ public final class ManufacturedRegistry {
         healthy(); dimension(dimension); ManufacturedPiece.position(cell); return Optional.ofNullable(owners.get(new Cell(dimension,cell)));
     }
 
+    /** Bounded committed coverage for bootstrap; callers must not force these chunks to load. */
+    public synchronized List<BlockKey> ownedCells(String dimension) {
+        healthy(); dimension(dimension);
+        return owners.keySet().stream().filter(cell -> cell.dimension().equals(dimension))
+                .map(Cell::position).sorted(Comparator.comparingInt(BlockKey::x)
+                        .thenComparingInt(BlockKey::y).thenComparingInt(BlockKey::z)).toList();
+    }
+
+    public record PendingMetadata(String dimension, String operation, String revisionResource, List<Change> changes) {
+        public PendingMetadata { changes = List.copyOf(changes); }
+    }
+
+    /** Validate against committed authority before the host uses any pending world images for recovery. */
+    public synchronized PendingMetadata validatePrepared(Entry entry) throws IOException {
+        healthy();
+        try {
+            if (entry.phase() != Phase.PREPARED) throw invalid();
+            Batch batch = parse(entry); validate(batch);
+            String revision = revisionKey(batch.descriptor().dimension());
+            List<Change> metadata = entry.intent().changes().stream().filter(change ->
+                    change.resource().equals("meta/order") || change.resource().equals(revision)
+                    || change.resource().startsWith("piece/") || change.resource().startsWith("transaction/")).toList();
+            return new PendingMetadata(batch.descriptor().dimension(),batch.descriptor().operation().name(),revision,metadata);
+        } catch (RuntimeException malformed) { throw new IOException("Pending metadata does not match committed authority",malformed); }
+    }
+
     /** Private proposal until the coordinator commits its combined participant intent. */
     public record Prepared(Request request, List<Change> metadata, List<UUID> created, List<UUID> retired) {
         public Prepared { metadata = List.copyOf(metadata); created = List.copyOf(created); retired = List.copyOf(retired); }
