@@ -31,3 +31,16 @@ Required before adopting this refinement:
    A memory reduction cannot excuse any weakened durability or behavioral assertion.
 
 The broader Forge adapter and full construction transaction gates remain required.
+
+## Result of the frozen refinement
+
+The cached-pattern candidate passed the allocation and byte-identity requirements.
+4096-cell median allocated bytes: Windows3,359,528 (37.20% of baseline), Linux3,354,696
+(37.17%). All144 terminal records match each baseline and the other platform.
+The27 transaction tests and37 process interruptions plus concurrent-owner denial passed
+again on both platforms, as did the full core/Forge suites with delivered libraries.
+
+Timing remains Recorded:4096-cell create+decide p95 Windows12.547→14.294 ms (increased),
+Linux125.573→22.030 ms (decreased). These one-fork runs do not establish a latency
+improvement or meet the full v1/Forge performance requirement. The original sample
+sets and the increased Windows timing are retained; the timing criterion was not moved.

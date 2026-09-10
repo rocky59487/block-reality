@@ -1,6 +1,7 @@
 package com.blockreality.core.transaction;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 /** Module-owned material/world metadata transactions, never engine results or physical fields. */
 public final class ConstructionTransaction {
@@ -8,6 +9,8 @@ public final class ConstructionTransaction {
     public static final int MAX_VALUE_BYTES = 1 << 20, MAX_RECORD_BYTES = 16 << 20;
     public static final int MAX_KEYS = 262144;
     public static final long MAX_JOURNAL_BYTES = 1L << 30;
+    private static final Pattern PLAN_HASH = Pattern.compile("[0-9a-f]{64}");
+    private static final Pattern RESOURCE = Pattern.compile("[a-z0-9][a-z0-9_./:+-]{0,255}");
     private ConstructionTransaction() { }
 
     /** All fields bind an idempotency key. Actor/session must come from authenticated server context. */
@@ -16,7 +19,7 @@ public final class ConstructionTransaction {
             Objects.requireNonNull(id); Objects.requireNonNull(actor);
             Objects.requireNonNull(session); Objects.requireNonNull(domain);
             if (baseRevision < 0 || baseRevision == Long.MAX_VALUE
-                    || planHash == null || !planHash.matches("[0-9a-f]{64}"))
+                    || planHash == null || !PLAN_HASH.matcher(planHash).matches())
                 throw new IllegalArgumentException("Invalid transaction binding");
         }
     }
@@ -49,7 +52,7 @@ public final class ConstructionTransaction {
     /** Server-captured canonical participant images. This type is not a C2S packet. */
     public record Change(String resource, Value before, Value after) {
         public Change {
-            if (resource == null || !resource.matches("[a-z0-9][a-z0-9_./:+-]{0,255}"))
+            if (resource == null || !RESOURCE.matcher(resource).matches())
                 throw new IllegalArgumentException("Invalid participant resource");
             Objects.requireNonNull(before); Objects.requireNonNull(after);
             if (before.equals(after)) throw new IllegalArgumentException("Unchanged participant");
