@@ -8,24 +8,24 @@ declared complete; #12/#17 and the v1 objective remain open.
 
 ## Observations
 
--27 core transaction JUnit tests pass on Windows and Linux: immutable/bounded images,
+- 27 core transaction JUnit tests pass on Windows and Linux: immutable/bounded images,
   checksummed schema, exclusive/domain ownership, reduced-quota admission, replay
   binding, stale/competing requests, every write/flush failure, rollback failure,
   uncertain decisions, lost publication, reentrancy and corruption remaining closed.
-- Each platform's final process gate terminates37 real JVMs at prepare/commit/abort
+- Each platform's final process gate terminates 37 real JVMs at prepare/commit/abort
   file stages, each participant write/flush and each rollback write/flush, then starts
   37 fresh recovery JVMs. Six durable images and published baseline are checked in
-  each scenario; each existing outcome replays100 times. The first-temp scenario has
+  each scenario; each existing outcome replays 100 times. The first-temp scenario has
   no transaction record and retains the incomplete temp. A second concurrent JVM is
   refused by the live owner's journal lock. Both gates pass before and after caching.
 - These are synthetic file participants, **not Minecraft restart evidence**. The
-  memory Host tests exercise100 successful commit replays before and after restart
+  memory Host tests exercise 100 successful commit replays before and after restart
   and prove committed records do not overwrite subsequent edits. They do not supply
-  authoritative piece lifetime/refund/undo semantics or100 real inverse transactions.
+  authoritative piece lifetime/refund/undo semantics or 100 real inverse transactions.
 - Three compiled negative versions of the coordinator/journal at ee491960 are caught
   by specific assertion failures: commit before participant flush, overwrite foreign
   values during recovery, and clear a corruption latch by baseline publication.
-  Control27 and restored27 pass. These components are unchanged by the later cached
+  Control 27 and restored 27 pass. These components are unchanged by the later cached
   validation-pattern refinement; final full behaviors/process cases pass again.
 
 The new CI step runs the real process gate and uploads its raw receipts. Exact-head CI
@@ -35,22 +35,22 @@ status belongs to the PR check record; a local pass is not substituted for it.
 
 | Platform | Core | Forge | Total |
 |---|---|---|---|
-| Windows17.0.18 |434 PASS /12 platform SKIP |109 PASS |543 PASS /12 SKIP |
-| Linux17.0.20 |445 PASS /1 platform SKIP |109 PASS |554 PASS /1 SKIP |
+| Windows 17.0.18 |434 PASS /12 platform SKIP |109 PASS |543 PASS /12 SKIP |
+| Linux 17.0.20 |445 PASS /1 platform SKIP |109 PASS |554 PASS /1 SKIP |
 
-555 registered tests (446 core,109 Forge). The delivered42e10f5 native cases all
-execute; the28 compatibility sidecar cases also execute using existing binaries.
-Windows skips are11 POSIX fake-process cases and one executable-permission case;
+555 registered tests (446 core,109 Forge). The delivered 42e10f5 native cases all
+execute; the 28 compatibility sidecar cases also execute using existing binaries.
+Windows skips are 11 POSIX fake-process cases and one executable-permission case;
 Linux skips the Windows invalid-path case. Full suites pass before and after caching.
-The unchanged12 native-only packet golden cases execute in the Forge suites.
-`check_docs.py` verifies all36 quoted counts against the full XML and the existing
+The unchanged 12 native-only packet golden cases execute in the Forge suites.
+`check_docs.py` verifies all 36 quoted counts against the full XML and the existing
 330-check compatibility binary suite. No engine source/build/release is performed.
 
 Final development jar:15,253,895 bytes,
 SHA-256 `c760f844a376add4252158cb3a5e581f173903c9889e0ed7e2b47dc444cafd5f`.
-All356 entries of the previous material-geometry jar are byte-identical, including
-the207 prior classes, resources, licenses and both native libraries. Added entries
-are20 transaction classes and their directory. The227-class guard passes; three
+All 356 entries of the previous material-geometry jar are byte-identical, including
+the 207 prior classes, resources, licenses and both native libraries. Added entries
+are 20 transaction classes and their directory. The 227-class guard passes; three
 compiled packaging negatives refuse legacy entries, dormant references and an
 accidentally bundled construction process driver. Test drivers remain outside the jar.
 The pre-cache jar/hash and its guard are retained separately.
@@ -61,11 +61,11 @@ live-game behavior, physics, destruction, material capability or FPS claim is ad
 
 ## Fixed allocation refinement
 
-The exact same synthetic1/128/4096-cell fixture uses8 warmups plus40 measured samples
+The exact same synthetic 1/128/4096-cell fixture uses 8 warmups plus 40 measured samples
 per size, one JVM per platform/version. Timing includes journal create+decide and
 their file barriers; input Intent construction, Forge participants and native work
 are excluded. All raw samples are retained. Only allocation/identity has an adoption
-threshold (at most60% of baseline4096-cell median allocation); timing is Recorded.
+threshold (at most 60% of baseline 4096-cell median allocation); timing is Recorded.
 
 |4096-cell result | Baseline | Cached patterns |
 |---|---:|---:|
@@ -75,7 +75,7 @@ threshold (at most60% of baseline4096-cell median allocation); timing is Recorde
 | Linux create+decide p95 |125.573 ms |22.030 ms — decreased |
 
 The memory threshold passes without changing validation, record format or barriers.
-All144 terminal records per platform match its baseline byte-for-byte, and the two
+All 144 terminal records per platform match its baseline byte-for-byte, and the two
 platforms'144 final records also match. The Windows timing increase is retained;
 these single-fork samples establish neither a latency improvement nor v1 performance.
 POSIX reports an available directory force; Windows JDK17 reports none. No power-loss
@@ -83,9 +83,9 @@ or storage-device guarantee is inferred from successful process interruption tes
 
 ## First runs and raw evidence
 
-The first core-only run has24 PASS and three compiler warnings about unused test
+The first core-only run has 24 PASS and three compiler warnings about unused test
 resources. Those warnings were corrected; later added failure/quotas tests bring the
-core transaction group to27. First21-scenario and expanded37-scenario process runs
+core transaction group to 27. First 21-scenario and expanded 37-scenario process runs
 are retained independently from the final runs. Their passes do not retroactively
 qualify a later source revision.
 
@@ -99,7 +99,7 @@ process archives. Each ZIP contains every original file byte and an embedded SHA
 manifest, verified after writing. Archives keep the PR source diff reviewable; raw
 before-recovery files, journal images, command arguments and process logs remain
 extractable. The four cost runs have identical journal records, so one canonical raw
-set is retained with all four CSVs and the verified144-file comparison hashes.
+set is retained with all four CSVs and the verified 144-file comparison hashes.
 
 ## Work still required
 
