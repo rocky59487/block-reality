@@ -1,0 +1,9 @@
+{
+  "source": "471fad9",
+  "jar_bytes": 15286967,
+  "jar_sha256": "73a491fba10e76f2dfbd6514cba0daa410f7ff248b6e7dcc43d2e2b79d537834",
+  "changed_entries": [
+    "com/blockreality/core/transaction/FileTransactionJournal.class"
+  ],
+  "unchanged_entries": 386
+}
