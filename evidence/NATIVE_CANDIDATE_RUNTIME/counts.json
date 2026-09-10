@@ -1,0 +1,83 @@
+{
+  "windows": {
+    "tests": 521,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 12,
+    "skips": [
+      {
+        "class": "com.blockreality.core.sidecar.BundledEngineTest",
+        "test": "theUnpackedEngineIsExecutable(Path)"
+      },
+      {
+        "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+        "test": "aCrashDuringAnalysisFailsThatRequestAndRecovers()"
+      },
+      {
+        "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+        "test": "aStaleReplyLeftInThePipeDoesNotPoisonTheNextRequest()"
+      },
+      {
+        "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+        "test": "resetRevivesADisabledClientOnceTheBinaryIsInstalled()"
+      },
+      {
+        "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+        "test": "aWedgedSidecarTimesOutAndIsKilled()"
+      },
+      {
+        "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+        "test": "aFloodingSidecarIsKilledNotBuffered()"
+      },
+      {
+        "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+        "test": "aProtocolMismatchIsRefusedOutrightAndNotRetried()"
+      },
+      {
+        "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+        "test": "aShmDoorbellRevisionMismatchIsADesyncAndEndsTheConversation()"
+      },
+      {
+        "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+        "test": "aClosedClientIsTerminalAndNeverRespawns()"
+      },
+      {
+        "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+        "test": "growIsRetriedOnceGrownAndARefusalAfterGrowthIsAnAnswer()"
+      },
+      {
+        "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+        "test": "closingSendsByeAndDoesNotLeaveAProcessBehind()"
+      },
+      {
+        "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+        "test": "aRefusedShmMappingDowngradesToJsonAndTheSolveStillAnswers()"
+      }
+    ],
+    "passed": 509
+  },
+  "linux": {
+    "tests": 521,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "skips": [
+      {
+        "class": "com.blockreality.core.sidecar.SidecarPathsTest",
+        "test": "aStringThatCannotBeAPathIsReportedAndNotThrown()"
+      }
+    ],
+    "passed": 520
+  },
+  "game": {
+    "server_status_pass": 16,
+    "synthetic_player_events": 24,
+    "client_assertions_pass": 45,
+    "actual_screenshots": 16,
+    "scope": "bundled dev resources / isolated real Forge server and client; not installed jar or FPS qualification",
+    "client_exit": {
+      "exit": 0,
+      "elapsed_seconds": 165.83579518799525
+    }
+  }
+}

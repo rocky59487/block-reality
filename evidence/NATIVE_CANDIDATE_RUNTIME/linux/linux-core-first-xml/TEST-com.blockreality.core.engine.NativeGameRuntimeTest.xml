@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.engine.NativeGameRuntimeTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-10T00:24:35" hostname="rockylaptop" time="0.025">
+  <properties/>
+  <testcase name="loadsLazilyReusesTheSessionAndKeepsDimensionsSeparate()" classname="com.blockreality.core.engine.NativeGameRuntimeTest" time="0.003"/>
+  <testcase name="offNeverCallsTheLoader()" classname="com.blockreality.core.engine.NativeGameRuntimeTest" time="0.0"/>
+  <testcase name="concurrentSubmissionsNeverEnterTheSameSessionTogether()" classname="com.blockreality.core.engine.NativeGameRuntimeTest" time="0.004"/>
+  <testcase name="aLoadFailureStaysDisabledUntilExplicitReset()" classname="com.blockreality.core.engine.NativeGameRuntimeTest" time="0.002"/>
+  <testcase name="closeRevokesBlockedResultsWithoutClosingAnActiveNativeCall()" classname="com.blockreality.core.engine.NativeGameRuntimeTest" time="0.003"/>
+  <testcase name="timeoutRevokesAuthorityButDoesNotPretendToKillNativeWork()" classname="com.blockreality.core.engine.NativeGameRuntimeTest" time="0.006"/>
+  <testcase name="resetWaitsForTheOldCallAndOpensAFreshSession()" classname="com.blockreality.core.engine.NativeGameRuntimeTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

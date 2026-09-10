@@ -1,0 +1,26 @@
+[
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          IDLE\n  native engine not loaded yet\n  revision        1   (rejected as stale: 0)\n  blocks          0   test loads: 0\n  analysis        OFF\n  last result     none yet\n"
+  },
+  {
+    "command": "forceload add -16 -16 48 32",
+    "response": "Marked [-1, -1] chunks in minecraft:overworld from [-1, -1] to [3, 2] to be force loaded\n"
+  },
+  {
+    "command": "setblock -1 200 0 minecraft:stone",
+    "response": "Changed the block at -1, 200, 0\n"
+  },
+  {
+    "command": "fill 0 200 0 4 200 0 blockreality:steel_beam[axis=x]",
+    "response": "Successfully filled 5 block(s)\n"
+  },
+  {
+    "command": "execute positioned 0 200 0 run br scan 2",
+    "response": "Scanned 5x5 chunks: 5 structural blocks now tracked (5 total).\n"
+  },
+  {
+    "command": "br status",
+    "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          DISABLED\n  native engine not loaded yet\n  revision        13   (rejected as stale: 0)\n  blocks          5   test loads: 0\n  analysis        OFF\n  last result     none yet\n"
+  }
+]

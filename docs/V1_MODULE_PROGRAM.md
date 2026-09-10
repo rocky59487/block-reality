@@ -120,3 +120,10 @@ cached bootstrap/真拒絕清色已實見；材質方向與長訊息布局仍有
 HUD_READABILITY 已完成16份原場景相同讀數对照與2張大字級圖，長拒絕換行、讀數底板、
 原生警示優先及超量明示省略已實見；首次通知重疊保留並縮寬修正。只動客戶端布局與翻譯，
 未動引擎/封包。詳 `../evidence/HUD_READABILITY/RESULTS.md`；材質方向、真互動與CM/N25仍待完成。
+
+NATIVE_CANDIDATE_RUNTIME 已按先凍判準整合 #120 與 #119（含其10146b5文件增量）。
+來源42e10f5與目前契約相同；目前jar15,203,560B、SHA5a93c66bfe5f…，完整Windows509PASS/12平台SKIP、
+Linux520PASS/1平台SKIP。兩平台同jar48frame×3/快取/權限/雙JVM，來源10反例/4守門移除與bundle9反例通過。
+新庫真Forge開發环境16項狀態/24合成玩家事件/45項client守門與16張畫面通過，bundled資源自動解包。
+首個空世界前置與漏通知失敗照存；不替代installed-jar/Windows CM/N25/FPS，不替換正式引擎。
+詳 `../evidence/NATIVE_CANDIDATE_RUNTIME/RESULTS.md`；#119先後兩個候選的歷史數字/hash各自保留。

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.render.DrawableCellsTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-10T00:24:35" hostname="rockylaptop" time="0.006">
+  <properties/>
+  <testcase name="occupancy follows, so a face the mined block was hiding becomes visible" classname="com.blockreality.core.render.DrawableCellsTest" time="0.001"/>
+  <testcase name="the key packs the full build height and both horizontal extents" classname="com.blockreality.core.render.DrawableCellsTest" time="0.001"/>
+  <testcase name="a block a member shares with a facet is one cell, not two" classname="com.blockreality.core.render.DrawableCellsTest" time="0.0"/>
+  <testcase name="an emptied world draws nothing at all, rather than the last picture" classname="com.blockreality.core.render.DrawableCellsTest" time="0.0"/>
+  <testcase name="plate blocks are in the set too, or a buried beam fights the floor above it" classname="com.blockreality.core.render.DrawableCellsTest" time="0.0"/>
+  <testcase name="with the world unchanged, every cell of the answer is drawable" classname="com.blockreality.core.render.DrawableCellsTest" time="0.0"/>
+  <testcase name="mining a slab block drops it as well; the rule is not member-only" classname="com.blockreality.core.render.DrawableCellsTest" time="0.001"/>
+  <testcase name="a mined block leaves the drawable set the same frame, with no new packet" classname="com.blockreality.core.render.DrawableCellsTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

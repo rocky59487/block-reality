@@ -1,0 +1,1837 @@
+[
+  {
+    "path": ".github/tectonic2-contract-ref",
+    "bytes": 922,
+    "sha256": "521b48c2340dfd89aeea82e313e2dd1a568e41d2cf1ffaffe7334bad20b6e509"
+  },
+  {
+    "path": "contract/BSI.md",
+    "bytes": 40743,
+    "sha256": "4bcb78e14885e851cd8457f62302a96f14aba21a7e54b876a6a50e25a92bb76d"
+  },
+  {
+    "path": "contract/CONTRACT_SHA256",
+    "bytes": 65,
+    "sha256": "eeada67e1ae5b29b5df473a8d7af4e27f0bba1f8e63030d595cc5c0863b422cb"
+  },
+  {
+    "path": "contract/README.md",
+    "bytes": 1839,
+    "sha256": "7021a3837ffd8fb9238f43c107b0ce0083c23412e58e6ecaf59dd680ae4a1739"
+  },
+  {
+    "path": "contract/bsi.schema.json",
+    "bytes": 19669,
+    "sha256": "196280f54b575761e89140362fe51e24dee4c453528632af915f6365d551c3ff"
+  },
+  {
+    "path": "contract/bsi_capi.h",
+    "bytes": 4649,
+    "sha256": "0bf11251266ff2ef7dd525205487d35b80647aea3f014ad68f6af7267ed54014"
+  },
+  {
+    "path": "contract/bsi_engine.h",
+    "bytes": 13399,
+    "sha256": "f94454236d761849b9b11788764dbc0f16263855734daa531f94992afdd648c2"
+  },
+  {
+    "path": "contract/check_contract.py",
+    "bytes": 1802,
+    "sha256": "7cc10992e6c5d5d07668b825a2b0c3c2cc00087b4d6a98ece13cf36a596a15be"
+  },
+  {
+    "path": "contract/conformance/README.md",
+    "bytes": 6567,
+    "sha256": "e849a2ec04e50f1ceff387747ef71076b14ec4d050db436f97b78d21660b30c7"
+  },
+  {
+    "path": "contract/conformance/cases/C10-buckling-closed-forms.json",
+    "bytes": 2043,
+    "sha256": "5380741d168335796f0aa75e8850ab42af03d30d95704e176e634e3da6fb1411"
+  },
+  {
+    "path": "contract/conformance/cases/C11-fail-closed.json",
+    "bytes": 2145,
+    "sha256": "778c94f098e52638058302ae174bd3b58cfb33acb4a7c28295d1a6725be42e9a"
+  },
+  {
+    "path": "contract/conformance/cases/C12-f32-display.json",
+    "bytes": 2696,
+    "sha256": "b2815502368418cb09abd80355848aa56fca5a95cf46cbeb5268d12c9aa44e25"
+  },
+  {
+    "path": "contract/conformance/cases/C13-extensions.json",
+    "bytes": 1542,
+    "sha256": "ff5e846a71e39ad0d0d24211cc9b7fce8d1fe4dad9ff9bf230252aa0a1d39138"
+  },
+  {
+    "path": "contract/conformance/cases/C4-cantilever-selfweight.json",
+    "bytes": 2175,
+    "sha256": "b43924d589c6376c2a9d53423093bf4bb5dce4e5a94b3ac5ba9a0d5e49f5f0b7"
+  },
+  {
+    "path": "contract/conformance/cases/C4-fixedfixed-pointload.json",
+    "bytes": 2224,
+    "sha256": "305b95ff489471fc6475e15bdce3cedbf9f74033dba25957f795b04df640734a"
+  },
+  {
+    "path": "contract/conformance/cases/C5-floating-beam-mechanism.json",
+    "bytes": 1821,
+    "sha256": "727ed0edb5a693e5107433b48476ef1612b7e790c7bae93e423dffe8565de610"
+  },
+  {
+    "path": "contract/conformance/cases/C6-slab-on-beam.json",
+    "bytes": 2876,
+    "sha256": "8f7719a8f12508561a97617428ffad4b3ea2e0cc11366763788632a73d6f9b22"
+  },
+  {
+    "path": "contract/conformance/cases/C7-overloaded-flag.json",
+    "bytes": 2445,
+    "sha256": "3d60b1951482ff2b421ceaf058c634813133187a4ffffab3ed61c31966278cc1"
+  },
+  {
+    "path": "contract/conformance/cases/C8-sign-cantilever-top-tension.json",
+    "bytes": 907,
+    "sha256": "087e3f7a735a875b01d330f33e270da910a96d260fa7edb2581b745c72466119"
+  },
+  {
+    "path": "contract/conformance/run.py",
+    "bytes": 56413,
+    "sha256": "9a1aa51d94bb8c6b9b86a37f273a3f6e1e02a850f324d024f740f5793ac8c076"
+  },
+  {
+    "path": "contract/conformance/test_section_order.py",
+    "bytes": 2154,
+    "sha256": "cbd123166bb3f82ff921664906d612e314b7a5ae5f9cc76be0828edd8b89bd75"
+  },
+  {
+    "path": "contract/host/CMakeLists.txt",
+    "bytes": 4603,
+    "sha256": "a57b870e03a4c7b556cc869b8c0a70b1dd953a0b4eaadd86c10ea5428fc6fd51"
+  },
+  {
+    "path": "contract/host/README.md",
+    "bytes": 4757,
+    "sha256": "054bd978001b28a695f79ac9e553d129a3ab9708b6babb5675eab8b197bf0a9b"
+  },
+  {
+    "path": "contract/host/bsi_arena.cpp",
+    "bytes": 2719,
+    "sha256": "e82602b4d103d922b68672f3089fcd57e686032c6ea3d9c4d17b9af468c18629"
+  },
+  {
+    "path": "contract/host/bsi_arena.hpp",
+    "bytes": 2048,
+    "sha256": "cecc208dd00f2287f5e35fe625dad790aa0ed3a78088b277597d6223f4d7cd60"
+  },
+  {
+    "path": "contract/host/bsi_base64.hpp",
+    "bytes": 1986,
+    "sha256": "ac8682e3ab5a94dbabcd9b0c6576eb54f91ad8e73a473b1aea9a782421cd25ee"
+  },
+  {
+    "path": "contract/host/bsi_buckling.hpp",
+    "bytes": 1485,
+    "sha256": "70e74aac8257534849cdf8786b6fb6503ab3c18a1f442703970a3425ac9f1c15"
+  },
+  {
+    "path": "contract/host/bsi_canon.hpp",
+    "bytes": 4243,
+    "sha256": "befa7359e678a55ea55e5d5d91e396d2601d1e5fa3c126af3ff2ff9b677bfca1"
+  },
+  {
+    "path": "contract/host/bsi_capi.cpp",
+    "bytes": 7832,
+    "sha256": "35507f39d7bc8b63a6ee3073064d7ba9c2f26fe8175e668505917bea3cd646ef"
+  },
+  {
+    "path": "contract/host/bsi_capi.exports.map",
+    "bytes": 647,
+    "sha256": "adae9b6c998da5c57fcf0da39e4a1fb3f75e83a63afeef87c9897946f8358518"
+  },
+  {
+    "path": "contract/host/bsi_engine_loader.cpp",
+    "bytes": 3499,
+    "sha256": "31e6546c4517cdba17f9d721066f20cb846c657273641316cb632f32b4e38af5"
+  },
+  {
+    "path": "contract/host/bsi_frame.hpp",
+    "bytes": 2876,
+    "sha256": "c7740afc4914ac7b265a4e435f3bad60d4f4e6a81a1a627a643744635ce145a5"
+  },
+  {
+    "path": "contract/host/bsi_host.h",
+    "bytes": 3364,
+    "sha256": "481029bc85ba400b1469823d4f5745ae35f081d9f2e5d07bac2bef81b35a5319"
+  },
+  {
+    "path": "contract/host/bsi_hostd.cpp",
+    "bytes": 3133,
+    "sha256": "317ed92d25954ee734228ff93f34e1640916ab9bd32e9762004f3285c39d4d6e"
+  },
+  {
+    "path": "contract/host/bsi_json.hpp",
+    "bytes": 12840,
+    "sha256": "bee127cb9887dafd8b56a6c86d392f35300bae55c394e5655657c85f36b8841f"
+  },
+  {
+    "path": "contract/host/bsi_member_geometry.hpp",
+    "bytes": 1403,
+    "sha256": "aa5aac366b20d1b1508b7149a1f9a19862179d4cfcbc6e1fc22d91bf84613f87"
+  },
+  {
+    "path": "contract/host/bsi_recovery.hpp",
+    "bytes": 2339,
+    "sha256": "4de66a521af163cd1a2abe5defd062ddd71736d06c001aa49ffe5be1471f446f"
+  },
+  {
+    "path": "contract/host/bsi_reply.hpp",
+    "bytes": 6724,
+    "sha256": "61947838031274f43beeb4fddb006488a00aecf9a041d36e3292b6bfc8063ba9"
+  },
+  {
+    "path": "contract/host/bsi_schema.cpp",
+    "bytes": 10907,
+    "sha256": "f32f68eb04770a0bb23dfb9a12636d3ce96357dd75bd3206b3e1fd51a8de7487"
+  },
+  {
+    "path": "contract/host/bsi_schema.hpp",
+    "bytes": 3647,
+    "sha256": "d66437173a40455f7c587240f68c2095ea77f7e5b023721c700a15ba8c5aa781"
+  },
+  {
+    "path": "contract/host/bsi_schema_embed.cmake",
+    "bytes": 1779,
+    "sha256": "ff3cd2934d076d47be59066ab3cd8956e86dcff19d01f527f028781f0124d91d"
+  },
+  {
+    "path": "contract/host/bsi_session.cpp",
+    "bytes": 33953,
+    "sha256": "774dff69dff149e36e5aa6e36372b170fe3d11aed30bf0ecdcdfd646351dd8f0"
+  },
+  {
+    "path": "contract/host/bsi_sha256.hpp",
+    "bytes": 3351,
+    "sha256": "679ee354cd43c0aeb3789b00a70347d7e179694a8158380d73c3f2fe5c42d1c8"
+  },
+  {
+    "path": "contract/host/bsi_station_identity.hpp",
+    "bytes": 2243,
+    "sha256": "cb23ee73ffc7a3c9b2ea8d3eb015a4d9f74084f15cb546a3d98e945c07debe00"
+  },
+  {
+    "path": "contract/host/bsi_transports.hpp",
+    "bytes": 678,
+    "sha256": "606082abeea0c63c463aeb2541c8ae615540a878d657affbff992fb6d07b92aa"
+  },
+  {
+    "path": "contract/host/bsi_vocab.cpp",
+    "bytes": 12920,
+    "sha256": "20375b24d7cc8a8137e818fefcba3090fbcb3e1b84125a715ad4c0d5fe920340"
+  },
+  {
+    "path": "contract/host/bsi_vocab.hpp",
+    "bytes": 1491,
+    "sha256": "54dcdf9ec9af82d5da1fb33cd24156f538894077db35e8e5333c443bb29fe19b"
+  },
+  {
+    "path": "contract/host/bsi_writer.cpp",
+    "bytes": 19788,
+    "sha256": "791cb0e516ac170334e7a0f828c8df953c099c5defc20eed469a4953d36197c5"
+  },
+  {
+    "path": "contract/host/test/counting_engine.cpp",
+    "bytes": 1913,
+    "sha256": "11c9b2abc163df308f8e139015caf23af96c2a2607dde275f1613e0a1c43b44f"
+  },
+  {
+    "path": "contract/host/test/host_tests.cpp",
+    "bytes": 26600,
+    "sha256": "727f65efc2a4cc929cef744b619b642d9d82a074fdf7ed105a6103704c9dcbab"
+  },
+  {
+    "path": "contract/host/test/recovery_tests.cpp",
+    "bytes": 12178,
+    "sha256": "a7011543121ea1b09cb5258bde02c408f5bce33b6e22e8d6c21124a4af020ca8"
+  },
+  {
+    "path": "contract/host/test/retry_tests.cpp",
+    "bytes": 11869,
+    "sha256": "66b5fe566482c6aa85626adfb25ae6854519dc92d3a2bcad97133da72de503a5"
+  },
+  {
+    "path": "contract/host/test/stub_engine.cpp",
+    "bytes": 7200,
+    "sha256": "7ed1180de22a25cea13d389b3ec1a0abbfc9958eb23b10332666260684f9496d"
+  },
+  {
+    "path": "contract/host/transports/arena.cpp",
+    "bytes": 4377,
+    "sha256": "801f10c72d9b6c533c3bf068aec061e8298f99e1a6168f573197d59924a9da48"
+  },
+  {
+    "path": "contract/host/transports/frame_stdio.cpp",
+    "bytes": 1319,
+    "sha256": "a2a4a25ce7fc0dcc92671f6ff2e82429abad4334bbb03be0828a1a9e54b13dac"
+  },
+  {
+    "path": "contract/host/transports/stdio_b64.cpp",
+    "bytes": 2402,
+    "sha256": "c591a97bcf2209fefe2002f76aa4caf1bb896ec5c74372da78ff567fba5605c5"
+  },
+  {
+    "path": "forge/README.md",
+    "bytes": 6669,
+    "sha256": "5912acbf36a6742ad9e1355fb484948c5a2cd636fe4f08569ebcb2a202ba55ea"
+  },
+  {
+    "path": "forge/build.gradle",
+    "bytes": 11885,
+    "sha256": "cd19b9cf1c4fb22e7662ae2dbefe89977ca027c72bfe31f3ce89b8c8f65c1776"
+  },
+  {
+    "path": "forge/gradle/wrapper/gradle-wrapper.jar",
+    "bytes": 43764,
+    "sha256": "7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172"
+  },
+  {
+    "path": "forge/gradle/wrapper/gradle-wrapper.properties",
+    "bytes": 250,
+    "sha256": "05e7bec397ce5a52628d31dcc4c8b636cbdc55e28f8cef19d097c71b5c5fbb42"
+  },
+  {
+    "path": "forge/gradlew",
+    "bytes": 8733,
+    "sha256": "b187b4c52e749f5760afdd6fadc31b2a98ad35fb249bf0dff03b72650f320409"
+  },
+  {
+    "path": "forge/gradlew.bat",
+    "bytes": 2843,
+    "sha256": "94102713eb8fb22d032397924c0f38ab2da783ba60d07054339f1190a0c4e2cd"
+  },
+  {
+    "path": "forge/settings.gradle",
+    "bytes": 288,
+    "sha256": "7c115b597d7def3204c6a96775a2e49706c8de7a18d027ceb9ae10f38f4a9ca3"
+  },
+  {
+    "path": "forge/src/clientProbe/java/com/blockreality/impl/client/ClientRenderProbe.java",
+    "bytes": 10417,
+    "sha256": "55a48bb5dbcc4a4d0676826bbe3eb4530d732d5c68ab3902b476ed1b6c049c43"
+  },
+  {
+    "path": "forge/src/integrationTest/java/com/blockreality/impl/net/StateDeliveryProbe.java",
+    "bytes": 6651,
+    "sha256": "79dcd141eebad3b578d85a1125287bc54e4043b4bd1a119740b0a7d1b4a801ad"
+  },
+  {
+    "path": "forge/src/integrationTest/java/com/blockreality/impl/server/ConstructionProbe.java",
+    "bytes": 2483,
+    "sha256": "6d2dec85bd56f5f223430ff50e2d40b5bcf6bc025111aa943ed9c2b53c93a764"
+  },
+  {
+    "path": "forge/src/integrationTest/java/com/blockreality/impl/server/PipelineProbe.java",
+    "bytes": 3784,
+    "sha256": "615ccf879dd0536a96d3bffaa7e16e739e7dcfcc196c5e216aec9813de6eb24c"
+  },
+  {
+    "path": "forge/src/integrationTest/java/com/blockreality/impl/server/WorldRegistryProbe.java",
+    "bytes": 3260,
+    "sha256": "e23a761477f24e9c0c887e807cad3eda132a1e253006816c13d6932aed4f7650"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/BRConfig.java",
+    "bytes": 3442,
+    "sha256": "8a04b4954806859f453838080530999ac30a3b7044f3cb2e00c2e049bd09516c"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/BRContent.java",
+    "bytes": 10290,
+    "sha256": "d037a60d14f9c957e23d2bfb476869416eb86e9ea132a19d8f49b0248f8fc338"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/BlockRealityMod.java",
+    "bytes": 2131,
+    "sha256": "906008ca77e4fc297c7b35fa342b06d294c51abdd2b38e328738f2570d2d5725"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/block/ProductTooltip.java",
+    "bytes": 1923,
+    "sha256": "97a53e8314519df829ab81e84011a99c69599f73048e30beaabc48a12b56adba"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/block/StructuralBlock.java",
+    "bytes": 6473,
+    "sha256": "77e53b7fb74531cdee83fe8d067bcfd037bc5ed0422655289c56bd451c5fea2c"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/client/ClientBootstrap.java",
+    "bytes": 1643,
+    "sha256": "ea70902f4738c1f10d15a746988893225cfd0edf5601068e2ccf5c0a1e25cd1a"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/client/ClientEvents.java",
+    "bytes": 1531,
+    "sha256": "51b1d86f6e8b53866d77c976876829e9f6375d697c38da5c8aca033082817b60"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/client/ClientStressState.java",
+    "bytes": 20203,
+    "sha256": "472f93f30ecc7024f6f7bd7591383dbffbeaaaaf05711024bc3833f7d45733cb"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/client/HudPanel.java",
+    "bytes": 6183,
+    "sha256": "0299ea8dbfec2b959d21fbfa6ac139820d971ce8ed5a253606b30e98806dd8d4"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/client/StressHud.java",
+    "bytes": 13976,
+    "sha256": "1ec911ec7f280085c9e3affc29bcfd0930c65781d7ee30c631598a4c20ee9bcd"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/client/StressSurfaceRenderer.java",
+    "bytes": 16529,
+    "sha256": "553a832ba9af0666ac14b114f2a7d7eb3713cc7486d6590e8acd9f598b521f1e"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/command/BRCommand.java",
+    "bytes": 27420,
+    "sha256": "1485e9733bb7bcdce50ae0ccec88efac255631727600c04e69b99f7017396e6d"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/command/BrPermissions.java",
+    "bytes": 3570,
+    "sha256": "15a0930fd36950c07f05c295ac53816ac73697b113567cc8e124c18223654c24"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/item/StressGlassesItem.java",
+    "bytes": 2847,
+    "sha256": "86f4d70f875ca75268f4f4a46e6d9713d34c9fb13bcca19c15228fdd1be25a6d"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/net/AnalysisUpdatePacket.java",
+    "bytes": 5870,
+    "sha256": "14051a180bd57180de3028f7431012f6b0c1dbcc3333f091d4659d36ec9d6f2e"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/net/BRNetwork.java",
+    "bytes": 4507,
+    "sha256": "5cef1f31cbada11df7741b9f45e2e58e1b3e7b7424b703f435eca18900d23443"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/net/DisplayDelivery.java",
+    "bytes": 5357,
+    "sha256": "5e94d5563ddf4ca12804233d3a3230077ad3c2b81ab13e9dcdd8e67002b713fc"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/net/MemberPacketCodec.java",
+    "bytes": 6687,
+    "sha256": "2daad3c8a2c370c3b3fc403a4a2ffa135c9f3491a903bed6651ad12d2bfaffa7"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/net/ShellPacketCodec.java",
+    "bytes": 4619,
+    "sha256": "5e6dd41245323eed01634a4e379363764f6dd55758a857c353364b6869ef15d1"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/net/StressResultPacket.java",
+    "bytes": 23071,
+    "sha256": "b3e5dec3e756845b032c4a1c07371e591f074b41303bd8d8e30690db89deea01"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/server/AnalysisExecutor.java",
+    "bytes": 4867,
+    "sha256": "cdffd662dd901e969d113294675ba283b30bb2d285c4bb1058a16420f5ed4d70"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/server/ChunkAvailability.java",
+    "bytes": 1252,
+    "sha256": "decf067d813a0d7cf2d4deef8eceb739e933719387fa53b515c739c251c0daab"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/server/GatherCycle.java",
+    "bytes": 4316,
+    "sha256": "555a7a2519c3d2f78618c78d69671a5efe1d7c4379731bf3d74c0e2c3cc54844"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/server/InputCoverage.java",
+    "bytes": 788,
+    "sha256": "55592a7e398fa4948ac003a2291fcdbf72e59be4ea0945a2114bbb7e00ee4b86"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/server/SnapshotLoads.java",
+    "bytes": 4437,
+    "sha256": "57e035157e8b03cbcf6a39c5366c4deffe75fba944f94b0d195da0009e16aedb"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/server/SolveDispatch.java",
+    "bytes": 2782,
+    "sha256": "9df2a7d72beac055162df276bb63e7661882be6c6589ed27844509bc188f1a76"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/server/StructureManager.java",
+    "bytes": 43356,
+    "sha256": "c8107a89211295aa848eb5965c4e0a674344cb6330a32cb11b77109a4a09823e"
+  },
+  {
+    "path": "forge/src/main/java/com/blockreality/impl/server/WorldIndexData.java",
+    "bytes": 9937,
+    "sha256": "ab47fd539aff9bebdd1543c6bad09e343299de7994eb78ba501418ebb8c4601f"
+  },
+  {
+    "path": "forge/src/main/resources/META-INF/mods.toml",
+    "bytes": 1694,
+    "sha256": "a33f73154bc85225460e644a8dd78ef9caf4535b8294d59ab9ba2127aa73f90d"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/blockstates/brick_pier.json",
+    "bytes": 87,
+    "sha256": "2ed60fdefbb09b4820de95300bf657cb6837b1bede06bfe49d0ce9f7be7cfbfc"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/blockstates/concrete_beam.json",
+    "bytes": 90,
+    "sha256": "514786396a8b76d5eab9cc0008fdb6c572c15016d840fa796fc4d70a466cbfba"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/blockstates/concrete_slab.json",
+    "bytes": 80,
+    "sha256": "58d5c2c05beeb721858ef66f818d7f81704c3be21bb94fba4623c8010da3888a"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/blockstates/concrete_slab_150.json",
+    "bytes": 94,
+    "sha256": "b26b3415eb3492ada68a98a8dac24dfaaa2c2ba801eaa62748c76f0abfcc3960"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/blockstates/steel_beam.json",
+    "bytes": 77,
+    "sha256": "cada4737ca4fa4adbae59ff54774ac63a9968d41b580781f7988a9684bfaaa96"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/blockstates/steel_beam_100x200.json",
+    "bytes": 95,
+    "sha256": "758e26c0f5407a61c4c1717b37bd96c510eb0455cd11c6da3811176fb8b01f6d"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/blockstates/steel_beam_150x300.json",
+    "bytes": 95,
+    "sha256": "211f732c5b26d6519b4ef372468503609695af1dc25fca6d5ca1a09fe8e62628"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/blockstates/steel_plate.json",
+    "bytes": 88,
+    "sha256": "9fbbf5713c270d4be4c5e84e06aed6958f7fcdd07971b33bcd034cfeeb020589"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/blockstates/timber_beam.json",
+    "bytes": 88,
+    "sha256": "07302733857aa1da62b3e50ed52edb767331cfa81d5fad8e9099bed4053fac1e"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/lang/en_us.json",
+    "bytes": 5924,
+    "sha256": "9818c3b6750ba8f39a6ddea7b3cef8ecd0d8b0a30de8de2eeb37bfbf6934c2db"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/lang/zh_tw.json",
+    "bytes": 5690,
+    "sha256": "a8b7016e7865d52b4784db63d70240571726f98ce8a7fc4b8c4c31303bf50d24"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/block/brick_pier.json",
+    "bytes": 100,
+    "sha256": "09cddd35760ec82477f6eae2750e808be01dff349c5f566b4fd91727f824eeaf"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/block/concrete_beam.json",
+    "bytes": 107,
+    "sha256": "a2410f4c217dc3d53c06ec497d096a8ed1dd725417cdca2a2f63c8a742923cd3"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/block/concrete_slab.json",
+    "bytes": 106,
+    "sha256": "21da8944672c992cc65bfff713ef680d7b802163858cb4182c7814bc6832f2dc"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/block/concrete_slab_150.json",
+    "bytes": 113,
+    "sha256": "130ea39a4e386590c83b1d9d1dd52a03924b4bbef758861cf6244d7a3a714afb"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/block/steel_beam.json",
+    "bytes": 104,
+    "sha256": "21e5a7cecc5afd48073ba637e06b309f291192b6b21333c76b9d16171c754369"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/block/steel_beam_100x200.json",
+    "bytes": 109,
+    "sha256": "f782ab8294412c4c6327e0f73ab30caad176ebc60fb0e227c046276cd49ba37e"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/block/steel_beam_150x300.json",
+    "bytes": 112,
+    "sha256": "c0252efa802b89e5b47f96310c7d3caaaa386e84f7421532986b6963cc5f6cdb"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/block/steel_plate.json",
+    "bytes": 109,
+    "sha256": "71391c867f9605630f2809a3f1128bd1f9fcb2d154ca79a44590b7e13d824bc7"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/block/timber_beam.json",
+    "bytes": 110,
+    "sha256": "d2c9575ea683fe4ecaef17b36d735fa254445aadb465608cabd2d07a0798cc5f"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/item/brick_pier.json",
+    "bytes": 48,
+    "sha256": "2f3c81134903f20111601b706b68c184f2775eb90f012c79f16edb30cbb1b70b"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/item/concrete_beam.json",
+    "bytes": 51,
+    "sha256": "ebeaac2c60e0a2f0a899f64a1c12ff69147c30839c9597603d51bfb5514e38b6"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/item/concrete_slab.json",
+    "bytes": 51,
+    "sha256": "0d466663fc0d9c1182bde2b22f9dda82e80352c5c5d828c828a1ac08b7b19b60"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/item/concrete_slab_150.json",
+    "bytes": 55,
+    "sha256": "0558b7f8657eaf982c0a733cc703304b3a3a46fde4fc87b6af506b58c3b1f42b"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/item/steel_beam.json",
+    "bytes": 48,
+    "sha256": "fee057b2a8b689e3070b143792bf833ef1e63a23791447d918947a92b8ca1eeb"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/item/steel_beam_100x200.json",
+    "bytes": 56,
+    "sha256": "92688adb3ebf7defde4047db7b3fc613722ef96a865824e7ae68d9d45ed68ef4"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/item/steel_beam_150x300.json",
+    "bytes": 56,
+    "sha256": "5f4e4cfb3e252bb77197bf9f1d9b55e91e47fc6a2cb53976c9ed2a9dd1292554"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/item/steel_plate.json",
+    "bytes": 49,
+    "sha256": "8d034ae752709bd93799f4b61b04c302ba0202d4105767aa4ed14e574c7b52b7"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/item/stress_glasses.json",
+    "bytes": 104,
+    "sha256": "1606ed7283fd2d346d647afabb27f60e339a8386da4992e65dc722eb07957d4f"
+  },
+  {
+    "path": "forge/src/main/resources/assets/blockreality/models/item/timber_beam.json",
+    "bytes": 49,
+    "sha256": "2988cf7c47c305bf732ed0a91db7dae5f00ac2ccf9f5d7bb2e78a5d4227422ea"
+  },
+  {
+    "path": "forge/src/main/resources/blockreality_icon.png",
+    "bytes": 2244,
+    "sha256": "2e503b9c48af23f59394b07024aee681338a6cb3dc65fbff78621db3b385ba51"
+  },
+  {
+    "path": "forge/src/main/resources/data/blockreality/loot_tables/blocks/brick_pier.json",
+    "bytes": 336,
+    "sha256": "04a4088b2df2116a20474999833413b8b4d4a9293bbd3f3e2899c991e51c2ef8"
+  },
+  {
+    "path": "forge/src/main/resources/data/blockreality/loot_tables/blocks/concrete_beam.json",
+    "bytes": 339,
+    "sha256": "925684934db09580356aea81d426b210d766030f4f4f0e7810e2f69f06455767"
+  },
+  {
+    "path": "forge/src/main/resources/data/blockreality/loot_tables/blocks/concrete_slab.json",
+    "bytes": 339,
+    "sha256": "c021e147477a1fde847621470cdabfa33eec262aaf015a5850d7fbc243e3b2e5"
+  },
+  {
+    "path": "forge/src/main/resources/data/blockreality/loot_tables/blocks/concrete_slab_150.json",
+    "bytes": 343,
+    "sha256": "73e70f4de9b4ad04b0bebb26b5049e79ddacecb64aaabae3c75b23dfb38b266f"
+  },
+  {
+    "path": "forge/src/main/resources/data/blockreality/loot_tables/blocks/steel_beam.json",
+    "bytes": 336,
+    "sha256": "37e7eb771516ff0374d5f26b5cded8446cd6b02ea890279ff4d7fa503e5ec231"
+  },
+  {
+    "path": "forge/src/main/resources/data/blockreality/loot_tables/blocks/steel_beam_100x200.json",
+    "bytes": 344,
+    "sha256": "c584086c21578a50897bb9dde6d5a869cda2cd64b5416a20c16a372e3aee980c"
+  },
+  {
+    "path": "forge/src/main/resources/data/blockreality/loot_tables/blocks/steel_beam_150x300.json",
+    "bytes": 344,
+    "sha256": "c1fe6b5827c032f3f4eb1a3d2246a7441fce449db1f4cc4772da3ce9033e1eb7"
+  },
+  {
+    "path": "forge/src/main/resources/data/blockreality/loot_tables/blocks/steel_plate.json",
+    "bytes": 337,
+    "sha256": "81ccc880f16c28c14f41072d7d9c034f77506d9eedff5f9a5572df5e2f78ebbb"
+  },
+  {
+    "path": "forge/src/main/resources/data/blockreality/loot_tables/blocks/timber_beam.json",
+    "bytes": 337,
+    "sha256": "b81e9734b6807e417cd14f2bcbc8369f37d73d6a8259d89fab8aeb9d5272fae6"
+  },
+  {
+    "path": "forge/src/main/resources/data/minecraft/tags/blocks/mineable/axe.json",
+    "bytes": 73,
+    "sha256": "40e31d58c233ecba5d3fce0ce6f956458ec962666b3e196ba477f95ba7e927b0"
+  },
+  {
+    "path": "forge/src/main/resources/data/minecraft/tags/blocks/mineable/pickaxe.json",
+    "bytes": 319,
+    "sha256": "b836556e93bbb1f2833850a58ce719710810d8fd4fec82491c5339ef86ed270c"
+  },
+  {
+    "path": "forge/src/main/resources/data/minecraft/tags/blocks/needs_stone_tool.json",
+    "bytes": 319,
+    "sha256": "b836556e93bbb1f2833850a58ce719710810d8fd4fec82491c5339ef86ed270c"
+  },
+  {
+    "path": "forge/src/main/resources/pack.mcmeta",
+    "bytes": 88,
+    "sha256": "4c95ac9c00d46e4cbe777396fdcf0fe26397b27b46aa5af6ed7fec6c5078b806"
+  },
+  {
+    "path": "forge/src/profile/java/com/blockreality/impl/server/RegistrySaveProfile.java",
+    "bytes": 9545,
+    "sha256": "e4743b6d83ed8edc6de391067753868a38ff9b693a737da878fe5bae8d33e99b"
+  },
+  {
+    "path": "forge/src/renderServerProbe/java/com/blockreality/impl/server/RenderServerProbe.java",
+    "bytes": 2070,
+    "sha256": "735fb3d26584698daba90321b458d8d03012448b0387204f2fb27f9e03b17ee5"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/GameVocabularyResourceTest.java",
+    "bytes": 1077,
+    "sha256": "0f7ddd9ea40ac40f7a21534a7c1e95b655599339872edcdcb75234b2a80a71fc"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/LangKeysTest.java",
+    "bytes": 10627,
+    "sha256": "86927179f3580db64658fe58f2d6ee66e3f061cf4e91ccb1574b21566f353125"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/PlacementAxisTest.java",
+    "bytes": 1710,
+    "sha256": "e1f03a11f30dd8c43ccbbdd5820cc7515fb1e0b5fcfb1828283dd84869bf797d"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/block/ProductTooltipTest.java",
+    "bytes": 2220,
+    "sha256": "91ad2242d30e7d5c063cebbb91844d3f7f7e9e8af8f28f3fdd138b152c8e3d54"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/command/BrPermissionsTest.java",
+    "bytes": 2965,
+    "sha256": "fca3656c67e49153e4b864dac8cacc9a77fbeaf2440156228bbcb94dbdf730b3"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/net/AnalysisUpdatePacketTest.java",
+    "bytes": 9755,
+    "sha256": "ffa83dfaa6b0881486157cce8d300e96ef55c59bf6386cd576f2fbcf7e446c17"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/net/DisplayDeliveryFixtures.java",
+    "bytes": 3144,
+    "sha256": "434b9f1e19238b947f3444a50b171bd4e31741ce269f6e2f17bdb1ff1056795f"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/net/DisplayDeliveryProbe.java",
+    "bytes": 3337,
+    "sha256": "0934a2dcf72a0990faed7c5a082ce18a01d26186cc2cf539aa1af74d7f91ea9e"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/net/DisplayDeliveryTest.java",
+    "bytes": 8904,
+    "sha256": "b088a3c234f21341b8d23d13c12322dafe668af877a7e8fc927ce5222071df9d"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/net/GlobalVerdictPacketTest.java",
+    "bytes": 3245,
+    "sha256": "cd1c711efcd6d07d4aa92272817ac4c658fd1da4e3fdae9e8ac2cbd715a25da8"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/net/MemberPacketCodecTest.java",
+    "bytes": 10609,
+    "sha256": "651b41b10f7b4dcb8f4a6a578b2c62077bacf4d806ad27dbb15bb3ac4d0d483a"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/net/NativeOnlyPacketGoldenTest.java",
+    "bytes": 2374,
+    "sha256": "9a5c0d4ab38b236ab9bfcd118ed335ee0c8da9d230c295706474e307f5e525a6"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/net/NativeResultPacketTest.java",
+    "bytes": 4456,
+    "sha256": "53c789054b464ef484386fe38db1d7517d839c1aae8a3ed2b8e77e428140cf61"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/net/ShellPacketCodecTest.java",
+    "bytes": 5270,
+    "sha256": "963dbee27fc65e23de9020cd4b22f1dc0f67af0fb3d2a3c40f01c3bae8c483c1"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/net/StressResultPacketTest.java",
+    "bytes": 31856,
+    "sha256": "a45e560f3c9b697fbff8d312caad1f7acc4ae50b7ac84782140cc06a236b022c"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/server/AnalysisExecutorTest.java",
+    "bytes": 2237,
+    "sha256": "be13e13e14d38f84452858edfebf15d4bc3d653ef0a22c1476ea1acb530f2c01"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/server/BucklingPolicy.java",
+    "bytes": 759,
+    "sha256": "4587d95917f457fa2a01eac914110356128f91b387f5c5471d6d30077e39a781"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/server/BucklingPolicyTest.java",
+    "bytes": 2552,
+    "sha256": "4ae30e010609d4c20fd75075f13d2360ebcda4580164c5885022830bc53cb8d6"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/server/ChunkAvailabilityTest.java",
+    "bytes": 1812,
+    "sha256": "347166edfda8f52f9968f4eecacc2950f6ce266fc3ba528860e9412cee1ec240"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/server/GatherCycleTest.java",
+    "bytes": 4603,
+    "sha256": "bedbd9ad50078e2796b91ec3c7140275e9725b95fc5acec4fc6bcc5ce1991ab4"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/server/InputCoverageTest.java",
+    "bytes": 1003,
+    "sha256": "c385b8df41a15aec40dfbaa2bd1f3858f1697381f4278d8dc48e5d385649e225"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/server/SnapshotLoadsTest.java",
+    "bytes": 4687,
+    "sha256": "c6a4cd6719a51d92e4c3937b14c2dc4006edae821e9628639557fde60ef75478"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/server/SolveDispatchTest.java",
+    "bytes": 3494,
+    "sha256": "84ee4760119a5e4f8328386eb81f1421da5ffcbeb244b9a4140196d2807104e8"
+  },
+  {
+    "path": "forge/src/test/java/com/blockreality/impl/server/WorldIndexDataTest.java",
+    "bytes": 8911,
+    "sha256": "69b57e72a86289eb8d048e81077830404aa43a3dbdaf1f1ecac3be95ee89d151"
+  },
+  {
+    "path": "gradle/contract-resources.gradle",
+    "bytes": 626,
+    "sha256": "b04e3e6742b4fe06a21abcbc0105d444f6c0bab85bf45ef8de5655ac0dacd044"
+  },
+  {
+    "path": "mod/README.md",
+    "bytes": 2680,
+    "sha256": "d388636e79c05fbb5b314edee53e60e4005106dd6f7e420b903627bcc7aec0d6"
+  },
+  {
+    "path": "mod/api/build.gradle",
+    "bytes": 236,
+    "sha256": "567e6eb6edabd1053550246993cfe6d4d63c2f17e3d0ea3568b650bf94dc9976"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/AnalysisResult.java",
+    "bytes": 8895,
+    "sha256": "0d8a2b43c2a8dfa50eb4e1c4efe9258b19d723de0d05e26b43b148106ea1b940"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/BeamDisplayField.java",
+    "bytes": 6474,
+    "sha256": "fae69feabfb410b1f2006e6c5adee1e5bc8d97802d5cd30fab3fcca52a4427c9"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/BucklingState.java",
+    "bytes": 2346,
+    "sha256": "e08305e4c89d9d458c64b4d3d77f6d6d9ba4361a3a1b23033069f9c7cd5fa71b"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/EndForces.java",
+    "bytes": 671,
+    "sha256": "bea444bcb5a366ce15e0b935e75e12ba8b3a70a903112c1552b18045201d2c8a"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/EngineCatalogue.java",
+    "bytes": 2953,
+    "sha256": "48331047a1b5470feaed0f9249c6e7e8d452de56b42f737a3f802032b414c775"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/FailureEvent.java",
+    "bytes": 1114,
+    "sha256": "fc630e6c11441561eac5a3775c5e08f88d9ba8d21a3f837ee341078309758126"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/Fibre.java",
+    "bytes": 1552,
+    "sha256": "742f7dc05ad22bf6823023b5273e0098caac79d5b1ae49d0110d015fe01d30ad"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/GoverningFibre.java",
+    "bytes": 1689,
+    "sha256": "67b19ec6d967f5bfe99feb9f132c596f1ed18020eab7590801e2e6ac454cd10b"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/IslandBuckling.java",
+    "bytes": 254,
+    "sha256": "18ae357f1151bfa5711b0f70b6527650dd60757ee441953bd849dfb3634edc2d"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/MemberSnapshot.java",
+    "bytes": 2607,
+    "sha256": "c63c83999ae8022901bf699fc7bf02a4c0f989131c50f9cc2639be732f3213bd"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/ScanMode.java",
+    "bytes": 1644,
+    "sha256": "6d809ac7fe84d4933a91aefb975c28f18a5ccd5094279d7ee39df59aa5444447"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/ShellDisplayField.java",
+    "bytes": 5633,
+    "sha256": "651ba7d5bf58640d802fc8ee800b997b94154cbd25f2b6afabbf4ec6db188185"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/ShellSnapshot.java",
+    "bytes": 2359,
+    "sha256": "cfb4db3b9e58f36f0c5c9f28eea18b6cf5c441a4b855ffa03103b7cbbaecdb74"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/StressStation.java",
+    "bytes": 3231,
+    "sha256": "331bff77718c727b017b8b80a320460c9901e5372b8b9ca0d2787b6e29f9b564"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/UnassignedBlocks.java",
+    "bytes": 1494,
+    "sha256": "638e58c6f66d5619e2ee03919b0b4459f2f57fa584e24dd9cb76ae2761ae7b51"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/UnassignedReason.java",
+    "bytes": 4104,
+    "sha256": "2efca2de71cfd7566533891988d7292c786855ef0bb6a05d927561a0a2c0d8fd"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/WorldRevision.java",
+    "bytes": 1304,
+    "sha256": "cfd6e0beeb589aea56c6dfa6df377e3edf9eb34935d4138438da95314833fb77"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/geom/Aabb.java",
+    "bytes": 580,
+    "sha256": "9372a27dda48705f2bc2473d98e5c6091d46808ea54512ee5b0796ffa78ed120"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/geom/BlockKey.java",
+    "bytes": 812,
+    "sha256": "d9b3f505c1c6ff35ba2723d036520a76094193a88402f5426cc60e4fffc78589"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/geom/Vec3d.java",
+    "bytes": 1190,
+    "sha256": "773638a620d38cb8e7645f5473617d8de07b9d25e4735c8ec8d0de2a730ca480"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/render/Hatch.java",
+    "bytes": 1032,
+    "sha256": "d2cd6176ebcf5dbed27234af8a7d7aa716232a77490caa823b36002252a36c4d"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/render/Rgb.java",
+    "bytes": 1801,
+    "sha256": "18f8924b18d90d320db281f2d503602ac3c65e31ef8e4626a1a19e6399e613ca"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/render/StressPalette.java",
+    "bytes": 8638,
+    "sha256": "41824e355765fc362339657d851e968535efeb01118cff66acc07813a5ba7109"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/spi/CrushingDescription.java",
+    "bytes": 1678,
+    "sha256": "82a5d106b716518cb266873c59decc7c7ba8373e434061d5d1db502adc8fabf3"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/spi/EffectHandlerRegistry.java",
+    "bytes": 2626,
+    "sha256": "8eaea9c50aec0760784d0509cea4a0a6fed797aed47335535ca95722cf46c5d6"
+  },
+  {
+    "path": "mod/api/src/main/java/com/blockreality/api/spi/IFractureEffectHandler.java",
+    "bytes": 1433,
+    "sha256": "0a04faa80bc9db604f4aa209183e1b5ba69ad5f6556167ed5eea9bb9b68d429d"
+  },
+  {
+    "path": "mod/build.gradle",
+    "bytes": 5902,
+    "sha256": "6dbc4d4ec64f68617a0d88f7f0522a5cc269d4d57daba4f97ebd2d77edeaf253"
+  },
+  {
+    "path": "mod/core/build.gradle",
+    "bytes": 2292,
+    "sha256": "a4ce518399ce01ba80d61a7ebad0b4f9b82dcc893594c79fef755426ade5e635"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/AnalysisDeliveryClock.java",
+    "bytes": 2200,
+    "sha256": "bf978477e37c6b228e85a1cd2c7ec75a17a79613f6ec9d886fddc13dfa8b6b36"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/RevisionGate.java",
+    "bytes": 4037,
+    "sha256": "70d75d1c70601a547b4bfc376ad521fcdfb543c10734317ed916c281bf44c571"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/bsi/BsiAnalysisResult.java",
+    "bytes": 8100,
+    "sha256": "96c7a57800d31e62469f88458ae888facb9aff7dacbc8c02a462e7581e2c7617"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/bsi/BsiBeamDisplay.java",
+    "bytes": 5321,
+    "sha256": "9ce9e88f1bbaf0f600a14c8e00e69251198c501e43637e63ebf3d9244776612d"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/bsi/BsiBuckling.java",
+    "bytes": 2331,
+    "sha256": "ff3842194c93ecbd83b84465ddc334cd3ef2772415828f86abd6d4710544f880"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/bsi/BsiContract.java",
+    "bytes": 2067,
+    "sha256": "deb33cf9974af972898ddabb6ff89092ebf31159e1d8c77b76f5c16c5a504f22"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/bsi/BsiFrame.java",
+    "bytes": 2511,
+    "sha256": "27b3753fccc559aedd05244ba2ccfe30ab1a3d436be9ec7ab602ad55f079d81f"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/bsi/BsiHeaders.java",
+    "bytes": 4885,
+    "sha256": "b8dbd6785345cde4b45084e78c908752b88655369a44350159c1fe1a8e45ffe4"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/bsi/BsiMemberGeometry.java",
+    "bytes": 3036,
+    "sha256": "b752bf0bed257b534b8db632abc8a3ce499bc107c359e6ef76fc21644835a876"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/bsi/BsiRecords.java",
+    "bytes": 6435,
+    "sha256": "4dbe97fc897c2182587c7439e2459f93d2a5bb027bf3f555c70c6ec2fa522a7e"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/bsi/BsiResponse.java",
+    "bytes": 13372,
+    "sha256": "b54f9ffabc875a1598647014e76d8aa53656a51867af7ec00f43dbdf05ecd337"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/bsi/BsiSections.java",
+    "bytes": 7292,
+    "sha256": "f02c2a7df674dce84f835886afc3a4fe44ddb8da88ceb68cb9fa0ed117cfca3b"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/bsi/BsiShellDisplay.java",
+    "bytes": 2887,
+    "sha256": "b0a142154fd0d83bdde9639d672fc527586cee700a6cc06e5b2e19d71412823e"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/bsi/BsiStationIdentity.java",
+    "bytes": 2507,
+    "sha256": "b07840bf8b6d6b5e326e79e5499b423cc58fc40f0d3096da8d6f42242d2fed53"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/bsi/BsiVocabulary.java",
+    "bytes": 3172,
+    "sha256": "2a9f1bb734bd0f5af97024145b41906fe3d3e17a489e064d9a0b0d04d37b3a37"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/diagnostics/PipelineProfile.java",
+    "bytes": 6111,
+    "sha256": "4febb1d6b0cbd1ee75b1cccadb02196076f46f30a4b764990f5d4653851c004b"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/engine/BsiNative.java",
+    "bytes": 7509,
+    "sha256": "d012656d572731feea8aeaaf41d12b06e8f788e96bade684b8779c1e57048d3d"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/engine/BundledNatives.java",
+    "bytes": 17598,
+    "sha256": "f5f7513be7b1fb731d3c1f19067ff64632f3127ae062c6a36dad7da8dcd7df9b"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/engine/EngineLocator.java",
+    "bytes": 4941,
+    "sha256": "84976e11d00107542b93c8fc43c313a1efedc6d86be34e98be0fbb03effea62b"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/engine/GameNativeLoader.java",
+    "bytes": 2965,
+    "sha256": "a1fbb37d8ece9515196d8d36aa9be81eb2e60736d18ff01d6a1b2fe569329224"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/engine/GameVocabulary.java",
+    "bytes": 4237,
+    "sha256": "b25bf428afdbfba2842665a6e525394ffcb6adf4f2bb52d3742766433ed4b7ee"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/engine/GameWorldSnapshot.java",
+    "bytes": 4371,
+    "sha256": "e5c255182cf1809aea39ef0b1dffaee43dd6eb669cec8593dd889b05002f717f"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java",
+    "bytes": 12271,
+    "sha256": "0a5fb0dd58f498527c550131e1230c53912f1e06b8a29ef2a491b4b5f36a0474"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/engine/NativeGameRuntime.java",
+    "bytes": 6577,
+    "sha256": "50b84e11ce64f1b71bbcf4e42a3f805393824d03134b0c3f9275bbb9f31efa1a"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/engine/ProductGeometry.java",
+    "bytes": 3608,
+    "sha256": "dd55483bb6789045f96075d158a5bffcb648909e530bf44dd6f7fe446bd34019"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/json/JsonValue.java",
+    "bytes": 12372,
+    "sha256": "b0cd82c8668e617fa3a4ce70365099592c76cad81b916620451f3ba7aec105a1"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/json/JsonWriter.java",
+    "bytes": 3262,
+    "sha256": "9ca29bfce475d674a7b2d0744bcd6588065e69d98d14ce866235590b75a9e590"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/protocol/SolveRequest.java",
+    "bytes": 3230,
+    "sha256": "4babcf42025bcf3e298255341ff4cf0c4551265b433f12457533598c0c6e5f47"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/protocol/Truncation.java",
+    "bytes": 5526,
+    "sha256": "68f81f0391274210c4ac8691c4b0af303878c8baffbff98ac714ae2ef8757761"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/render/BeamSurfacePatch.java",
+    "bytes": 2904,
+    "sha256": "681a1e618ec97881320e1e122a500d098d8368a9e636af105c695f368a17a17c"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/render/BucklingReadout.java",
+    "bytes": 1870,
+    "sha256": "84039a9b38b9733bc3738b4a5adf64f2a96a14c1c9c9761a003c9f13bd2cca81"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/render/DrawableCells.java",
+    "bytes": 3880,
+    "sha256": "338ce2d268062a3d0022b5c553af250806e334fae6f0a42c9c39e53242d37084"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/render/MemberPick.java",
+    "bytes": 3067,
+    "sha256": "ae1b5d3eeeff1ec9bf7dd3ead2f2484a49f06c85901d32e22547a1292165c015"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/render/SectionDiagram.java",
+    "bytes": 3222,
+    "sha256": "7a970566fb4d2e3e7bab7b90cc06543aba166d9a5ce7939767c160fbf4ecfcb8"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/render/ShellMesh.java",
+    "bytes": 3692,
+    "sha256": "d52d4443204f11932ad45020d29dcab682ed7535c257502b11dc6aaa240fd65c"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/render/StressRibbon.java",
+    "bytes": 2798,
+    "sha256": "e587c9c71f3f0ed1d222e56ddc752b94290bf71cdbc21c6194cb057f06d98b18"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/render/StressRibbonBuilder.java",
+    "bytes": 6115,
+    "sha256": "714f9a37f10f2d3c7c12a218736526a9187ea5413b6fb8f52334c9806a9e465d"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/sidecar/BundledEngine.java",
+    "bytes": 21469,
+    "sha256": "2453d3ad85303ff25245b2499b207612d82945a716dbb15a1e2e01588d232fb3"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/sidecar/SidecarPaths.java",
+    "bytes": 2476,
+    "sha256": "6c77fe32d5aa9b8adcf96d18564d5e50946c3c7959040fea193ed2f5a48a40eb"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/world/ArtifactAnalysisLinks.java",
+    "bytes": 1388,
+    "sha256": "9c6471838c71d203c9149a7a51a9aa079f7d13e6328191ded9b7fd1332ff186c"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/world/ConstructionCodec.java",
+    "bytes": 8161,
+    "sha256": "9d6fe30247c5f5840f0c5ebaedb46b95efeb5a3be97210335e0964b955d75e38"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/world/ConstructionDeclaration.java",
+    "bytes": 1980,
+    "sha256": "a8ee9bf9c9a4b291f5b04a3342f6969ab193f98d850aa1ef1e10f611438b3972"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/world/ConstructionLedger.java",
+    "bytes": 12560,
+    "sha256": "0ff064fac65aee52f2190842998aaa57e077e25b9eda4a3bab3dcf4c3df3802b"
+  },
+  {
+    "path": "mod/core/src/main/java/com/blockreality/core/world/WorldCellIndex.java",
+    "bytes": 7219,
+    "sha256": "487a4e836170b6c69a48470c9795d811de27d9942fbde0fcd0cfa6ecc821388b"
+  },
+  {
+    "path": "mod/core/src/main/resources/blockreality/game-vocabulary.json",
+    "bytes": 1903,
+    "sha256": "f42f19ecd330bff0dd7c176cf66c7be163352cf86068c33a90f93302d27c1d03"
+  },
+  {
+    "path": "mod/core/src/profile/java/com/blockreality/core/world/RegistryScaling.java",
+    "bytes": 9606,
+    "sha256": "151a6020f0e5b2fb8714c706f745c09ce70fa15f79ec7831cb7249307398f996"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/AnalysisDeliveryClockTest.java",
+    "bytes": 3630,
+    "sha256": "52b559348d5b8bd1d067453560cb4040e9d75d48c168a39b7843dc06018cd284"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/DisplayTrackPrecisionTest.java",
+    "bytes": 3215,
+    "sha256": "d59556754b7ca376b749c1de44f957e1e95a3fcd8833fdda848eff528ca79614"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/NativeOnlyResultsTest.java",
+    "bytes": 3208,
+    "sha256": "c810db6f3c226fd09190b4c4a1a44b96ccfefa6608865e29e5f2e374c060cb41"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/RevisionGateConcurrencyTest.java",
+    "bytes": 4850,
+    "sha256": "7fb8e7a2168fe5876e7d0d2b0e120f0458e6893105028013c6c33b1a011a50ec"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/RevisionGateTest.java",
+    "bytes": 4894,
+    "sha256": "5f63b89db7e090c8464e0c0d9534b7d7299a5288093981fed3434907a6ce95a1"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/ShellFieldSpecTest.java",
+    "bytes": 6900,
+    "sha256": "2558b8112b60cf908c3db785266330c8ae2351974a358de3d53a69bab180e872"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/StressFieldSpecTest.java",
+    "bytes": 5258,
+    "sha256": "9f9e308a4964908327e79ba847840841da9be2431464e8d756a331651edaacd8"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/UnassignedReportingTest.java",
+    "bytes": 7580,
+    "sha256": "34abf2ebcead5b1e04e81bd430709512ee55ce90f8feb27443bcac1a6b126765"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/bsi/BsiAnalysisResultTest.java",
+    "bytes": 14237,
+    "sha256": "0ed5592d0b84bd1ed415f50cdae7a028b9a30859c3cdace897d6c5e85e05cd15"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/bsi/BsiBeamDisplayTest.java",
+    "bytes": 11171,
+    "sha256": "59e29ea09bd1c7321029e92991d5557ebb71b922340098a0690f2087f8d991ce"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/bsi/BsiBucklingTest.java",
+    "bytes": 4930,
+    "sha256": "5fbe6d1e6ea00a127defc908cdbf796c9f279f8f5192808673a1a21841c45497"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/bsi/BsiFrameAndResponseTest.java",
+    "bytes": 6199,
+    "sha256": "f3bc1e20da313d5399d54838c4859e435f60132bf016ecd1dede792710500f75"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/bsi/BsiMemberGeometryTest.java",
+    "bytes": 4516,
+    "sha256": "37b6f77f9d27b3b51538ae146a643558e617dd60addb8178d623551d21347d51"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/bsi/BsiRecordsTest.java",
+    "bytes": 6745,
+    "sha256": "69d48f60953f67ffdfe2246f079011040565c0e0a903f3b9e72e22abaf844e73"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/bsi/BsiRecoveryTest.java",
+    "bytes": 12364,
+    "sha256": "13793da9c36104ecde772ad6db470a45de9919528c1bec016415fe0db2002538"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/bsi/BsiShellDisplayTest.java",
+    "bytes": 9258,
+    "sha256": "bdaf483e721b673dbb7a6662f4ed09cd8ef035b5daac21f33ab680b6db8ff888"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/bsi/BsiStationIdentityTest.java",
+    "bytes": 5687,
+    "sha256": "635e295ba53eb87a315b9f6b3f36ec41fccda62d393a00fce6ca0f1b4920b258"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/bsi/BsiVocabularyTest.java",
+    "bytes": 2756,
+    "sha256": "2399d03b5ad30db596192e8661f6fef9a072d29d620e806c470d83e5b634836b"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/compliance/NoSubprocessTest.java",
+    "bytes": 4626,
+    "sha256": "81ded57797dd965a7198241a47ea1d99d76b51f80efca403d8ab0845c00d2713"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/diagnostics/PipelineProfileTest.java",
+    "bytes": 4305,
+    "sha256": "a1eca5f3f867fdcb0d49df9025aaa915f733bb37dba0c442bfafabb8495a8e8d"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/engine/BsiAnalysisNativeTest.java",
+    "bytes": 4227,
+    "sha256": "02d46ab7cb0eb0357abec0aec11e468813b6a127e75b2a1010228d8e3216898a"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/engine/BsiRetryGate.java",
+    "bytes": 2501,
+    "sha256": "d845d4dc7db43c5c7a1e32538dafaa079eaa0d6acb59f69d1b61c2871fd1c7da"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/engine/BundledNativesTest.java",
+    "bytes": 13527,
+    "sha256": "143fdd466f4429bfa6f8166d3be2286d0255b169f6606fa885991ba981d00a49"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/engine/EngineLocatorTest.java",
+    "bytes": 5314,
+    "sha256": "a3d5888a55a44b07485ee1821e00d2c0cd11d9710c4118834fd0cdc19fdd4bb9"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/engine/GameInputNativeTest.java",
+    "bytes": 8191,
+    "sha256": "9fd7a335d7b9f1eb1b6258f5e3ebd6c5e8ced2a52cd25a003b7db8e42d8aaca6"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/engine/GameWorldSnapshotTest.java",
+    "bytes": 7443,
+    "sha256": "75cb70c83c291a471ecad83bcca46ef344e8da8ababfaa427ea759a114a35cec"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/engine/InProcessBucklingTest.java",
+    "bytes": 4748,
+    "sha256": "185368e1c9488605dd30a998fbd0661599c7924fc2219d8cf2fc7dc2528a7d8b"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/engine/InProcessEngineTest.java",
+    "bytes": 8213,
+    "sha256": "6e06b95d7b8d91a78808f5efa2ad99c74a5f87d9de63ebe5a3236ffc873e11e6"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/engine/InProcessRecoveryTest.java",
+    "bytes": 19537,
+    "sha256": "eab4f1e5b42f97644bb09570e7b404dcae0aaa69e76d8edcd0e19daa6d827c8a"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/engine/NativeCacheTest.java",
+    "bytes": 7242,
+    "sha256": "d091ef3579c491734a51d81e4c6d645f713d79027e22cc0d0c30bcdec597e369"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/engine/NativeGameRuntimeTest.java",
+    "bytes": 7433,
+    "sha256": "6a9951018693c559127365551b6e41ffc523d05df869668bdeb26e7c4729851c"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/engine/NativeJarProbe.java",
+    "bytes": 8023,
+    "sha256": "768127cdd1292c5785219b6a691312f1d901137c6a87681ad50daeb265214d68"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/engine/ProductGeometryTest.java",
+    "bytes": 6238,
+    "sha256": "15489a3e26a130f0d9d7cd0f6dc6977a19a065ac15fbc08a034b96f75f6433c9"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/json/JsonTest.java",
+    "bytes": 6224,
+    "sha256": "a74c3f39dd296a77edb6b04a376733586eef8ea7b75d6467a042b64aaefed8e7"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/protocol/BinaryCodec.java",
+    "bytes": 22981,
+    "sha256": "092da62ee507339a41ff9737bd55e68cd0727e61492df6d3d293cc257efab5e6"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/protocol/BinaryCodecTest.java",
+    "bytes": 17756,
+    "sha256": "65d493cee3f7a314ee0c7c40b7ac591079f28623d2c1451dba6d6a1bda965648"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/protocol/ProtocolCodec.java",
+    "bytes": 27381,
+    "sha256": "27fc8b8406534f663af908d107738c978538a467d748ef20689ec1e1213c2b4f"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/protocol/ProtocolCodecTest.java",
+    "bytes": 16240,
+    "sha256": "a86fbbe97831c218a7002d0abb7a25f2f2d015320466043b724f278b14bac756"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/protocol/TruncationTest.java",
+    "bytes": 6913,
+    "sha256": "cfc00ae31c3a73fa7c86333d816d28c9d92c1d9200ee4e8836879fda87bea7b4"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/render/BucklingReadoutTest.java",
+    "bytes": 1883,
+    "sha256": "56db6ea7bd85084aa8621264f05abe7317e45f681daacf6ed2dfca67bbcef14b"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/render/DrawableCellsTest.java",
+    "bytes": 5571,
+    "sha256": "a6106e9048d1aa8b9f6a56592b68ff6062ebef206fe353158108b0c5004b5c5d"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/render/MemberPickTest.java",
+    "bytes": 3378,
+    "sha256": "ef272cccdbbd636cf4aaa7397fb98ef8258a2f808ade40ea51a66d17ea29790f"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/render/SectionDiagramTest.java",
+    "bytes": 3831,
+    "sha256": "89ce175586a22726e43a5f86eac6ed9a0d839e2dc7456150607b2af22dbf84f8"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/render/StressPaletteTest.java",
+    "bytes": 6881,
+    "sha256": "ddcb7788f14c77fb5e2fd2305d158457c249863fc67c38deb7ecfa25519b566f"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/render/StressRibbonBuilderTest.java",
+    "bytes": 5966,
+    "sha256": "ed4d7a08c99d7ef4cf29f08d9300790fd511c8246259967552d700f525710987"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/sidecar/BundledEngineTest.java",
+    "bytes": 18308,
+    "sha256": "1d29244527635aba5fcd8ec1209f73bd1141baf7d6f3ffdaefda60158efddd32"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/sidecar/ShmRegion.java",
+    "bytes": 5031,
+    "sha256": "aeea6efa6d06ff0e87140c6288ac8b3f5d065b7343562f316ec9eedb937d4ae4"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/sidecar/ShmRegionTest.java",
+    "bytes": 2586,
+    "sha256": "4de93905bda8f7cf2739a78d43c6fa5070dfd0527a0b7c36a25f5609c937c514"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/sidecar/SidecarClient.java",
+    "bytes": 23353,
+    "sha256": "38e90b707d88069e32b39d9637724c0576e3e11d4451c6a96bec2c56b6bf5454"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/sidecar/SidecarConfig.java",
+    "bytes": 1156,
+    "sha256": "399b43e46dc4bdfb28488cf1981bd2f327ab3fffc7b5df640e3f71c7906cfb49"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/sidecar/SidecarEngineTest.java",
+    "bytes": 38991,
+    "sha256": "8d9f2e5547ef88315b52938d02431ab22d61e48bebd21ea56cf0a3b053fc2a22"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/sidecar/SidecarLifecycleTest.java",
+    "bytes": 23057,
+    "sha256": "7239a9f6380dc339179d6fb1379da5c5d95b5b92c8b55f9d2f23e482a72c17ba"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/sidecar/SidecarPathsTest.java",
+    "bytes": 2726,
+    "sha256": "b078eee38d1feb7c23fd6b5c8c67c6d1dbae8da8095149a024849c755afb4a23"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/sidecar/SidecarProcess.java",
+    "bytes": 9584,
+    "sha256": "3bcac07064b8e1960f7bf26283b7b161fb5c7d79387e520c11589ff1fdb7bff8"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/world/ArtifactAnalysisLinksTest.java",
+    "bytes": 2074,
+    "sha256": "8b5d8c2158fd99152815d83c1c61e5011379562648053b95c9267d9360be8f6a"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/world/ConstructionCodecGolden.java",
+    "bytes": 2240,
+    "sha256": "00fa836581eba628a105b21c03fc8638034e835600129bd930ad2be369f041be"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/world/ConstructionCodecTest.java",
+    "bytes": 4264,
+    "sha256": "863c855e5eba06b8c363598d6975e2333879ba57d147ddb04bd6610867f6892f"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/world/ConstructionLedgerTest.java",
+    "bytes": 9375,
+    "sha256": "7524d88e03005c1bd0b28c25f927e7d51babc5968de14dc707f226ce56ae2944"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/world/ConstructionSnapshotTest.java",
+    "bytes": 7379,
+    "sha256": "13722499eb4269ca045566c644325d9e0e2d885107dfb6a115daf191f835d0e6"
+  },
+  {
+    "path": "mod/core/src/test/java/com/blockreality/core/world/WorldCellIndexTest.java",
+    "bytes": 6456,
+    "sha256": "619794ba41b6057af0eb66be88f531066e32340becc4185d1b79a150a19d9bd6"
+  },
+  {
+    "path": "mod/core/src/test/resources/bsi-buckling-truth.csv",
+    "bytes": 1000,
+    "sha256": "118733089e5238680cd80da44929c575164c84b309b57c629e84569e24d866ad"
+  },
+  {
+    "path": "mod/core/src/test/resources/construction-codec-v1.bin",
+    "bytes": 4878,
+    "sha256": "9a3afb43b840d7fd6ec9204a3ccaa7e659df337899e4ac6c26e17c35f2ec04e2"
+  },
+  {
+    "path": "mod/core/src/testFixtures/java/com/blockreality/testfixtures/NativeSnapshotChecks.java",
+    "bytes": 676,
+    "sha256": "a80154fbee422dbc13b5a5d12809791b9382cf2b4f4f1d86201f276f4f19c533"
+  },
+  {
+    "path": "mod/core/src/testFixtures/java/com/blockreality/testlegacy/AnalysisResult.java",
+    "bytes": 10367,
+    "sha256": "6ea7c911e0c76b38db61caebf643dca5f0a47dd8deb450bb6573e36796de3f3b"
+  },
+  {
+    "path": "mod/core/src/testFixtures/java/com/blockreality/testlegacy/LegacySectionDiagram.java",
+    "bytes": 1115,
+    "sha256": "4a7508f61d013644d66ebc1f62bb26bfc2cdf57debd0625976c61b89855d1d4b"
+  },
+  {
+    "path": "mod/core/src/testFixtures/java/com/blockreality/testlegacy/MemberSnapshot.java",
+    "bytes": 4393,
+    "sha256": "90e3401b028a4716babdc2e22b48f6067692dc4a0813aaeca49a4e004e8c6426"
+  },
+  {
+    "path": "mod/core/src/testFixtures/java/com/blockreality/testlegacy/ShellFieldSpec.java",
+    "bytes": 9700,
+    "sha256": "4b58745e3f1d2dcc6a429a6dcf5a946450fcfdd61e92f0abc2d9f88a7784802a"
+  },
+  {
+    "path": "mod/core/src/testFixtures/java/com/blockreality/testlegacy/ShellSnapshot.java",
+    "bytes": 3960,
+    "sha256": "4f1a543ae308e8233b6a1fcc2b450727796369b1e1667a99cd3c8aeffdc4d371"
+  },
+  {
+    "path": "mod/core/src/testFixtures/java/com/blockreality/testlegacy/StressFieldSpec.java",
+    "bytes": 7554,
+    "sha256": "941d27ee381ff6a584c12b32bf70657d9078f6ee3fcde137527c49b9dc7306c3"
+  },
+  {
+    "path": "mod/gradle/wrapper/gradle-wrapper.jar",
+    "bytes": 43764,
+    "sha256": "7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172"
+  },
+  {
+    "path": "mod/gradle/wrapper/gradle-wrapper.properties",
+    "bytes": 250,
+    "sha256": "05e7bec397ce5a52628d31dcc4c8b636cbdc55e28f8cef19d097c71b5c5fbb42"
+  },
+  {
+    "path": "mod/gradlew",
+    "bytes": 8733,
+    "sha256": "b187b4c52e749f5760afdd6fadc31b2a98ad35fb249bf0dff03b72650f320409"
+  },
+  {
+    "path": "mod/gradlew.bat",
+    "bytes": 2843,
+    "sha256": "94102713eb8fb22d032397924c0f38ab2da783ba60d07054339f1190a0c4e2cd"
+  },
+  {
+    "path": "mod/settings.gradle",
+    "bytes": 668,
+    "sha256": "cf2f993173dbeab5a238f3065ec2a5879784be20ce07a44bd9f655d7d694b98d"
+  },
+  {
+    "path": "scripts/bench_transport.py",
+    "bytes": 6086,
+    "sha256": "83119fa29da1c851fd025a2a4722e98566756ab31c2248f1c94f381c1d9036a7"
+  },
+  {
+    "path": "scripts/check_buckling_retention.py",
+    "bytes": 3520,
+    "sha256": "9d99b9054c2e28046c99787ad5780c5b056af338363d6d0966c0b72315c5458f"
+  },
+  {
+    "path": "scripts/check_bundle.py",
+    "bytes": 19656,
+    "sha256": "66ebb127545412dc23bb1c745252b00450c65af99947da8d52a9c0ec9ef59475"
+  },
+  {
+    "path": "scripts/check_bundle_selftest.py",
+    "bytes": 7734,
+    "sha256": "6e7ce0c345d31c7c083afe51cc53c246b72790179979bfbb85581ebc4a686a90"
+  },
+  {
+    "path": "scripts/check_construction_mutations.py",
+    "bytes": 3690,
+    "sha256": "43e0b03d822234329e8446f6cc3029da7740f1f0d56f8bdbd8705a01ec32eae4"
+  },
+  {
+    "path": "scripts/check_docs.py",
+    "bytes": 10240,
+    "sha256": "cd7a8bd79b1082052f8960127f21ff16545031be4e95f847ee385b85b62451ab"
+  },
+  {
+    "path": "scripts/check_game_input.py",
+    "bytes": 3970,
+    "sha256": "fa1cbb2547e871ee44fbdef0326123e0605e7bbf62a9481317ca4ea0e9384860"
+  },
+  {
+    "path": "scripts/check_game_runtime.py",
+    "bytes": 4273,
+    "sha256": "aca7ba8a32c9a22cb1ebe49ff958cfbf10b06882f813c884d7f519b16f5ca0ef"
+  },
+  {
+    "path": "scripts/check_native_jar.py",
+    "bytes": 10531,
+    "sha256": "2bd709f509718cf3b2e5558fccee21589b864662be66f45edbcee5241ab4f783"
+  },
+  {
+    "path": "scripts/check_native_only_jar.py",
+    "bytes": 6524,
+    "sha256": "9e9ccb248647587de3196bbbaedd8686a4970b8ff6327455bb8d9c1d808126c1"
+  },
+  {
+    "path": "scripts/check_native_release.py",
+    "bytes": 5258,
+    "sha256": "302b1c18046471840e06c856ea599077af5ca1a2f165dfc5fa140bafeca74a8f"
+  },
+  {
+    "path": "scripts/check_pipeline_mutations.py",
+    "bytes": 3248,
+    "sha256": "6e0939512ba5421d95846d0640f308f533f46ce6d5e6867ad4fa60b57625d0c5"
+  },
+  {
+    "path": "scripts/check_registry_snapshot_mutations.py",
+    "bytes": 4384,
+    "sha256": "6c11c49f3fbeca6b6770afc2325581263264059c53fd2cee3cf479b41120cd17"
+  },
+  {
+    "path": "scripts/check_state_delivery.py",
+    "bytes": 933,
+    "sha256": "ed53423e9494a774dda4c6e02cd581892c3f26a728a1c0cea03e8ddb7ea5db6d"
+  },
+  {
+    "path": "scripts/check_ui_verdicts.py",
+    "bytes": 778,
+    "sha256": "679c9cf67ace60e2af40fe8d0534bc953e357027c9fd2c4373da9795da52f268"
+  },
+  {
+    "path": "scripts/check_world_registry_mutations.py",
+    "bytes": 3626,
+    "sha256": "7886a1560c28c137c3ac454ffef3546748bd0eca33b2bd54f4e6c20c35f0817a"
+  },
+  {
+    "path": "scripts/client-render-probe.gradle",
+    "bytes": 908,
+    "sha256": "a7dab46a9753917bb375bff78a67c08efddaf8d44cc8a341b7635223fef7d6c6"
+  },
+  {
+    "path": "scripts/client_render_scenes.py",
+    "bytes": 6979,
+    "sha256": "6e11749a43c65dcbee506947c81bf67d60713e147e1cf07e7627a0552fcd659c"
+  },
+  {
+    "path": "scripts/compare_registry_save_profile.py",
+    "bytes": 7266,
+    "sha256": "0dcbcdb74ebe2602059f73dfe8a05ec556d7ab8d81b45eda923eaa4cd608dcc4"
+  },
+  {
+    "path": "scripts/compare_registry_scaling.py",
+    "bytes": 5533,
+    "sha256": "b2fa5ea87682236d96b32ef4c1ad12f25e7dac1d4b21207b5f7330c47fbaf7e1"
+  },
+  {
+    "path": "scripts/construction_identity_smoke.py",
+    "bytes": 7538,
+    "sha256": "2b2c8ba0c6af788a2fe9afdc42f4e15a49f4f6578f88ea37acb19d184abcb5c7"
+  },
+  {
+    "path": "scripts/dist-docs/START-HERE-engine-library.txt",
+    "bytes": 2425,
+    "sha256": "f641614c3df3bd0f84e558520b220d6d2a55c2bf0002b6cb364e465928347e8e"
+  },
+  {
+    "path": "scripts/dist-docs/START-HERE.txt",
+    "bytes": 7233,
+    "sha256": "21a9b3863101d2eb8cc3c98d831fe4f2b59940b1cd8f4fa62a4953a2c40eee00"
+  },
+  {
+    "path": "scripts/enhanced_capture.py",
+    "bytes": 3866,
+    "sha256": "a15ed11ed72c34b577d503d1aa27fcf4a0f174e1afdd24a0af12f640f4f43e3d"
+  },
+  {
+    "path": "scripts/evidence.py",
+    "bytes": 61304,
+    "sha256": "a19411cabddc5587ec88c8dd3d5c41fcf73d39f638eaf0249ea32a6789492666"
+  },
+  {
+    "path": "scripts/game_runtime_smoke.py",
+    "bytes": 8515,
+    "sha256": "9a78a34aa47a29e75698ee720d04b476de3b5ddaf25ec7e1bdb85f2502158063"
+  },
+  {
+    "path": "scripts/hud_overflow_scenes.py",
+    "bytes": 4481,
+    "sha256": "0c7818109fbc293eb383357ec7a3c5185005d1abfe4a55718f9f473dba9ca05a"
+  },
+  {
+    "path": "scripts/install.bat",
+    "bytes": 7758,
+    "sha256": "51e82f39a20ee303ffc8dd55fcdf1e1b08711cb980ea9b0530082abc7bbdc6be"
+  },
+  {
+    "path": "scripts/install.sh",
+    "bytes": 8619,
+    "sha256": "49747fee6edc339d6d2cfae56ab0b89d163984f4c23fd17d093185ff7e936b45"
+  },
+  {
+    "path": "scripts/make_icon.py",
+    "bytes": 3912,
+    "sha256": "ce7d7f4a924caec8d2941217c884c6e8262b70eca544ce231ad8c43a1a4c1328"
+  },
+  {
+    "path": "scripts/module_pipeline_smoke.py",
+    "bytes": 5704,
+    "sha256": "d3f5e037c312075b2b9d8be8eca992fa4b1a4a267326b22439d4689c52952692"
+  },
+  {
+    "path": "scripts/n25_rcon.py",
+    "bytes": 1863,
+    "sha256": "c21630dbd65c03a96fb90f7c6a383801f32a6e3097039d05b8c076284f9a006a"
+  },
+  {
+    "path": "scripts/package.sh",
+    "bytes": 10229,
+    "sha256": "902e8e880f51b785123a1d6afc06f143ed18d0506718d28064b5d9264ffe69de"
+  },
+  {
+    "path": "scripts/package_natives.sh",
+    "bytes": 5943,
+    "sha256": "7bb9ac46c869f406c49f6dd45a531b6a42d4a13790625efd036cd825e3a4f76d"
+  },
+  {
+    "path": "scripts/plate_reference.py",
+    "bytes": 3056,
+    "sha256": "58e3cf6dc56a6556eb7ef0072e403d16a146ceeaf1e6a2e70ee940df75eeeba0"
+  },
+  {
+    "path": "scripts/rcon_client.py",
+    "bytes": 4462,
+    "sha256": "22d224e2082b09bc712c21c06410b752f1a9dd48ad89b4ad2d3d6fb0572ae372"
+  },
+  {
+    "path": "scripts/registry-codec-golden.gradle",
+    "bytes": 471,
+    "sha256": "040626b25a7cc3602471231628a7a92540dc7a6448f19189718200c4ecd9900b"
+  },
+  {
+    "path": "scripts/registry-save-profile.gradle",
+    "bytes": 918,
+    "sha256": "ccf29cbf130f8e1618530bd5f05224606b1f6a3e12a1402fc9ee0e6ceffb8966"
+  },
+  {
+    "path": "scripts/registry-scaling.gradle",
+    "bytes": 834,
+    "sha256": "59bcf2173b6598282cfa7d812134cb433aec15748ebb9d0471e030eeb1195ad8"
+  },
+  {
+    "path": "scripts/registry_save_profile.py",
+    "bytes": 4684,
+    "sha256": "4e0da259d6ee9174405934b9580c26034cb40438cffcc83593e5baa15ebff810"
+  },
+  {
+    "path": "scripts/registry_scaling.py",
+    "bytes": 2405,
+    "sha256": "eabfb9cd8d323c718954ebf27a0d6c9a71253dcd12502468953ccf4f7c8b563d"
+  },
+  {
+    "path": "scripts/render-server-probe.gradle",
+    "bytes": 362,
+    "sha256": "ad9107740e46b9f09be55e8e97cb34a87801d0550b22bf91df0f4b42c18e6e03"
+  },
+  {
+    "path": "scripts/screen_capture.py",
+    "bytes": 3137,
+    "sha256": "075eacc6f95f0b790de05c0a37ba68a59d92a40862c141321c3996a6b9f243b6"
+  },
+  {
+    "path": "scripts/stage_natives.py",
+    "bytes": 8974,
+    "sha256": "0497c02097821e335bfe58f50603b1cc30d4dc9d934ff43e13b0726678e7ef59"
+  },
+  {
+    "path": "scripts/stage_release_natives.py",
+    "bytes": 7855,
+    "sha256": "025b19b66128016833726c90fffedc54d2cebbdd702277fb4aca2e6527d19ece"
+  },
+  {
+    "path": "scripts/state-delivery-probe.gradle",
+    "bytes": 330,
+    "sha256": "6ce9d79e6f6a1e83494e9c4c8342c7a94459f89a0ae5011e547de696954a1417"
+  },
+  {
+    "path": "scripts/summarize_registry_save_profile.py",
+    "bytes": 3990,
+    "sha256": "fa4fe793ad05f771ed87e0d8a3db46738a803093b12c159c4e4a840525b93116"
+  },
+  {
+    "path": "scripts/test_rcon_client.py",
+    "bytes": 2189,
+    "sha256": "320acd5d9f5a9501a0aca19b1ec1d65e8e0f1c83c27ec9754894121ebeca56e4"
+  },
+  {
+    "path": "scripts/world_registry_smoke.py",
+    "bytes": 5682,
+    "sha256": "d69cd4d0114036bb0ce315f12a5df71f691a3264a37d0be7a08904c52231e61d"
+  }
+]

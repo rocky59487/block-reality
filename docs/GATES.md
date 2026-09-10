@@ -1559,3 +1559,17 @@ observed-state comparisons, and2 additional real large-GUI captures with the toa
 still visible and separated. The first missing-key build and launcher setup error
 remain recorded. No CM/N25, unobserved state or native release gate is lowered.
 See evidence/HUD_READABILITY/RESULTS.md for exact scope and original failures.
+
+### 2026-09-10 NATIVE_CANDIDATE_RUNTIME
+
+`d96d98a` froze #120/#119 integration before merge `c2a1b94`. The delivered42e10f5
+libraries and current jar now pass full Windows509/12 platformSKIP and Linux520/1
+platformSKIP, 48-frame direct/extracted replay on both platforms, bundle/source
+negative arms and production-bytecode guards. Engine originals remain read-only.
+The real bundled-development-resource game run passes16 server statuses,24
+synthetic events and45 client assertions/16 captures. First empty-world setup and
+missed-config-notification failures remain failed; third setup explicitly observes
+OFF and seeds the required model before the unchanged smoke passes. No criteria
+were lowered. Installed-jar/Windows CM/N25, general file-watch reliability, physics
+independence, FPS and v1 are not established by these checks. See
+evidence/NATIVE_CANDIDATE_RUNTIME/RESULTS.md and its exact-source raw receipts.

@@ -1,0 +1,4 @@
+Evidence collection copied raw files and canonical source manifest, then aggregate generation exited 1.
+Traceback terminal line: KeyError: 'skips'
+Cause: the Windows Forge summary has skipped=0 and omits its empty skips list.
+finish-evidence.py independently parses all four XML directories and checks their existing summary totals; no test or original receipt is changed.

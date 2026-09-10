@@ -1,0 +1,184 @@
+{
+  "jar-0": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/br-native-candidate-runtime/native/blockreality-0.4.0-dev.jar:/home/rocky/br-native-candidate-runtime/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "/home/rocky/br-native-candidate-runtime/native/blockreality-0.4.0-dev.jar",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/cache",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/inputs",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/jar-0"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYnItbmF0aXZlLWNhbmRpZGF0ZS1ydW50aW1lL3F1YWxpZmljYXRpb24vamFyLWxpbnV4LWZpcnN0L2NhY2hlL2xpYi9saW51eC14ODZfNjQvNTNhYWU3MTU2Yjk0YzBhNzYxZWY1YWJiMjMyMmFkNDdhNzA4MzYyZjQxN2E1MGNhM2YwNDEwNWQ5YzUwYWJmMS9saWJic2lfdGVjdG9uaWMuc28gKDI4NTAwMzY4IGJ5dGVzLCBlbmdpbmUgdGVjdG9uaWMtMS4zLjArNDJlMTBmNSwgY29udHJhY3QgNGIxMWNjNzM4Nzkw4oCmKQpQQVNTIGphciByZXBsYXkgNDggZnJhbWVzOyAvaG9tZS9yb2NreS9ici1uYXRpdmUtY2FuZGlkYXRlLXJ1bnRpbWUvcXVhbGlmaWNhdGlvbi9qYXItbGludXgtZmlyc3QvY2FjaGUvbGliL2xpbnV4LXg4Nl82NC81M2FhZTcxNTZiOTRjMGE3NjFlZjVhYmIyMzIyYWQ0N2E3MDgzNjJmNDE3YTUwY2EzZjA0MTA1ZDljNTBhYmYxL2xpYmJzaV90ZWN0b25pYy5zbyBzaGEyNTY9NTNhYWU3MTU2Yjk0YzBhNzYxZWY1YWJiMjMyMmFkNDdhNzA4MzYyZjQxN2E1MGNhM2YwNDEwNWQ5YzUwYWJmMQo=",
+    "stdout_sha256": "680687e77f923c8de5299de94ac060ccb12c1c9d4e3695210e2b8f4428d0e36e",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "jar-1": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/br-native-candidate-runtime/native/blockreality-0.4.0-dev.jar:/home/rocky/br-native-candidate-runtime/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "/home/rocky/br-native-candidate-runtime/native/blockreality-0.4.0-dev.jar",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/cache",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/inputs",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/jar-1"
+    ],
+    "exit": 0,
+    "stdout_base64": "UEFTUyBqYXIgcmVwbGF5IDQ4IGZyYW1lczsgL2hvbWUvcm9ja3kvYnItbmF0aXZlLWNhbmRpZGF0ZS1ydW50aW1lL3F1YWxpZmljYXRpb24vamFyLWxpbnV4LWZpcnN0L2NhY2hlL2xpYi9saW51eC14ODZfNjQvNTNhYWU3MTU2Yjk0YzBhNzYxZWY1YWJiMjMyMmFkNDdhNzA4MzYyZjQxN2E1MGNhM2YwNDEwNWQ5YzUwYWJmMS9saWJic2lfdGVjdG9uaWMuc28gc2hhMjU2PTUzYWFlNzE1NmI5NGMwYTc2MWVmNWFiYjIzMjJhZDQ3YTcwODM2MmY0MTdhNTBjYTNmMDQxMDVkOWM1MGFiZjEK",
+    "stdout_sha256": "f055f358987af47c4002b1600ab3abd0d796eab2cda5470d110542c9942d9489",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "jar-2": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/br-native-candidate-runtime/native/blockreality-0.4.0-dev.jar:/home/rocky/br-native-candidate-runtime/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "/home/rocky/br-native-candidate-runtime/native/blockreality-0.4.0-dev.jar",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/cache",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/inputs",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/jar-2"
+    ],
+    "exit": 0,
+    "stdout_base64": "UEFTUyBqYXIgcmVwbGF5IDQ4IGZyYW1lczsgL2hvbWUvcm9ja3kvYnItbmF0aXZlLWNhbmRpZGF0ZS1ydW50aW1lL3F1YWxpZmljYXRpb24vamFyLWxpbnV4LWZpcnN0L2NhY2hlL2xpYi9saW51eC14ODZfNjQvNTNhYWU3MTU2Yjk0YzBhNzYxZWY1YWJiMjMyMmFkNDdhNzA4MzYyZjQxN2E1MGNhM2YwNDEwNWQ5YzUwYWJmMS9saWJic2lfdGVjdG9uaWMuc28gc2hhMjU2PTUzYWFlNzE1NmI5NGMwYTc2MWVmNWFiYjIzMjJhZDQ3YTcwODM2MmY0MTdhNTBjYTNmMDQxMDVkOWM1MGFiZjEK",
+    "stdout_sha256": "f055f358987af47c4002b1600ab3abd0d796eab2cda5470d110542c9942d9489",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "faults": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/br-native-candidate-runtime/native/blockreality-0.4.0-dev.jar:/home/rocky/br-native-candidate-runtime/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "faults",
+      "/home/rocky/br-native-candidate-runtime/native/blockreality-0.4.0-dev.jar",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/fault-cache",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/inputs",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/faults"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYnItbmF0aXZlLWNhbmRpZGF0ZS1ydW50aW1lL3F1YWxpZmljYXRpb24vamFyLWxpbnV4LWZpcnN0L2ZhdWx0LWNhY2hlL2xpYi9saW51eC14ODZfNjQvNTNhYWU3MTU2Yjk0YzBhNzYxZWY1YWJiMjMyMmFkNDdhNzA4MzYyZjQxN2E1MGNhM2YwNDEwNWQ5YzUwYWJmMS9saWJic2lfdGVjdG9uaWMuc28gKDI4NTAwMzY4IGJ5dGVzLCBlbmdpbmUgdGVjdG9uaWMtMS4zLjArNDJlMTBmNSwgY29udHJhY3QgNGIxMWNjNzM4Nzkw4oCmKQpidW5kbGVkIGVuZ2luZSBjb250cmFjdCBmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmICE9IG1vZCBjb250cmFjdCA0YjExY2M3Mzg3OTBkMzJkNTc2YWM3MWVjZDFjYjU3ZjA0ZDNlZDkxODZhOWU0M2Y4OTQ5MmFlMTNjMjU4ODAxCmJ1bmRsZWQgZW5naW5lIGNvbnRyYWN0IGZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmYgIT0gbW9kIGNvbnRyYWN0IDRiMTFjYzczODc5MGQzMmQ1NzZhYzcxZWNkMWNiNTdmMDRkM2VkOTE4NmE5ZTQzZjg5NDkyYWUxM2MyNTg4MDEKdW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYnItbmF0aXZlLWNhbmRpZGF0ZS1ydW50aW1lL3F1YWxpZmljYXRpb24vamFyLWxpbnV4LWZpcnN0L2ZhdWx0LWNhY2hlL2xpYi9saW51eC14ODZfNjQvZTJmZDZlMWZmY2Y5YTRkY2QyZGRmYzk5YzM5ZDE2OTlkOTFhZTUxNWMyY2YzNmIwYzhkYzU3ZTA5OTRhODkyNi9saWJic2lfdGVjdG9uaWMuc28gKDI4NTAwMzY4IGJ5dGVzLCBlbmdpbmUgdGVjdG9uaWMtMS4zLjArNDJlMTBmNSwgY29udHJhY3QgNGIxMWNjNzM4Nzkw4oCmKQp1bnBhY2tlZCB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeSB0byAvaG9tZS9yb2NreS9ici1uYXRpdmUtY2FuZGlkYXRlLXJ1bnRpbWUvcXVhbGlmaWNhdGlvbi9qYXItbGludXgtZmlyc3QvZmF1bHQtY2FjaGUvbGliL2xpbnV4LXg4Nl82NC81M2FhZTcxNTZiOTRjMGE3NjFlZjVhYmIyMzIyYWQ0N2E3MDgzNjJmNDE3YTUwY2EzZjA0MTA1ZDljNTBhYmYxL2xpYmJzaV90ZWN0b25pYy5zbyAoMjg1MDAzNjggYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0xLjMuMCs0MmUxMGY1LCBjb250cmFjdCA0YjExY2M3Mzg3OTDigKYpCmNvdWxkIG5vdCB1bnBhY2sgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnk6IGphdmEuaW8uSU9FeGNlcHRpb246IGJ1bmRsZWQgbGliYnNpX3RlY3RvbmljLnNvIGlzIDI4NTAwMzY4IGJ5dGVzIC8gZTJmZDZlMWZmY2Y5YTRkY2QyZGRmYzk5YzM5ZDE2OTlkOTFhZTUxNWMyY2YzNmIwYzhkYzU3ZTA5OTRhODkyNiwgbWFuaWZlc3Qgc2F5cyAyODUwMDM2OCAvIDUzYWFlNzE1NmI5NGMwYTc2MWVmNWFiYjIzMjJhZDQ3YTcwODM2MmY0MTdhNTBjYTNmMDQxMDVkOWM1MGFiZjEKY291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5pby5JT0V4Y2VwdGlvbjogYnVuZGxlZCBsaWJic2lfdGVjdG9uaWMuc28gaXMgMjg1MDAzNjcgYnl0ZXMgLyA2ZDg4NjgxYmViNjAzYWFlZTFjMmIwNDc1ZWRhYzJlZGE0MzUxODZjOTQ4NjFmNjVlNTFmOTEzYmUwZjk5MmZlLCBtYW5pZmVzdCBzYXlzIDI4NTAwMzY4IC8gNTNhYWU3MTU2Yjk0YzBhNzYxZWY1YWJiMjMyMmFkNDdhNzA4MzYyZjQxN2E1MGNhM2YwNDEwNWQ5YzUwYWJmMQpjb3VsZCBub3QgdW5wYWNrIHRoZSBidW5kbGVkIGVuZ2luZSBsaWJyYXJ5OiBqYXZhLmlvLklPRXhjZXB0aW9uOiBidW5kbGVkIGxpYmJzaV90ZWN0b25pYy5zbyBleGNlZWRzIG1hbmlmZXN0IHNpemUgMjg1MDAzNjgKY291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5pby5JbnRlcnJ1cHRlZElPRXhjZXB0aW9uOiBpbmplY3RlZCByZWFsLXJlc291cmNlIGludGVycnVwdGlvbgpQQVNTIHJlYWwgYnl0ZXM6IGNhY2hlIGFkb3B0aW9uLCBjb250cmFjdCBwcmVjaGVjaywgdmVyc2lvbiByZXRlbnRpb24sIGNvcnJ1cHRpb24gcmVwYWlyLCBoYXNoL3Nob3J0L292ZXJsb25nL2ludGVycnVwdGlvbiwgdGVtcG9yYXJ5IGNsZWFudXAK",
+    "stdout_sha256": "4739989448a7111f8ceda9943e93db26ca71a398f6b05575f86d11f5a064e08b",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "denied": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/br-native-candidate-runtime/native/blockreality-0.4.0-dev.jar:/home/rocky/br-native-candidate-runtime/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "denied",
+      "/home/rocky/br-native-candidate-runtime/native/blockreality-0.4.0-dev.jar",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/denied-cache",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/inputs",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/denied"
+    ],
+    "exit": 0,
+    "stdout_base64": "Y291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5uaW8uZmlsZS5BY2Nlc3NEZW5pZWRFeGNlcHRpb246IC9ob21lL3JvY2t5L2JyLW5hdGl2ZS1jYW5kaWRhdGUtcnVudGltZS9xdWFsaWZpY2F0aW9uL2phci1saW51eC1maXJzdC9kZW5pZWQtY2FjaGUvbGliClBBU1MgZGVuaWVkIGNhY2hlCg==",
+    "stdout_sha256": "bb290ae68c4b6990567dd3fb3844da4e9e27ce4b14ce3f7adc856b7700c6214a",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "race-0": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/br-native-candidate-runtime/native/blockreality-0.4.0-dev.jar:/home/rocky/br-native-candidate-runtime/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "race",
+      "/home/rocky/br-native-candidate-runtime/native/blockreality-0.4.0-dev.jar",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/race/cache",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/inputs",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/race/0",
+      "0"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYnItbmF0aXZlLWNhbmRpZGF0ZS1ydW50aW1lL3F1YWxpZmljYXRpb24vamFyLWxpbnV4LWZpcnN0L3JhY2UvY2FjaGUvbGliL2xpbnV4LXg4Nl82NC81M2FhZTcxNTZiOTRjMGE3NjFlZjVhYmIyMzIyYWQ0N2E3MDgzNjJmNDE3YTUwY2EzZjA0MTA1ZDljNTBhYmYxL2xpYmJzaV90ZWN0b25pYy5zbyAoMjg1MDAzNjggYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0xLjMuMCs0MmUxMGY1LCBjb250cmFjdCA0YjExY2M3Mzg3OTDigKYpClBBU1MgamFyIHJlcGxheSA0OCBmcmFtZXM7IC9ob21lL3JvY2t5L2JyLW5hdGl2ZS1jYW5kaWRhdGUtcnVudGltZS9xdWFsaWZpY2F0aW9uL2phci1saW51eC1maXJzdC9yYWNlL2NhY2hlL2xpYi9saW51eC14ODZfNjQvNTNhYWU3MTU2Yjk0YzBhNzYxZWY1YWJiMjMyMmFkNDdhNzA4MzYyZjQxN2E1MGNhM2YwNDEwNWQ5YzUwYWJmMS9saWJic2lfdGVjdG9uaWMuc28gc2hhMjU2PTUzYWFlNzE1NmI5NGMwYTc2MWVmNWFiYjIzMjJhZDQ3YTcwODM2MmY0MTdhNTBjYTNmMDQxMDVkOWM1MGFiZjEK",
+    "stdout_sha256": "7d55b82812d5ad79d1775bb5c3b313c8f1cdd0d6828c13899d6d57c1f86c1e84",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "race-1": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/br-native-candidate-runtime/native/blockreality-0.4.0-dev.jar:/home/rocky/br-native-candidate-runtime/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "race",
+      "/home/rocky/br-native-candidate-runtime/native/blockreality-0.4.0-dev.jar",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/race/cache",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/inputs",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/race/1",
+      "1"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYnItbmF0aXZlLWNhbmRpZGF0ZS1ydW50aW1lL3F1YWxpZmljYXRpb24vamFyLWxpbnV4LWZpcnN0L3JhY2UvY2FjaGUvbGliL2xpbnV4LXg4Nl82NC81M2FhZTcxNTZiOTRjMGE3NjFlZjVhYmIyMzIyYWQ0N2E3MDgzNjJmNDE3YTUwY2EzZjA0MTA1ZDljNTBhYmYxL2xpYmJzaV90ZWN0b25pYy5zbyAoMjg1MDAzNjggYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0xLjMuMCs0MmUxMGY1LCBjb250cmFjdCA0YjExY2M3Mzg3OTDigKYpClBBU1MgamFyIHJlcGxheSA0OCBmcmFtZXM7IC9ob21lL3JvY2t5L2JyLW5hdGl2ZS1jYW5kaWRhdGUtcnVudGltZS9xdWFsaWZpY2F0aW9uL2phci1saW51eC1maXJzdC9yYWNlL2NhY2hlL2xpYi9saW51eC14ODZfNjQvNTNhYWU3MTU2Yjk0YzBhNzYxZWY1YWJiMjMyMmFkNDdhNzA4MzYyZjQxN2E1MGNhM2YwNDEwNWQ5YzUwYWJmMS9saWJic2lfdGVjdG9uaWMuc28gc2hhMjU2PTUzYWFlNzE1NmI5NGMwYTc2MWVmNWFiYjIzMjJhZDQ3YTcwODM2MmY0MTdhNTBjYTNmMDQxMDVkOWM1MGFiZjEK",
+    "stdout_sha256": "7d55b82812d5ad79d1775bb5c3b313c8f1cdd0d6828c13899d6d57c1f86c1e84",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "missing-pin": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/missing.jar:/home/rocky/br-native-candidate-runtime/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/missing.jar",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/missing-cache",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/inputs",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/missing-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMSAhPSBtb2QgY29udHJhY3QgbnVsbApQQVNTIG1pc3NpbmcvYmFkIHBpbgo=",
+    "stdout_sha256": "b7526f229729f1745beb967bd7468aede24198989042672725b602aaec8e6f47",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "invalid-pin": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/invalid.jar:/home/rocky/br-native-candidate-runtime/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/invalid.jar",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/invalid-cache",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/inputs",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/invalid-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMSAhPSBtb2QgY29udHJhY3QgbnVsbApQQVNTIG1pc3NpbmcvYmFkIHBpbgo=",
+    "stdout_sha256": "b7526f229729f1745beb967bd7468aede24198989042672725b602aaec8e6f47",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "overlong-pin": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/overlong.jar:/home/rocky/br-native-candidate-runtime/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/overlong.jar",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/overlong-cache",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/inputs",
+      "/home/rocky/br-native-candidate-runtime/qualification/jar-linux-first/overlong-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMSAhPSBtb2QgY29udHJhY3QgbnVsbApQQVNTIG1pc3NpbmcvYmFkIHBpbgo=",
+    "stdout_sha256": "b7526f229729f1745beb967bd7468aede24198989042672725b602aaec8e6f47",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

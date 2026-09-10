@@ -1,0 +1,6 @@
+prepare-runtime-second.py exited 1:
+  File "prepare-runtime-second.py", line 16, in <module>
+    assert time.monotonic()<until;time.sleep(.5)
+AssertionError
+
+Copied from the tool terminal receipt; command/status history is linux/runtime-second-setup.json.
