@@ -412,7 +412,7 @@ private:
         int st = engine_.vt->solve(inst_, &o, loads.empty() ? nullptr : loads.data(), (uint32_t)N, &w);
         if (st != BSI_OK) { errorFromBuilder(out, rq, st, b); return; }
         std::string why;
-        if (!b.finalizeSolve(why)) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", why); return; }
+        if (!b.finalizeSolve(why, o.bucklingMode)) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", why); return; }
         // per-cell identity: every ownerKind==unassigned block appears in the listing, at its own coordinates
         {
             std::set<std::array<int32_t, 3>> listed;
@@ -443,7 +443,7 @@ private:
                 } else {
                     bool hasRecord = false;
                     const bool shouldBeCrit = b.islandBucklingCritical(br.island, hasRecord);
-                    if (crit && !hasRecord) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", "bucklingCritical set on a block whose island has no buckling record"); return; }
+                    if (!hasRecord) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", "owned block island has no buckling record"); return; }
                     if (crit != shouldBeCrit) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", "bucklingCritical disagrees with the island's buckling state/factor"); return; }
                 }
             }

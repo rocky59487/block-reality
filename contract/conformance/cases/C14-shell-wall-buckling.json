@@ -1,0 +1,546 @@
+{
+  "case": "C14-shell-wall-buckling",
+  "family": "C-14",
+  "grade": "hard",
+  "requires": [
+    "bsi.core",
+    "bsi.buckling.eigen.shells"
+  ],
+  "note": "4x8 wall. Existing MC support semantics constrain translations at the four corners of each bottom panel (two node rows), rotations remain free. Gravity produces a linearly varying compressive reference. Factor is RECORDED; qualification uses the separate continuum and dense eigen oracles. This does not declare shell point-load support.",
+  "vocab": {
+    "version": 1,
+    "materials": [
+      {
+        "name": "wall",
+        "role": "panel",
+        "model": "isotropic",
+        "E": 30000000000.0,
+        "nu": 0.2,
+        "rho": 2400,
+        "shellThickness": 0.15,
+        "allow": {
+          "sigmaC": 30000000.0,
+          "sigmaT": 3000000.0,
+          "tau": 4000000.0
+        }
+      },
+      {
+        "name": "ground",
+        "role": "support",
+        "supportKind": "fixAll"
+      }
+    ],
+    "sections": []
+  },
+  "worlds": {
+    "wall": [
+      [
+        0,
+        0,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        0,
+        1,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        0,
+        2,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        0,
+        3,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        0,
+        4,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        0,
+        5,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        0,
+        6,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        0,
+        7,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        0,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        3,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        4,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        5,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        6,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        7,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        2,
+        0,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        2,
+        1,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        2,
+        2,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        2,
+        3,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        2,
+        4,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        2,
+        5,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        2,
+        6,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        2,
+        7,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        3,
+        0,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        3,
+        1,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        3,
+        2,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        3,
+        3,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        3,
+        4,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        3,
+        5,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        3,
+        6,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        3,
+        7,
+        0,
+        "wall",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        0,
+        -1,
+        0,
+        "ground",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        -1,
+        0,
+        "ground",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        2,
+        -1,
+        0,
+        "ground",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        3,
+        -1,
+        0,
+        "ground",
+        null,
+        0,
+        0,
+        0,
+        1,
+        1
+      ]
+    ],
+    "rotated": {
+      "transform": "rot90_y",
+      "of": "wall"
+    },
+    "mirrored": {
+      "transform": "mirror_x",
+      "of": "wall"
+    }
+  },
+  "solve": {
+    "selfWeight": true,
+    "gravity": [
+      0,
+      -9.81,
+      0
+    ],
+    "buckling": {
+      "mode": "eigen"
+    },
+    "include": [
+      "shells"
+    ]
+  },
+  "assert": [
+    {
+      "world": "wall",
+      "path": "status",
+      "eq": "ok"
+    },
+    {
+      "world": "wall",
+      "path": "diag.singularIslands",
+      "eq": 0
+    },
+    {
+      "world": "wall",
+      "path": "diag.islands",
+      "eq": 1
+    },
+    {
+      "world": "wall",
+      "path": "facets",
+      "count": 32
+    },
+    {
+      "world": "wall",
+      "path": "buckling.state",
+      "eq": "computed"
+    },
+    {
+      "world": "wall",
+      "path": "buckling[0].factor",
+      "ge": 1e-100
+    },
+    {
+      "world": "wall",
+      "path": "equilibrium.residual",
+      "le": 1e-09
+    },
+    {
+      "equal": [
+        "wall",
+        "rotated"
+      ],
+      "path": "buckling[0].factor",
+      "rel": 1e-12
+    },
+    {
+      "equal": [
+        "wall",
+        "mirrored"
+      ],
+      "path": "buckling[0].factor",
+      "rel": 1e-12
+    }
+  ]
+}
