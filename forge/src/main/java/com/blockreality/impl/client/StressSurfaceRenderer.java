@@ -218,6 +218,12 @@ public final class StressSurfaceRenderer {
                                                          b.z() * 1000.0 + 500));
             if (hit.isEmpty()) continue;
             ShellMesh.Hit h = hit.get();
+            var state = Minecraft.getInstance().level.getBlockState(new BlockPos(b.x(), b.y(), b.z()));
+            var block = (StructuralBlock)state.getBlock();
+            var form = block.form(state);
+            var binding = com.blockreality.core.engine.GameVocabulary.binding(block.materialToken(), block.sectionToken());
+            if (!form.resolved() || !form.box().equals(ProductForm.CELL) || binding.section() != null
+                    || !binding.material().equals(h.shell().material())) continue;
             Rgb flat = switch (mode) {
                 case UTILIZATION -> StressPalette.utilization(h.shell().dc(), h.shell().overloaded());
                 case MATERIAL -> StressPalette.material(h.shell().material());
