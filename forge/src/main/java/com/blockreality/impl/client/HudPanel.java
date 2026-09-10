@@ -28,7 +28,8 @@ final class HudPanel {
 
     HudPanel(Minecraft mc) {
         font = mc.font;
-        width = Math.min(304, (int) (mc.getWindow().getGuiScaledWidth() * .48));
+        // Leave room for vanilla login notices at the large GUI scale as well.
+        width = Math.min(304, (int) (mc.getWindow().getGuiScaledWidth() * .44));
         contentWidth = Math.max(1, width - INSET * 2);
         availableHeight = Math.max(0, mc.getWindow().getGuiScaledHeight() - EDGE - 44);
     }
