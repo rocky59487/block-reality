@@ -431,6 +431,7 @@ public final class StructureManager {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onNeighbourChange(BlockEvent.NeighborNotifyEvent e) {
+        if (ConstructionService.alreadyAnnouncedNeighbor(e)) return;
         if (e.getLevel() instanceof ServerLevel level) groundChanged(level, e.getPos());
     }
 
@@ -924,15 +925,16 @@ public final class StructureManager {
         gate.restoreMinimum(floor); clearAnalysis(); dirty = !structural.isEmpty() || !deferredChunks.isEmpty();
         notice = dirty ? Kind.PENDING : Kind.EMPTY; noticeDetail = "";
     }
-    /** The legacy cells being edited must already be durable known coverage before PREPARED. */
+    /** Preserve existing structural coverage before PREPARED; a new empty target creates no legacy identity. */
     public void checkpointConstructionCoverage(ServerLevel level, java.util.Collection<BlockPos> positions) throws java.io.IOException {
         if (!server.isSameThread() || !ConstructionService.busy(server) || level.getServer() != server || level.dimension() != dimension)
             throw new java.io.IOException("Construction coverage owner mismatch");
         for (BlockPos pos : positions) {
             var chunk = level.getChunkSource().getChunkNow(pos.getX() >> 4,pos.getZ() >> 4);
-            if (chunk == null || !(chunk.getBlockState(pos).getBlock() instanceof StructuralBlock))
+            if (chunk == null)
                 throw new java.io.IOException("Construction baseline cell is unavailable");
-            structural.observe(pos,declaration(chunk.getBlockState(pos)));
+            if (chunk.getBlockState(pos).getBlock() instanceof StructuralBlock)
+                structural.observe(pos,declaration(chunk.getBlockState(pos)));
         }
         structural.checkpoint(coverageFile);
     }
