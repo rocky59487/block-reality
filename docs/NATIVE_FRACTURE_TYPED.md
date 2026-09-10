@@ -22,3 +22,10 @@ contract自查、schema 11 cases/0 problems與5個Python測試通過。
 完整檔案hash與指令結果見 evidence/NATIVE_FRACTURE_TYPED/PAIR.json。
 引擎typed85／十故障三箱與sanitizer包含最短合法參數尾端不可讀檢查；
 本倉未換裝套件，JNA／遊戲倒塌／日誌接線尚待，沿同一分支續做。
+
+## 2026-09-11 CI未知ABI判準對位
+
+PR138首個CI的hash／mirror／host／corpus已通過，但workflow仍把支援中的ABI3當未知。
+保留run34535372691/job103065629514的原始log。未知stub改為目前header ABI+1，
+檔案存在、非零退出及exact目前ABI的拒絕訊息均保留；正常ABI可載入作對照。
+只修workflow過期常數，不改引擎loader或契約，不以SKIP當通過。
