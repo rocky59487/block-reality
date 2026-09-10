@@ -322,11 +322,12 @@ public final class ConstructionService {
                 StructureManager.of(level).announceConstruction(level,receipt.revision());
             } finally { publishing = false; }
         }
-        @Override public void publishRecoveredState() {
+        @Override public void publishRecoveredState() throws IOException {
             checkAccess();
+            if (prepared != null) metadata = ManufacturedRegistry.load(journal); // Includes the newly durable ABORTED floor.
             for (ServerLevel dimension : server.getAllLevels()) {
                 String id = dimension.dimension().location().toString();
-                StructureManager.of(dimension).restoreConstructionBaseline(dimension,metadata.lastCommittedRevision(id),metadata.ownedCells(id));
+                StructureManager.of(dimension).restoreConstructionBaseline(dimension,metadata.worldRevisionFloor(id),metadata.ownedCells(id));
             }
         }
     }

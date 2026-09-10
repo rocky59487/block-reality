@@ -26,7 +26,7 @@ class ManufacturedRegistryTest {
             var context = registry.validatePrepared(Entry.prepared(intent));
             assertEquals(OVERWORLD,context.dimension()); assertEquals("EDIT",context.operation());
             assertTrue(context.revisionResource().startsWith("revision/"));
-            assertEquals(proposal.metadata(),context.changes());
+            assertEquals(proposal.metadata().stream().sorted(Comparator.comparing(Change::resource)).toList(),context.changes());
             assertThrows(UnsupportedOperationException.class,()->context.changes().clear());
             Change piece = proposal.metadata().stream().filter(c -> c.resource().startsWith("piece/")).findFirst().orElseThrow();
             Intent foreignBefore = replace(intent,new Change(piece.resource(),Value.missing(),piece.after()));
@@ -51,6 +51,23 @@ class ManufacturedRegistryTest {
             assertEquals(4,coverage.size()); assertEquals(3,registry.ownedCells(OVERWORLD).size());
             assertEquals(List.of(new BlockKey(-2,80,0)),registry.ownedCells(NETHER));
             assertEquals(registry.ownedCells(OVERWORLD),ManufacturedRegistry.load(journal).ownedCells(OVERWORLD));
+        }
+    }
+    @Test void abortedBeforeRevisionSurvivesRepeatedReopenWithoutPromotingRejectedRequests() throws Exception {
+        try (var journal = new FileTransactionJournal(root,DOMAIN)) {
+            var registry = ManufacturedRegistry.load(journal);
+            store(journal,registry.prepareEdit(request(1,17),OVERWORLD,Set.of(),Set.of()),Phase.ABORTED);
+            journal.create(Entry.rejected(request(2,999),Reason.STALE_REVISION));
+            commit(journal,registry,registry.prepareEdit(request(3,2),NETHER,Set.of(),Set.of()));
+            for (int i=0;i<2;i++) {
+                registry = ManufacturedRegistry.load(journal);
+                assertEquals(17,registry.worldRevisionFloor(OVERWORLD)); assertEquals(0,registry.lastCommittedRevision(OVERWORLD));
+                assertEquals(3,registry.worldRevisionFloor(NETHER)); assertEquals(3,registry.lastCommittedRevision(NETHER));
+                assertEquals(0,registry.ownedCells()); assertEquals(1,registry.order());
+            }
+        }
+        try (var journal = FileTransactionJournal.open(root)) {
+            assertEquals(17,ManufacturedRegistry.load(journal).worldRevisionFloor(OVERWORLD));
         }
     }
     static ManufacturedPiece.Plan run(int start, int count) {

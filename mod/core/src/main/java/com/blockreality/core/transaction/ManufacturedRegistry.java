@@ -20,6 +20,7 @@ public final class ManufacturedRegistry {
     private final Map<Cell, UUID> owners = new HashMap<>();
     private final Map<UUID, Birth> births = new HashMap<>();
     private final Map<String, Long> revisions = new HashMap<>();
+    private final Map<String, Long> abortedFloors = new HashMap<>();
     private long order;
     private boolean failed;
 
@@ -42,6 +43,8 @@ public final class ManufacturedRegistry {
                     if (entry.phase() == Phase.REJECTED) continue;
                     Batch batch = parse(entry);
                     if (entry.phase() == Phase.COMMITTED && sequence.putIfAbsent(batch.order(),id) != null) throw invalid();
+                    if (entry.phase() == Phase.ABORTED)
+                        result.abortedFloors.merge(batch.descriptor().dimension(),entry.request().baseRevision(),Math::max);
                 }
                 for (var step : sequence.entrySet()) {
                     Entry entry = journal.verify(step.getValue()).orElseThrow(() -> new IOException("Metadata record disappeared"));
@@ -58,6 +61,11 @@ public final class ManufacturedRegistry {
     public synchronized int lifetimePieces() { healthy(); return pieces.size(); }
     public synchronized int ownedCells() { healthy(); return owners.size(); }
     public synchronized long lastCommittedRevision(String dimension) { healthy(); dimension(dimension); return revisions.getOrDefault(dimension,0L); }
+    /** Aborted checkpointed before-revisions also survive restart; rejected requests confer no floor. */
+    public synchronized long worldRevisionFloor(String dimension) {
+        healthy(); dimension(dimension);
+        return Math.max(revisions.getOrDefault(dimension,0L),abortedFloors.getOrDefault(dimension,0L));
+    }
     public synchronized Optional<ManufacturedPiece> piece(UUID id) { healthy(); return Optional.ofNullable(pieces.get(Objects.requireNonNull(id))); }
     public synchronized Optional<UUID> owner(String dimension, BlockKey cell) {
         healthy(); dimension(dimension); ManufacturedPiece.position(cell); return Optional.ofNullable(owners.get(new Cell(dimension,cell)));
