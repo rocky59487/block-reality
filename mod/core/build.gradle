@@ -48,6 +48,16 @@ tasks.register('bsiRetryGate', JavaExec) {
 // Legacy protocol/formula models are shared by tests only.
 sourceSets.test.java.srcDir "src/testFixtures/java"
 
+tasks.register('physicalGravityGate', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.blockreality.core.engine.PhysicalGravityGate'
+    doFirst {
+        args System.getProperty('br.engine', ''), System.getProperty('br.gravityFrames', ''),
+                System.getProperty('br.gravityOutput', '')
+    }
+}
+
 // Real JVM interruption/recovery with file participants. This is not Minecraft restart qualification.
 tasks.register('constructionRecoveryGate', JavaExec) {
     dependsOn tasks.named('testClasses')

@@ -35,7 +35,10 @@ class GameInputNativeTest {
                 assertEquals("steel",actual.members().get(0).material());
                 assertEquals("steel_rect_200x400",actual.members().get(0).section());
                 var precision=new BsiHeaders.Precision(BsiHeaders.Tier.COMMIT,storage);
-                var raw=engine.solve(true,new double[]{0,-9.81,0},world.loads(),1,BsiAnalysisResult.INCLUDE,precision,new BsiHeaders.EigenBuckling(0));
+                var legacy=engine.solve(true,new double[]{0,-9.81,0},world.loads(),1,BsiAnalysisResult.INCLUDE,precision,new BsiHeaders.EigenBuckling(0));
+                assertNotNull(legacy);assertFalse(legacy.isError(),legacy.message());
+                assertEquals(7850*.08*9.81*4+10000,legacy.equilibrium().reaction()[1],1e-6,"legacy C4 analysis-mass convention retained");
+                var raw=engine.solve(true,new double[]{0,-9.81,0},world.loads(),1,BsiAnalysisResult.INCLUDE,precision,new BsiHeaders.EigenBuckling(0),BsiHeaders.MassModel.PHYSICAL);
                 assertNotNull(raw);assertFalse(raw.isError(),raw.message());
                 var expected=BsiAnalysisResult.decode(raw,world.revision(),vocabulary.materials(),vocabulary.sections(),precision);
                 assertTrue(expected.ok(),expected.diagnostic());
@@ -48,7 +51,7 @@ class GameInputNativeTest {
                 assertEquals(ed.ay(),ad.ay());assertEquals(ed.az(),ad.az());
                 assertEquals(ed.lengthMm(),ad.lengthMm());assertEquals(ed.halfYMm(),ad.halfYMm());
                 assertEquals(ed.halfZMm(),ad.halfZMm());assertEquals(ed.stations(),ad.stations());
-                assertEquals(7850*.08*9.81*4+10000,raw.equilibrium().reaction()[1],1e-6,"C4 convention; existing half-cell issue remains");
+                assertEquals(7850*.08*9.81*5+10000,raw.equilibrium().reaction()[1],1e-6,"physical material cells include both endpoint halves");
             }
         }
     }

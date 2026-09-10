@@ -8,7 +8,7 @@
   "x-verbs": ["bsi.hello", "bsi.vocab.declare", "bsi.vocab.query", "bsi.world.declare", "bsi.world.edit", "bsi.solve", "bsi.cancel"],
 
   "x-capabilities": [
-    "bsi.core", "bsi.world.edit",
+    "bsi.core", "bsi.world.edit", "bsi.mass.physical",
     "bsi.readback.members", "bsi.readback.stations", "bsi.readback.shells", "bsi.readback.memberGeometry", "bsi.readback.stationIdentity",
     "bsi.buckling.eigen", "bsi.buckling.eigen.shells", "bsi.buckling.screen",
     "bsi.precision.display", "bsi.precision.f32", "bsi.precision.warmstart", "bsi.precision.timeout",
@@ -200,6 +200,7 @@
       "type": "object",
       "properties": {
         "selfWeight": {"type": "boolean", "default": true},
+        "massModel": {"type": "string", "enum": ["analysis", "physical"], "default": "analysis"},
         "gravity": {"$ref": "#/$defs/vec3", "default": [0, -9.80665, 0]},
         "loads": {"type": "integer", "minimum": 0, "maximum": 1048576},
         "buckling": {"type": "object", "additionalProperties": false, "properties": {"mode": {"$ref": "#/x-enums/bucklingMode"}, "budgetDof": {"type": "integer", "minimum": 0, "maximum": 2147483647}, "K": {"type": "number", "exclusiveMinimum": 0, "maximum": 100}}},

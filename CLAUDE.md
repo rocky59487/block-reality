@@ -221,3 +221,8 @@ Java 的 `BsiFrame`/`BsiHeaders`/`BsiResponse` 只能實作契約，不得自創
 **嚴重度依「不符代表什麼」定**：兩個預設分支之間不符 = **真漂移 → 紅**；
 PR 上不符 = 變更**在途中** → 警告（否則每次合法的契約變更都從紅開始，然後所有人學會忽略它）。
 **fetch 失敗永不綠。** 最後一道是執行期握手：`bsi.hello` 的 `contractSha256` 不符 → `BSI_VERSION` → 引擎停用並指名兩個雜湊。
+
+## 2026-09-11 PGN候選
+
+PGN已接production GameWorldSnapshot的physical自重，舊public overload仍analysis；JNA與兩故障已驗。
+正式靜態native bundle／預設jar尚未換装，不能發佈新契約配舊庫。詳docs/PHYSICAL_GRAVITY_DELIVERY.md；#94與v2仍開放。

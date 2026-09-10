@@ -150,7 +150,7 @@ public final class InProcessEngine implements AutoCloseable {
             if (!declareWorld(snapshot.revision().value(), blocks))
                 return AnalysisResult.failed(snapshot.revision(), "BSI world declaration refused");
             return analyze(snapshot.revision(), true, new double[]{0, -9.81, 0}, snapshot.loads(), numThreads,
-                    vocabulary.materials(), vocabulary.sections(), storage, buckling);
+                    vocabulary.materials(), vocabulary.sections(), storage, buckling, BsiHeaders.MassModel.PHYSICAL);
         } catch (IllegalArgumentException e) {
             worldDeclared = false;
             return AnalysisResult.failed(snapshot.revision(), "BSI input: " + e.getMessage());
@@ -168,10 +168,17 @@ public final class InProcessEngine implements AutoCloseable {
     public AnalysisResult analyze(WorldRevision expected, boolean selfWeight, double[] gravity,
             List<BsiRecords.Load> loads, Integer numThreads, Map<Integer,String> materials,
             Map<Integer,String> sections, BsiHeaders.Storage storage, BsiHeaders.EigenBuckling buckling) {
+        return analyze(expected, selfWeight, gravity, loads, numThreads, materials, sections, storage, buckling, null);
+    }
+
+    public AnalysisResult analyze(WorldRevision expected, boolean selfWeight, double[] gravity,
+            List<BsiRecords.Load> loads, Integer numThreads, Map<Integer,String> materials,
+            Map<Integer,String> sections, BsiHeaders.Storage storage, BsiHeaders.EigenBuckling buckling,
+            BsiHeaders.MassModel massModel) {
         if (status != Status.READY || !worldDeclared || expected.value() != revision)
             return AnalysisResult.failed(expected, "BSI analysis: no matching declared world");
         var precision = new BsiHeaders.Precision(BsiHeaders.Tier.COMMIT, storage);
-        var response = solve(selfWeight, gravity, loads, numThreads, BsiAnalysisResult.INCLUDE, precision, buckling);
+        var response = solve(selfWeight, gravity, loads, numThreads, BsiAnalysisResult.INCLUDE, precision, buckling, massModel);
         try (var ignored = profile.begin(RESULT_DECODE)) {
             return BsiAnalysisResult.decode(response, expected, materials, sections, precision);
         }
@@ -192,10 +199,16 @@ public final class InProcessEngine implements AutoCloseable {
     public BsiResponse solve(boolean selfWeight, double[] gravity, List<BsiRecords.Load> loads,
                              Integer numThreads, List<String> include, BsiHeaders.Precision precision,
                              BsiHeaders.EigenBuckling buckling) {
+        return solve(selfWeight, gravity, loads, numThreads, include, precision, buckling, null);
+    }
+
+    public BsiResponse solve(boolean selfWeight, double[] gravity, List<BsiRecords.Load> loads,
+                             Integer numThreads, List<String> include, BsiHeaders.Precision precision,
+                             BsiHeaders.EigenBuckling buckling, BsiHeaders.MassModel massModel) {
         if (status != Status.READY || !worldDeclared || vocabulary == null) return null;
         byte[] payload = loads == null || loads.isEmpty() ? null : BsiRecords.encodeLoads(loads);
         int n = payload == null ? 0 : payload.length / BsiRecords.LOAD_BYTES;
-        return send(BsiHeaders.solve(nextId(), revision, selfWeight, gravity, n, numThreads, include, precision, buckling), payload);
+        return send(BsiHeaders.solve(nextId(), revision, selfWeight, gravity, n, numThreads, include, precision, buckling, massModel), payload);
     }
 
     private boolean ok(BsiResponse r) {
