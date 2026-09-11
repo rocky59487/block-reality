@@ -41,8 +41,8 @@ class NativeFractureTransactionsTest {
         }
     }
     @TestFactory Stream<DynamicTest> interruptionsBeforeDecisionRestoreWholeSource() {
-        var lib=library();
         return Stream.of("checkpoint","write","flush","omitted-world").map(fault -> DynamicTest.dynamicTest(fault,() -> {
+            var lib=library();
             var c=FractureCases.named("mixed-supported"); var host=new FractureTransactionFixture(c); var nativeRef=new AtomicReference<InProcessEngine>();
             host.failCheckpoint=fault.equals("checkpoint"); host.failWrite=fault.equals("write")?2:0;
             host.failFlush=fault.equals("flush"); host.omitWorldImage=fault.equals("omitted-world");
@@ -58,8 +58,8 @@ class NativeFractureTransactionsTest {
         }));
     }
     @TestFactory Stream<DynamicTest> committedDecisionSurvivesLostAckAndPublicationFailure() {
-        var lib=library();
         return Stream.of("decision-lost-ack","native-closed","publication").map(fault -> DynamicTest.dynamicTest(fault,() -> {
+            var lib=library();
             var c=FractureCases.named("L"); var host=new FractureTransactionFixture(c); var nativeRef=new AtomicReference<InProcessEngine>();
             host.failPublish=fault.equals("publication");
             try (var journal=new FileTransactionJournal(temp.resolve(fault),c.world().stamp().domain(),(stage,entry) -> {

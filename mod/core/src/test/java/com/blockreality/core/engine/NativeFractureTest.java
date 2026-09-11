@@ -14,8 +14,8 @@ class NativeFractureTest {
         assertTrue(Files.isRegularFile(Path.of(path))); return Path.of(path);
     }
     @TestFactory Stream<DynamicTest> oracleScenariosThroughProductionSession() {
-        Path lib=library();
         return FractureCases.all().stream().map(c -> DynamicTest.dynamicTest(c.name(),() -> {
+            Path lib=library(); // Register every case even when its native leg is unavailable.
             try (var engine=c.open(lib)) {
                 assertTrue(engine.declareIdentifiedWorld(c.world()));
                 var receipt=engine.prepareFracture(c.request(),c.options());

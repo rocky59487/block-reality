@@ -40,3 +40,5 @@ br-sidecar.exe binary
 # BSI pins hash exact contract bytes on every checkout platform.
 contract/** text=auto eol=lf
 evidence/NATIVE_FRACTURE_TYPED/CI/** -text whitespace=cr-at-eol
+evidence/NATIVE_FRACTURE_TRANSACTION/CI/** -text whitespace=cr-at-eol
+evidence/NATIVE_FRACTURE_TRANSACTION/CI/*.log -text -whitespace
