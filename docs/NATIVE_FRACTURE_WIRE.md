@@ -16,3 +16,9 @@ ASan/UBSan、真庫四transport與現有production BsiNative/BsiFrame雙平台JN
 ConstructionLedger／AtomicConstructionCoordinator／FileTransactionJournal；
 先持久化decision再發布副作用，native拒絕後從權威world重建，startup先recovery。
 artifact ownership、kill/restart、真MC斷裂視覺與接觸滾動仍須驗收，不另寫Java物理。
+
+2026-09-11後續：來源pin已推進至0fcb60a的支承移除修正；同分支已完成consumer
+core的identified輸入、完整receipt解碼及既有持久日誌橋接，真DLL/SO各74項與每平台
+28個中斷/56次独立恢復通過。具體來源、首敗及限制見
+[NATIVE_FRACTURE_TRANSACTION](../evidence/NATIVE_FRACTURE_TRANSACTION/RESULTS.md)。
+正式Forge Host、動態姿態、碎塊呈現與接觸滾動仍待；沒有替換正式原生bundle。

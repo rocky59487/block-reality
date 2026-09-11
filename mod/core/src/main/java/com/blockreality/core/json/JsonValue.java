@@ -143,8 +143,17 @@ public final class JsonValue {
 
     // ---------------------------------------------------------------- parser
     public static JsonValue parse(String src) {
+        return parse(src, false);
+    }
+
+    /** Strict syntax and unique object keys for irreversible native transaction receipts. */
+    public static JsonValue parseStrict(String src) {
+        return parse(src, true);
+    }
+
+    private static JsonValue parse(String src, boolean strict) {
         if (src == null) return NULL;
-        P p = new P(src);
+        P p = new P(src, strict);
         JsonValue v = p.value();
         // Trailing tokens are a parse error, mirroring the C++ side: accepting a
         // valid prefix would make "{...}garbage" indistinguishable from a good line.
@@ -155,6 +164,7 @@ public final class JsonValue {
 
     private static final class P {
         private final String s;
+        private final boolean strict;
         int i;
         boolean ok = true;
         // A malformed document could otherwise recurse until the stack gives out; the
@@ -162,9 +172,14 @@ public final class JsonValue {
         private static final int MAX_DEPTH = 64;
         private int depth;
 
-        P(String s) { this.s = s; }
+        P(String s, boolean strict) { this.s = s; this.strict = strict; }
 
-        void ws() { while (i < s.length() && s.charAt(i) <= ' ') i++; }
+        void ws() {
+            while (i < s.length() && s.charAt(i) <= ' ') {
+                char c = s.charAt(i++);
+                if (strict && c != ' ' && c != '\t' && c != '\r' && c != '\n') ok = false;
+            }
+        }
 
         private boolean eat(char c) {
             ws();
@@ -209,6 +224,7 @@ public final class JsonValue {
                 if (!eat(':')) { ok = false; return NULL; }
                 JsonValue v = value();
                 if (!ok) return NULL;
+                if (strict && m.containsKey(k)) { ok = false; return NULL; }
                 m.put(k, v);
                 if (eat(',')) continue;
                 if (eat('}')) return ofObj(m);
@@ -271,6 +287,7 @@ public final class JsonValue {
                         }
                     }
                 } else {
+                    if (strict && c < 0x20) { ok = false; return ""; }
                     b.append(c);
                 }
             }
@@ -295,6 +312,7 @@ public final class JsonValue {
             }
             if (!any) { ok = false; return NULL; }
             String lit = s.substring(start, i);
+            if (strict && !lit.matches("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?")) { ok = false; return NULL; }
             // A plain integer that fits a long is kept EXACT, so revision survives
             // above 2^53 where the double representation cannot. One carve-out: "-0"
             // must stay a double, because long has no negative zero — routing it

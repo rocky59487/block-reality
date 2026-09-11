@@ -71,3 +71,12 @@ tasks.register('constructionRecoveryGate', JavaExec) {
         args output
     }
 }
+
+tasks.register('nativeFractureRecoveryGate', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.blockreality.core.transaction.NativeFractureProcessGate'
+    doFirst {
+        args System.getProperty('br.engine', ''), System.getProperty('br.fractureEvidence', '')
+    }
+}

@@ -4,6 +4,10 @@ import com.blockreality.api.WorldRevision;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.core.bsi.BsiRecords;
 import com.blockreality.core.bsi.BsiVocabulary;
+import com.blockreality.core.bsi.BsiFracture;
+import com.blockreality.core.world.ConstructionLedger;
+import com.blockreality.core.world.ConstructionDeclaration;
+import java.util.UUID;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -79,5 +83,21 @@ public record GameWorldSnapshot(WorldRevision revision, List<Cell> cells,
             for (var p : ground) blocks.add(BsiRecords.Block.of(p.x(), p.y(), p.z(), groundId, -1, 0));
         }
         return List.copyOf(BsiRecords.canonical(blocks));
+    }
+
+    /** Exact artifact sources from the same captured graph; adjacency is never re-inferred here. */
+    public BsiFracture.World identified(UUID domain, ConstructionLedger.Graph graph, BsiVocabulary vocabulary) {
+        if (!loads.isEmpty()) throw new IllegalArgumentException("fracture does not yet accept external loads");
+        if (graph.owners().size() != cells.size()) throw new IllegalArgumentException("incomplete artifact graph");
+        var owners = new ArrayList<BsiFracture.Owner>(cells.size());
+        for (var cell : cells) {
+            Long owner = graph.owners().get(cell.pos());
+            if (owner == null) throw new IllegalArgumentException("missing artifact source " + cell.pos());
+            var declaration = new ConstructionDeclaration(cell.material(),cell.section(),cell.axis()).groupDeclaration();
+            if (!graph.records().get(owner).declaration().equals(declaration))
+                throw new IllegalArgumentException("artifact declaration differs from source " + cell.pos());
+            owners.add(new BsiFracture.Owner(cell.pos(),owner));
+        }
+        return new BsiFracture.World(new BsiFracture.Stamp(domain,revision.value()),graph.namespace(),blocks(vocabulary),owners);
     }
 }
