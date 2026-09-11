@@ -45,3 +45,8 @@ native finished與publication。來源/原始log/首次FAIL保留。
 三個正常完成故障臂各須完整跑72項且至少一项失敗：縮回stamp/namespace來源比對、
 省略planHash檢查、在participant flush前提早native commit。相同classpath的control
 必須72 PASS。這些進程案例仍是file host，沒有Forge world/碰撞或停電合格宣稱。
+
+2026-09-11審查追加兩個明確拒絕判準（先於修補提交）：recover的snapshot domain
+必須等於journal domain，否則不能發布ready baseline；同座標的artifact declaration
+必須等於當前材料/斷面/角色對應的宣告方向，不能把舊產品graph當作當前owner。
+新增兩項使consumer共74項；先在未修版本跑出完整74項反例，再驗修補。
