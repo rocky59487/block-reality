@@ -36,3 +36,12 @@
 7. 每個新拒絕/順序宣稱配正常完成可編譯反例；首次FAIL與完整raw保留。計數首跑
    harvest後獨立追記；consumer既有core/Forge/packet/source/native測試依受影響範圍
    回歸。engine核心未改時不重跑其114/2690。真接觸/滾動/視覺及完整v2保持開放。
+
+2026-09-11 consumer首跑追記（不移上述判準）：首版69項、1 FAIL，完整source
+綁定不足；第二版加入GameWorldSnapshot三項後共72項。凍結這72項及28個真JVM
+中斷點，每點兩次獨立恢復（56 JVM）：prepare/commit/abort四個日誌寫入階段、
+三個participant的write/flush及rollback write/flush、native prepared、checkpoint、
+native finished與publication。來源/原始log/首次FAIL保留。
+三個正常完成故障臂各須完整跑72項且至少一项失敗：縮回stamp/namespace來源比對、
+省略planHash檢查、在participant flush前提早native commit。相同classpath的control
+必須72 PASS。這些進程案例仍是file host，沒有Forge world/碰撞或停電合格宣稱。
