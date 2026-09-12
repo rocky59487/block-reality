@@ -27,7 +27,7 @@ static_assert(sizeof(Header) == kHeaderBytes, "arena header must be 128 bytes");
 
 // Validate a header against the mapped size. Returns false with a reason on
 // any inconsistency (=> ARENA_CORRUPT).
-bool validate(const Header& h, size_t mappedBytes, std::string& why, bool identified = false);
+bool validate(const Header& h, size_t mappedBytes, std::string& why, bool identified = false, bool motion = false);
 
 // A mapped arena file (POSIX mmap). Windows is out of scope for this revision
 // (BSI.md Part G); the type still compiles there but open() fails.

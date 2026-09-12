@@ -41,6 +41,14 @@ typedef struct bsi_motion_piece {
 typedef struct bsi_motion_vertex { double xyz[3]; } bsi_motion_vertex;
 typedef struct bsi_motion_triangle { uint32_t vertex[3]; } bsi_motion_triangle;
 
+/* Binary wire report: floating point results never enter response headers. */
+typedef struct bsi_motion_report {
+  double elapsed, maxPenetration, positionCorrection, numericalEnergyRemoved;
+  uint64_t substeps, trials, contactSolves, contactPoints, projectionSweeps;
+  uint64_t wakeTrials, integratedBodies, equilibriumSolves;
+  uint8_t fullFallback, reserved[7];
+} bsi_motion_report;
+
 typedef struct bsi_motion_declare {
   uint32_t struct_size;
   bsi_world_stamp scene;

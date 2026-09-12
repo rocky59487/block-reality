@@ -5,7 +5,7 @@
   "bsi": 1,
   "description": "Headers are JSON validated by the definitions below; payload sections are binary records described under x-records. Field order in headers is the order listed. Units are SI. Any key starting with x- is a vendor extension and is ignored-with-count by engines that do not understand it; any other unknown key is PROTOCOL_ERROR.",
 
-  "x-verbs": ["bsi.hello", "bsi.vocab.declare", "bsi.vocab.query", "bsi.world.declare", "bsi.world.edit", "bsi.solve", "bsi.cancel", "bsi.fracture.prepare", "bsi.fracture.finish"],
+  "x-verbs": ["bsi.hello", "bsi.vocab.declare", "bsi.vocab.query", "bsi.world.declare", "bsi.world.edit", "bsi.solve", "bsi.cancel", "bsi.fracture.prepare", "bsi.fracture.finish", "bsi.rigid.declare", "bsi.rigid.step"],
 
   "x-capabilities": [
     "bsi.core", "bsi.world.edit", "bsi.mass.physical", "bsi.world.identity",
@@ -14,7 +14,7 @@
     "bsi.precision.display", "bsi.precision.f32", "bsi.precision.warmstart", "bsi.precision.timeout",
     "bsi.material.orthotropic", "bsi.material.composite", "bsi.material.rope",
     "bsi.section.custom", "bsi.block.shape", "bsi.block.attrs",
-    "bsi.fracture"
+    "bsi.fracture", "bsi.rigid.motion"
   ],
 
   "x-errors": ["BSI_VERSION", "EXPECTED_HELLO", "UNKNOWN_METHOD", "UNSUPPORTED", "UNSUPPORTED_ATTR",
@@ -45,6 +45,60 @@
   },
 
   "$defs": {
+    "rigid.declare.body": {
+      "type": "object", "required": ["scene", "bodies", "cells", "terrain", "chordTolerance", "maxBodies", "maxCells", "maxColliders", "maxVertices"],
+      "properties": {
+        "scene": {"$ref": "#/$defs/world.stamp"},
+        "bodies": {"type": "integer", "minimum": 0, "maximum": 65536},
+        "cells": {"type": "integer", "minimum": 0, "maximum": 1048576},
+        "terrain": {"type": "integer", "minimum": 0, "maximum": 1048576},
+        "chordTolerance": {"type": "number", "exclusiveMinimum": 0},
+        "maxBodies": {"type": "integer", "minimum": 1, "maximum": 65536},
+        "maxCells": {"type": "integer", "minimum": 1, "maximum": 1048576},
+        "maxColliders": {"type": "integer", "minimum": 1, "maximum": 1048576},
+        "maxVertices": {"type": "integer", "minimum": 1, "maximum": 16777216}
+      }, "additionalProperties": false
+    },
+    "rigid.step.body": {
+      "type": "object", "required": ["scene", "requestId", "states", "forces", "dt", "gravity", "maxStep", "maxSubsteps", "maxTrials", "maxPairs", "maxPoints", "maxSurfaceTests", "maxSweeps", "enableSleep"],
+      "properties": {
+        "scene": {"$ref": "#/$defs/world.stamp"}, "requestId": {"$ref": "#/$defs/id128"},
+        "states": {"type": "integer", "minimum": 0, "maximum": 65536},
+        "forces": {"type": "integer", "minimum": 0, "maximum": 65536},
+        "dt": {"type": "number", "exclusiveMinimum": 0}, "gravity": {"$ref": "#/$defs/vec3"},
+        "maxStep": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "maxSubsteps": {"type": "integer", "minimum": 1, "maximum": 1048576},
+        "maxTrials": {"type": "integer", "minimum": 1, "maximum": 1048576},
+        "maxPairs": {"type": "integer", "minimum": 1, "maximum": 16777216},
+        "maxPoints": {"type": "integer", "minimum": 1, "maximum": 16777216},
+        "maxSurfaceTests": {"type": "integer", "minimum": 1, "maximum": 16777216},
+        "maxSweeps": {"type": "integer", "minimum": 1, "maximum": 4096}, "enableSleep": {"type": "boolean"}
+      }, "additionalProperties": false
+    },
+    "rigid.sections": {
+      "type": "array", "minItems": 4, "maxItems": 4, "items": {
+        "type": "object", "required": ["name", "offset", "bytes", "count"],
+        "properties": {"name": {"type": "string"}, "offset": {"type": "integer", "minimum": 0},
+          "bytes": {"type": "integer", "minimum": 0}, "count": {"type": "integer", "minimum": 0}}, "additionalProperties": false
+      }
+    },
+    "rigid.declare.response": {
+      "type": "object", "required": ["bsi", "kind", "id", "method", "revision", "status", "scene", "sections"],
+      "properties": {
+        "bsi": {"const": 1}, "kind": {"const": "response"}, "id": {"type": "string"},
+        "method": {"const": "bsi.rigid.declare"}, "revision": {"type": "integer"}, "status": {"const": "declared"},
+        "scene": {"$ref": "#/$defs/world.stamp"}, "sections": {"$ref": "#/$defs/rigid.sections"}
+      }, "additionalProperties": false
+    },
+    "rigid.step.response": {
+      "type": "object", "required": ["bsi", "kind", "id", "method", "revision", "status", "scene", "requestId", "sections"],
+      "properties": {
+        "bsi": {"const": 1}, "kind": {"const": "response"}, "id": {"type": "string"},
+        "method": {"const": "bsi.rigid.step"}, "revision": {"type": "integer"}, "status": {"const": "stepped"},
+        "scene": {"$ref": "#/$defs/world.stamp"}, "requestId": {"$ref": "#/$defs/id128"},
+        "sections": {"$ref": "#/$defs/rigid.sections"}
+      }, "additionalProperties": false
+    },
     "xyz": {"type": "array", "items": {"type": "integer"}, "minItems": 3, "maxItems": 3},
     "vec3": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
@@ -126,7 +180,7 @@
       "required": ["bsi", "kind", "id", "method", "revision"],
       "properties": {
         "bsi": {"const": 1}, "kind": {"const": "request"}, "id": {"type": "string", "maxLength": 128},
-        "method": {"enum": ["bsi.hello", "bsi.vocab.declare", "bsi.vocab.query", "bsi.world.declare", "bsi.world.edit", "bsi.solve", "bsi.cancel", "bsi.fracture.prepare", "bsi.fracture.finish"]},
+        "method": {"enum": ["bsi.hello", "bsi.vocab.declare", "bsi.vocab.query", "bsi.world.declare", "bsi.world.edit", "bsi.solve", "bsi.cancel", "bsi.fracture.prepare", "bsi.fracture.finish", "bsi.rigid.declare", "bsi.rigid.step"]},
         "revision": {"type": "integer"},
         "body": {"type": "object"},
         "payloadBytes": {"type": "integer", "minimum": 0},
@@ -310,6 +364,18 @@
   },
 
   "x-records": {
+    "motionSurface": {"bytes": 32, "fields": [["friction", "f64"], ["restitution", "f64"], ["rollingResistance", "f64", "m"], ["spinningResistance", "f64", "m"]]},
+    "motionSources": {"bytes": 192, "fields": [["id", "u64"], ["birthDomain", "u64[2]"], ["birthRevision", "i64"], ["artifactNamespace", "u64[2]"], ["fractureRequest", "u64[2]"], ["group", "u32"], ["flags", "u32"], ["cellFirst", "u32"], ["cellCount", "u32"], ["physical", "physicalTotals"], ["surface", "motionSurface"]]},
+    "motionTerrain": {"bytes": 120, "fields": [["id", "u64"], ["size", "f64[3]"], ["position", "f64[3]"], ["orientation", "f64[4]"], ["surface", "motionSurface"]]},
+    "motionBodies": {"bytes": 104, "fields": [["id", "u64"], ["physical", "physicalTotals"], ["surfaceError", "f64"], ["pieceFirst", "u32"], ["pieceCount", "u32"]]},
+    "motionPieces": {"bytes": 48, "fields": [["body", "u64"], ["part", "u64"], ["source", "i32[3]"], ["sourcePart", "u32"], ["vertexFirst", "u32"], ["vertexCount", "u32"], ["triangleFirst", "u32"], ["triangleCount", "u32"]]},
+    "motionVertices": {"bytes": 24, "fields": [["xyz", "f64[3]"]]},
+    "motionTriangles": {"bytes": 12, "fields": [["vertex", "u32[3]"]]},
+    "motionStates": {"bytes": 128, "fields": [["id", "u64"], ["revision", "u64"], ["time", "f64"], ["position", "f64[3]"], ["orientation", "f64[4]"], ["linearMomentum", "f64[3]"], ["angularMomentum", "f64[3]"]]},
+    "motionForces": {"bytes": 56, "fields": [["id", "u64"], ["force", "f64[3]"], ["torque", "f64[3]"]]},
+    "motionSleeping": {"bytes": 8, "fields": [["id", "u64"]]},
+    "motionWoken": {"bytes": 8, "fields": [["id", "u64"]]},
+    "motionReport": {"bytes": 104, "fields": [["elapsed", "f64"], ["maxPenetration", "f64"], ["positionCorrection", "f64"], ["numericalEnergyRemoved", "f64"], ["substeps", "u64"], ["trials", "u64"], ["contactSolves", "u64"], ["contactPoints", "u64"], ["projectionSweeps", "u64"], ["wakeTrials", "u64"], ["integratedBodies", "u64"], ["equilibriumSolves", "u64"], ["fullFallback", "u8"], ["reserved", "u8[7]"]]},
     "artifactOwners": {"bytes": 20, "fields": [["x", "i32"], ["y", "i32"], ["z", "i32"], ["artifact", "i64"]]},
     "physicalTotals": {"bytes": 80, "fields": [["mass", "f64", "kg"], ["center", "f64[3]", "m"], ["inertia", "f64[6]", "kg*m^2"]], "x-order": "before, remaining, broken; COM tensor xx,yy,zz,xy,xz,yz"},
     "fractureCells": {"bytes": 144, "fields": [["source", "block"], ["panelNormal", "i32"], ["group", "u32"], ["artifact", "i64"], ["flags", "u32"], ["reserved", "u32"], ["physical", "physicalTotals"]]},

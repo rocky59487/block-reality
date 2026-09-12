@@ -379,7 +379,7 @@ class LineClient:
         out = self.p.stdout.readline()
         if not out:
             raise RuntimeError("host process closed its stdout")
-        text = out.decode("utf-8").rstrip("\n")
+        text = out.decode("utf-8").rstrip("\r\n")
         m = re.search(r',"payloadBytes":(\d+),"payloadB64":"([A-Za-z0-9+/=]*)"\}$', text)
         if not m:
             raise RuntimeError("reply line lacks the payloadBytes/payloadB64 suffix")
@@ -455,13 +455,16 @@ class ArenaClient:
         method = d["method"]
         door = {"bsi.hello": "hello", "bsi.vocab.declare": "vocab", "bsi.vocab.query": "vocab", "bsi.world.declare": "declare",
                 "bsi.world.edit": "edit", "bsi.solve": "solve", "bsi.cancel": "cancel",
-                "bsi.fracture.prepare": "fracturePrepare", "bsi.fracture.finish": "fractureFinish"}[method]
+                "bsi.fracture.prepare": "fracturePrepare", "bsi.fracture.finish": "fractureFinish",
+                "bsi.rigid.declare": "rigidDeclare", "bsi.rigid.step": "rigidStep"}[method]
         loads = b""
         if door == "declare":
             nb = d.get("body", {}).get("blocks", len(payload) // 40)
             self.world, self.attrs = payload[:nb * 40], payload[nb * 40:]
-        elif door == "solve":
+        elif door in ("solve", "rigidStep"):
             loads = payload
+        elif door == "rigidDeclare":
+            self.world, self.attrs = payload, b""
         elif door == "edit" and "identity" in d.get("body", {}):
             self.world, self.attrs = payload, b""
         req = hdr.encode("utf-8")
@@ -605,6 +608,26 @@ def check_reply(schema, validator, method, reply, declared_blocks=None):
     if method == "bsi.hello":
         probs += validator.validate("hello.response", h)
         order = list(schema["$defs"]["hello.response"]["properties"].keys())
+    elif method in ("bsi.rigid.declare", "bsi.rigid.step"):
+        definition = method[4:] + ".response"
+        probs += validator.validate(definition, h)
+        order = list(schema["$defs"][definition]["properties"])
+        keys = [k for k in h if not k.startswith("x-")]
+        if keys != [k for k in order if k in h]:
+            probs.append(f"{definition} key order differs from schema")
+        want = (["motionBodies", "motionPieces", "motionVertices", "motionTriangles"] if method.endswith("declare")
+                else ["motionReport", "motionStates", "motionSleeping", "motionWoken"])
+        sections = h.get("sections", [])
+        if [s["name"] for s in sections] != want:
+            probs.append("rigid sections not in fixed order")
+        offset = 0
+        for s in sections:
+            rec = schema["x-records"].get(s["name"])
+            if not rec or s["offset"] != offset or s["bytes"] != s["count"] * rec["bytes"]:
+                probs.append("invalid rigid section range")
+            offset += s["bytes"]
+        if offset != len(reply.payload) or (method.endswith("step") and (not sections or sections[0]["count"] != 1)):
+            probs.append("rigid payload length mismatch")
     elif method in ("bsi.fracture.prepare", "bsi.fracture.finish"):
         definition = method[4:] + ".response"
         probs += validator.validate(definition, h)

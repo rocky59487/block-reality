@@ -591,3 +591,41 @@ step只試算宿主送入的狀態，不暗中提交持久世界。宿主先保�
 新request替換暫態重試快取；失敗保留舊場景、結果及cache。重建可丟棄sleep cache，
 但不得把cache或native指標當成永久token。typed view在成功替換相應結果／換scene或close後
 失效，caller必須先複製；拒絕不使舊view失效。沒有自動改寫宿主journal或遊戲實體。
+
+### ABI4 shared wire：剛體來源與步進
+
+`bsi.rigid.motion` 需要 ABI4 及兩個 motion 槽；舊 ABI1–3 不宣告此能力。
+使用既有五函式 CAPI／frame／stdio-b64／arena，不增加另一種引擎或積分器。
+hello 與 vocab.declare 之後即可宣告獨立剛體 scene，不需要重建靜力 world。
+scene 只代表當前碎塊與固定地形；birthWorld 保留碎塊誕生時的歷史來源。
+
+`bsi.rigid.declare` body 必填 `scene`、`bodies`、`cells`、`terrain`、`chordTolerance`、
+`maxBodies`、`maxCells`、`maxColliders`、`maxVertices`，範圍見 schema 與上面的 typed ABI。
+payload 依序為 motionSources192 × bodies、fractureCells144 × cells、motionTerrain120 × terrain。
+所有 source 的 cellFirst/cellCount 互斥且完整覆蓋 cells，來源內部可以 canonical 重排。
+固定地形不出現在可渲染碎塊 mesh 中。空 scene 合法，也可用新的 scene revision 清空。
+成功 `status:"declared"`、`scene`、四列 `sections` 依序為 motionBodies104、motionPieces48、
+motionVertices24、motionTriangles12；offset 從0連續，空段也列出，完整交付不裁剪。
+同 scene stamp 相同來源重用；同 domain 的舊 revision 或相同 revision 異來源拒絕。
+
+`bsi.rigid.step` body 必填 `scene`、`requestId`、`states`、`forces`、`dt`、`gravity`、
+`maxStep`、`maxSubsteps`、`maxTrials`、`maxPairs`、`maxPoints`、`maxSurfaceTests`、`maxSweeps`、
+`enableSleep`（JSON boolean）。payload 依序 motionStates128 × states、motionForces56 × forces。
+呼叫者提供完整當前 state；力／力矩為 world-space，扭矩作用於 body COM，重力另由核心計算。
+body id 與 revision 是精確整數，所有姿態、動量与时间為 binary f64；單位沿上面的 typed ABI。
+成功 `status:"stepped"`、`scene`、`requestId`、四列 sections 依序為 motionReport104（恆1列）、
+motionStates128、motionSleeping8、motionWoken8。report 的前4個 f64 為 elapsed、maxPenetration、
+positionCorrection、numericalEnergyRemoved；後8個 u64 為 substeps、trials、contactSolves、
+contactPoints、projectionSweeps、wakeTrials、integratedBodies、equilibriumSolves，最後 fullFallback
+u8 及7個零 reserved。P4：回應 header 不放浮點結果。關閉 sleep 時 sleep wrapper 計數為0，
+world 計數仍記实际積分工作；sleeping/woken 為 canonical body id 集合，可能重疊。
+
+envelope revision 只回顯，不能取代 scene/body revision。requestId 只重用最後成功 trial，
+不是永久交易 token；成功結果由呼叫者持久化後作下一步輸入。重開 session 後重新宣告
+持久來源與地形、送回已保存 state 即可接續，休眠 cache 可以丟棄。
+header 上限4096B，payload上限256MiB-4096-12；超額拒絕，沒有部分姿態／mesh交付。
+正常拒絕可繼續呼叫；native malformed success 或 dispatch 後例外會使 Session 失效，必須重開。
+arena door `rigidDeclare` 將完整 payload 放 world region，`rigidStep` 放 loads region；
+其他 region 不參與這次呼叫。NEED_BIGGER 保留既有結果，擴容重取不重新執行 step。
+arena 仍依 Part G 僅支援 Linux；Windows 使用 CAPI、frame 或 stdio-b64，frame 的 stdio
+明確設為 binary mode，不能以 CRT 文字模式傳輸 f64／記錄資料。

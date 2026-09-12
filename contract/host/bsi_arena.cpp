@@ -9,12 +9,12 @@
 
 namespace bsi { namespace arena {
 
-bool validate(const Header& h, size_t mapped, std::string& why, bool identified) {
+bool validate(const Header& h, size_t mapped, std::string& why, bool identified, bool motion) {
     if (h.magic != kMagic) { why = "bad magic"; return false; }
     if (h.version != kVersion) { why = "bad version"; return false; }
     if (h.capacity != mapped) { why = "capacity != mapped size"; return false; }
     struct R { uint64_t off, len; const char* name; uint64_t align; } regions[] = {
-        {h.worldOff, h.worldLen, "world", identified ? 1u : 40u}, {h.attrsOff, h.attrsLen, "attrs", identified ? 1u : 16u}, {h.loadsOff, h.loadsLen, "loads", 64},
+        {h.worldOff, h.worldLen, "world", identified ? 1u : 40u}, {h.attrsOff, h.attrsLen, "attrs", identified ? 1u : 16u}, {h.loadsOff, h.loadsLen, "loads", motion ? 1u : 64u},
         {h.reqOff, h.reqLen, "req", 1}, {h.replyOff, h.replyLen, "reply", 1}};
     for (const R& r : regions) {
         if (r.off < kHeaderBytes && r.len != 0) { why = std::string(r.name) + " overlaps header"; return false; }

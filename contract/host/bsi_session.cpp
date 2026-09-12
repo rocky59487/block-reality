@@ -8,6 +8,7 @@
 #include "bsi_sha256.hpp"
 #include "bsi_vocab.hpp"
 #include "bsi_fracture_wire.hpp"
+#include "bsi_motion_wire.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdarg>
@@ -85,16 +86,20 @@ public:
         const bool identifiedRequest = rq.body && rq.body->find("identity") &&
             (rq.method == "bsi.world.declare" || rq.method == "bsi.world.edit");
         const bool fractureRequest = rq.method == "bsi.fracture.prepare" || rq.method == "bsi.fracture.finish";
-        if (identifiedRequest || fractureRequest) {
+        const bool motion = rq.method == "bsi.rigid.declare" || rq.method == "bsi.rigid.step";
+        if (identifiedRequest || fractureRequest || motion) {
             if (
 #ifndef BSI_TEST_NFW_LIMIT
+#ifndef BSI_TEST_RMW_LIMIT
                 header.size() > fracture_wire::kHeaderLimit ||
+#endif
 #endif
                 payloadLen > fracture_wire::kPayloadLimit || (payloadLen && !payload)) {
                 wireError(rq, out, "PROTOCOL_ERROR", "fracture request exceeds wire budget or has NULL payload"); return;
             }
             try {
-                if (identifiedRequest) identifiedWorld(rq, payload, payloadLen, out, rq.method == "bsi.world.edit");
+                if (motion) motionRequest(rq,payload,payloadLen,out,rq.method=="bsi.rigid.declare");
+                else if (identifiedRequest) identifiedWorld(rq, payload, payloadLen, out, rq.method == "bsi.world.edit");
                 else if (rq.method == "bsi.fracture.prepare") fracturePrepare(rq, payloadLen, out);
                 else fractureFinish(rq, payloadLen, out);
             } catch (...) {
@@ -128,6 +133,7 @@ private:
     int worldExt_ = 0;
 
 #include "bsi_fracture_session.hpp"
+#include "bsi_motion_session.hpp"
 
     void logf(int level, const char* fmt, ...) {
         if (level > opts_.logLevel) return;
