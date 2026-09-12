@@ -17,7 +17,8 @@ extern "C" {
 #endif
 
 #define BSI_MAJOR 1
-#define BSI_ENGINE_ABI 3u
+#define BSI_ENGINE_ABI 4u
+#define BSI_ENGINE_ABI_FRACTURE 3u
 #define BSI_ENGINE_ABI_PHYSICAL 2u
 #define BSI_ENGINE_ABI_LEGACY 1u
 
@@ -252,6 +253,7 @@ BSI_EXPORT int bsi_writer_error(bsi_writer*, const char* code, const char* messa
 
 /* ---- the engine vtable (append-only; host reads up to abi_version) -------- */
 #include "bsi_fracture.h"
+#include "bsi_motion.h"
 typedef struct bsi_engine_vtable {
   uint32_t abi_version;                                        /* = BSI_ENGINE_ABI */
   const char* (*name)(void);
@@ -276,6 +278,9 @@ typedef struct bsi_engine_vtable {
   int (*fracture_prepare)(bsi_engine*, const bsi_fracture_options*,
                          const bsi_fracture_view**, bsi_writer*);
   int (*fracture_finish)(bsi_engine*, const bsi_fracture_finish*, uint8_t*, bsi_writer*);
+  /* ABI4 only. No wire capability until the shared host supports motion. */
+  int (*motion_declare)(bsi_engine*, const bsi_motion_declare*, const bsi_motion_geometry_view**, bsi_writer*);
+  int (*motion_step)(bsi_engine*, const bsi_motion_step*, const bsi_motion_step_view**, bsi_writer*);
 } bsi_engine_vtable;
 
 /* The single exported symbol an engine must provide. Returns NULL when

@@ -131,7 +131,7 @@ int s_cancel(bsi_engine*) { return BSI_OK; }
 
 const bsi_engine_vtable kVt = {
     BSI_STUB_ABI, s_name, s_version, s_build, s_caps, s_open, s_close, s_vocab, s_declare, s_edit, s_solve, s_cancel, nullptr,
-    nullptr, nullptr, nullptr, nullptr};
+    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
 }  // namespace
 

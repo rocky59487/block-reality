@@ -550,3 +550,44 @@ arena新增 `fracturePrepare`／`fractureFinish` doors；identified declare的wo
 回覆空間不足時保留原request/reply；相同header/payload重試可改doorbell seq，只複製原
 reply，禁止重新dispatch。不同pending request拒絕，原reply保留。CAPI沿原pending機制。
 這是原生資料/提交入口；跨restart持久去重仍由消費者journal負責。
+
+### 2026-09-13：ABI4 原生運動 typed 出口
+
+adapter ABI4 追加 `motion_declare`、`motion_step`，型別在 `bsi_motion.h`。
+host 按4→3→2→1協商；僅NULL可降版。ABI1/2/3 prefix及原能力維持。
+這個階段沒有新wire動詞或motion capability，不以typed slot冒充五函式CAPI已可呼叫。
+
+`motion_declare` 接宿主保存的完整碎塊來源及固定碰撞地形。每body保留正signed-i64 id、
+birthWorld、artifactNamespace、fractureRequest、原fragment group≥2、原physical properties，
+cells使用原144B fracture cell；各range恰好分割cell span，flags/reserved必須0。
+每body來源座標唯一、cell.group相符、artifact正signed-i64；不同body可有相同歷史座標。
+來源PMA與fragment total須符合引擎材質／截面及完整來源幾何；不接受articulated flags。
+group與request識別原斷裂來源，body id由宿主持久分配，兩者不能冒名分析索引。
+scene是宿主分配的獨立非零domain/非負revision；同stamp的等價規範宣告可重用，
+同stamp換內容拒絕，同domain的不同內容須更高revision。換domain可重建。
+來源／state由宿主journal保有；native不認證外部journal的真實性或跨重啟去重。
+
+宣告選項全部必填：maxBodies 1..65536、maxCells 1..1048576、maxColliders 1..1048576、
+maxVertices 1..16777216、正有限chordTolerance。所有body與地形共用幾何預算。
+terrain為120B定向長方體，其id在地形中唯一；size三軸正有限、pose有效。
+surface為32B：friction≥0、restitution∈[0,1]、rolling/spinningResistance≥0，全部有限。
+後兩者單位m，是接觸承載所限制的力偶長度，並非每tick速度衰減率。
+geometry view交104B body描述、48B piece、24B vertex及12B triangle；vertex相對body COM，
+triangle索引整個vertex span且朝外。body描述保留原source COM與完整body-frame inertia，
+piece保留body/part及原source xyz/sourcePart。显示mesh不重算質量或取代解析圓形碰撞。
+
+`motion_step` 收scene stamp、非零request及全部body的128B state，順序可亂但id唯一且完整。
+state依序id/revision/time、COM position xyz、Hamilton body→world wxyz、世界P xyz與L xyz。
+revision為0..INT64_MAX-1，time非負有限且所有body相同，pose有效；引擎從scene取mass/inertia。
+force為56B id/force xyz/關於COM的torque xyz，id唯一並屬本scene。dt正有限，gravity有限。
+maxStep∈(0,1]；maxSubsteps/maxTrials∈1..1048576，maxPairs/maxPoints/maxSurfaceTests依共同
+scene預算，maxSweeps∈1..4096，enableSleep只能0/1。其餘物理容差使用共同引擎預設。
+成功完整dt、每body revision恰+1，輸出按body id；並交sleeping/woken id與具名工作計數。
+world計數描述最後接受的world trial，wakeTrials/integratedBodies含喚醒重算工作。
+numericalEnergyRemoved只記睡眠清理的有界數值殘餘；它不是碰撞總耗散。
+
+step只試算宿主送入的狀態，不暗中提交持久世界。宿主先保存結果再用作下一步輸入。
+目前scene最後成功request相同且完整輸入／選項等價時重放原結果；同ID換值拒絕。
+新request替換暫態重試快取；失敗保留舊場景、結果及cache。重建可丟棄sleep cache，
+但不得把cache或native指標當成永久token。typed view在成功替換相應結果／換scene或close後
+失效，caller必須先複製；拒絕不使舊view失效。沒有自動改寫宿主journal或遊戲實體。
