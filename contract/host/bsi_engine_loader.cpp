@@ -12,6 +12,7 @@ namespace bsi {
 static bool adopt(const bsi_engine_vtable* (*entry)(uint32_t), void* dl, Engine& out, std::string& err) {
     uint32_t requested = BSI_ENGINE_ABI;
     const bsi_engine_vtable* vt = entry(requested);
+    if (!vt) { requested = BSI_ENGINE_ABI_MOTION; vt = entry(requested); }
     if (!vt) { requested = BSI_ENGINE_ABI_FRACTURE; vt = entry(requested); }
     if (!vt) { requested = BSI_ENGINE_ABI_PHYSICAL; vt = entry(requested); }
     if (!vt) { requested = BSI_ENGINE_ABI_LEGACY; vt = entry(requested); }

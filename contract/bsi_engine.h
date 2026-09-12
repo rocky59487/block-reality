@@ -17,7 +17,8 @@ extern "C" {
 #endif
 
 #define BSI_MAJOR 1
-#define BSI_ENGINE_ABI 4u
+#define BSI_ENGINE_ABI 5u
+#define BSI_ENGINE_ABI_MOTION 4u
 #define BSI_ENGINE_ABI_FRACTURE 3u
 #define BSI_ENGINE_ABI_PHYSICAL 2u
 #define BSI_ENGINE_ABI_LEGACY 1u
@@ -254,6 +255,7 @@ BSI_EXPORT int bsi_writer_error(bsi_writer*, const char* code, const char* messa
 /* ---- the engine vtable (append-only; host reads up to abi_version) -------- */
 #include "bsi_fracture.h"
 #include "bsi_motion.h"
+#include "bsi_pdelta.h"
 typedef struct bsi_engine_vtable {
   uint32_t abi_version;                                        /* = BSI_ENGINE_ABI */
   const char* (*name)(void);
@@ -281,6 +283,10 @@ typedef struct bsi_engine_vtable {
   /* ABI4 only. No wire capability until the shared host supports motion. */
   int (*motion_declare)(bsi_engine*, const bsi_motion_declare*, const bsi_motion_geometry_view**, bsi_writer*);
   int (*motion_step)(bsi_engine*, const bsi_motion_step*, const bsi_motion_step_view**, bsi_writer*);
+  /* ABI5 typed only. Check the negotiated ABI before reading these slots. */
+  int (*pdelta_solve)(bsi_engine*, const bsi_pdelta_options*, const bsi_load*, uint32_t,
+                      const bsi_pdelta_view**, bsi_writer*);
+  int (*pdelta_station)(bsi_engine*, const bsi_pdelta_query*, bsi_pdelta_station*, bsi_writer*);
 } bsi_engine_vtable;
 
 /* The single exported symbol an engine must provide. Returns NULL when
