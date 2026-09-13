@@ -28,6 +28,9 @@ int runArena(Session& s, const std::string& path, FILE* in, FILE* out) {
     std::string err;
     if (!map.open(path, err)) { std::fprintf(stderr, "arena: %s\n", err.c_str()); return 2; }
     std::string line;
+    std::string pendingHeader;
+    std::vector<uint8_t> pendingPayload, pendingReply;
+    bool pendingError = false;
     while (readLine(in, line)) {
         if (line.empty()) continue;
         json::Value v;
@@ -38,36 +41,81 @@ int runArena(Session& s, const std::string& path, FILE* in, FILE* out) {
         if (!map.remap(err)) { bell(out, "error", seq, 0, 0, "ARENA_CORRUPT: remap failed"); continue; }
         arena::Header h; std::memcpy(&h, map.base(), sizeof h);
         std::string why;
-        if (!arena::validate(h, map.size(), why) || h.seq != seq) { bell(out, "error", seq, 0, 0, ("ARENA_CORRUPT: " + (h.seq != seq ? std::string("seq mismatch") : why)).c_str()); continue; }
+        if (!arena::validate(h, map.size(), why, true, true) || h.seq != seq) { bell(out, "error", seq, 0, 0, ("ARENA_CORRUPT: " + (h.seq != seq ? std::string("seq mismatch") : why)).c_str()); continue; }
+        if (h.reqLen > 256u * 1024u * 1024u - 12 || h.worldLen > 256u * 1024u * 1024u ||
+            h.attrsLen > 256u * 1024u * 1024u - h.worldLen || h.loadsLen > 256u * 1024u * 1024u) {
+            bell(out, "error", seq, 0, 0, "PROTOCOL_ERROR: arena request exceeds frame budget"); continue;
+        }
         std::string header((const char*)map.base() + h.reqOff, (size_t)h.reqLen);
         // payload source per door (Part G): declare -> world(+attrs), solve -> loads, others none
         std::vector<uint8_t> payload;
         json::Value hv; std::string method;
         if (json::parse(header, hv) && hv.isObj() && hv.find("method") && hv.find("method")->isStr()) method = hv.find("method")->str;
         static const struct { const char* door; const char* method; } pairs[] = {
-            {"hello", "bsi.hello"}, {"vocab", "bsi.vocab.declare"}, {"declare", "bsi.world.declare"}, {"edit", "bsi.world.edit"}, {"solve", "bsi.solve"}, {"cancel", "bsi.cancel"}};
+            {"hello", "bsi.hello"}, {"vocab", "bsi.vocab.declare"}, {"declare", "bsi.world.declare"}, {"edit", "bsi.world.edit"}, {"solve", "bsi.solve"}, {"cancel", "bsi.cancel"},
+            {"fracturePrepare", "bsi.fracture.prepare"}, {"fractureFinish", "bsi.fracture.finish"},
+            {"rigidDeclare", "bsi.rigid.declare"}, {"rigidStep", "bsi.rigid.step"},
+            {"pdeltaSolve", "bsi.pdelta.solve"}, {"pdeltaStation", "bsi.pdelta.station"}, {"pdeltaFracturePrepare", "bsi.pdelta.fracture.prepare"}};
         bool doorOk = false;
         for (const auto& p : pairs) if (door == p.door) { doorOk = true; if (method != p.method && !(door == "vocab" && method == "bsi.vocab.query")) { bell(out, "error", seq, 0, 0, "PROTOCOL_ERROR: door does not match method"); doorOk = false; method.clear(); } break; }
         if (!doorOk) { if (!method.empty() || door.empty()) bell(out, "error", seq, 0, 0, "PROTOCOL_ERROR: unknown door"); continue; }
+        const auto* requestBody = hv.find("body");
+        const bool identified = (door == "declare" || door == "edit") && requestBody && requestBody->find("identity");
+        // Unused regions can retain the preceding identified world's owner layout.
+        if ((!identified && door == "declare" && !arena::validate(h, map.size(), why, false, true)) ||
+            ((door == "solve" || door == "pdeltaSolve" || door == "pdeltaFracturePrepare") && h.loadsLen % 64) ||
+            (identified && (door == "declare" ? h.worldLen % 40 || h.attrsLen % 20 : h.attrsLen != 0))) {
+            bell(out, "error", seq, 0, 0, "ARENA_CORRUPT: invalid payload region record lengths"); continue;
+        }
         if (door == "declare") {
             payload.assign(map.base() + h.worldOff, map.base() + h.worldOff + h.worldLen);
             payload.insert(payload.end(), map.base() + h.attrsOff, map.base() + h.attrsOff + h.attrsLen);
-        } else if (door == "solve") {
+        } else if (door == "solve" || door == "rigidStep" || door == "pdeltaSolve" || door == "pdeltaFracturePrepare") {
             payload.assign(map.base() + h.loadsOff, map.base() + h.loadsOff + h.loadsLen);
+        } else if (door == "rigidDeclare") {
+            payload.assign(map.base() + h.worldOff, map.base() + h.worldOff + h.worldLen);
         } else if (door == "edit") {
-            bell(out, "error", seq, 0, 0, "UNSUPPORTED: world.edit over the arena is not in this contract revision"); continue;
+            const auto* body = hv.find("body");
+            if (!body || !body->find("identity")) {
+                bell(out, "error", seq, 0, 0, "UNSUPPORTED: unidentified world.edit over the arena is not in this contract revision"); continue;
+            }
+            payload.assign(map.base() + h.worldOff, map.base() + h.worldOff + h.worldLen);
         }
-        Reply r;
-        s.handle(header, payload.data(), payload.size(), r);
-        uint16_t flags = frame::kFlagEndOfResponse;
-        if (!r.payload.empty()) flags |= frame::kFlagHasPayload | frame::kFlagBinaryPayload;
-        size_t need = frame::encodedSize(r.header.size(), r.payload.size());
+        if (!pendingReply.empty() && (header != pendingHeader || payload != pendingPayload)) {
+            bell(out, "error", seq, 0, 0, "PROTOCOL_ERROR: a different request has a pending reply"); continue;
+        }
+        if (pendingReply.empty()) {
+            // Allocate request ownership before dispatch. A resize must not rerun a commit.
+            pendingHeader = header; pendingPayload = payload;
+            try {
+                Reply r;
+                s.handle(pendingHeader, pendingPayload.data(), pendingPayload.size(), r);
+                uint16_t flags = frame::kFlagEndOfResponse;
+                if (!r.payload.empty()) flags |= frame::kFlagHasPayload | frame::kFlagBinaryPayload;
+                size_t need = frame::encodedSize(r.header.size(), r.payload.size());
+                if (need > 256u * 1024u * 1024u) {
+                    bell(out, "error", seq, 0, 0, "INTERNAL: reply exceeds frame budget; reopen session"); return 2;
+                }
+                pendingReply.resize(need);
+                frame::encodeInto(pendingReply.data(), flags, r.header, r.payload.data(), r.payload.size());
+                pendingError = r.error;
+            } catch (...) {
+                bell(out, "error", seq, 0, 0, "INTERNAL: operation interrupted; reopen session"); return 2;
+            }
+        }
+        const size_t need = pendingReply.size();
         uint64_t cap = (h.replyOff <= map.size()) ? map.size() - h.replyOff : 0;
-        if (need > cap) { bell(out, "needBigger", seq, 0, need, nullptr); continue; }
-        frame::encodeInto(map.base() + h.replyOff, flags, r.header, r.payload.data(), r.payload.size());
+        if (need > cap) {
+#ifdef BSI_TEST_NFW_ARENA_RETRY
+            pendingReply.clear();
+#endif
+            bell(out, "needBigger", seq, 0, need, nullptr); continue;
+        }
+        std::memcpy(map.base() + h.replyOff, pendingReply.data(), need);
         arena::Header* hp = map.header();
         hp->replyLen = need;
-        bell(out, r.error ? "error" : "reply", seq, need, 0, nullptr);
+        bell(out, pendingError ? "error" : "reply", seq, need, 0, nullptr);
+        pendingHeader.clear(); pendingPayload.clear(); pendingReply.clear();
     }
     return 0;
 }

@@ -1,0 +1,12 @@
+{
+  "host_binary_sha256": "6424b95ed7d8e4ed3c60cb737f959a79ba4372bdb6069686335b94a3c13798e5",
+  "contract_sha256": "d95cf9a776159c49017e765c6f26eb3ca69f37990cc66737828a84c646dfc146",
+  "current_abi": 3,
+  "unknown_abi": 4,
+  "criteria": "preserve original existence/exit/exact-version message checks; current stub accepted",
+  "workflow_sha256": {
+    "consumer-before.yml": "c841ec4753f80837dbd9938819058805026e9435504e018bf82a5a26d171aa32",
+    "consumer-after.yml": "1c32ca27cb9a5f6d8811c82e4457aa74b77bcf08a2eb515cb37323bd075c327a",
+    "engine-after.yml": "dc481b4cc2638ac8961d7658ad0547311de41a53c9de3345a8245c9659553cdb"
+  }
+}

@@ -1,0 +1,19 @@
+# 支承移除修正來源配對
+
+2026-09-11，engine來源pin推進到0fcb60a111f9f39c4912b8d372cb1ec8f02c62af，
+核心修正在dc1b62e9e25c48509327171421252ca9d47010c4。兩倉contract tree仍為
+0a398a136db8717943e9a185feec31dce4600801；56 covered files的hash保持
+dae6bb356bac7dd5a70b790b4218a62b7f4cb9c80892bbf8179c51e094563465。
+原PAIR.json是上一配對的歷史證據，未覆寫。
+
+修復編輯先移除地基後，自由結構在首次靜力求解被拒絕而無法交付碎塊的缺口。
+同一PMA/ComponentGraph/detach與finalize處理初始自由群及後續斷裂；不造broken
+事件。114項/兩故障在Windows/Linux/i9與sanitizer通過；L形、梁殼、機構前綴、
+A/B/C及移除支承都經真庫每transport三輪82frame，production JNA雙平台各246
+個完整回覆通過。初始自由＋後續斷裂同一次交易另有真CAPI16項、三輪雙平台。
+
+完整原始來源/首敗/測試命令在engine的gate/evidence/FRACTURE_SUPPORT_REMOVAL。
+本次只更新來源pin；現有BsiNative/BsiFrame被用於驗證，未換正式native bundle。
+下一步在本分支接artifact ownership與既有ConstructionLedger、
+AtomicConstructionCoordinator、FileTransactionJournal；kill/restart、真實接觸
+滾動、壓碎與Minecraft動態視覺仍未完成，不把此配對當作v2發布。

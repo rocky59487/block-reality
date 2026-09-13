@@ -62,6 +62,25 @@ def record_format(schema, section):
     return fmt, names
 
 def decode_records(schema, section, blob):
+    if section in ("fractureCells", "fractureFragments"):
+        # Nested physical/source records keep their public structure in readback.
+        stride = schema["x-records"][section]["bytes"]
+        if len(blob) % stride:
+            raise ValueError("incomplete fracture record")
+        out = []
+        for offset in range(0, len(blob), stride):
+            row = blob[offset:offset + stride]
+            if section == "fractureCells":
+                source = decode_records(schema, "block", row[:40])[0]
+                values = struct.unpack_from("<iIqII", row, 40)
+                record = dict(zip(("panelNormal", "group", "artifact", "flags", "reserved"), values))
+                record["source"] = source
+                record["physical"] = decode_records(schema, "physicalTotals", row[64:])[0]
+            else:
+                record = dict(zip(("parentFirst", "parentCount", "flags", "reserved"), struct.unpack_from("<IIII", row, 80)))
+                record["physical"] = decode_records(schema, "physicalTotals", row[:80])[0]
+            out.append(record)
+        return out
     if section.startswith("facetSurfaces"):
         f = "f" if section.endswith(":f32") else "d"
         sz = struct.calcsize("<" + f * 32)
@@ -360,7 +379,7 @@ class LineClient:
         out = self.p.stdout.readline()
         if not out:
             raise RuntimeError("host process closed its stdout")
-        text = out.decode("utf-8").rstrip("\n")
+        text = out.decode("utf-8").rstrip("\r\n")
         m = re.search(r',"payloadBytes":(\d+),"payloadB64":"([A-Za-z0-9+/=]*)"\}$', text)
         if not m:
             raise RuntimeError("reply line lacks the payloadBytes/payloadB64 suffix")
@@ -435,13 +454,21 @@ class ArenaClient:
         d = json.loads(hdr)
         method = d["method"]
         door = {"bsi.hello": "hello", "bsi.vocab.declare": "vocab", "bsi.vocab.query": "vocab", "bsi.world.declare": "declare",
-                "bsi.world.edit": "edit", "bsi.solve": "solve", "bsi.cancel": "cancel"}[method]
+                "bsi.world.edit": "edit", "bsi.solve": "solve", "bsi.cancel": "cancel",
+                "bsi.fracture.prepare": "fracturePrepare", "bsi.fracture.finish": "fractureFinish",
+                "bsi.rigid.declare": "rigidDeclare", "bsi.rigid.step": "rigidStep",
+                "bsi.pdelta.solve": "pdeltaSolve", "bsi.pdelta.station": "pdeltaStation",
+                "bsi.pdelta.fracture.prepare": "pdeltaFracturePrepare"}[method]
         loads = b""
         if door == "declare":
             nb = d.get("body", {}).get("blocks", len(payload) // 40)
             self.world, self.attrs = payload[:nb * 40], payload[nb * 40:]
-        elif door == "solve":
+        elif door in ("solve", "rigidStep", "pdeltaSolve", "pdeltaFracturePrepare"):
             loads = payload
+        elif door == "rigidDeclare":
+            self.world, self.attrs = payload, b""
+        elif door == "edit" and "identity" in d.get("body", {}):
+            self.world, self.attrs = payload, b""
         req = hdr.encode("utf-8")
         for attempt in range(8):
             regions, end = self._layout(loads, req)
@@ -583,6 +610,78 @@ def check_reply(schema, validator, method, reply, declared_blocks=None):
     if method == "bsi.hello":
         probs += validator.validate("hello.response", h)
         order = list(schema["$defs"]["hello.response"]["properties"].keys())
+    elif method in ("bsi.pdelta.solve", "bsi.pdelta.station", "bsi.pdelta.fracture.prepare"):
+        definition = method[4:] + ".response"
+        probs += validator.validate(definition, h)
+        order = list(schema["$defs"][definition]["properties"])
+        if list(h) != [k for k in order if k in h]:
+            probs.append(f"{definition} key order differs from schema")
+        if method.endswith("station"):
+            want = ["pdeltaStation", "pdeltaSample"]
+            fixed = {"pdeltaStation": 1, "pdeltaSample": 1}
+        elif method.endswith("prepare"):
+            want = ["physicalTotals", "fractureCells", "fractureFragments", "fractureParents", "fractureEvents", "fractureEventCells", "fractureMechanism",
+                    "pdeltaOptions", "pdeltaDecisions", "pdeltaDecisionCells", "pdeltaIslands", "pdeltaText", "pdeltaFractureLoads"]
+            fixed = {"physicalTotals": 3, "pdeltaOptions": 1}
+        else:
+            want = ["pdeltaOptions", "pdeltaPhysical", "pdeltaIslands", "pdeltaText", "pdeltaNodes", "pdeltaMembers", "pdeltaShells", "pdeltaSources",
+                    "pdeltaSourceIndices", "pdeltaArtifacts", "pdeltaArtifactMembers", "pdeltaArtifactShells", "pdeltaLoads"]
+            fixed = {"pdeltaOptions": 1, "pdeltaPhysical": 7}
+        sections = h.get("sections", [])
+        if [s["name"] for s in sections] != want:
+            probs.append("P-Delta sections not in fixed order")
+        offset = 0
+        for s in sections:
+            record = schema['x-records'].get(s['name'])
+            if not record or s['offset'] != offset or s['bytes'] != s['count'] * record['bytes']:
+                probs.append('invalid P-Delta section range')
+            if s['name'] in fixed and s['count'] != fixed[s['name']]:
+                probs.append('invalid P-Delta fixed section count')
+            offset += s['bytes']
+        if offset != len(reply.payload):
+            probs.append('P-Delta payload length mismatch')
+    elif method in ("bsi.rigid.declare", "bsi.rigid.step"):
+        definition = method[4:] + ".response"
+        probs += validator.validate(definition, h)
+        order = list(schema["$defs"][definition]["properties"])
+        keys = [k for k in h if not k.startswith("x-")]
+        if keys != [k for k in order if k in h]:
+            probs.append(f"{definition} key order differs from schema")
+        want = (["motionBodies", "motionPieces", "motionVertices", "motionTriangles"] if method.endswith("declare")
+                else ["motionReport", "motionStates", "motionSleeping", "motionWoken"])
+        sections = h.get("sections", [])
+        if [s["name"] for s in sections] != want:
+            probs.append("rigid sections not in fixed order")
+        offset = 0
+        for s in sections:
+            rec = schema["x-records"].get(s["name"])
+            if not rec or s["offset"] != offset or s["bytes"] != s["count"] * rec["bytes"]:
+                probs.append("invalid rigid section range")
+            offset += s["bytes"]
+        if offset != len(reply.payload) or (method.endswith("step") and (not sections or sections[0]["count"] != 1)):
+            probs.append("rigid payload length mismatch")
+    elif method in ("bsi.fracture.prepare", "bsi.fracture.finish"):
+        definition = method[4:] + ".response"
+        probs += validator.validate(definition, h)
+        order = list(schema["$defs"][definition]["properties"])
+        keys = [k for k in h if not k.startswith("x-")]
+        if keys != [k for k in order if k in h]:
+            probs.append(f"{definition} key order differs from schema")
+        if method == "bsi.fracture.prepare":
+            want = ["physicalTotals", "fractureCells", "fractureFragments", "fractureParents", "fractureEvents", "fractureEventCells", "fractureMechanism"]
+            sections = h.get("sections", [])
+            if [s["name"] for s in sections] != want:
+                probs.append("fracture sections not in fixed order")
+            offset = 0
+            for s in sections:
+                rec = schema["x-records"].get(s["name"])
+                if not rec or s["offset"] != offset or s["bytes"] != s["count"] * rec["bytes"]:
+                    probs.append("invalid fracture section range")
+                offset += s["bytes"]
+            if offset != len(reply.payload) or not sections or sections[0]["count"] != 3:
+                probs.append("fracture payload or totals length mismatch")
+        elif reply.payload:
+            probs.append("fracture finish must have empty payload")
     elif method == "bsi.solve":
         probs += validator.validate("solve.response", h)
         order = list(schema["$defs"]["solve.response"]["properties"].keys())

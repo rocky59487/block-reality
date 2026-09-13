@@ -7,6 +7,9 @@
 #include "bsi_schema.hpp"
 #include "bsi_sha256.hpp"
 #include "bsi_vocab.hpp"
+#include "bsi_fracture_wire.hpp"
+#include "bsi_motion_wire.hpp"
+#include "bsi_pdelta_fracture_wire.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdarg>
@@ -48,7 +51,7 @@ public:
     }
     ~SessionImpl() { if (inst_) engine_.vt->close(inst_); }
 
-    bool poisoned() const { return poisoned_; }
+    bool poisoned() const { return poisoned_ || nativeFault_; }
     const HostOptions& options() const { return opts_; }
     const Engine& engine() const { return engine_; }
 
@@ -64,6 +67,7 @@ public:
         if (const json::Value* v = rq.hdr.find("revision")) if (v->isInt) rq.revision = v->i64;
         if (!rq.method.empty() && !sch.isVerb(rq.method)) { errorReply(out, rq.id, rq.method, rq.revision, "UNKNOWN_METHOD", rq.method); return; }
         if (!base.ok) { errorReply(out, rq.id, rq.method, rq.revision, "PROTOCOL_ERROR", "request header: " + firstProblem(base)); return; }
+        if (payloadLen && !payload) { errorReply(out, rq.id, rq.method, rq.revision, "PROTOCOL_ERROR", "NULL payload"); return; }
         for (const auto& kv : rq.hdr.obj) {
             if (kTopLevelKeys.count(kv.first)) continue;
             if (kv.first.size() >= 2 && kv.first[0] == 'x' && kv.first[1] == '-') { ++rq.ignoredExt; continue; }
@@ -76,9 +80,36 @@ public:
             if (ps->isStr() && ps->str != sha256::hex(payload, payloadLen)) { errorReply(out, rq.id, rq.method, rq.revision, "PROTOCOL_ERROR", "payloadSha256 mismatch"); return; }
         }
         rq.body = rq.hdr.find("body");
+        if (nativeFault_) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", "session invalid after native operation; reopen session"); return; }
         if (poisoned_) { errorReply(out, rq.id, rq.method, rq.revision, "BSI_VERSION", "session refused after a contract mismatch"); return; }
         if (!sch.isVerb(rq.method)) { errorReply(out, rq.id, rq.method, rq.revision, "UNKNOWN_METHOD", rq.method); return; }
         if (!helloSeen_ && rq.method != "bsi.hello") { errorReply(out, rq.id, rq.method, rq.revision, "EXPECTED_HELLO", "first request must be bsi.hello"); return; }
+        const bool identifiedRequest = rq.body && rq.body->find("identity") &&
+            (rq.method == "bsi.world.declare" || rq.method == "bsi.world.edit");
+        const bool fractureRequest = rq.method == "bsi.fracture.prepare" || rq.method == "bsi.fracture.finish";
+        const bool motion = rq.method == "bsi.rigid.declare" || rq.method == "bsi.rigid.step";
+        const bool pdelta = rq.method=="bsi.pdelta.solve" || rq.method=="bsi.pdelta.station" || rq.method=="bsi.pdelta.fracture.prepare";
+        if (identifiedRequest || fractureRequest || motion || pdelta) {
+            if (
+#ifndef BSI_TEST_NFW_LIMIT
+#ifndef BSI_TEST_RMW_LIMIT
+                header.size() > fracture_wire::kHeaderLimit ||
+#endif
+#endif
+                payloadLen > fracture_wire::kPayloadLimit || (payloadLen && !payload)) {
+                wireError(rq, out, "PROTOCOL_ERROR", "fracture request exceeds wire budget or has NULL payload"); return;
+            }
+            try {
+                if (pdelta) pdeltaRequest(rq,payload,payloadLen,out);
+                else if (motion) motionRequest(rq,payload,payloadLen,out,rq.method=="bsi.rigid.declare");
+                else if (identifiedRequest) identifiedWorld(rq, payload, payloadLen, out, rq.method == "bsi.world.edit");
+                else if (rq.method == "bsi.fracture.prepare") fracturePrepare(rq, payloadLen, out);
+                else fractureFinish(rq, payloadLen, out);
+            } catch (...) {
+                wireError(rq, out, "INTERNAL", nativeFault_ ? "native operation interrupted; reopen session" : "fracture request could not be allocated");
+            }
+            return;
+        }
         if (rq.method == "bsi.hello") hello(rq, out);
         else if (rq.method == "bsi.vocab.declare") vocabDeclare(rq, out);
         else if (rq.method == "bsi.vocab.query") vocabQuery(rq, out);
@@ -103,6 +134,10 @@ private:
     std::vector<bsi_block> world_;
     std::vector<bsi_attr> attrs_;
     int worldExt_ = 0;
+
+#include "bsi_fracture_session.hpp"
+#include "bsi_motion_session.hpp"
+#include "bsi_pdelta_session.hpp"
 
     void logf(int level, const char* fmt, ...) {
         if (level > opts_.logLevel) return;
@@ -281,6 +316,7 @@ private:
         }
         ReplyBuilder b((uint32_t)B, 0, BSI_STORAGE_F64);
         bsi_writer w{&b};
+        forgetIdentity();
         int st = engine_.vt->world_declare(inst_, blocks.data(), (uint32_t)B, attrs.empty() ? nullptr : attrs.data(), (uint32_t)A, &w);
         if (st != BSI_OK) { errorFromBuilder(out, rq, st, b); return; }
         std::string why;
@@ -317,6 +353,7 @@ private:
         }
         ReplyBuilder b((uint32_t)world_.size(), 0, BSI_STORAGE_F64);
         bsi_writer w{&b};
+        forgetIdentity();
         int st = engine_.vt->world_edit(inst_, edits.data(), (uint32_t)N, &w);
         if (st != BSI_OK) { errorFromBuilder(out, rq, st, b); return; }
         std::string why;

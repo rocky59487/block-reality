@@ -30,7 +30,7 @@ public final class BsiHeaders {
         public EigenBuckling { if (budgetDof < 0) throw new IllegalArgumentException("negative buckling budget"); }
     }
 
-    private static JsonWriter base(String id, String method, long revision) {
+    static JsonWriter base(String id, String method, long revision) {
         return new JsonWriter().beginObj()
                 .kv("bsi", BsiContract.MAJOR).kv("kind", "request")
                 .kv("id", id).kv("method", method).kv("revision", revision);

@@ -10,6 +10,8 @@ import com.blockreality.core.bsi.BsiRecords;
 import com.blockreality.core.bsi.BsiResponse;
 import com.blockreality.core.bsi.BsiAnalysisResult;
 import com.blockreality.core.bsi.BsiVocabulary;
+import com.blockreality.core.bsi.BsiFracture;
+import com.blockreality.core.bsi.BsiFractureReceipt;
 import com.blockreality.core.json.JsonValue;
 import com.blockreality.api.AnalysisResult;
 import com.blockreality.api.WorldRevision;
@@ -17,6 +19,7 @@ import com.blockreality.api.WorldRevision;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -47,6 +50,9 @@ public final class InProcessEngine implements AutoCloseable {
     private long revision;
     private boolean worldDeclared;
     private BsiVocabulary vocabulary;
+    private BsiFracture.World identifiedWorld;
+    private BsiFractureReceipt fractureCandidate;
+    private BsiFracture.World fractureRemaining;
 
     private final PipelineProfile profile;
     private InProcessEngine(BsiNative n, PipelineProfile profile) { this.native_ = n; this.profile = profile; }
@@ -108,6 +114,7 @@ public final class InProcessEngine implements AutoCloseable {
 
     /** The vocabulary body, exactly as {@code bsi.vocab.declare} wants it. */
     public boolean declareVocabulary(String vocabBodyJson) {
+        forgetFracture();
         worldDeclared = false;
         vocabulary = null;
         if (status != Status.READY) return false;
@@ -129,6 +136,7 @@ public final class InProcessEngine implements AutoCloseable {
     public BsiVocabulary vocabulary() { return vocabulary; }
 
     public boolean declareWorld(long worldRevision, List<BsiRecords.Block> blocks) {
+        forgetFracture();
         worldDeclared = false;
         if (status != Status.READY || vocabulary == null) return false;
         this.revision = worldRevision;
@@ -138,6 +146,46 @@ public final class InProcessEngine implements AutoCloseable {
         worldDeclared = ok(r);
         return worldDeclared;
     }
+
+    /** A rejected declaration retains the preceding identified world and candidate. */
+    public boolean declareIdentifiedWorld(BsiFracture.World world) {
+        if (status != Status.READY || vocabulary == null || !has("bsi.world.identity") || !has("bsi.fracture")) return false;
+        String id=nextId(); BsiResponse response=send(BsiFracture.declare(id,world),world.payload());
+        if (!ok(response)) return false;
+        try { BsiFracture.checkWorld(response,id,world); }
+        catch (IllegalArgumentException failure) { disable("PROTOCOL_ERROR",failure.getMessage()); return false; }
+        identifiedWorld=world; fractureCandidate=null; fractureRemaining=null;
+        revision=world.stamp().revision(); worldDeclared=true; return true;
+    }
+
+    /** Read-only native preparation; all physical and ownership fields are validated before return. */
+    public BsiFractureReceipt prepareFracture(UUID request, BsiFracture.Options options) {
+        if (status != Status.READY || !worldDeclared || identifiedWorld == null || !has("bsi.fracture")) return null;
+        String id=nextId(); BsiResponse response=send(BsiFracture.prepare(id,identifiedWorld,request,options),null);
+        if (!ok(response)) return null;
+        try {
+            BsiFractureReceipt next=BsiFractureReceipt.decode(response,identifiedWorld,request,options,id);
+            BsiFracture.World remaining=identifiedWorld.remaining(next); // Allocate before native commit.
+            fractureCandidate=next; fractureRemaining=remaining; return next;
+        } catch (IllegalArgumentException failure) { disable("PROTOCOL_ERROR",failure.getMessage()); return null; }
+    }
+
+    /** Only the exact live candidate may be submitted; a stored receipt is not a restart token. */
+    public BsiFracture.Finish finishFracture(BsiFractureReceipt candidate, boolean commit) {
+        if (status != Status.READY || candidate == null || fractureCandidate != candidate || identifiedWorld == null) return null;
+        String id=nextId(); BsiResponse response=send(BsiFracture.finish(id,candidate,commit),null);
+        if (!ok(response)) return null;
+        try {
+            var expected=commit?candidate.after():identifiedWorld.stamp();
+            var result=BsiFracture.checkFinish(response,id,candidate,expected,commit);
+            if (result == BsiFracture.Finish.COMMITTED) {
+                identifiedWorld=fractureRemaining; revision=identifiedWorld.stamp().revision();
+            } else if (result == BsiFracture.Finish.DISCARDED) { fractureCandidate=null; fractureRemaining=null; }
+            return result;
+        } catch (IllegalArgumentException failure) { disable("PROTOCOL_ERROR",failure.getMessage()); return null; }
+    }
+    public BsiFracture.World identifiedWorld() { return identifiedWorld; }
+    private void forgetFracture() { identifiedWorld=null; fractureCandidate=null; fractureRemaining=null; }
 
     /** Complete commit analysis for the declared world; never falls back to a previous result. */
     public AnalysisResult analyze(GameWorldSnapshot snapshot, Integer numThreads,

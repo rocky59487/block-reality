@@ -227,3 +227,9 @@ PR 上不符 = 變更**在途中** → 警告（否則每次合法的契約變�
 PGN已接production GameWorldSnapshot的physical自重，舊public overload仍analysis；JNA與兩故障已驗。
 6916511靜態雙庫候選已換入同一jar，雙平台162frame DET3／雙JVM／production JNA235與native Java20通過。
 正式release未替換，不能發佈新契約配舊庫。詳docs/PHYSICAL_GRAVITY_DELIVERY.md；#94與v2仍開放。
+
+同分支的NATIVE_FRACTURE_TRANSACTION已把identified來源與完整physical receipt接至
+既有持久協調器；先持久COMMITTED再native commit，恢復用當前世界建立新session。
+engine來源0fcb60a，contract dae6bb356bac7…；Windows/Linux新增各74項與每平台
+28個中斷/56次獨立JVM恢復通過。完整首敗/反例在evidence/NATIVE_FRACTURE_TRANSACTION。
+Host仍是core介面，沒有正式Forge斷裂入口或native bundle發布，接觸/滾動/視覺未交付。

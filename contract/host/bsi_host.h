@@ -5,6 +5,15 @@
 // result packing and error-code mapping (BSI.md Part C). An engine implements
 // the bsi_engine_vtable and nothing else.
 #pragma once
+#if (defined(BSI_TEST_NPD_MAPPING) || defined(BSI_TEST_NPD_QUALIFICATION) || defined(BSI_TEST_NPD_ATOMIC)) && !defined(BSI_HOST_TEST_MUTATIONS)
+#error "NPD host mutation requires BSI_HOST_TEST_MUTATIONS"
+#endif
+#if (defined(BSI_TEST_RMW_CAP) || defined(BSI_TEST_RMW_ABI) || defined(BSI_TEST_RMW_SOURCE) || defined(BSI_TEST_RMW_INDEX) || defined(BSI_TEST_RMW_STATE) || defined(BSI_TEST_RMW_REPORT) || defined(BSI_TEST_RMW_LIMIT)) && !defined(BSI_HOST_TEST_MUTATIONS)
+#error "RMW host mutation requires BSI_HOST_TEST_MUTATIONS"
+#endif
+#if (defined(BSI_TEST_NFW_CAP) || defined(BSI_TEST_NFW_ABI) || defined(BSI_TEST_NFW_SOURCE) || defined(BSI_TEST_NFW_PARTITION) || defined(BSI_TEST_NFW_PARENTS) || defined(BSI_TEST_NFW_EVENT) || defined(BSI_TEST_NFW_LIMIT) || defined(BSI_TEST_NFW_CACHE) || defined(BSI_TEST_NFW_ARENA_RETRY)) && !defined(BSI_HOST_TEST_MUTATIONS)
+#error "NFW host mutation requires BSI_HOST_TEST_MUTATIONS"
+#endif
 #if (defined(BSI_TEST_PGN_CAP) || defined(BSI_TEST_PGN_ABI) || defined(BSI_TEST_PGN_ENTRY)) && !defined(BSI_HOST_TEST_MUTATIONS)
 #error "PGN host mutation requires BSI_HOST_TEST_MUTATIONS"
 #endif
@@ -68,7 +77,7 @@ public:
     void handle(const std::string& header, const uint8_t* payload, size_t payloadLen, Reply& out);
 
     // Transport-level helpers.
-    bool poisoned() const;          // BSI_VERSION was answered: everything after is refused
+    bool poisoned() const;          // contract mismatch or uncertain native success: reopen
     const HostOptions& options() const;
     const Engine& engine() const;
 
