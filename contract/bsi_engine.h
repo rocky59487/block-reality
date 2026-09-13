@@ -17,7 +17,8 @@ extern "C" {
 #endif
 
 #define BSI_MAJOR 1
-#define BSI_ENGINE_ABI 5u
+#define BSI_ENGINE_ABI 6u
+#define BSI_ENGINE_ABI_PDELTA 5u
 #define BSI_ENGINE_ABI_MOTION 4u
 #define BSI_ENGINE_ABI_FRACTURE 3u
 #define BSI_ENGINE_ABI_PHYSICAL 2u
@@ -256,6 +257,8 @@ BSI_EXPORT int bsi_writer_error(bsi_writer*, const char* code, const char* messa
 #include "bsi_fracture.h"
 #include "bsi_motion.h"
 #include "bsi_pdelta.h"
+#include "bsi_pdelta_fracture.h"
+#include "bsi_pdelta_wire.h"
 typedef struct bsi_engine_vtable {
   uint32_t abi_version;                                        /* = BSI_ENGINE_ABI */
   const char* (*name)(void);
@@ -287,6 +290,9 @@ typedef struct bsi_engine_vtable {
   int (*pdelta_solve)(bsi_engine*, const bsi_pdelta_options*, const bsi_load*, uint32_t,
                       const bsi_pdelta_view**, bsi_writer*);
   int (*pdelta_station)(bsi_engine*, const bsi_pdelta_query*, bsi_pdelta_station*, bsi_writer*);
+  /* ABI6 only; finish uses the original shared fracture_finish slot. */
+  int (*pdelta_fracture_prepare)(bsi_engine*, const bsi_pdelta_fracture_options*,
+                                 const bsi_load*, uint32_t, const bsi_pdelta_fracture_view**, bsi_writer*);
 } bsi_engine_vtable;
 
 /* The single exported symbol an engine must provide. Returns NULL when

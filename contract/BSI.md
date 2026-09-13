@@ -629,3 +629,67 @@ arena door `rigidDeclare` 將完整 payload 放 world region，`rigidStep` 放 l
 其他 region 不參與這次呼叫。NEED_BIGGER 保留既有結果，擴容重取不重新執行 step。
 arena 仍依 Part G 僅支援 Linux；Windows 使用 CAPI、frame 或 stdio-b64，frame 的 stdio
 明確設為 binary mode，不能以 CRT 文字模式傳輸 f64／記錄資料。
+
+### 2026-09-13：ABI6 二階分析與共同斷裂
+
+engine vtable ABI6在ABI5的`pdelta_solve`／`pdelta_station`後追加
+`pdelta_fracture_prepare`；loader按6→5→4→3→2→1協商。ABI1..5前綴及能力維持。
+ABI6新增`bsi.pdelta`及`bsi.pdelta.fracture`，五函式CAPI／BSI訊息版本均仍1。
+型別見`bsi_pdelta.h`、`bsi_pdelta_fracture.h`、`bsi_pdelta_wire.h`。
+
+`bsi.pdelta.solve`必須先hello／vocab／identified world。body必填`expected`、
+`loadFactor`、`gravity[3]`、`selfWeight`、`tolerance`、`budgetDof`、`maxIterations`、
+`route`（direct／frozen）、`loads`；`numThreads`可省略，沿host設定。
+loadFactor為有限數，tolerance嚴格在0..1內，其餘範圍見schema。
+payload是load64×loads，世界座標力N；flags及力矩必須0，所有值有限。
+這三個新動詞的load64保留原始順序及重複，不套用舊線性solve的canonical重排規則。
+loadFactor只由共同二階分析乘一次；loads是未乘係數的原輸入，selfWeight可關閉。
+
+成功回傳basis／artifactNamespace／generation（16位hex）與analysis token。
+依序13段：pdeltaOptions56、pdeltaPhysical80、pdeltaIslands48、pdeltaText1、
+pdeltaNodes136、pdeltaMembers560、pdeltaShells440、pdeltaSources56、pdeltaSourceIndices4、
+pdeltaArtifacts24、pdeltaArtifactMembers4、pdeltaArtifactShells4、pdeltaLoads64。
+options恆1筆，physical恆7筆：實際全部材料量，再按disposition 0..5的材料量。
+disposition為attached、ground、unrepresented、inactive、rope、retired；
+support等沒有材料重量的來源使用6（none）。解析前先驗section offset/count/bytes。
+island status為0 converged、1 unstable、2 notConverged、3 unsupported。
+僅converged的位移／反力有效；member available為bit0 solved、bit1 elastic、
+bit2 capacity、bit3 capacityComplete、bit4 fibres，不能把部分容量當成完整強度。
+梁displacement及endAction各12筆，採局部自由度；殼各24筆，採世界節點自由度。
+peak的forces依序N（壓正）、Vy、Vz、T、My、Mz；sigma四角順序(+cz,+cy)、
+(+cz,-cy)、(-cz,+cy)、(-cz,-cy)，拉應力正。數值採SI/f64，回應header沒有浮點。
+source範圍／artifact範圍指向各自索引段，element index只在本analysis有效。
+reasonFirst/Count指向pdeltaText的UTF-8 byte範圍，不含NUL；單筆最多4095 bytes。
+
+`bsi.pdelta.station` body是`{token,member,fraction,side}`，payload空，fraction在0..1、
+side為-1或1。回傳pdeltaStation112、pdeltaSample16；sample保留member/side/fraction。
+token只認同handle最後成功analysis及當前world handle/generation；失敗保留舊結果，
+成功新analysis、world修改、即使同stamp的重新宣告也使舊token失效。
+typed view本體仍可作歷史讀取直到下一次成功同類結果替換或close，但不能再用舊token查詢。
+
+`bsi.pdelta.fracture.prepare`沿solve body增加非零`requestId`、`budget`（1..4096）、
+`tier:"commit"`，可帶`initialAnalysis`。初始token必須是相同world／options／loads的
+analysis，世界若先拆出自由碎塊則需重新分析；pdeltaFlags bit0明示實際有無重用。
+同完整requestId重送返回同一候選；改load順序、任何options或初始token都衝突。
+新request替換暫態候選；失敗保留舊候選。被替換／丟棄的token不能用於finish，
+requestId不是跨重啟journal，也不是永久的去重集合。prepare不修改已提交world。
+
+回應前7段沿原fracture.prepare：physicalTotals、fractureCells、fractureFragments、
+fractureParents、fractureEvents、fractureEventCells、fractureMechanism；再追加
+pdeltaOptions56、pdeltaDecisions104、pdeltaDecisionCells4、pdeltaIslands48、pdeltaText1、
+pdeltaFractureLoads72。原physical token用既有`bsi.fracture.finish` commit/discard/replay。
+decisions先列已接受的break，再列可選pending；microStep／member屬該次重建的分析，
+來源格索引才是跨步對位。各islandFirst/Count涵蓋該決策分析；其後是rollback islands。
+load記錄為原load64加fractureCells索引及group（0留存、1破壞、2+fragment index）。
+steps可為budget+1，因為每次切斷後必須驗證一次；重用初始analysis可省第一次solve。
+end為0 withinCapacity、1 unqualified、2 budget、3 unstableCutRolledBack；
+qualification bit0容量不完整、bit1殼強度未提供、bit2存在未表示材料；flags不會把
+budget或失穩轉成安全。pending=-1表示無待切項，否則索引最後一個decision。
+rollbackReasonFirst/Count指向pdeltaText；正常完成為空。真正失穩只回滾最後一刀；
+未收斂／Unsupported／非法資料使整次prepare拒絕，不能提交半份結果。
+
+所有新wire記錄無指標，padding／reserved均0，完整欄位見schema的x-records。
+host核對來源／容量資格／索引／token／有限值後才公開完整payload；壞native成功使
+session失效，重開後從宿主保存的world重建。arena door `pdeltaSolve`、
+`pdeltaFracturePrepare`使用loads region，`pdeltaStation`無payload；pending擴容沿原機制。
+完整倒塌尚需COROT／PLASTIC／DAMAGE、局部裂縫／壓碎及動量交棒；本入口是整構件斷裂。

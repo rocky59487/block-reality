@@ -9,6 +9,7 @@
 #include "bsi_vocab.hpp"
 #include "bsi_fracture_wire.hpp"
 #include "bsi_motion_wire.hpp"
+#include "bsi_pdelta_fracture_wire.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdarg>
@@ -87,7 +88,8 @@ public:
             (rq.method == "bsi.world.declare" || rq.method == "bsi.world.edit");
         const bool fractureRequest = rq.method == "bsi.fracture.prepare" || rq.method == "bsi.fracture.finish";
         const bool motion = rq.method == "bsi.rigid.declare" || rq.method == "bsi.rigid.step";
-        if (identifiedRequest || fractureRequest || motion) {
+        const bool pdelta = rq.method=="bsi.pdelta.solve" || rq.method=="bsi.pdelta.station" || rq.method=="bsi.pdelta.fracture.prepare";
+        if (identifiedRequest || fractureRequest || motion || pdelta) {
             if (
 #ifndef BSI_TEST_NFW_LIMIT
 #ifndef BSI_TEST_RMW_LIMIT
@@ -98,7 +100,8 @@ public:
                 wireError(rq, out, "PROTOCOL_ERROR", "fracture request exceeds wire budget or has NULL payload"); return;
             }
             try {
-                if (motion) motionRequest(rq,payload,payloadLen,out,rq.method=="bsi.rigid.declare");
+                if (pdelta) pdeltaRequest(rq,payload,payloadLen,out);
+                else if (motion) motionRequest(rq,payload,payloadLen,out,rq.method=="bsi.rigid.declare");
                 else if (identifiedRequest) identifiedWorld(rq, payload, payloadLen, out, rq.method == "bsi.world.edit");
                 else if (rq.method == "bsi.fracture.prepare") fracturePrepare(rq, payloadLen, out);
                 else fractureFinish(rq, payloadLen, out);
@@ -134,6 +137,7 @@ private:
 
 #include "bsi_fracture_session.hpp"
 #include "bsi_motion_session.hpp"
+#include "bsi_pdelta_session.hpp"
 
     void logf(int level, const char* fmt, ...) {
         if (level > opts_.logLevel) return;

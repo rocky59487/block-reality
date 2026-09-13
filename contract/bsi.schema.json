@@ -5,7 +5,7 @@
   "bsi": 1,
   "description": "Headers are JSON validated by the definitions below; payload sections are binary records described under x-records. Field order in headers is the order listed. Units are SI. Any key starting with x- is a vendor extension and is ignored-with-count by engines that do not understand it; any other unknown key is PROTOCOL_ERROR.",
 
-  "x-verbs": ["bsi.hello", "bsi.vocab.declare", "bsi.vocab.query", "bsi.world.declare", "bsi.world.edit", "bsi.solve", "bsi.cancel", "bsi.fracture.prepare", "bsi.fracture.finish", "bsi.rigid.declare", "bsi.rigid.step"],
+  "x-verbs": ["bsi.hello", "bsi.vocab.declare", "bsi.vocab.query", "bsi.world.declare", "bsi.world.edit", "bsi.solve", "bsi.cancel", "bsi.fracture.prepare", "bsi.fracture.finish", "bsi.rigid.declare", "bsi.rigid.step", "bsi.pdelta.solve", "bsi.pdelta.station", "bsi.pdelta.fracture.prepare"],
 
   "x-capabilities": [
     "bsi.core", "bsi.world.edit", "bsi.mass.physical", "bsi.world.identity",
@@ -14,7 +14,7 @@
     "bsi.precision.display", "bsi.precision.f32", "bsi.precision.warmstart", "bsi.precision.timeout",
     "bsi.material.orthotropic", "bsi.material.composite", "bsi.material.rope",
     "bsi.section.custom", "bsi.block.shape", "bsi.block.attrs",
-    "bsi.fracture", "bsi.rigid.motion"
+    "bsi.fracture", "bsi.rigid.motion", "bsi.pdelta", "bsi.pdelta.fracture"
   ],
 
   "x-errors": ["BSI_VERSION", "EXPECTED_HELLO", "UNKNOWN_METHOD", "UNSUPPORTED", "UNSUPPORTED_ATTR",
@@ -45,6 +45,487 @@
   },
 
   "$defs": {
+    "pdelta.solve.body": {
+      "type": "object",
+      "required": [
+        "expected",
+        "loadFactor",
+        "gravity",
+        "selfWeight",
+        "tolerance",
+        "budgetDof",
+        "maxIterations",
+        "route",
+        "loads"
+      ],
+      "properties": {
+        "expected": {
+          "$ref": "#/$defs/world.stamp"
+        },
+        "loadFactor": {
+          "type": "number"
+        },
+        "gravity": {
+          "$ref": "#/$defs/vec3"
+        },
+        "selfWeight": {
+          "type": "boolean"
+        },
+        "tolerance": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "budgetDof": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "maxIterations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "route": {
+          "enum": [
+            "direct",
+            "frozen"
+          ]
+        },
+        "loads": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777216
+        },
+        "numThreads": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        }
+      },
+      "additionalProperties": false
+    },
+    "pdelta.fracture.prepare.body": {
+      "type": "object",
+      "required": [
+        "expected",
+        "loadFactor",
+        "gravity",
+        "selfWeight",
+        "tolerance",
+        "budgetDof",
+        "maxIterations",
+        "route",
+        "loads",
+        "requestId",
+        "budget",
+        "tier"
+      ],
+      "properties": {
+        "expected": {
+          "$ref": "#/$defs/world.stamp"
+        },
+        "loadFactor": {
+          "type": "number"
+        },
+        "gravity": {
+          "$ref": "#/$defs/vec3"
+        },
+        "selfWeight": {
+          "type": "boolean"
+        },
+        "tolerance": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "budgetDof": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "maxIterations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "route": {
+          "enum": [
+            "direct",
+            "frozen"
+          ]
+        },
+        "loads": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777216
+        },
+        "numThreads": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        },
+        "requestId": {
+          "$ref": "#/$defs/id128"
+        },
+        "budget": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096
+        },
+        "tier": {
+          "const": "commit"
+        },
+        "initialAnalysis": {
+          "$ref": "#/$defs/fracture.token"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pdelta.station.body": {
+      "type": "object",
+      "required": [
+        "token",
+        "member",
+        "fraction",
+        "side"
+      ],
+      "properties": {
+        "token": {
+          "$ref": "#/$defs/fracture.token"
+        },
+        "member": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "fraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "side": {
+          "enum": [
+            -1,
+            1
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "pdelta.solve.response": {
+      "type": "object",
+      "required": [
+        "bsi",
+        "kind",
+        "id",
+        "method",
+        "revision",
+        "status",
+        "basis",
+        "artifactNamespace",
+        "generation",
+        "token",
+        "sections"
+      ],
+      "properties": {
+        "bsi": {
+          "const": 1
+        },
+        "kind": {
+          "const": "response"
+        },
+        "id": {
+          "type": "string"
+        },
+        "method": {
+          "const": "bsi.pdelta.solve"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "status": {
+          "const": "analyzed"
+        },
+        "basis": {
+          "$ref": "#/$defs/world.stamp"
+        },
+        "artifactNamespace": {
+          "$ref": "#/$defs/id128"
+        },
+        "generation": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{16}$"
+        },
+        "token": {
+          "$ref": "#/$defs/fracture.token"
+        },
+        "sections": {
+          "type": "array",
+          "minItems": 13,
+          "maxItems": 13,
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "offset",
+              "bytes",
+              "count"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 268435456
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 268435456
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 268435456
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "pdelta.station.response": {
+      "type": "object",
+      "required": [
+        "bsi",
+        "kind",
+        "id",
+        "method",
+        "revision",
+        "status",
+        "token",
+        "member",
+        "side",
+        "sections"
+      ],
+      "properties": {
+        "bsi": {
+          "const": 1
+        },
+        "kind": {
+          "const": "response"
+        },
+        "id": {
+          "type": "string"
+        },
+        "method": {
+          "const": "bsi.pdelta.station"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "status": {
+          "const": "sampled"
+        },
+        "token": {
+          "$ref": "#/$defs/fracture.token"
+        },
+        "member": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "side": {
+          "enum": [
+            -1,
+            1
+          ]
+        },
+        "sections": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "offset",
+              "bytes",
+              "count"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 268435456
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 268435456
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 268435456
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "pdelta.fracture.prepare.response": {
+      "type": "object",
+      "required": [
+        "bsi",
+        "kind",
+        "id",
+        "method",
+        "revision",
+        "status",
+        "requestId",
+        "before",
+        "after",
+        "artifactNamespace",
+        "token",
+        "steps",
+        "flags",
+        "remainingBlocks",
+        "sections",
+        "end",
+        "qualification",
+        "pdeltaFlags",
+        "pending",
+        "rollbackReasonFirst",
+        "rollbackReasonCount"
+      ],
+      "properties": {
+        "bsi": {
+          "const": 1
+        },
+        "kind": {
+          "const": "response"
+        },
+        "id": {
+          "type": "string"
+        },
+        "method": {
+          "const": "bsi.pdelta.fracture.prepare"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "status": {
+          "const": "prepared"
+        },
+        "requestId": {
+          "$ref": "#/$defs/id128"
+        },
+        "before": {
+          "$ref": "#/$defs/world.stamp"
+        },
+        "after": {
+          "$ref": "#/$defs/world.stamp"
+        },
+        "artifactNamespace": {
+          "$ref": "#/$defs/id128"
+        },
+        "token": {
+          "$ref": "#/$defs/fracture.token"
+        },
+        "steps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4097
+        },
+        "flags": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "remainingBlocks": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777216
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "qualification": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 7
+        },
+        "pdeltaFlags": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "pending": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 4096
+        },
+        "rollbackReasonFirst": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 268435456
+        },
+        "rollbackReasonCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4095
+        },
+        "sections": {
+          "type": "array",
+          "minItems": 13,
+          "maxItems": 13,
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "offset",
+              "bytes",
+              "count"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 268435456
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 268435456
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 268435456
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+,
     "rigid.declare.body": {
       "type": "object", "required": ["scene", "bodies", "cells", "terrain", "chordTolerance", "maxBodies", "maxCells", "maxColliders", "maxVertices"],
       "properties": {
@@ -180,7 +661,7 @@
       "required": ["bsi", "kind", "id", "method", "revision"],
       "properties": {
         "bsi": {"const": 1}, "kind": {"const": "request"}, "id": {"type": "string", "maxLength": 128},
-        "method": {"enum": ["bsi.hello", "bsi.vocab.declare", "bsi.vocab.query", "bsi.world.declare", "bsi.world.edit", "bsi.solve", "bsi.cancel", "bsi.fracture.prepare", "bsi.fracture.finish", "bsi.rigid.declare", "bsi.rigid.step"]},
+        "method": {"enum": ["bsi.hello", "bsi.vocab.declare", "bsi.vocab.query", "bsi.world.declare", "bsi.world.edit", "bsi.solve", "bsi.cancel", "bsi.fracture.prepare", "bsi.fracture.finish", "bsi.rigid.declare", "bsi.rigid.step", "bsi.pdelta.solve", "bsi.pdelta.station", "bsi.pdelta.fracture.prepare"]},
         "revision": {"type": "integer"},
         "body": {"type": "object"},
         "payloadBytes": {"type": "integer", "minimum": 0},
@@ -364,6 +845,25 @@
   },
 
   "x-records": {
+    "pdeltaOptions": {"bytes": 56, "fields": [["loadFactor", "f64"], ["gravity", "f64[3]"], ["tolerance", "f64"], ["budgetDof", "u32"], ["numThreads", "u32"], ["maxIterations", "u32"], ["selfWeight", "u8"], ["route", "u8"], ["reserved", "u8[2]"]]},
+    "pdeltaSample": {"bytes": 16, "fields": [["member", "i32"], ["side", "i32"], ["fraction", "f64"]]},
+    "pdeltaIslands": {"bytes": 48, "fields": [["status", "u32"], ["freeDof", "u32"], ["iterations", "u32"], ["factors", "u32"], ["threadsUsed", "u32"], ["residualAvailable", "u8"], ["indicativeShell", "u8"], ["reserved", "u16"], ["residual", "f64"], ["pivotRatio", "f64"], ["reasonFirst", "u32"], ["reasonCount", "u32"]]},
+    "pdeltaText": {"bytes": 1, "fields": [["utf8", "u8"]]},
+    "pdeltaPhysical": {"bytes": 80, "description": "physical properties: actual total then dispositions 0..5", "fields": [["properties", "physicalTotals"]]},
+    "pdeltaNodes": {"bytes": 136, "description": "bsi_pdelta_node offsets, padding zero", "fields": [["island", "i32"], ["available", "u32"], ["position", "f64[3]"], ["displacement", "f64[6]"], ["reaction", "f64[6]"], ["fixed", "u8[6]"], ["reserved", "u8[2]"]]},
+    "pdeltaMembers": {"bytes": 560, "description": "bsi_pdelta_member offsets, padding zero", "fields": [["island", "i32"], ["nodes", "i32[2]"], ["material", "i32"], ["section", "i32"], ["available", "u32"], ["sourceFirst", "u32"], ["sourceCount", "u32"], ["length", "f64"], ["strengthScale", "f64"], ["geometry", "memberGeometry"], ["displacement", "f64[12]"], ["endAction", "f64[12]"], ["elastic", "pdeltaPeak"], ["capacity", "pdeltaPeak"], ["mode", "u8"], ["fibre", "u8"], ["capacityFace", "u8"], ["active", "u8"], ["reserved", "u8[4]"]]},
+    "pdeltaShells": {"bytes": 440, "description": "bsi_pdelta_shell offsets, padding zero", "fields": [["island", "i32"], ["nodes", "i32[4]"], ["material", "i32"], ["available", "u32"], ["sourceFirst", "u32"], ["sourceCount", "u32"], ["reserved", "u32"], ["thickness", "f64"], ["displacement", "f64[24]"], ["endAction", "f64[24]"], ["active", "u8"], ["reserved2", "u8[7]"]]},
+    "pdeltaSources": {"bytes": 56, "description": "bsi_pdelta_source offsets, padding zero", "fields": [["source", "block"], ["artifact", "u64"], ["weightDisposition", "u32"], ["reserved", "u32"]]},
+    "pdeltaSourceIndices": {"bytes": 4, "description": "u32", "fields": [["source", "u32"]]},
+    "pdeltaArtifacts": {"bytes": 24, "description": "bsi_pdelta_artifact", "fields": [["artifact", "u64"], ["memberFirst", "u32"], ["memberCount", "u32"], ["shellFirst", "u32"], ["shellCount", "u32"]]},
+    "pdeltaArtifactMembers": {"bytes": 4, "description": "i32", "fields": [["member", "i32"]]},
+    "pdeltaArtifactShells": {"bytes": 4, "description": "i32", "fields": [["shell", "i32"]]},
+    "pdeltaLoads": {"bytes": 64, "description": "load", "fields": [["input", "load"]]},
+    "pdeltaStation": {"bytes": 112, "description": "bsi_pdelta_station offsets, padding zero", "fields": [["available", "u32"], ["reserved", "u32"], ["forces", "f64[6]"], ["sigma", "f64[4]"], ["shear", "f64"], ["elastic", "f64"], ["mode", "u8"], ["fibre", "u8"], ["reserved2", "u8[6]"]]},
+    "pdeltaDecisions": {"bytes": 104, "description": "bsi_pdelta_fracture_decision", "fields": [["microStep", "u32"], ["member", "i32"], ["cellFirst", "u32"], ["cellCount", "u32"], ["islandFirst", "u32"], ["islandCount", "u32"], ["capacity", "pdeltaPeak"], ["face", "u8"], ["reserved", "u8[7]"]]},
+    "pdeltaDecisionCells": {"bytes": 4, "description": "u32", "fields": [["cell", "u32"]]},
+    "pdeltaFractureLoads": {"bytes": 72, "description": "bsi_pdelta_fracture_load", "fields": [["input", "load"], ["cell", "u32"], ["group", "u32"]]},
+    "pdeltaPeak": {"bytes": 72, "fields": [["value", "f64"], ["fraction", "f64"], ["forces", "f64[6]"], ["side", "i32"], ["surface", "u32"]]},
     "motionSurface": {"bytes": 32, "fields": [["friction", "f64"], ["restitution", "f64"], ["rollingResistance", "f64", "m"], ["spinningResistance", "f64", "m"]]},
     "motionSources": {"bytes": 192, "fields": [["id", "u64"], ["birthDomain", "u64[2]"], ["birthRevision", "i64"], ["artifactNamespace", "u64[2]"], ["fractureRequest", "u64[2]"], ["group", "u32"], ["flags", "u32"], ["cellFirst", "u32"], ["cellCount", "u32"], ["physical", "physicalTotals"], ["surface", "motionSurface"]]},
     "motionTerrain": {"bytes": 120, "fields": [["id", "u64"], ["size", "f64[3]"], ["position", "f64[3]"], ["orientation", "f64[4]"], ["surface", "motionSurface"]]},

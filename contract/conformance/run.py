@@ -456,12 +456,14 @@ class ArenaClient:
         door = {"bsi.hello": "hello", "bsi.vocab.declare": "vocab", "bsi.vocab.query": "vocab", "bsi.world.declare": "declare",
                 "bsi.world.edit": "edit", "bsi.solve": "solve", "bsi.cancel": "cancel",
                 "bsi.fracture.prepare": "fracturePrepare", "bsi.fracture.finish": "fractureFinish",
-                "bsi.rigid.declare": "rigidDeclare", "bsi.rigid.step": "rigidStep"}[method]
+                "bsi.rigid.declare": "rigidDeclare", "bsi.rigid.step": "rigidStep",
+                "bsi.pdelta.solve": "pdeltaSolve", "bsi.pdelta.station": "pdeltaStation",
+                "bsi.pdelta.fracture.prepare": "pdeltaFracturePrepare"}[method]
         loads = b""
         if door == "declare":
             nb = d.get("body", {}).get("blocks", len(payload) // 40)
             self.world, self.attrs = payload[:nb * 40], payload[nb * 40:]
-        elif door in ("solve", "rigidStep"):
+        elif door in ("solve", "rigidStep", "pdeltaSolve", "pdeltaFracturePrepare"):
             loads = payload
         elif door == "rigidDeclare":
             self.world, self.attrs = payload, b""
@@ -608,6 +610,36 @@ def check_reply(schema, validator, method, reply, declared_blocks=None):
     if method == "bsi.hello":
         probs += validator.validate("hello.response", h)
         order = list(schema["$defs"]["hello.response"]["properties"].keys())
+    elif method in ("bsi.pdelta.solve", "bsi.pdelta.station", "bsi.pdelta.fracture.prepare"):
+        definition = method[4:] + ".response"
+        probs += validator.validate(definition, h)
+        order = list(schema["$defs"][definition]["properties"])
+        if list(h) != [k for k in order if k in h]:
+            probs.append(f"{definition} key order differs from schema")
+        if method.endswith("station"):
+            want = ["pdeltaStation", "pdeltaSample"]
+            fixed = {"pdeltaStation": 1, "pdeltaSample": 1}
+        elif method.endswith("prepare"):
+            want = ["physicalTotals", "fractureCells", "fractureFragments", "fractureParents", "fractureEvents", "fractureEventCells", "fractureMechanism",
+                    "pdeltaOptions", "pdeltaDecisions", "pdeltaDecisionCells", "pdeltaIslands", "pdeltaText", "pdeltaFractureLoads"]
+            fixed = {"physicalTotals": 3, "pdeltaOptions": 1}
+        else:
+            want = ["pdeltaOptions", "pdeltaPhysical", "pdeltaIslands", "pdeltaText", "pdeltaNodes", "pdeltaMembers", "pdeltaShells", "pdeltaSources",
+                    "pdeltaSourceIndices", "pdeltaArtifacts", "pdeltaArtifactMembers", "pdeltaArtifactShells", "pdeltaLoads"]
+            fixed = {"pdeltaOptions": 1, "pdeltaPhysical": 7}
+        sections = h.get("sections", [])
+        if [s["name"] for s in sections] != want:
+            probs.append("P-Delta sections not in fixed order")
+        offset = 0
+        for s in sections:
+            record = schema['x-records'].get(s['name'])
+            if not record or s['offset'] != offset or s['bytes'] != s['count'] * record['bytes']:
+                probs.append('invalid P-Delta section range')
+            if s['name'] in fixed and s['count'] != fixed[s['name']]:
+                probs.append('invalid P-Delta fixed section count')
+            offset += s['bytes']
+        if offset != len(reply.payload):
+            probs.append('P-Delta payload length mismatch')
     elif method in ("bsi.rigid.declare", "bsi.rigid.step"):
         definition = method[4:] + ".response"
         probs += validator.validate(definition, h)

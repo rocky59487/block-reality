@@ -54,7 +54,8 @@ int runArena(Session& s, const std::string& path, FILE* in, FILE* out) {
         static const struct { const char* door; const char* method; } pairs[] = {
             {"hello", "bsi.hello"}, {"vocab", "bsi.vocab.declare"}, {"declare", "bsi.world.declare"}, {"edit", "bsi.world.edit"}, {"solve", "bsi.solve"}, {"cancel", "bsi.cancel"},
             {"fracturePrepare", "bsi.fracture.prepare"}, {"fractureFinish", "bsi.fracture.finish"},
-            {"rigidDeclare", "bsi.rigid.declare"}, {"rigidStep", "bsi.rigid.step"}};
+            {"rigidDeclare", "bsi.rigid.declare"}, {"rigidStep", "bsi.rigid.step"},
+            {"pdeltaSolve", "bsi.pdelta.solve"}, {"pdeltaStation", "bsi.pdelta.station"}, {"pdeltaFracturePrepare", "bsi.pdelta.fracture.prepare"}};
         bool doorOk = false;
         for (const auto& p : pairs) if (door == p.door) { doorOk = true; if (method != p.method && !(door == "vocab" && method == "bsi.vocab.query")) { bell(out, "error", seq, 0, 0, "PROTOCOL_ERROR: door does not match method"); doorOk = false; method.clear(); } break; }
         if (!doorOk) { if (!method.empty() || door.empty()) bell(out, "error", seq, 0, 0, "PROTOCOL_ERROR: unknown door"); continue; }
@@ -62,14 +63,14 @@ int runArena(Session& s, const std::string& path, FILE* in, FILE* out) {
         const bool identified = (door == "declare" || door == "edit") && requestBody && requestBody->find("identity");
         // Unused regions can retain the preceding identified world's owner layout.
         if ((!identified && door == "declare" && !arena::validate(h, map.size(), why, false, true)) ||
-            (door == "solve" && h.loadsLen % 64) ||
+            ((door == "solve" || door == "pdeltaSolve" || door == "pdeltaFracturePrepare") && h.loadsLen % 64) ||
             (identified && (door == "declare" ? h.worldLen % 40 || h.attrsLen % 20 : h.attrsLen != 0))) {
             bell(out, "error", seq, 0, 0, "ARENA_CORRUPT: invalid payload region record lengths"); continue;
         }
         if (door == "declare") {
             payload.assign(map.base() + h.worldOff, map.base() + h.worldOff + h.worldLen);
             payload.insert(payload.end(), map.base() + h.attrsOff, map.base() + h.attrsOff + h.attrsLen);
-        } else if (door == "solve" || door == "rigidStep") {
+        } else if (door == "solve" || door == "rigidStep" || door == "pdeltaSolve" || door == "pdeltaFracturePrepare") {
             payload.assign(map.base() + h.loadsOff, map.base() + h.loadsOff + h.loadsLen);
         } else if (door == "rigidDeclare") {
             payload.assign(map.base() + h.worldOff, map.base() + h.worldOff + h.worldLen);
