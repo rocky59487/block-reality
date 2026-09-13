@@ -54,7 +54,8 @@
     "bsi.pdelta.fracture",
     "bsi.corot",
     "bsi.corot.fracture",
-    "bsi.corot.rigid"
+    "bsi.corot.rigid",
+    "bsi.corot.fracture.loads"
   ],
 
   "x-errors": ["BSI_VERSION", "EXPECTED_HELLO", "UNKNOWN_METHOD", "UNSUPPORTED", "UNSUPPORTED_ATTR",

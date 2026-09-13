@@ -357,11 +357,11 @@ private:
         }
         ReplyBuilder b((uint32_t)world_.size(), 0, BSI_STORAGE_F64);
         bsi_writer w{&b};
-        forgetIdentity();
         int st = engine_.vt->world_edit(inst_, edits.data(), (uint32_t)N, &w);
         if (st != BSI_OK) { errorFromBuilder(out, rq, st, b); return; }
         std::string why;
         if (!b.finalizeDeclare(why) || !b.haveEdit()) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", why.empty() ? "engine wrote no edit class" : why); return; }
+        forgetIdentity();
         // apply to the host's world copy (persistent world semantics)
         for (const bsi_edit& e : edits) {
             auto it = std::find_if(world_.begin(), world_.end(), [&](const bsi_block& q) { return q.x == e.block.x && q.y == e.block.y && q.z == e.block.z; });

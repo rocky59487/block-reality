@@ -17,6 +17,7 @@
             motionStamp_=view->geometry->scene;motionIds_=std::move(ids);motionDeclared_=true;nativeFault_=false;return;
         }
         corot_wire::Input input;if(!corot_wire::input(*rq.body,payload,n,uint32_t(opts_.numThreads),input,fracture)||!fracture_wire::same(input.input.options.expected,worldStamp_)){wireError(rq,out,"PROTOCOL_ERROR","invalid finite analysis payload or basis");return;}
+        if(fracture&&input.input.nLoads&&!has("bsi.corot.fracture.loads")){wireError(rq,out,"UNSUPPORTED","engine lacks finite fracture load bindings");return;}
         if(fracture){auto next=std::make_unique<fracture_wire::Candidate>();const bsi_corot_fracture_view* view=nullptr;nativeFault_=true;
             const int status=engine_.vt->corot_fracture_prepare(inst_,&input.fracture,&view,&writer);if(status!=BSI_OK){nativeFault_=false;errorFromBuilder(out,rq,status,builder);return;}
             std::string error;if(builder.hasError()||!corot_wire::fracture(view,input,artifactNamespace_,world_,owners_,vocab_,*next,pack,error)){wireError(rq,out,"INTERNAL",error.empty()?"invalid finite fracture delivery; reopen session":error);return;}

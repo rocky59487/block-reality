@@ -722,10 +722,18 @@ Generalized load kinds 0..4 are node force/moment, member point force, member li
 force/couple, member UDL and shell pressure. Targets are ordered stable node keys,
 not current extraction indices. Unused targets, intervals and components must be
 zero. Kind 0 is world-frame; kind 4 pressure uses the shell normal and localFrame=0.
-Finite fracture currently accepts cell forces and stable prescriptions, and rejects
-nonempty generalized load arrays. A cell load has no moment; use a node wrench for
-moments in finite solve. Pressure, member loads and constraints use the same core
-implementation as the C++ finite solve.
+Finite fracture accepts all five generalized load kinds when the engine advertises
+`bsi.corot.fracture.loads`; older engines continue to reject that optional input.
+Each target is bound to its ordered node keys and material owners before the first
+cut. Surviving targets retain their values, frame and intervals as indices change;
+fully retired targets stop loading the remaining structure. Partial remeshing or
+owner changes that cannot preserve the original load target refuse the transaction.
+For requests containing generalized loads, retired member/shell `mechanics.external`
+contains the actual final source load field. Empty generalized requests retain the
+previous response layout and values. A cell load has no moment; use a node wrench
+for moments. Pressure, member loads and constraints use the same C++ implementation.
+Original loads are not automatically converted into fragment momentum or continuing
+rigid-body forces: the caller supplies those forces to the shared motion API.
 
 Uniaxial kinds 0,1,2 are plasticity, damage, and compression damage/plasticity. The
 law includes E, tension/compression strength, kinematic/isotropic hardening,
