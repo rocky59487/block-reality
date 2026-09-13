@@ -13,6 +13,7 @@
 #include "bsi_corot_fracture_wire.hpp"
 #include <algorithm>
 #include <array>
+#include <charconv>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
@@ -90,7 +91,9 @@ public:
         const bool fractureRequest = rq.method == "bsi.fracture.prepare" || rq.method == "bsi.fracture.finish";
         const bool motion = rq.method == "bsi.rigid.declare" || rq.method == "bsi.rigid.step";
         const bool pdelta = rq.method=="bsi.pdelta.solve" || rq.method=="bsi.pdelta.station" || rq.method=="bsi.pdelta.fracture.prepare";
-        const bool corot = rq.method=="bsi.corot.solve" || rq.method=="bsi.corot.fracture.prepare" || rq.method=="bsi.corot.rigid.declare";
+        const bool checkpoint = rq.method=="bsi.corot.checkpoint.export" || rq.method=="bsi.corot.checkpoint.import";
+        const bool arc = rq.method=="bsi.corot.arc.advance";
+        const bool corot = rq.method=="bsi.corot.solve" || rq.method=="bsi.corot.fracture.prepare" || rq.method=="bsi.corot.rigid.declare" || checkpoint || arc;
         if (identifiedRequest || fractureRequest || motion || pdelta || corot) {
             if (
 #ifndef BSI_TEST_NFW_LIMIT
@@ -102,7 +105,9 @@ public:
                 wireError(rq, out, "PROTOCOL_ERROR", "fracture request exceeds wire budget or has NULL payload"); return;
             }
             try {
-                if (corot) corotRequest(rq,payload,payloadLen,out);
+                if (arc) corotArcRequest(rq,payloadLen,out);
+                else if (checkpoint) corotCheckpointRequest(rq,payload,payloadLen,out);
+                else if (corot) corotRequest(rq,payload,payloadLen,out);
                 else if (pdelta) pdeltaRequest(rq,payload,payloadLen,out);
                 else if (motion) motionRequest(rq,payload,payloadLen,out,rq.method=="bsi.rigid.declare");
                 else if (identifiedRequest) identifiedWorld(rq, payload, payloadLen, out, rq.method == "bsi.world.edit");
@@ -142,6 +147,8 @@ private:
 #include "bsi_motion_session.hpp"
 #include "bsi_pdelta_session.hpp"
 #include "bsi_corot_session.hpp"
+#include "bsi_corot_checkpoint_session.hpp"
+#include "bsi_corot_arc_session.hpp"
 
     void logf(int level, const char* fmt, ...) {
         if (level > opts_.logLevel) return;

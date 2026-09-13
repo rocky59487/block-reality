@@ -17,7 +17,9 @@ extern "C" {
 #endif
 
 #define BSI_MAJOR 1
-#define BSI_ENGINE_ABI 7u
+#define BSI_ENGINE_ABI 9u
+#define BSI_ENGINE_ABI_CHECKPOINT 8u
+#define BSI_ENGINE_ABI_COROT 7u
 #define BSI_ENGINE_ABI_PDELTA_FRACTURE 6u
 #define BSI_ENGINE_ABI_PDELTA 5u
 #define BSI_ENGINE_ABI_MOTION 4u
@@ -262,6 +264,8 @@ BSI_EXPORT int bsi_writer_error(bsi_writer*, const char* code, const char* messa
 #include "bsi_pdelta_wire.h"
 #include "bsi_corot.h"
 #include "bsi_corot_wire.h"
+#include "bsi_corot_checkpoint.h"
+#include "bsi_corot_arc.h"
 typedef struct bsi_engine_vtable {
   uint32_t abi_version;                                        /* = BSI_ENGINE_ABI */
   const char* (*name)(void);
@@ -300,6 +304,11 @@ typedef struct bsi_engine_vtable {
   int (*corot_solve)(bsi_engine*, const bsi_corot_request*, const bsi_corot_view**, bsi_writer*);
   int (*corot_fracture_prepare)(bsi_engine*, const bsi_corot_fracture_options*, const bsi_corot_fracture_view**, bsi_writer*);
   int (*corot_motion_declare)(bsi_engine*, const bsi_corot_motion_declare*, const bsi_corot_motion_view**, bsi_writer*);
+  /* ABI8 opaque persistent finite state. Import returns a fresh analysis token. */
+  int (*corot_checkpoint_export)(bsi_engine*, const bsi_corot_checkpoint_options*, const bsi_corot_checkpoint_view**, bsi_writer*);
+  int (*corot_checkpoint_import)(bsi_engine*, const bsi_corot_checkpoint_options*, const uint8_t*, uint32_t, const bsi_corot_view**, bsi_writer*);
+  /* ABI9 only: one shared continuation factor across the current world. */
+  int (*corot_arc_advance)(bsi_engine*, const bsi_corot_arc_request*, const bsi_corot_arc_view**, bsi_writer*);
 } bsi_engine_vtable;
 
 /* The single exported symbol an engine must provide. Returns NULL when

@@ -22,7 +22,10 @@
     "bsi.pdelta.fracture.prepare",
     "bsi.corot.solve",
     "bsi.corot.fracture.prepare",
-    "bsi.corot.rigid.declare"
+    "bsi.corot.rigid.declare",
+    "bsi.corot.checkpoint.export",
+    "bsi.corot.checkpoint.import",
+    "bsi.corot.arc.advance"
   ],
 
   "x-capabilities": [
@@ -55,7 +58,9 @@
     "bsi.corot",
     "bsi.corot.fracture",
     "bsi.corot.rigid",
-    "bsi.corot.fracture.loads"
+    "bsi.corot.fracture.loads",
+    "bsi.corot.checkpoint",
+    "bsi.corot.arc"
   ],
 
   "x-errors": ["BSI_VERSION", "EXPECTED_HELLO", "UNKNOWN_METHOD", "UNSUPPORTED", "UNSUPPORTED_ATTR",
@@ -719,7 +724,10 @@
             "bsi.pdelta.fracture.prepare",
             "bsi.corot.solve",
             "bsi.corot.fracture.prepare",
-            "bsi.corot.rigid.declare"
+            "bsi.corot.rigid.declare",
+            "bsi.corot.checkpoint.export",
+            "bsi.corot.checkpoint.import",
+            "bsi.corot.arc.advance"
           ]},
         "revision": {"type": "integer"},
         "body": {"type": "object"},
@@ -1264,7 +1272,13 @@
     },
     "corot.solve.response": {"type":"object","required":["bsi","kind","id","method","revision","status","basis","artifactNamespace","generation","token","sections","fullyConverged"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.solve"},"revision":{"type":"integer"},"status":{"const":"analyzed"},"basis":{"$ref":"#/$defs/world.stamp"},"artifactNamespace":{"$ref":"#/$defs/id128"},"generation":{"type":"string","pattern":"^[0-9a-f]{16}$"},"token":{"$ref":"#/$defs/fracture.token"},"fullyConverged":{"type":"boolean"},"sections":{"$ref":"#/$defs/corot.sections"}},"additionalProperties":false},
     "corot.fracture.prepare.response": {"type":"object","required":["bsi","kind","id","method","revision","status","requestId","before","after","artifactNamespace","token","steps","flags","remainingBlocks","sections","end","pending","corotFlags","fullyConverged","remainingGeneration"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.fracture.prepare"},"revision":{"type":"integer"},"status":{"const":"prepared"},"requestId":{"$ref":"#/$defs/id128"},"before":{"$ref":"#/$defs/world.stamp"},"after":{"$ref":"#/$defs/world.stamp"},"artifactNamespace":{"$ref":"#/$defs/id128"},"token":{"$ref":"#/$defs/fracture.token"},"steps":{"type":"integer","minimum":0,"maximum":4097},"flags":{"type":"integer","minimum":0,"maximum":3},"remainingBlocks":{"type":"integer","minimum":0,"maximum":16777216},"end":{"type":"integer","minimum":0,"maximum":2},"corotFlags":{"type":"integer","minimum":0,"maximum":15},"pending":{"type":"integer","minimum":-1,"maximum":4096},"fullyConverged":{"type":"boolean"},"remainingGeneration":{"type":"string","pattern":"^[0-9a-f]{16}$"},"sections":{"$ref":"#/$defs/corot.sections"}},"additionalProperties":false},
-    "corot.rigid.declare.response": {"type":"object","required":["bsi","kind","id","method","revision","status","scene","sections","fracture"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.rigid.declare"},"revision":{"type":"integer"},"status":{"const":"declared"},"scene":{"$ref":"#/$defs/world.stamp"},"fracture":{"$ref":"#/$defs/fracture.token"},"sections":{"$ref":"#/$defs/corot.sections"}},"additionalProperties":false}
+    "corot.rigid.declare.response": {"type":"object","required":["bsi","kind","id","method","revision","status","scene","sections","fracture"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.rigid.declare"},"revision":{"type":"integer"},"status":{"const":"declared"},"scene":{"$ref":"#/$defs/world.stamp"},"fracture":{"$ref":"#/$defs/fracture.token"},"sections":{"$ref":"#/$defs/corot.sections"}},"additionalProperties":false},
+    "corot.arc.advance.body": {"type":"object","required":["expected","initialAnalysis","radius","minRadius","lengthScale","loadScale","relativeTolerance","forceTolerance","momentTolerance","linearTolerance","pathTolerance","maxIterations","maxAttempts","maxBacktracks","linearIterations","restart","initialDirection"],"properties":{"expected":{"$ref":"#/$defs/world.stamp"},"initialAnalysis":{"$ref":"#/$defs/fracture.token"},"radius":{"type":"number","exclusiveMinimum":0},"minRadius":{"type":"number","exclusiveMinimum":0},"lengthScale":{"type":"number","exclusiveMinimum":0},"loadScale":{"type":"number","exclusiveMinimum":0},"relativeTolerance":{"type":"number","minimum":0},"forceTolerance":{"type":"number","minimum":0},"momentTolerance":{"type":"number","minimum":0},"linearTolerance":{"type":"number","minimum":0},"pathTolerance":{"type":"number","minimum":0},"maxIterations":{"type":"integer","minimum":1,"maximum":1000000},"maxAttempts":{"type":"integer","minimum":1,"maximum":1000000},"maxBacktracks":{"type":"integer","minimum":1,"maximum":1000000},"linearIterations":{"type":"integer","minimum":1,"maximum":1000000},"restart":{"type":"integer","minimum":1,"maximum":1000000},"initialDirection":{"type":"integer","enum":[-1,1]}},"additionalProperties":false},
+    "corot.arc.advance.response": {"type":"object","required":["bsi","kind","id","method","revision","status","basis","artifactNamespace","generation","token","fullyConverged","loadFactor","radius","constraintResidual","sections"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.arc.advance"},"revision":{"type":"integer"},"status":{"const":"advanced"},"basis":{"$ref":"#/$defs/world.stamp"},"artifactNamespace":{"$ref":"#/$defs/id128"},"generation":{"type":"string","pattern":"^[0-9a-f]{16}$"},"token":{"$ref":"#/$defs/fracture.token"},"fullyConverged":{"type":"boolean"},"loadFactor":{"type":"number"},"radius":{"type":"number","exclusiveMinimum":0},"constraintResidual":{"type":"number","minimum":0,"maximum":1e-10},"sections":{"$ref":"#/$defs/corot.sections"}},"additionalProperties":false},
+    "corot.checkpoint.export.body": {"type":"object","required":["expected","format","byteBudget","allocationBudget","elementBudget"],"properties":{"expected":{"$ref":"#/$defs/world.stamp"},"format":{"type":"integer","enum":[1,2]},"byteBudget":{"type":"integer","minimum":32,"maximum":268431360},"allocationBudget":{"type":"integer","minimum":1,"maximum":536870912},"elementBudget":{"type":"integer","minimum":1,"maximum":16777216}},"additionalProperties":false},
+    "corot.checkpoint.export.response": {"type":"object","required":["bsi","kind","id","method","revision","status","basis","format","bytes"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.checkpoint.export"},"revision":{"type":"integer"},"status":{"const":"exported"},"basis":{"$ref":"#/$defs/world.stamp"},"format":{"type":"integer","enum":[1,2]},"bytes":{"type":"integer","minimum":32,"maximum":268431360}},"additionalProperties":false},
+    "corot.checkpoint.import.body": {"type":"object","required":["expected","format","byteBudget","allocationBudget","elementBudget","bytes"],"properties":{"expected":{"$ref":"#/$defs/world.stamp"},"format":{"type":"integer","enum":[1,2]},"byteBudget":{"type":"integer","minimum":32,"maximum":268431360},"allocationBudget":{"type":"integer","minimum":1,"maximum":536870912},"elementBudget":{"type":"integer","minimum":1,"maximum":16777216},"bytes":{"type":"integer","minimum":32,"maximum":268431360}},"additionalProperties":false},
+    "corot.checkpoint.import.response": {"type":"object","required":["bsi","kind","id","method","revision","status","basis","artifactNamespace","generation","token","sections","fullyConverged"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.checkpoint.import"},"revision":{"type":"integer"},"status":{"const":"restored"},"basis":{"$ref":"#/$defs/world.stamp"},"artifactNamespace":{"$ref":"#/$defs/id128"},"generation":{"type":"string","pattern":"^[0-9a-f]{16}$"},"token":{"$ref":"#/$defs/fracture.token"},"fullyConverged":{"type":"boolean"},"sections":{"$ref":"#/$defs/corot.sections"}},"additionalProperties":false}
   },
 
   "x-records": {
@@ -1391,7 +1405,9 @@
     "reply": "one T-A frame (12-byte prefix + header + payload); sections[].offset relative to payload start; doorbell replyLen = frame bytes",
     "doorbell": {"request": {"bsi": 1, "door": "solve|declare|edit|vocab|hello|cancel|fracturePrepare|fractureFinish", "seq": "u64"}, "reply": {"bsi": 1, "door": "reply|error|needBigger", "seq": "u64", "replyLen": "u64", "required": "u64?"}},
     "x-identified-payload": "declare: blocks in world, owners in attrs; edit: complete edits+owners in world; fracture verbs: empty payload",
-    "x-retry": "After needBigger, resend identical header and payload; seq may change. A different request is refused while the original reply is pending. The original operation is never dispatched twice."
+    "x-retry": "After needBigger, resend identical header and payload; seq may change. A different request is refused while the original reply is pending. The original operation is never dispatched twice.",
+    "x-arc-payload": "corotArcAdvance: empty; load catalog retained from initialAnalysis",
+    "x-checkpoint-payload": "corotCheckpointExport: empty; corotCheckpointImport: complete opaque checkpoint in loads"
   },
 
   "x-capi": {

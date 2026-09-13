@@ -47,7 +47,7 @@ configure 期先跑 `../check_contract.py`：雜湊不符 **拒建**。開發時
 - `storage=f32` 只轉 `stations`/`facetSurfaces`（schema 有 `x-f32` 者）；`blocks` 維持 24 B f64（schema 未定義其 f32 變體）。
 - `finalize` 的 INTERNAL 條件：`blocks` 未寫 / 寫兩次 / 筆數 ≠ B；`ownerKind==3` 與 `unassigned` 列表不一致或 `reason` 不符；已擁有的格帶 `reason`；
   owner id 不存在；member/facet id 非嚴格遞增；站位 `s` 非遞增；缺 `equilibrium`/`quality`/`diag`；`flags.overloaded ≠ (dc>1.0)`。
-- arena header：具名欄位 112 B + `reserved[16]` = 契約的 128 B；`reply` 區放一個 T-A frame。`world.edit` 走 arena 本版 `UNSUPPORTED`。
+- arena header：具名欄位 112 B + `reserved[16]` = 契約的 128 B；`reply` 區放一個 T-A frame。`world.edit` 的完整 edits／owners 放在 `world` 區，沿共用 Session 驗證與交易；一般編輯要求引擎提供 `bsi.world.edit`。
 - `bsi.cancel`：host 序列化請求，永遠沒有在飛的請求；回 `{status:"ok",targetId}` 並呼叫引擎的 `cancel` 槽（可 NULL）。
 
 ## 誠實邊界

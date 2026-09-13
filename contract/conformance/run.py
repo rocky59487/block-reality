@@ -502,16 +502,17 @@ class ArenaClient:
                 "bsi.pdelta.solve": "pdeltaSolve", "bsi.pdelta.station": "pdeltaStation",
                 "bsi.pdelta.fracture.prepare": "pdeltaFracturePrepare",
                 "bsi.corot.solve": "corotSolve", "bsi.corot.fracture.prepare": "corotFracturePrepare",
-                "bsi.corot.rigid.declare": "corotRigidDeclare"}[method]
+                "bsi.corot.rigid.declare": "corotRigidDeclare",
+                "bsi.corot.checkpoint.export": "corotCheckpointExport", "bsi.corot.checkpoint.import": "corotCheckpointImport", "bsi.corot.arc.advance": "corotArcAdvance"}[method]
         loads = b""
         if door == "declare":
             nb = d.get("body", {}).get("blocks", len(payload) // 40)
             self.world, self.attrs = payload[:nb * 40], payload[nb * 40:]
-        elif door in ("solve", "rigidStep", "pdeltaSolve", "pdeltaFracturePrepare", "corotSolve", "corotFracturePrepare"):
+        elif door in ("solve", "rigidStep", "pdeltaSolve", "pdeltaFracturePrepare", "corotSolve", "corotFracturePrepare", "corotCheckpointImport"):
             loads = payload
         elif door in ("rigidDeclare", "corotRigidDeclare"):
             self.world, self.attrs = payload, b""
-        elif door == "edit" and "identity" in d.get("body", {}):
+        elif door == "edit":
             self.world, self.attrs = payload, b""
         req = hdr.encode("utf-8")
         for attempt in range(8):
@@ -548,6 +549,8 @@ class ArenaClient:
                 m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
                 off = regions["reply"][0]; ln = int(r["replyLen"])
                 buf = bytes(m[off:off + ln]); m.close()
+            if not buf:
+                raise RuntimeError(f"arena returned no framed response: {r}")
             return decode_frame(buf)
         raise RuntimeError("arena never became big enough")
     def close(self):
@@ -654,7 +657,13 @@ def check_reply(schema, validator, method, reply, declared_blocks=None):
     if method == "bsi.hello":
         probs += validator.validate("hello.response", h)
         order = list(schema["$defs"]["hello.response"]["properties"].keys())
-    elif method in ("bsi.corot.solve", "bsi.corot.fracture.prepare", "bsi.corot.rigid.declare"):
+    elif method == "bsi.corot.checkpoint.export":
+        definition = method[4:] + '.response'
+        probs += validator.validate(definition, h)
+        order = list(schema['$defs'][definition]['properties'])
+        if len(reply.payload) != h.get('bytes'):
+            probs.append('checkpoint payload length mismatch')
+    elif method in ("bsi.corot.solve", "bsi.corot.fracture.prepare", "bsi.corot.rigid.declare", "bsi.corot.checkpoint.import", "bsi.corot.arc.advance"):
         definition = method[4:] + '.response'
         probs += validator.validate(definition, h)
         order = list(schema['$defs'][definition]['properties'])

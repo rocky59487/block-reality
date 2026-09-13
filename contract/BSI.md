@@ -792,3 +792,62 @@ configuration must match an unused owning retirement. Each removal is consumed
 once; a later removal creates a new source. Old archives remain historical records,
 not current inventory. Changed material domains and process restart imports need
 explicit history projection/import and are rejected by this option.
+
+## Engine ABI8: portable finite checkpoints
+
+`bsi.corot.checkpoint` adds two vtable slots after the ABI7 prefix; ABI1–7 keep
+their existing capabilities and layouts. `bsi.corot.checkpoint.export` takes
+`expected`, `format` (1 or 2), `byteBudget`, `allocationBudget` and `elementBudget`, with
+an empty payload. Its `exported` response contains `basis`, `format` and `bytes`;
+the payload is an opaque little-endian CRC64-protected engine checkpoint.
+
+`bsi.corot.checkpoint.import` uses the same body plus `bytes`, and that complete
+blob as payload. First declare the identical vocabulary, current world and full
+world identity, including owners. Import returns `restored` with the existing
+corot analysis sections and a fresh process-local token. Indices may change
+after a clean extraction; the common topology transfer matches stable sources.
+An unbalanced checkpoint cannot be promoted to a solved result by import.
+
+Only a world without an existing finite history accepts import. An identical
+successful import can replay while its restored state is still current; later
+solves or edits prevent rollback to that blob. CRC detects corruption and is not
+source authentication. The caller owns durable file/journal transactions.
+Unknown formats, invalid state/source/owner data and exceeded decode budgets
+are errors with no world publication. Export failure preserves the prior view.
+Arena doors are `corotCheckpointExport` (empty payload) and
+`corotCheckpointImport` (loads region); all transports use the same dispatcher
+and pending-response retry contract. Ordinary `world.edit` uses the world region.
+
+Format 1 retains the original finite-state layout. Format 2 additionally owns
+arc-continuation direction and scales. Readers accept both; an explicit format 1
+export refuses a state with arc history. The envelope version must equal the
+request's format, including on replay. Reindexed roots use stable node identities.
+
+## Engine ABI9: whole-world arc continuation
+
+`bsi.corot.arc` adds `corot_arc_advance` after the ABI8 prefix. The 152-byte typed
+request and 32-byte view are declared in `bsi_corot_arc.h`; no older slot or record
+stride changes. `bsi.corot.arc.advance` takes an empty payload and a body containing
+`expected`, `initialAnalysis`, `radius`, `minRadius`, `lengthScale`, `loadScale`,
+`relativeTolerance`, `forceTolerance`, `momentTolerance`, `linearTolerance`,
+`pathTolerance`, `maxIterations`, `maxAttempts`, `maxBacktracks`, `linearIterations`,
+`restart` and `initialDirection` (1 or -1). The complete proportional load catalog
+and material history belong to the committed source analysis.
+
+The `advanced` response contains the original analysis sections and a new token,
+plus scalar JSON numbers `loadFactor`, `radius` and `constraintResidual` before
+`sections`. Every active island uses this one load factor. The metric is the sum
+of squared independent-root translations divided by lengthScale squared, plus
+the squared load-factor increment times loadScale squared. The load term occurs
+once per world. The relative arc constraint error cannot exceed 1e-10; the existing
+force, moment, linear and material-path criteria must also pass before publication.
+
+A step requires a converged source, at least one free root translation, a nonzero
+proportional load direction and homogeneous prescribed constraints. Nonzero
+prescribed displacement paths remain the responsibility of the original solve
+interface. This static continuation is not a physical time step across an instability.
+Immediately identical source-token/options retries replay the same result; changed
+options on a consumed source, older tokens and changed worlds are refused. All
+islands and owning native views are prepared before the shared atomic commit.
+Arena door `corotArcAdvance` has no input payload and uses the existing pending
+reply contract. Save the resulting state with checkpoint format 2.
