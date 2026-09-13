@@ -10,4 +10,4 @@ fe1f5553d23e2dc8400dc61e43c8d5dfac645c49
 # pins agree with their own directories AND with each other are byte-identical where it
 # matters. The clone-and-diff above is still run when CI can reach the other repository;
 # this line is the leg that cannot be skipped for want of a token.
-sha256 3e2d0f13ed4e20aa346f45ffc4e4484e019a0f9d4fee417f4bb70236ff2370ab
+sha256 257ed5aa00176735ea6dcdd80b34787988260fcf0068af491b685cbe2891e4f1
