@@ -14,7 +14,7 @@ typedef struct bsi_corot_law {
 } bsi_corot_law;
 typedef struct bsi_corot_material { int32_t material; uint32_t reserved; bsi_corot_law primary, concrete; } bsi_corot_material;
 typedef struct bsi_corot_options {
-  uint32_t struct_size, flags; /* bit0 selfWeight, bit1 followerLocal, bit2 retainLoadPath, bit3 transferTopology, bit4 useMetis */
+  uint32_t struct_size, flags; /* bit0 selfWeight, bit1 followerLocal, bit2 retainLoadPath, bit3 transferTopology, bit4 useMetis, bit5 reinstallRetired */
   bsi_world_stamp expected;
   double loadFactor, gravity[3], relativeTolerance, forceTolerance, momentTolerance;
   double initialStep, minStep, maxStep, linearTolerance, pathTolerance;

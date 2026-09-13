@@ -952,6 +952,11 @@
         "transferTopology": {
           "type": "boolean"
         },
+        "reinstallRetired": {
+          "type": "boolean",
+          "default": false,
+          "description": "Reuse complete matching retired material history through the same topology transaction. Requires retainLoadPath and transferTopology."
+        },
         "useMetis": {
           "type": "boolean"
         },

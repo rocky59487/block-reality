@@ -765,3 +765,12 @@ No legacy 64-byte load divisibility assumption applies to these mixed groups.
 Frame, stdio-base64 and arena call the same dispatch. NEED_BIGGER caches the full
 response after one execution and requires identical request header/payload bytes;
 a different request cannot consume or replace the pending result.
+
+`corot.options.reinstallRetired` (optional, false by default; typed options bit5)
+allows complete retired elements to return with their original irreversible
+material history. It requires retainLoadPath and transferTopology. Reference
+nodes, physical cells, artifact owners, material/section/fiber identity and release
+configuration must match an unused owning retirement. Each removal is consumed
+once; a later removal creates a new source. Old archives remain historical records,
+not current inventory. Changed material domains and process restart imports need
+explicit history projection/import and are rejected by this option.

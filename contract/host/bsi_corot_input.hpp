@@ -15,6 +15,7 @@ inline bsi_corot_options options(const json::Value& b,uint32_t threads) {
     bsi_corot_options o{};o.struct_size=sizeof(o);o.expected=fracture_wire::stamp(*b.find("expected"));o.loadFactor=b.find("loadFactor")->num;
     for(int i=0;i<3;++i)o.gravity[i]=b.find("gravity")->arr[size_t(i)].num;
     o.flags=(b.find("selfWeight")->b?1u:0u)|(b.find("followerLocal")->b?2u:0u)|(b.find("retainLoadPath")->b?4u:0u)|(b.find("transferTopology")->b?8u:0u)|(b.find("useMetis")->b?16u:0u);
+    if(const auto* reinstall=b.find("reinstallRetired"))if(reinstall->b)o.flags|=32u;
     o.relativeTolerance=b.find("relativeTolerance")->num;o.forceTolerance=b.find("forceTolerance")->num;o.momentTolerance=b.find("momentTolerance")->num;
     o.initialStep=b.find("initialStep")->num;o.minStep=b.find("minStep")->num;o.maxStep=b.find("maxStep")->num;o.linearTolerance=b.find("linearTolerance")->num;o.pathTolerance=b.find("pathTolerance")->num;
     o.budgetDof=count(b,"budgetDof");o.numThreads=b.find("numThreads")?count(b,"numThreads"):threads;o.maxIterations=count(b,"maxIterations");o.maxAttempts=count(b,"maxAttempts");
