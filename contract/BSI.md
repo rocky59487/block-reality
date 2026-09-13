@@ -759,6 +759,16 @@ kinetic energy. `motion_step` is the original contact/friction/rolling/CCD path.
 The source archive remains owned for the finite motion view lifetime. Unsupported
 material domains are explicit failures, never replacement reference-cell cubes.
 
+Finite panel domains use all four stable shell nodes and their finite material
+directors, with the same Q4 field as physical self-weight. Reference material
+thickness and mass are preserved; current COM/full inertia/P/L/K use positive
+tensor quadrature, and collision hulls enclose each physical cell separately.
+Coplanar shell-represented monoliths use their full physical box thickness.
+Planar same-material panel components use their uniquely determined plane,
+including cells bordering openings. Ambiguous line or nonplanar components keep
+the original local plane selection. Articulated/released/coupled assemblies and
+ambiguous member/shell material ownership remain explicit failures.
+
 Arena doors are corotSolve, corotFracturePrepare and corotRigidDeclare. The first two
 read their complete mixed-record payload from loads; corotRigidDeclare reads world.
 No legacy 64-byte load divisibility assumption applies to these mixed groups.
