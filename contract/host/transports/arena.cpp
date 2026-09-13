@@ -55,7 +55,8 @@ int runArena(Session& s, const std::string& path, FILE* in, FILE* out) {
             {"hello", "bsi.hello"}, {"vocab", "bsi.vocab.declare"}, {"declare", "bsi.world.declare"}, {"edit", "bsi.world.edit"}, {"solve", "bsi.solve"}, {"cancel", "bsi.cancel"},
             {"fracturePrepare", "bsi.fracture.prepare"}, {"fractureFinish", "bsi.fracture.finish"},
             {"rigidDeclare", "bsi.rigid.declare"}, {"rigidStep", "bsi.rigid.step"},
-            {"pdeltaSolve", "bsi.pdelta.solve"}, {"pdeltaStation", "bsi.pdelta.station"}, {"pdeltaFracturePrepare", "bsi.pdelta.fracture.prepare"}};
+            {"pdeltaSolve", "bsi.pdelta.solve"}, {"pdeltaStation", "bsi.pdelta.station"}, {"pdeltaFracturePrepare", "bsi.pdelta.fracture.prepare"},
+            {"corotSolve", "bsi.corot.solve"}, {"corotFracturePrepare", "bsi.corot.fracture.prepare"}, {"corotRigidDeclare", "bsi.corot.rigid.declare"}};
         bool doorOk = false;
         for (const auto& p : pairs) if (door == p.door) { doorOk = true; if (method != p.method && !(door == "vocab" && method == "bsi.vocab.query")) { bell(out, "error", seq, 0, 0, "PROTOCOL_ERROR: door does not match method"); doorOk = false; method.clear(); } break; }
         if (!doorOk) { if (!method.empty() || door.empty()) bell(out, "error", seq, 0, 0, "PROTOCOL_ERROR: unknown door"); continue; }
@@ -70,9 +71,9 @@ int runArena(Session& s, const std::string& path, FILE* in, FILE* out) {
         if (door == "declare") {
             payload.assign(map.base() + h.worldOff, map.base() + h.worldOff + h.worldLen);
             payload.insert(payload.end(), map.base() + h.attrsOff, map.base() + h.attrsOff + h.attrsLen);
-        } else if (door == "solve" || door == "rigidStep" || door == "pdeltaSolve" || door == "pdeltaFracturePrepare") {
+        } else if (door == "solve" || door == "rigidStep" || door == "pdeltaSolve" || door == "pdeltaFracturePrepare" || door == "corotSolve" || door == "corotFracturePrepare") {
             payload.assign(map.base() + h.loadsOff, map.base() + h.loadsOff + h.loadsLen);
-        } else if (door == "rigidDeclare") {
+        } else if (door == "rigidDeclare" || door == "corotRigidDeclare") {
             payload.assign(map.base() + h.worldOff, map.base() + h.worldOff + h.worldLen);
         } else if (door == "edit") {
             const auto* body = hv.find("body");

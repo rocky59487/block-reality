@@ -65,7 +65,7 @@ inline bool fields(const bsi_pdelta_view& v,const Input& input) {
     }
     return cursor==v.nSourceIndices;
 }
-inline bool sourceMap(const bsi_pdelta_view& v,const std::vector<bsi_block>& world,const std::vector<bsi_artifact_owner>& owners,const VocabStore& vocab) {
+template<class View> inline bool sourceMap(const View& v,const std::vector<bsi_block>& world,const std::vector<bsi_artifact_owner>& owners,const VocabStore& vocab) {
     using Key=fracture_wire::Key;std::map<Key,size_t> present;std::map<Key,int64_t> ownership;
     for(size_t i=0;i<world.size();++i)present.emplace(fracture_wire::key(world[i]),i);
     // owner20 is packed; copy its 64-bit field before binding a map reference.

@@ -5,16 +5,56 @@
   "bsi": 1,
   "description": "Headers are JSON validated by the definitions below; payload sections are binary records described under x-records. Field order in headers is the order listed. Units are SI. Any key starting with x- is a vendor extension and is ignored-with-count by engines that do not understand it; any other unknown key is PROTOCOL_ERROR.",
 
-  "x-verbs": ["bsi.hello", "bsi.vocab.declare", "bsi.vocab.query", "bsi.world.declare", "bsi.world.edit", "bsi.solve", "bsi.cancel", "bsi.fracture.prepare", "bsi.fracture.finish", "bsi.rigid.declare", "bsi.rigid.step", "bsi.pdelta.solve", "bsi.pdelta.station", "bsi.pdelta.fracture.prepare"],
+  "x-verbs": [
+    "bsi.hello",
+    "bsi.vocab.declare",
+    "bsi.vocab.query",
+    "bsi.world.declare",
+    "bsi.world.edit",
+    "bsi.solve",
+    "bsi.cancel",
+    "bsi.fracture.prepare",
+    "bsi.fracture.finish",
+    "bsi.rigid.declare",
+    "bsi.rigid.step",
+    "bsi.pdelta.solve",
+    "bsi.pdelta.station",
+    "bsi.pdelta.fracture.prepare",
+    "bsi.corot.solve",
+    "bsi.corot.fracture.prepare",
+    "bsi.corot.rigid.declare"
+  ],
 
   "x-capabilities": [
-    "bsi.core", "bsi.world.edit", "bsi.mass.physical", "bsi.world.identity",
-    "bsi.readback.members", "bsi.readback.stations", "bsi.readback.shells", "bsi.readback.memberGeometry", "bsi.readback.stationIdentity",
-    "bsi.buckling.eigen", "bsi.buckling.eigen.shells", "bsi.buckling.screen",
-    "bsi.precision.display", "bsi.precision.f32", "bsi.precision.warmstart", "bsi.precision.timeout",
-    "bsi.material.orthotropic", "bsi.material.composite", "bsi.material.rope",
-    "bsi.section.custom", "bsi.block.shape", "bsi.block.attrs",
-    "bsi.fracture", "bsi.rigid.motion", "bsi.pdelta", "bsi.pdelta.fracture"
+    "bsi.core",
+    "bsi.world.edit",
+    "bsi.mass.physical",
+    "bsi.world.identity",
+    "bsi.readback.members",
+    "bsi.readback.stations",
+    "bsi.readback.shells",
+    "bsi.readback.memberGeometry",
+    "bsi.readback.stationIdentity",
+    "bsi.buckling.eigen",
+    "bsi.buckling.eigen.shells",
+    "bsi.buckling.screen",
+    "bsi.precision.display",
+    "bsi.precision.f32",
+    "bsi.precision.warmstart",
+    "bsi.precision.timeout",
+    "bsi.material.orthotropic",
+    "bsi.material.composite",
+    "bsi.material.rope",
+    "bsi.section.custom",
+    "bsi.block.shape",
+    "bsi.block.attrs",
+    "bsi.fracture",
+    "bsi.rigid.motion",
+    "bsi.pdelta",
+    "bsi.pdelta.fracture",
+    "bsi.corot",
+    "bsi.corot.fracture",
+    "bsi.corot.rigid"
   ],
 
   "x-errors": ["BSI_VERSION", "EXPECTED_HELLO", "UNKNOWN_METHOD", "UNSUPPORTED", "UNSUPPORTED_ATTR",
@@ -661,7 +701,25 @@
       "required": ["bsi", "kind", "id", "method", "revision"],
       "properties": {
         "bsi": {"const": 1}, "kind": {"const": "request"}, "id": {"type": "string", "maxLength": 128},
-        "method": {"enum": ["bsi.hello", "bsi.vocab.declare", "bsi.vocab.query", "bsi.world.declare", "bsi.world.edit", "bsi.solve", "bsi.cancel", "bsi.fracture.prepare", "bsi.fracture.finish", "bsi.rigid.declare", "bsi.rigid.step", "bsi.pdelta.solve", "bsi.pdelta.station", "bsi.pdelta.fracture.prepare"]},
+        "method": {"enum": [
+            "bsi.hello",
+            "bsi.vocab.declare",
+            "bsi.vocab.query",
+            "bsi.world.declare",
+            "bsi.world.edit",
+            "bsi.solve",
+            "bsi.cancel",
+            "bsi.fracture.prepare",
+            "bsi.fracture.finish",
+            "bsi.rigid.declare",
+            "bsi.rigid.step",
+            "bsi.pdelta.solve",
+            "bsi.pdelta.station",
+            "bsi.pdelta.fracture.prepare",
+            "bsi.corot.solve",
+            "bsi.corot.fracture.prepare",
+            "bsi.corot.rigid.declare"
+          ]},
         "revision": {"type": "integer"},
         "body": {"type": "object"},
         "payloadBytes": {"type": "integer", "minimum": 0},
@@ -841,7 +899,366 @@
       "type": "object", "required": ["bsi", "kind", "id", "method", "revision", "code", "message"],
       "properties": {"bsi": {"const": 1}, "kind": {"const": "error"}, "id": {"type": "string"}, "method": {"type": "string"},
         "revision": {"type": "integer"}, "code": {"type": "string"}, "message": {"type": "string"}, "at": {"$ref": "#/$defs/xyz"}, "required": {"type": "integer"}}
-    }
+    },
+    "corot.options": {
+      "type": "object",
+      "required": [
+        "expected",
+        "loadFactor",
+        "gravity",
+        "selfWeight",
+        "followerLocal",
+        "retainLoadPath",
+        "transferTopology",
+        "useMetis",
+        "relativeTolerance",
+        "forceTolerance",
+        "momentTolerance",
+        "initialStep",
+        "minStep",
+        "maxStep",
+        "linearTolerance",
+        "pathTolerance",
+        "maxIterations",
+        "maxAttempts",
+        "maxBacktracks",
+        "linearIterations",
+        "budgetDof",
+        "restart",
+        "pointBudget",
+        "fiberCells",
+        "radialCells",
+        "angularCells"
+      ],
+      "properties": {
+        "expected": {
+          "$ref": "#/$defs/world.stamp"
+        },
+        "loadFactor": {
+          "type": "number"
+        },
+        "gravity": {
+          "$ref": "#/$defs/vec3"
+        },
+        "selfWeight": {
+          "type": "boolean"
+        },
+        "followerLocal": {
+          "type": "boolean"
+        },
+        "retainLoadPath": {
+          "type": "boolean"
+        },
+        "transferTopology": {
+          "type": "boolean"
+        },
+        "useMetis": {
+          "type": "boolean"
+        },
+        "relativeTolerance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "forceTolerance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "momentTolerance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "initialStep": {
+          "type": "number",
+          "minimum": 0
+        },
+        "minStep": {
+          "type": "number",
+          "minimum": 0
+        },
+        "maxStep": {
+          "type": "number",
+          "minimum": 0
+        },
+        "linearTolerance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "pathTolerance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "maxIterations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "maxAttempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "maxBacktracks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "linearIterations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "budgetDof": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "numThreads": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        },
+        "restart": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "pointBudget": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16777216
+        },
+        "fiberCells": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "radialCells": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "angularCells": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096
+        }
+      },
+      "additionalProperties": false
+    },
+    "corot.solve.body": {
+      "type": "object",
+      "required": [
+        "options",
+        "materials",
+        "cellLoads",
+        "prescribed",
+        "loads"
+      ],
+      "properties": {
+        "options": {
+          "$ref": "#/$defs/corot.options"
+        },
+        "materials": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777216
+        },
+        "cellLoads": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777216
+        },
+        "prescribed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777216
+        },
+        "loads": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777216
+        }
+      },
+      "additionalProperties": false
+    },
+    "corot.fracture.prepare.body": {
+      "type": "object",
+      "required": [
+        "options",
+        "materials",
+        "cellLoads",
+        "prescribed",
+        "loads",
+        "requestId",
+        "rules",
+        "budget"
+      ],
+      "properties": {
+        "options": {
+          "$ref": "#/$defs/corot.options"
+        },
+        "materials": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777216
+        },
+        "cellLoads": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777216
+        },
+        "prescribed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777216
+        },
+        "loads": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777216
+        },
+        "requestId": {
+          "$ref": "#/$defs/id128"
+        },
+        "initialAnalysis": {
+          "$ref": "#/$defs/fracture.token"
+        },
+        "rules": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777216
+        },
+        "budget": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        }
+      },
+      "additionalProperties": false
+    },
+    "corot.rigid.declare.body": {
+      "type": "object",
+      "required": [
+        "scene",
+        "bodies",
+        "terrain",
+        "chordTolerance",
+        "maxBodies",
+        "maxCells",
+        "maxColliders",
+        "maxVertices",
+        "fracture",
+        "velocities",
+        "relativeTolerance",
+        "absoluteTolerance",
+        "maxRefinements",
+        "maxSamples"
+      ],
+      "properties": {
+        "scene": {
+          "$ref": "#/$defs/world.stamp"
+        },
+        "bodies": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65536
+        },
+        "terrain": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1048576
+        },
+        "chordTolerance": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "maxBodies": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65536
+        },
+        "maxCells": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        },
+        "maxColliders": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        },
+        "maxVertices": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16777216
+        },
+        "fracture": {
+          "$ref": "#/$defs/fracture.token"
+        },
+        "velocities": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1048576
+        },
+        "relativeTolerance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "absoluteTolerance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "maxRefinements": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 24
+        },
+        "maxSamples": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16777216
+        }
+      },
+      "additionalProperties": false
+    },
+    "corot.sections": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "offset",
+          "bytes",
+          "count"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 268435456
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 268435456
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 268435456
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "corot.solve.response": {"type":"object","required":["bsi","kind","id","method","revision","status","basis","artifactNamespace","generation","token","sections","fullyConverged"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.solve"},"revision":{"type":"integer"},"status":{"const":"analyzed"},"basis":{"$ref":"#/$defs/world.stamp"},"artifactNamespace":{"$ref":"#/$defs/id128"},"generation":{"type":"string","pattern":"^[0-9a-f]{16}$"},"token":{"$ref":"#/$defs/fracture.token"},"fullyConverged":{"type":"boolean"},"sections":{"$ref":"#/$defs/corot.sections"}},"additionalProperties":false},
+    "corot.fracture.prepare.response": {"type":"object","required":["bsi","kind","id","method","revision","status","requestId","before","after","artifactNamespace","token","steps","flags","remainingBlocks","sections","end","pending","corotFlags","fullyConverged","remainingGeneration"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.fracture.prepare"},"revision":{"type":"integer"},"status":{"const":"prepared"},"requestId":{"$ref":"#/$defs/id128"},"before":{"$ref":"#/$defs/world.stamp"},"after":{"$ref":"#/$defs/world.stamp"},"artifactNamespace":{"$ref":"#/$defs/id128"},"token":{"$ref":"#/$defs/fracture.token"},"steps":{"type":"integer","minimum":0,"maximum":4097},"flags":{"type":"integer","minimum":0,"maximum":3},"remainingBlocks":{"type":"integer","minimum":0,"maximum":16777216},"end":{"type":"integer","minimum":0,"maximum":2},"corotFlags":{"type":"integer","minimum":0,"maximum":15},"pending":{"type":"integer","minimum":-1,"maximum":4096},"fullyConverged":{"type":"boolean"},"remainingGeneration":{"type":"string","pattern":"^[0-9a-f]{16}$"},"sections":{"$ref":"#/$defs/corot.sections"}},"additionalProperties":false},
+    "corot.rigid.declare.response": {"type":"object","required":["bsi","kind","id","method","revision","status","scene","sections","fracture"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.rigid.declare"},"revision":{"type":"integer"},"status":{"const":"declared"},"scene":{"$ref":"#/$defs/world.stamp"},"fracture":{"$ref":"#/$defs/fracture.token"},"sections":{"$ref":"#/$defs/corot.sections"}},"additionalProperties":false}
   },
 
   "x-records": {
@@ -900,7 +1317,66 @@
     "facets":       {"bytes": 280, "fields": [["id","i32"],["island","i32"],["blockFirst","u32"],["blockCount","u32"],["material","i32"],["reserved0","u32"],["thicknessM","f64","m"],["corners","f64[12]","m"],["ex","f64[3]"],["ey","f64[3]"],["n","f64[3]"],["N","f64[3]","N/m"],["M","f64[3]","N*m/m"],["Q","f64[2]","N/m"],["dc","f64"],["flags","u8"],["governingFibre","u8"],["reserved","u8[6]"]]},
     "facetSurfaces":{"bytes": 256, "fields": [["top","f64[16]","Pa,Pa,rad,Pa x4"],["bottom","f64[16]","Pa,Pa,rad,Pa x4"]], "x-f32": 128},
     "facetBlocks":  {"bytes": 12,  "fields": [["x","i32"],["y","i32"],["z","i32"]]},
-    "attrsEcho":    {"bytes": 16,  "fields": [["blockIndex","u32"],["key","u16"],["type","u8"],["reserved","u8"],["value","u8[8]"]]}
+    "attrsEcho":    {"bytes": 16,  "fields": [["blockIndex","u32"],["key","u16"],["type","u8"],["reserved","u8"],["value","u8[8]"]]},
+    "bsi_corot_law": {"bytes":72,"fields":[["kind","u32"],["reserved","u32"],["E","f64"],["tension","f64"],["compression","f64"],["kinematic","f64"],["isotropic","f64"],["fractureEnergyT","f64"],["fractureEnergyC","f64"],["compressionPlasticity","f64"]],"offsets":{"kind":0,"reserved":4,"E":8,"tension":16,"compression":24,"kinematic":32,"isotropic":40,"fractureEnergyT":48,"fractureEnergyC":56,"compressionPlasticity":64},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_material": {"bytes":152,"fields":[["material","i32"],["reserved","u32"],["primary","bsi_corot_law"],["concrete","bsi_corot_law"]],"offsets":{"material":0,"reserved":4,"primary":8,"concrete":80},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_options": {"bytes":176,"fields":[["struct_size","u32"],["flags","u32"],["expected","worldStamp"],["loadFactor","f64"],["gravity","f64[3]"],["relativeTolerance","f64"],["forceTolerance","f64"],["momentTolerance","f64"],["initialStep","f64"],["minStep","f64"],["maxStep","f64"],["linearTolerance","f64"],["pathTolerance","f64"],["budgetDof","u32"],["numThreads","u32"],["maxIterations","u32"],["maxAttempts","u32"],["maxBacktracks","u32"],["linearIterations","u32"],["restart","u32"],["pointBudget","u32"],["fiberCells","u32"],["radialCells","u32"],["angularCells","u32"]],"offsets":{"struct_size":0,"flags":4,"expected":8,"loadFactor":32,"gravity":40,"relativeTolerance":64,"forceTolerance":72,"momentTolerance":80,"initialStep":88,"minStep":96,"maxStep":104,"linearTolerance":112,"pathTolerance":120,"budgetDof":128,"numThreads":132,"maxIterations":136,"maxAttempts":140,"maxBacktracks":144,"linearIterations":148,"restart":152,"pointBudget":156,"fiberCells":160,"radialCells":164,"angularCells":168},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_prescribed": {"bytes":64,"fields":[["node","i32[4]"],["value","f64[6]"]],"offsets":{"node":0,"value":16},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_load": {"bytes":144,"fields":[["kind","u32"],["localFrame","u32"],["target","i32[4][4]"],["begin","f64"],["end","f64"],["force","f64[3]"],["couple","f64[3]"],["pressure","f64"]],"offsets":{"kind":0,"localFrame":4,"target":8,"begin":72,"end":80,"force":88,"couple":112,"pressure":136},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_node": {"bytes":208,"fields":[["key","i32[4]"],["island","i32"],["available","u32"],["reference","f64[3]"],["position","f64[3]"],["orientation","f64[4]"],["reaction","f64[6]"],["applied","f64[6]"],["fixed","u8[6]"],["reserved","u8[2]"]],"offsets":{"key":0,"island":16,"available":20,"reference":24,"position":48,"orientation":72,"reaction":104,"applied":152,"fixed":200,"reserved":206},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_member": {"bytes":472,"fields":[["island","i32"],["nodes","i32[2]"],["material","i32"],["section","i32"],["profile","i32"],["available","u32"],["sourceFirst","u32"],["sourceCount","u32"],["active","u32"],["length","f64"],["storedEnergy","f64"],["frame","f64[4]"],["localDisplacement","f64[12]"],["localAction","f64[12]"],["action","f64[12]"],["external","f64[12]"]],"offsets":{"island":0,"nodes":4,"material":12,"section":16,"profile":20,"available":24,"sourceFirst":28,"sourceCount":32,"active":36,"length":40,"storedEnergy":48,"frame":56,"localDisplacement":88,"localAction":184,"action":280,"external":376},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_shell": {"bytes":1184,"fields":[["island","i32"],["nodes","i32[4]"],["material","i32"],["available","u32"],["sourceFirst","u32"],["sourceCount","u32"],["active","u32"],["thickness","f64"],["area","f64"],["storedEnergy","f64"],["frame","f64[4]"],["localDisplacement","f64[24]"],["localAction","f64[24]"],["action","f64[24]"],["external","f64[24]"],["sections","f64[5][8]"]],"offsets":{"island":0,"nodes":4,"material":20,"available":24,"sourceFirst":28,"sourceCount":32,"active":36,"thickness":40,"area":48,"storedEnergy":56,"frame":64,"localDisplacement":96,"localAction":288,"action":480,"external":672,"sections":864},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_fiber": {"bytes":104,"fields":[["y","f64"],["z","f64"],["area","f64"],["constituent","u32"],["reserved","u32"],["law","bsi_corot_law"]],"offsets":{"y":0,"z":8,"area":16,"constituent":24,"reserved":28,"law":32},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_station": {"bytes":40,"fields":[["station","f64"],["weight","f64"],["section","f64[3]"]],"offsets":{"station":0,"weight":8,"section":16},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_point": {"bytes":120,"fields":[["strain","f64"],["plasticStrain","f64"],["accumulatedPlastic","f64"],["plasticDissipation","f64"],["maximumT","f64"],["maximumC","f64"],["damageDissipation","f64"],["stress","f64"],["tangent","f64"],["storedEnergy","f64"],["dissipatedEnergy","f64"],["workPotential","f64"],["damageT","f64"],["damageC","f64"],["loading","i32"],["reserved","u32"]],"offsets":{"strain":0,"plasticStrain":8,"accumulatedPlastic":16,"plasticDissipation":24,"maximumT":32,"maximumC":40,"damageDissipation":48,"stress":56,"tangent":64,"storedEnergy":72,"dissipatedEnergy":80,"workPotential":88,"damageT":96,"damageC":104,"loading":112,"reserved":116},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_profile": {"bytes":88,"fields":[["member","i32"],["available","u32"],["fiberFirst","u32"],["fiberCount","u32"],["stationFirst","u32"],["stationCount","u32"],["pointFirst","u32"],["pointCount","u32"],["physicalSection","u32"],["reserved","u32"],["area","f64"],["Iy","f64"],["Iz","f64"],["storedEnergy","f64"],["dissipatedEnergy","f64"],["workPotential","f64"]],"offsets":{"member":0,"available":4,"fiberFirst":8,"fiberCount":12,"stationFirst":16,"stationCount":20,"pointFirst":24,"pointCount":28,"physicalSection":32,"reserved":36,"area":40,"Iy":48,"Iz":56,"storedEnergy":64,"dissipatedEnergy":72,"workPotential":80},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_joint": {"bytes":208,"fields":[["kind","u32"],["available","u32"],["index","i32"],["node","i32"],["end","i32"],["master","i32"],["position","f64[3]"],["orientation","f64[4]"],["relativeOrientation","f64[4]"],["coordinate","f64[6]"],["action","f64[6]"]],"offsets":{"kind":0,"available":4,"index":8,"node":12,"end":16,"master":20,"position":24,"orientation":48,"relativeOrientation":80,"coordinate":112,"action":160},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_failure_rule": {"bytes":40,"fields":[["material","i32"],["constituent","u32"],["accumulatedPlastic","f64"],["damageT","f64"],["damageC","f64"],["minimumAreaFraction","f64"]],"offsets":{"material":0,"constituent":4,"accumulatedPlastic":8,"damageT":16,"damageC":24,"minimumAreaFraction":32},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_phase_failure": {"bytes":88,"fields":[["constituent","u32"],["flags","u32"],["mode","u32"],["station","i32"],["fiber","i32"],["coordinate","f64"],["value","f64"],["limit","f64"],["utilization","f64"],["failedArea","f64"],["totalArea","f64"],["fraction","f64"],["requiredFraction","f64"]],"offsets":{"constituent":0,"flags":4,"mode":8,"station":12,"fiber":16,"coordinate":24,"value":32,"limit":40,"utilization":48,"failedArea":56,"totalArea":64,"fraction":72,"requiredFraction":80},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_decision": {"bytes":48,"fields":[["microStep","u32"],["cellFirst","u32"],["cellCount","u32"],["phaseFirst","u32"],["phaseCount","u32"],["member","i32"],["station","i32"],["coordinate","f64"],["utilization","f64"]],"offsets":{"microStep":0,"cellFirst":4,"cellCount":8,"phaseFirst":12,"phaseCount":16,"member":20,"station":24,"coordinate":32,"utilization":40},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_failure": {"bytes":40,"fields":[["member","i32"],["station","i32"],["flags","u32"],["phaseFirst","u32"],["phaseCount","u32"],["reserved","u32"],["coordinate","f64"],["utilization","f64"]],"offsets":{"member":0,"station":4,"flags":8,"phaseFirst":12,"phaseCount":16,"reserved":20,"coordinate":24,"utilization":32},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_retired_member": {"bytes":1248,"fields":[["member","i32"],["island","i32"],["profile","i32"],["nodeKeys","i32[2][4]"],["archive","u32"],["cellFirst","u32"],["cellCount","u32"],["reserved","u32"],["referenceNodes","f64[2][3]"],["position","f64[2][3]"],["orientation","f64[2][4]"],["referenceMaterial","f64[4]"],["referenceSection","f64[10]"],["referenceVector","f64[3]"],["mechanics","bsi_corot_member"],["releases","bsi_corot_joint[2]"]],"offsets":{"member":0,"island":4,"profile":8,"nodeKeys":12,"archive":44,"cellFirst":48,"cellCount":52,"reserved":56,"referenceNodes":64,"position":112,"orientation":160,"referenceMaterial":224,"referenceSection":256,"referenceVector":336,"mechanics":360,"releases":832},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_retired_shell": {"bytes":1624,"fields":[["shell","i32"],["island","i32"],["nodeKeys","i32[4][4]"],["archive","u32"],["cellFirst","u32"],["cellCount","u32"],["reserved","u32"],["referenceNodes","f64[4][3]"],["position","f64[4][3]"],["orientation","f64[4][4]"],["referenceMaterial","f64[4]"],["mechanics","bsi_corot_shell"]],"offsets":{"shell":0,"island":4,"nodeKeys":8,"archive":72,"cellFirst":76,"cellCount":80,"reserved":84,"referenceNodes":88,"position":184,"orientation":280,"referenceMaterial":408,"mechanics":440},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_archive": {"bytes":592,"fields":[["before","worldStamp"],["after","worldStamp"],["artifactNamespace","id128"],["beforeGeneration","u64"],["afterGeneration","u64"],["flags","u32"],["memberFirst","u32"],["memberCount","u32"],["reserved","u32"],["shellFirst","u32"],["shellCount","u32"],["removedFirst","u32"],["removedCount","u32"],["installedFirst","u32"],["installedCount","u32"],["historyPoints","u64"],["energy","f64[8]"],["beforeMass","physicalProperties"],["retainedMass","physicalProperties"],["afterMass","physicalProperties"],["removedMass","physicalProperties"],["installedMass","physicalProperties"]],"offsets":{"before":0,"after":24,"artifactNamespace":48,"beforeGeneration":64,"afterGeneration":72,"flags":80,"memberFirst":84,"memberCount":88,"reserved":92,"shellFirst":96,"shellCount":100,"removedFirst":104,"removedCount":108,"installedFirst":112,"installedCount":116,"historyPoints":120,"energy":128,"beforeMass":192,"retainedMass":272,"afterMass":352,"removedMass":432,"installedMass":512},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_velocity": {"bytes":64,"fields":[["node","i32[4]"],["linear","f64[3]"],["angular","f64[3]"]],"offsets":{"node":0,"linear":16,"angular":40},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_body": {"bytes":72,"fields":[["id","u64"],["revision","u64"],["fragment","u32"],["velocityFirst","u32"],["velocityCount","u32"],["reserved","u32"],["time","f64"],["surface","motionSurface"]],"offsets":{"id":0,"revision":8,"fragment":16,"velocityFirst":20,"velocityCount":24,"reserved":28,"time":32,"surface":40},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_body_energy": {"bytes":48,"fields":[["id","u64"],["kinetic","f64"],["rigidKinetic","f64"],["internalKinetic","f64"],["estimatedError","f64"],["samples","u64"]],"offsets":{"id":0,"kinetic":8,"rigidKinetic":16,"internalKinetic":24,"estimatedError":32,"samples":40},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "bsi_corot_island_record": {"bytes":96,"fields":[["status","u32"],["freeDof","u32"],["flags","u32"],["iterations","u32"],["linearIterations","u32"],["acceptedSteps","u32"],["rejectedSteps","u32"],["backtracks","u32"],["factors","u32"],["historyChecks","u32"],["forceResidual","f64"],["momentResidual","f64"],["historyError","f64"],["historyLoadFactor","f64"],["storedEnergy","f64"],["dissipatedEnergy","f64"],["reasonFirst","u32"],["reasonCount","u32"]],"offsets":{"status":0,"freeDof":4,"flags":8,"iterations":12,"linearIterations":16,"acceptedSteps":20,"rejectedSteps":24,"backtracks":28,"factors":32,"historyChecks":36,"forceResidual":40,"momentResidual":48,"historyError":56,"historyLoadFactor":64,"storedEnergy":72,"dissipatedEnergy":80,"reasonFirst":88,"reasonCount":92},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "id128": {"bytes":16,"fields":[["hi","u64"],["lo","u64"]]},
+    "worldStamp": {"bytes":24,"fields":[["domain","id128"],["revision","i64"]]},
+    "physicalProperties": {"bytes":80,"fields":[["mass","f64","kg"],["center","f64[3]","m"],["inertia","f64[6]","kg*m^2"]],"x-order":"before, remaining, broken; COM tensor xx,yy,zz,xy,xz,yz"},
+    "corotOptions": {"bytes":176,"fields":[["struct_size","u32"],["flags","u32"],["expected","worldStamp"],["loadFactor","f64"],["gravity","f64[3]"],["relativeTolerance","f64"],["forceTolerance","f64"],["momentTolerance","f64"],["initialStep","f64"],["minStep","f64"],["maxStep","f64"],["linearTolerance","f64"],["pathTolerance","f64"],["budgetDof","u32"],["numThreads","u32"],["maxIterations","u32"],["maxAttempts","u32"],["maxBacktracks","u32"],["linearIterations","u32"],["restart","u32"],["pointBudget","u32"],["fiberCells","u32"],["radialCells","u32"],["angularCells","u32"]],"offsets":{"struct_size":0,"flags":4,"expected":8,"loadFactor":32,"gravity":40,"relativeTolerance":64,"forceTolerance":72,"momentTolerance":80,"initialStep":88,"minStep":96,"maxStep":104,"linearTolerance":112,"pathTolerance":120,"budgetDof":128,"numThreads":132,"maxIterations":136,"maxAttempts":140,"maxBacktracks":144,"linearIterations":148,"restart":152,"pointBudget":156,"fiberCells":160,"radialCells":164,"angularCells":168},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotPhysical": {"bytes":80,"description":"physical properties: actual total then dispositions 0..5","fields":[["properties","physicalTotals"]]},
+    "corotIslands": {"bytes":96,"fields":[["status","u32"],["freeDof","u32"],["flags","u32"],["iterations","u32"],["linearIterations","u32"],["acceptedSteps","u32"],["rejectedSteps","u32"],["backtracks","u32"],["factors","u32"],["historyChecks","u32"],["forceResidual","f64"],["momentResidual","f64"],["historyError","f64"],["historyLoadFactor","f64"],["storedEnergy","f64"],["dissipatedEnergy","f64"],["reasonFirst","u32"],["reasonCount","u32"]],"offsets":{"status":0,"freeDof":4,"flags":8,"iterations":12,"linearIterations":16,"acceptedSteps":20,"rejectedSteps":24,"backtracks":28,"factors":32,"historyChecks":36,"forceResidual":40,"momentResidual":48,"historyError":56,"historyLoadFactor":64,"storedEnergy":72,"dissipatedEnergy":80,"reasonFirst":88,"reasonCount":92},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotText": {"bytes":1,"fields":[["utf8","u8"]]},
+    "corotNodes": {"bytes":208,"fields":[["key","i32[4]"],["island","i32"],["available","u32"],["reference","f64[3]"],["position","f64[3]"],["orientation","f64[4]"],["reaction","f64[6]"],["applied","f64[6]"],["fixed","u8[6]"],["reserved","u8[2]"]],"offsets":{"key":0,"island":16,"available":20,"reference":24,"position":48,"orientation":72,"reaction":104,"applied":152,"fixed":200,"reserved":206},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotMembers": {"bytes":472,"fields":[["island","i32"],["nodes","i32[2]"],["material","i32"],["section","i32"],["profile","i32"],["available","u32"],["sourceFirst","u32"],["sourceCount","u32"],["active","u32"],["length","f64"],["storedEnergy","f64"],["frame","f64[4]"],["localDisplacement","f64[12]"],["localAction","f64[12]"],["action","f64[12]"],["external","f64[12]"]],"offsets":{"island":0,"nodes":4,"material":12,"section":16,"profile":20,"available":24,"sourceFirst":28,"sourceCount":32,"active":36,"length":40,"storedEnergy":48,"frame":56,"localDisplacement":88,"localAction":184,"action":280,"external":376},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotShells": {"bytes":1184,"fields":[["island","i32"],["nodes","i32[4]"],["material","i32"],["available","u32"],["sourceFirst","u32"],["sourceCount","u32"],["active","u32"],["thickness","f64"],["area","f64"],["storedEnergy","f64"],["frame","f64[4]"],["localDisplacement","f64[24]"],["localAction","f64[24]"],["action","f64[24]"],["external","f64[24]"],["sections","f64[5][8]"]],"offsets":{"island":0,"nodes":4,"material":20,"available":24,"sourceFirst":28,"sourceCount":32,"active":36,"thickness":40,"area":48,"storedEnergy":56,"frame":64,"localDisplacement":96,"localAction":288,"action":480,"external":672,"sections":864},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotJoints": {"bytes":208,"fields":[["kind","u32"],["available","u32"],["index","i32"],["node","i32"],["end","i32"],["master","i32"],["position","f64[3]"],["orientation","f64[4]"],["relativeOrientation","f64[4]"],["coordinate","f64[6]"],["action","f64[6]"]],"offsets":{"kind":0,"available":4,"index":8,"node":12,"end":16,"master":20,"position":24,"orientation":48,"relativeOrientation":80,"coordinate":112,"action":160},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotSources": {"bytes":56,"description":"bsi_pdelta_source offsets, padding zero","fields":[["source","block"],["artifact","u64"],["weightDisposition","u32"],["reserved","u32"]]},
+    "corotSourceIndices": {"bytes":4,"description":"u32","fields":[["source","u32"]]},
+    "corotArtifacts": {"bytes":24,"description":"bsi_pdelta_artifact","fields":[["artifact","u64"],["memberFirst","u32"],["memberCount","u32"],["shellFirst","u32"],["shellCount","u32"]]},
+    "corotArtifactMembers": {"bytes":4,"description":"i32","fields":[["member","i32"]]},
+    "corotArtifactShells": {"bytes":4,"description":"i32","fields":[["shell","i32"]]},
+    "corotProfiles": {"bytes":88,"fields":[["member","i32"],["available","u32"],["fiberFirst","u32"],["fiberCount","u32"],["stationFirst","u32"],["stationCount","u32"],["pointFirst","u32"],["pointCount","u32"],["physicalSection","u32"],["reserved","u32"],["area","f64"],["Iy","f64"],["Iz","f64"],["storedEnergy","f64"],["dissipatedEnergy","f64"],["workPotential","f64"]],"offsets":{"member":0,"available":4,"fiberFirst":8,"fiberCount":12,"stationFirst":16,"stationCount":20,"pointFirst":24,"pointCount":28,"physicalSection":32,"reserved":36,"area":40,"Iy":48,"Iz":56,"storedEnergy":64,"dissipatedEnergy":72,"workPotential":80},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotFibers": {"bytes":104,"fields":[["y","f64"],["z","f64"],["area","f64"],["constituent","u32"],["reserved","u32"],["law","bsi_corot_law"]],"offsets":{"y":0,"z":8,"area":16,"constituent":24,"reserved":28,"law":32},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotStations": {"bytes":40,"fields":[["station","f64"],["weight","f64"],["section","f64[3]"]],"offsets":{"station":0,"weight":8,"section":16},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotPoints": {"bytes":120,"fields":[["strain","f64"],["plasticStrain","f64"],["accumulatedPlastic","f64"],["plasticDissipation","f64"],["maximumT","f64"],["maximumC","f64"],["damageDissipation","f64"],["stress","f64"],["tangent","f64"],["storedEnergy","f64"],["dissipatedEnergy","f64"],["workPotential","f64"],["damageT","f64"],["damageC","f64"],["loading","i32"],["reserved","u32"]],"offsets":{"strain":0,"plasticStrain":8,"accumulatedPlastic":16,"plasticDissipation":24,"maximumT":32,"maximumC":40,"damageDissipation":48,"stress":56,"tangent":64,"storedEnergy":72,"dissipatedEnergy":80,"workPotential":88,"damageT":96,"damageC":104,"loading":112,"reserved":116},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotDecisions": {"bytes":48,"fields":[["microStep","u32"],["cellFirst","u32"],["cellCount","u32"],["phaseFirst","u32"],["phaseCount","u32"],["member","i32"],["station","i32"],["coordinate","f64"],["utilization","f64"]],"offsets":{"microStep":0,"cellFirst":4,"cellCount":8,"phaseFirst":12,"phaseCount":16,"member":20,"station":24,"coordinate":32,"utilization":40},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotPhases": {"bytes":88,"fields":[["constituent","u32"],["flags","u32"],["mode","u32"],["station","i32"],["fiber","i32"],["coordinate","f64"],["value","f64"],["limit","f64"],["utilization","f64"],["failedArea","f64"],["totalArea","f64"],["fraction","f64"],["requiredFraction","f64"]],"offsets":{"constituent":0,"flags":4,"mode":8,"station":12,"fiber":16,"coordinate":24,"value":32,"limit":40,"utilization":48,"failedArea":56,"totalArea":64,"fraction":72,"requiredFraction":80},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotFailures": {"bytes":40,"fields":[["member","i32"],["station","i32"],["flags","u32"],["phaseFirst","u32"],["phaseCount","u32"],["reserved","u32"],["coordinate","f64"],["utilization","f64"]],"offsets":{"member":0,"station":4,"flags":8,"phaseFirst":12,"phaseCount":16,"reserved":20,"coordinate":24,"utilization":32},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotDecisionCells": {"bytes":4,"description":"u32","fields":[["cell","u32"]]},
+    "corotFractureLoads": {"bytes":72,"description":"bsi_pdelta_fracture_load","fields":[["input","load"],["cell","u32"],["group","u32"]]},
+    "corotArchives": {"bytes":592,"fields":[["before","worldStamp"],["after","worldStamp"],["artifactNamespace","id128"],["beforeGeneration","u64"],["afterGeneration","u64"],["flags","u32"],["memberFirst","u32"],["memberCount","u32"],["reserved","u32"],["shellFirst","u32"],["shellCount","u32"],["removedFirst","u32"],["removedCount","u32"],["installedFirst","u32"],["installedCount","u32"],["historyPoints","u64"],["energy","f64[8]"],["beforeMass","physicalProperties"],["retainedMass","physicalProperties"],["afterMass","physicalProperties"],["removedMass","physicalProperties"],["installedMass","physicalProperties"]],"offsets":{"before":0,"after":24,"artifactNamespace":48,"beforeGeneration":64,"afterGeneration":72,"flags":80,"memberFirst":84,"memberCount":88,"reserved":92,"shellFirst":96,"shellCount":100,"removedFirst":104,"removedCount":108,"installedFirst":112,"installedCount":116,"historyPoints":120,"energy":128,"beforeMass":192,"retainedMass":272,"afterMass":352,"removedMass":432,"installedMass":512},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotRetiredMembers": {"bytes":1248,"fields":[["member","i32"],["island","i32"],["profile","i32"],["nodeKeys","i32[2][4]"],["archive","u32"],["cellFirst","u32"],["cellCount","u32"],["reserved","u32"],["referenceNodes","f64[2][3]"],["position","f64[2][3]"],["orientation","f64[2][4]"],["referenceMaterial","f64[4]"],["referenceSection","f64[10]"],["referenceVector","f64[3]"],["mechanics","bsi_corot_member"],["releases","bsi_corot_joint[2]"]],"offsets":{"member":0,"island":4,"profile":8,"nodeKeys":12,"archive":44,"cellFirst":48,"cellCount":52,"reserved":56,"referenceNodes":64,"position":112,"orientation":160,"referenceMaterial":224,"referenceSection":256,"referenceVector":336,"mechanics":360,"releases":832},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotRetiredShells": {"bytes":1624,"fields":[["shell","i32"],["island","i32"],["nodeKeys","i32[4][4]"],["archive","u32"],["cellFirst","u32"],["cellCount","u32"],["reserved","u32"],["referenceNodes","f64[4][3]"],["position","f64[4][3]"],["orientation","f64[4][4]"],["referenceMaterial","f64[4]"],["mechanics","bsi_corot_shell"]],"offsets":{"shell":0,"island":4,"nodeKeys":8,"archive":72,"cellFirst":76,"cellCount":80,"reserved":84,"referenceNodes":88,"position":184,"orientation":280,"referenceMaterial":408,"mechanics":440},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotRetiredCells": {"bytes":20,"fields":[["x","i32"],["y","i32"],["z","i32"],["artifact","i64"]]},
+    "corotArchiveOwners": {"bytes":20,"fields":[["x","i32"],["y","i32"],["z","i32"],["artifact","i64"]]},
+    "corotRetiredProfiles": {"bytes":88,"fields":[["member","i32"],["available","u32"],["fiberFirst","u32"],["fiberCount","u32"],["stationFirst","u32"],["stationCount","u32"],["pointFirst","u32"],["pointCount","u32"],["physicalSection","u32"],["reserved","u32"],["area","f64"],["Iy","f64"],["Iz","f64"],["storedEnergy","f64"],["dissipatedEnergy","f64"],["workPotential","f64"]],"offsets":{"member":0,"available":4,"fiberFirst":8,"fiberCount":12,"stationFirst":16,"stationCount":20,"pointFirst":24,"pointCount":28,"physicalSection":32,"reserved":36,"area":40,"Iy":48,"Iz":56,"storedEnergy":64,"dissipatedEnergy":72,"workPotential":80},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotRetiredFibers": {"bytes":104,"fields":[["y","f64"],["z","f64"],["area","f64"],["constituent","u32"],["reserved","u32"],["law","bsi_corot_law"]],"offsets":{"y":0,"z":8,"area":16,"constituent":24,"reserved":28,"law":32},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotRetiredStations": {"bytes":40,"fields":[["station","f64"],["weight","f64"],["section","f64[3]"]],"offsets":{"station":0,"weight":8,"section":16},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotRetiredPoints": {"bytes":120,"fields":[["strain","f64"],["plasticStrain","f64"],["accumulatedPlastic","f64"],["plasticDissipation","f64"],["maximumT","f64"],["maximumC","f64"],["damageDissipation","f64"],["stress","f64"],["tangent","f64"],["storedEnergy","f64"],["dissipatedEnergy","f64"],["workPotential","f64"],["damageT","f64"],["damageC","f64"],["loading","i32"],["reserved","u32"]],"offsets":{"strain":0,"plasticStrain":8,"accumulatedPlastic":16,"plasticDissipation":24,"maximumT":32,"maximumC":40,"damageDissipation":48,"stress":56,"tangent":64,"storedEnergy":72,"dissipatedEnergy":80,"workPotential":88,"damageT":96,"damageC":104,"loading":112,"reserved":116},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+    "corotBodyEnergies": {"bytes":48,"fields":[["id","u64"],["kinetic","f64"],["rigidKinetic","f64"],["internalKinetic","f64"],["estimatedError","f64"],["samples","u64"]],"offsets":{"id":0,"kinetic":8,"rigidKinetic":16,"internalKinetic":24,"estimatedError":32,"samples":40},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."}
   },
 
   "x-arena": {

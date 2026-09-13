@@ -693,3 +693,75 @@ host核對來源／容量資格／索引／token／有限值後才公開完整pa
 session失效，重開後從宿主保存的world重建。arena door `pdeltaSolve`、
 `pdeltaFracturePrepare`使用loads region，`pdeltaStation`無payload；pending擴容沿原機制。
 完整倒塌尚需COROT／PLASTIC／DAMAGE、局部裂縫／壓碎及動量交棒；本入口是整構件斷裂。
+
+
+## ABI7 finite material delivery
+
+Additive capabilities `bsi.corot`, `bsi.corot.fracture`, `bsi.corot.rigid` and
+`bsi.material.composite` use the original CAPI1 frames and shared world, fracture and
+motion authorities. Engine ABI1..6 keep their existing prefixes and semantics.
+The three ABI7 vtable callbacks are declared in `bsi_corot.h`. All wire records are
+little-endian; f64 is never narrowed, padding and reserved bytes are zero. Exact
+sizes, field offsets, nested arrays and response section names are in `x-records`.
+
+| Method | Ordered input payload | Output |
+|---|---|---|
+| `bsi.corot.solve` | materials152, cellLoads64, prescribed64, generalizedLoads144 | finite options/physical/islands/text/nodes/members/shells/joints/sources/artifacts/material |
+| `bsi.corot.fracture.prepare` | same four groups, then failureRules40 | original physical fracture, remaining finite analysis, decisions/phases/final failures/load ledger/archives/retired material |
+| `bsi.corot.rigid.declare` | bodies72, endpointVelocities64, terrain120 | original motion geometry, initial states128, body energy48, source archives/retired material |
+
+Record group counts are declared in the schema-validated method body. Empty output
+sections remain present in fixed order. Each section has byte offset, count and
+byte length. The schema `corot.options` defines all solver, path and fiber budgets;
+`numThreads` alone may default to the host value. `corot.solve.body` adds the four
+input group counts. `corot.fracture.prepare.body` adds requestId, budget, rules and
+optional initialAnalysis. The finite motion body defines scene, fracture token,
+three group counts and all geometry/integration budgets.
+
+Generalized load kinds 0..4 are node force/moment, member point force, member line
+force/couple, member UDL and shell pressure. Targets are ordered stable node keys,
+not current extraction indices. Unused targets, intervals and components must be
+zero. Kind 0 is world-frame; kind 4 pressure uses the shell normal and localFrame=0.
+Finite fracture currently accepts cell forces and stable prescriptions, and rejects
+nonempty generalized load arrays. A cell load has no moment; use a node wrench for
+moments in finite solve. Pressure, member loads and constraints use the same core
+implementation as the C++ finite solve.
+
+Uniaxial kinds 0,1,2 are plasticity, damage, and compression damage/plasticity. The
+law includes E, tension/compression strength, kinematic/isotropic hardening,
+fractureEnergyT/C and compressionPlasticity. Composite records carry separate
+primary and concrete laws. A member profile owns fiber/station/point ranges; the
+retired tables use their own ranges. Point strain, plasticStrain, accumulatedPlastic,
+plasticDissipation, maximumT/C, damageDissipation, stress, tangent, storedEnergy,
+dissipatedEnergy, workPotential, damageT/C and loading are all preserved. `workPotential`
+is the last accepted substep value, not total work. `available` bits are solved=1,
+checkpoint=2, material=4. An unavailable island keeps a qualified checkpoint and
+does not fabricate available mechanics. Island reasons are UTF-8 byte ranges in
+corotText, without a terminating null. Diagnostic historyError may be positive
+infinity only for an unavailable, nonconverged path.
+
+A finite analysis token refers to one world/mechanics snapshot. A world edit or
+same-stamp redeclaration, newer finite analysis, foreign context or changed token
+cannot authorize an old initial analysis. A prepared finite fracture uses the
+shared fracture_finish commit/discard authority and compares both world and
+material basis. Exact retries preserve history; any effective input change with
+the same requestId conflicts. Native view storage is built before publication.
+Malformed native output or an interrupted post-publication serialization poisons
+the host handle: reopen instead of retrying a potentially repeated material step.
+
+Finite motion requires the exact committed finite fracture token on this handle
+and unchanged resulting world. Endpoint velocities cover each selected fragment's
+stable nodes exactly once. Initial P/L, COM/full inertia, geometry and rigid/internal
+kinetic partition come from the actual finite material domain. Geometry vertices
+are body-local about the returned current COM; initial state orientation maps them
+to world coordinates. Material stored/dissipated energy remains separate from
+kinetic energy. `motion_step` is the original contact/friction/rolling/CCD path.
+The source archive remains owned for the finite motion view lifetime. Unsupported
+material domains are explicit failures, never replacement reference-cell cubes.
+
+Arena doors are corotSolve, corotFracturePrepare and corotRigidDeclare. The first two
+read their complete mixed-record payload from loads; corotRigidDeclare reads world.
+No legacy 64-byte load divisibility assumption applies to these mixed groups.
+Frame, stdio-base64 and arena call the same dispatch. NEED_BIGGER caches the full
+response after one execution and requires identical request header/payload bytes;
+a different request cannot consume or replace the pending result.
