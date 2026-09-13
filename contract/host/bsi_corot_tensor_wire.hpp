@@ -41,7 +41,10 @@ inline bool tensorRequested(const bsi_corot_view& v,const Input& input){
     if(v.struct_size<offsetof(bsi_corot_view,shellMaterial)+sizeof(v.shellMaterial))return false;
     uint32_t expected=0;for(uint32_t i=0;i<v.nShells;++i)if(v.shells[i].active){bool selected=false;
         for(const auto& l:input.shellLaws)selected=selected||v.shells[i].material==l.material;
-        if(!selected)continue;++expected;bool found=false;if(v.shellMaterial)for(uint32_t p=0;p<v.shellMaterial->nProfiles;++p)found=found||v.shellMaterial->profiles[p].shell==int32_t(i);if(!found)return false;}
+        if(!selected)continue;
+        ++expected;bool found=false;
+        if(v.shellMaterial)for(uint32_t p=0;p<v.shellMaterial->nProfiles;++p)found=found||v.shellMaterial->profiles[p].shell==int32_t(i);
+        if(!found)return false;}
     return !v.shellMaterial?expected==0:v.shellMaterial->nProfiles==expected;
 }
 }} // namespace bsi::corot_wire
