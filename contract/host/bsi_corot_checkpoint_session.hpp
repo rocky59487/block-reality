@@ -7,6 +7,7 @@
         if(!identified_){wireError(rq,out,"NO_WORLD","no identified world");return;}
         const auto& body=*rq.body;bsi_corot_checkpoint_options options{};options.struct_size=sizeof(options);options.format=uint32_t(body.find("format")->num);
         options.expected=fracture_wire::stamp(*body.find("expected"));options.byteBudget=uint32_t(body.find("byteBudget")->num);
+        if(options.format==3&&!has("bsi.corot.shell.materials")){wireError(rq,out,"UNSUPPORTED","engine lacks tensor checkpoint format");return;}
         options.allocationBudget=uint32_t(body.find("allocationBudget")->num);options.elementBudget=uint32_t(body.find("elementBudget")->num);
         if(!fracture_wire::same(options.expected,worldStamp_)||(importing&&(n!=size_t(body.find("bytes")->num)||n>options.byteBudget))){
             wireError(rq,out,"PROTOCOL_ERROR","checkpoint basis or byte count mismatch");return;}
@@ -20,7 +21,7 @@
             std::vector<uint8_t> bytes(view->data,view->data+view->bytes);
             beginResponse(jw,rq,"response");jw.kv("status","exported");jw.key("basis");fracture_wire::writeStamp(jw,view->basis);
             jw.kv("format",int(view->format));jw.kv("bytes",(unsigned long long)bytes.size());jw.endObj();
-            if(!wireHeader(rq,out,jw))return;out.payload=std::move(bytes);nativeFault_=false;return;
+            if(!wireHeader(rq,out,jw)){return;}out.payload=std::move(bytes);nativeFault_=false;return;
         }
         const bsi_corot_view* view=nullptr;nativeFault_=true;
         const int status=engine_.vt->corot_checkpoint_import(inst_,&options,payload,uint32_t(n),&view,&writer);

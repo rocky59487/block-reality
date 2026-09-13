@@ -100,6 +100,7 @@ typedef struct bsi_corot_view {
   const int32_t* artifactMembers; uint32_t nArtifactMembers;
   const int32_t* artifactShells; uint32_t nArtifactShells;
   bsi_corot_material_view material;
+  const struct bsi_corot_shell_material_view* shellMaterial; /* ABI10 optional owning tail */
 } bsi_corot_view;
 typedef struct bsi_corot_failure_rule {
   int32_t material; uint32_t constituent;
@@ -165,6 +166,7 @@ typedef struct bsi_corot_fracture_view {
   const bsi_artifact_owner* retiredCells; uint32_t nRetiredCells;
   const bsi_artifact_owner* archiveOwners; uint32_t nArchiveOwners;
   bsi_corot_material_view retiredMaterial;
+  const struct bsi_corot_shell_material_view* retiredShellMaterial; /* ABI10 optional owning tail */
 } bsi_corot_fracture_view;
 typedef struct bsi_corot_velocity { int32_t node[4]; double linear[3],angular[3]; } bsi_corot_velocity;
 typedef struct bsi_corot_body {

@@ -72,7 +72,7 @@ int runArena(Session& s, const std::string& path, FILE* in, FILE* out) {
         if (door == "declare") {
             payload.assign(map.base() + h.worldOff, map.base() + h.worldOff + h.worldLen);
             payload.insert(payload.end(), map.base() + h.attrsOff, map.base() + h.attrsOff + h.attrsLen);
-        } else if (door == "solve" || door == "rigidStep" || door == "pdeltaSolve" || door == "pdeltaFracturePrepare" || door == "corotSolve" || door == "corotFracturePrepare" || door == "corotCheckpointImport") {
+        } else if (door == "solve" || door == "rigidStep" || door == "pdeltaSolve" || door == "pdeltaFracturePrepare" || door == "corotSolve" || door == "corotFracturePrepare" || door == "corotCheckpointImport" || door == "corotCheckpointExport" || door == "corotArcAdvance") {
             payload.assign(map.base() + h.loadsOff, map.base() + h.loadsOff + h.loadsLen);
         } else if (door == "rigidDeclare" || door == "corotRigidDeclare") {
             payload.assign(map.base() + h.worldOff, map.base() + h.worldOff + h.worldLen);

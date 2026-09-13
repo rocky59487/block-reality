@@ -50,10 +50,10 @@ inline bool fracture(const bsi_corot_fracture_view* ptr,const Input& input,bsi_i
     for(uint32_t i=0;i<v.nLoads;++i){const auto& l=v.loads[i];if(l.cell>=p.nCells||std::memcmp(&l.input,&input.cellLoads[i],sizeof(bsi_load))||l.group!=p.cells[l.cell].group||fracture_wire::key(l.input)!=fracture_wire::key(p.cells[l.cell].source))return false;}
     bool unrepresented=false;for(uint32_t i=0;i<p.nCells;++i)unrepresented=unrepresented||bool(p.cells[i].flags&1);if(bool(v.flags&4)!=unrepresented)return false;
     auto remainingOptions=o.analysis.options;remainingOptions.expected=p.after;
-    if(!analysis(v.remaining,remainingOptions,ns,candidate.remaining,candidate.owners,vocab,pack,false)||v.nFailures!=v.remaining->nMembers)return false;
+    if(!analysis(v.remaining,remainingOptions,ns,candidate.remaining,candidate.owners,vocab,pack,false)||!tensorRequested(*v.remaining,input)||v.nFailures!=v.remaining->nMembers)return false;
     return records(pack,"corotDecisions",v.decisions,v.nDecisions)&&records(pack,"corotPhases",v.phases,v.nPhases)&&records(pack,"corotFailures",v.failures,v.nFailures)&&pack.raw("corotDecisionCells",v.decisionCells,v.nDecisionCells)&&
         pack.raw("corotFractureLoads",v.loads,v.nLoads)&&records(pack,"corotArchives",v.archives,v.nArchives)&&records(pack,"corotRetiredMembers",v.retiredMembers,v.nRetiredMembers)&&records(pack,"corotRetiredShells",v.retiredShells,v.nRetiredShells)&&
-        pack.raw("corotRetiredCells",v.retiredCells,v.nRetiredCells)&&pack.raw("corotArchiveOwners",v.archiveOwners,v.nArchiveOwners)&&material(pack,v.retiredMaterial,true);
+        pack.raw("corotRetiredCells",v.retiredCells,v.nRetiredCells)&&pack.raw("corotArchiveOwners",v.archiveOwners,v.nArchiveOwners)&&material(pack,v.retiredMaterial,true)&&retiredTensorMaterial(pack,v);
 }
 inline bool motionResult(const bsi_corot_motion_view* ptr,const Motion& d,const fracture_wire::Candidate& receipt,Pack& pack) {
     if(!ptr||ptr->struct_size<offsetof(bsi_corot_motion_view,source)+sizeof(ptr->source))return false;
@@ -75,6 +75,6 @@ inline bool motionResult(const bsi_corot_motion_view* ptr,const Motion& d,const 
     if(!motion_wire::geometry(v.geometry,geometry,pack.table,pack.bytes))return false;
     return pack.raw("motionStates",v.states,v.nStates)&&records(pack,"corotBodyEnergies",v.energies,v.nEnergies)&&records(pack,"corotArchives",v.source->archives,v.source->nArchives)&&
         records(pack,"corotRetiredMembers",v.source->retiredMembers,v.source->nRetiredMembers)&&records(pack,"corotRetiredShells",v.source->retiredShells,v.source->nRetiredShells)&&
-        pack.raw("corotRetiredCells",v.source->retiredCells,v.source->nRetiredCells)&&pack.raw("corotArchiveOwners",v.source->archiveOwners,v.source->nArchiveOwners)&&material(pack,v.source->retiredMaterial,true);
+        pack.raw("corotRetiredCells",v.source->retiredCells,v.source->nRetiredCells)&&pack.raw("corotArchiveOwners",v.source->archiveOwners,v.source->nArchiveOwners)&&material(pack,v.source->retiredMaterial,true)&&retiredTensorMaterial(pack,*v.source);
 }
 }} // namespace bsi::corot_wire

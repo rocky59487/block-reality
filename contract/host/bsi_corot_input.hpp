@@ -30,15 +30,22 @@ struct Input {
     std::vector<bsi_corot_prescribed> prescribed;
     std::vector<bsi_corot_load> loads;
     std::vector<bsi_corot_failure_rule> rules;
+    std::vector<bsi_corot_shell_law> shellLaws;
+    std::vector<bsi_corot_layer> shellLayers;
+    bsi_corot_shell_input shellMaterial{};
 };
 inline bool input(const json::Value& b,const uint8_t* payload,size_t n,uint32_t threads,Input& d,bool fracture) {
     auto& o=d.input;o.struct_size=sizeof(o);o.options=options(*b.find("options"),threads);
     o.nMaterials=count(b,"materials");o.nCellLoads=count(b,"cellLoads");o.nPrescribed=count(b,"prescribed");o.nLoads=count(b,"loads");
     const uint32_t nr=fracture?count(b,"rules"):0;
-    const uint64_t bytes=uint64_t(o.nMaterials)*sizeof(bsi_corot_material)+uint64_t(o.nCellLoads)*sizeof(bsi_load)+uint64_t(o.nPrescribed)*sizeof(bsi_corot_prescribed)+uint64_t(o.nLoads)*sizeof(bsi_corot_load)+uint64_t(nr)*sizeof(bsi_corot_failure_rule);
+    const uint32_t ns=b.find("shellMaterials")?count(b,"shellMaterials"):0,nl=b.find("shellLayers")?count(b,"shellLayers"):0;
+    if(bool(ns)!=bool(nl))return false;
+    const uint64_t bytes=uint64_t(o.nMaterials)*sizeof(bsi_corot_material)+uint64_t(o.nCellLoads)*sizeof(bsi_load)+uint64_t(o.nPrescribed)*sizeof(bsi_corot_prescribed)+uint64_t(o.nLoads)*sizeof(bsi_corot_load)+uint64_t(nr)*sizeof(bsi_corot_failure_rule)+uint64_t(ns)*sizeof(bsi_corot_shell_law)+uint64_t(nl)*sizeof(bsi_corot_layer);
     if(bytes!=n||n>fracture_wire::kPayloadLimit||(n&&!payload)||!fracture_wire::nonzero(o.options.expected.domain))return false;
     size_t offset=0;motion_wire::read(payload,offset,o.nMaterials,d.materials);motion_wire::read(payload,offset,o.nCellLoads,d.cellLoads);
     motion_wire::read(payload,offset,o.nPrescribed,d.prescribed);motion_wire::read(payload,offset,o.nLoads,d.loads);motion_wire::read(payload,offset,nr,d.rules);
+    motion_wire::read(payload,offset,ns,d.shellLaws);motion_wire::read(payload,offset,nl,d.shellLayers);
+    d.shellMaterial={d.shellLaws.data(),ns,d.shellLayers.data(),nl};
     o.materials=d.materials.data();o.cellLoads=d.cellLoads.data();o.prescribed=d.prescribed.data();o.loads=d.loads.data();
     if(fracture){auto& f=d.fracture;f.struct_size=sizeof(f);f.analysis=o;f.request=fracture_wire::id(*b.find("requestId"));f.budget=count(b,"budget");f.rules=d.rules.data();f.nRules=nr;
         if(const auto* token=b.find("initialAnalysis")){f.useInitial=1;f.initialAnalysis=pdelta_wire::token(*token);}}

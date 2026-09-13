@@ -28,40 +28,7 @@
     "bsi.corot.arc.advance"
   ],
 
-  "x-capabilities": [
-    "bsi.core",
-    "bsi.world.edit",
-    "bsi.mass.physical",
-    "bsi.world.identity",
-    "bsi.readback.members",
-    "bsi.readback.stations",
-    "bsi.readback.shells",
-    "bsi.readback.memberGeometry",
-    "bsi.readback.stationIdentity",
-    "bsi.buckling.eigen",
-    "bsi.buckling.eigen.shells",
-    "bsi.buckling.screen",
-    "bsi.precision.display",
-    "bsi.precision.f32",
-    "bsi.precision.warmstart",
-    "bsi.precision.timeout",
-    "bsi.material.orthotropic",
-    "bsi.material.composite",
-    "bsi.material.rope",
-    "bsi.section.custom",
-    "bsi.block.shape",
-    "bsi.block.attrs",
-    "bsi.fracture",
-    "bsi.rigid.motion",
-    "bsi.pdelta",
-    "bsi.pdelta.fracture",
-    "bsi.corot",
-    "bsi.corot.fracture",
-    "bsi.corot.rigid",
-    "bsi.corot.fracture.loads",
-    "bsi.corot.checkpoint",
-    "bsi.corot.arc"
-  ],
+  "x-capabilities": ["bsi.core","bsi.world.edit","bsi.mass.physical","bsi.world.identity","bsi.readback.members","bsi.readback.stations","bsi.readback.shells","bsi.readback.memberGeometry","bsi.readback.stationIdentity","bsi.buckling.eigen","bsi.buckling.eigen.shells","bsi.buckling.screen","bsi.precision.display","bsi.precision.f32","bsi.precision.warmstart","bsi.precision.timeout","bsi.material.orthotropic","bsi.material.composite","bsi.material.rope","bsi.section.custom","bsi.block.shape","bsi.block.attrs","bsi.fracture","bsi.rigid.motion","bsi.pdelta","bsi.pdelta.fracture","bsi.corot","bsi.corot.fracture","bsi.corot.rigid","bsi.corot.fracture.loads","bsi.corot.checkpoint","bsi.corot.arc","bsi.corot.shell.materials"],
 
   "x-errors": ["BSI_VERSION", "EXPECTED_HELLO", "UNKNOWN_METHOD", "UNSUPPORTED", "UNSUPPORTED_ATTR",
     "PROTOCOL_ERROR", "VOCAB_AFTER_WORLD", "VOCAB_ALREADY_DECLARED", "VOCAB_INVALID",
@@ -1059,97 +1026,8 @@
       },
       "additionalProperties": false
     },
-    "corot.solve.body": {
-      "type": "object",
-      "required": [
-        "options",
-        "materials",
-        "cellLoads",
-        "prescribed",
-        "loads"
-      ],
-      "properties": {
-        "options": {
-          "$ref": "#/$defs/corot.options"
-        },
-        "materials": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 16777216
-        },
-        "cellLoads": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 16777216
-        },
-        "prescribed": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 16777216
-        },
-        "loads": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 16777216
-        }
-      },
-      "additionalProperties": false
-    },
-    "corot.fracture.prepare.body": {
-      "type": "object",
-      "required": [
-        "options",
-        "materials",
-        "cellLoads",
-        "prescribed",
-        "loads",
-        "requestId",
-        "rules",
-        "budget"
-      ],
-      "properties": {
-        "options": {
-          "$ref": "#/$defs/corot.options"
-        },
-        "materials": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 16777216
-        },
-        "cellLoads": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 16777216
-        },
-        "prescribed": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 16777216
-        },
-        "loads": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 16777216
-        },
-        "requestId": {
-          "$ref": "#/$defs/id128"
-        },
-        "initialAnalysis": {
-          "$ref": "#/$defs/fracture.token"
-        },
-        "rules": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 16777216
-        },
-        "budget": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4096
-        }
-      },
-      "additionalProperties": false
-    },
+    "corot.solve.body": {"type":"object","required":["options","materials","cellLoads","prescribed","loads"],"properties":{"options":{"$ref":"#/$defs/corot.options"},"materials":{"type":"integer","minimum":0,"maximum":16777216},"cellLoads":{"type":"integer","minimum":0,"maximum":16777216},"prescribed":{"type":"integer","minimum":0,"maximum":16777216},"loads":{"type":"integer","minimum":0,"maximum":16777216},"shellMaterials":{"type":"integer","minimum":0,"maximum":16777216},"shellLayers":{"type":"integer","minimum":0,"maximum":16777216}},"additionalProperties":false},
+    "corot.fracture.prepare.body": {"type":"object","required":["options","materials","cellLoads","prescribed","loads","requestId","rules","budget"],"properties":{"options":{"$ref":"#/$defs/corot.options"},"materials":{"type":"integer","minimum":0,"maximum":16777216},"cellLoads":{"type":"integer","minimum":0,"maximum":16777216},"prescribed":{"type":"integer","minimum":0,"maximum":16777216},"loads":{"type":"integer","minimum":0,"maximum":16777216},"requestId":{"$ref":"#/$defs/id128"},"initialAnalysis":{"$ref":"#/$defs/fracture.token"},"rules":{"type":"integer","minimum":0,"maximum":16777216},"budget":{"type":"integer","minimum":0,"maximum":4096},"shellMaterials":{"type":"integer","minimum":0,"maximum":16777216},"shellLayers":{"type":"integer","minimum":0,"maximum":16777216}},"additionalProperties":false},
     "corot.rigid.declare.body": {
       "type": "object",
       "required": [
@@ -1275,13 +1153,21 @@
     "corot.rigid.declare.response": {"type":"object","required":["bsi","kind","id","method","revision","status","scene","sections","fracture"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.rigid.declare"},"revision":{"type":"integer"},"status":{"const":"declared"},"scene":{"$ref":"#/$defs/world.stamp"},"fracture":{"$ref":"#/$defs/fracture.token"},"sections":{"$ref":"#/$defs/corot.sections"}},"additionalProperties":false},
     "corot.arc.advance.body": {"type":"object","required":["expected","initialAnalysis","radius","minRadius","lengthScale","loadScale","relativeTolerance","forceTolerance","momentTolerance","linearTolerance","pathTolerance","maxIterations","maxAttempts","maxBacktracks","linearIterations","restart","initialDirection"],"properties":{"expected":{"$ref":"#/$defs/world.stamp"},"initialAnalysis":{"$ref":"#/$defs/fracture.token"},"radius":{"type":"number","exclusiveMinimum":0},"minRadius":{"type":"number","exclusiveMinimum":0},"lengthScale":{"type":"number","exclusiveMinimum":0},"loadScale":{"type":"number","exclusiveMinimum":0},"relativeTolerance":{"type":"number","minimum":0},"forceTolerance":{"type":"number","minimum":0},"momentTolerance":{"type":"number","minimum":0},"linearTolerance":{"type":"number","minimum":0},"pathTolerance":{"type":"number","minimum":0},"maxIterations":{"type":"integer","minimum":1,"maximum":1000000},"maxAttempts":{"type":"integer","minimum":1,"maximum":1000000},"maxBacktracks":{"type":"integer","minimum":1,"maximum":1000000},"linearIterations":{"type":"integer","minimum":1,"maximum":1000000},"restart":{"type":"integer","minimum":1,"maximum":1000000},"initialDirection":{"type":"integer","enum":[-1,1]}},"additionalProperties":false},
     "corot.arc.advance.response": {"type":"object","required":["bsi","kind","id","method","revision","status","basis","artifactNamespace","generation","token","fullyConverged","loadFactor","radius","constraintResidual","sections"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.arc.advance"},"revision":{"type":"integer"},"status":{"const":"advanced"},"basis":{"$ref":"#/$defs/world.stamp"},"artifactNamespace":{"$ref":"#/$defs/id128"},"generation":{"type":"string","pattern":"^[0-9a-f]{16}$"},"token":{"$ref":"#/$defs/fracture.token"},"fullyConverged":{"type":"boolean"},"loadFactor":{"type":"number"},"radius":{"type":"number","exclusiveMinimum":0},"constraintResidual":{"type":"number","minimum":0,"maximum":1e-10},"sections":{"$ref":"#/$defs/corot.sections"}},"additionalProperties":false},
-    "corot.checkpoint.export.body": {"type":"object","required":["expected","format","byteBudget","allocationBudget","elementBudget"],"properties":{"expected":{"$ref":"#/$defs/world.stamp"},"format":{"type":"integer","enum":[1,2]},"byteBudget":{"type":"integer","minimum":32,"maximum":268431360},"allocationBudget":{"type":"integer","minimum":1,"maximum":536870912},"elementBudget":{"type":"integer","minimum":1,"maximum":16777216}},"additionalProperties":false},
-    "corot.checkpoint.export.response": {"type":"object","required":["bsi","kind","id","method","revision","status","basis","format","bytes"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.checkpoint.export"},"revision":{"type":"integer"},"status":{"const":"exported"},"basis":{"$ref":"#/$defs/world.stamp"},"format":{"type":"integer","enum":[1,2]},"bytes":{"type":"integer","minimum":32,"maximum":268431360}},"additionalProperties":false},
-    "corot.checkpoint.import.body": {"type":"object","required":["expected","format","byteBudget","allocationBudget","elementBudget","bytes"],"properties":{"expected":{"$ref":"#/$defs/world.stamp"},"format":{"type":"integer","enum":[1,2]},"byteBudget":{"type":"integer","minimum":32,"maximum":268431360},"allocationBudget":{"type":"integer","minimum":1,"maximum":536870912},"elementBudget":{"type":"integer","minimum":1,"maximum":16777216},"bytes":{"type":"integer","minimum":32,"maximum":268431360}},"additionalProperties":false},
+    "corot.checkpoint.export.body": {"type":"object","required":["expected","format","byteBudget","allocationBudget","elementBudget"],"properties":{"expected":{"$ref":"#/$defs/world.stamp"},"format":{"type":"integer","enum":[1,2,3]},"byteBudget":{"type":"integer","minimum":32,"maximum":268431360},"allocationBudget":{"type":"integer","minimum":1,"maximum":536870912},"elementBudget":{"type":"integer","minimum":1,"maximum":16777216}},"additionalProperties":false},
+    "corot.checkpoint.export.response": {"type":"object","required":["bsi","kind","id","method","revision","status","basis","format","bytes"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.checkpoint.export"},"revision":{"type":"integer"},"status":{"const":"exported"},"basis":{"$ref":"#/$defs/world.stamp"},"format":{"type":"integer","enum":[1,2,3]},"bytes":{"type":"integer","minimum":32,"maximum":268431360}},"additionalProperties":false},
+    "corot.checkpoint.import.body": {"type":"object","required":["expected","format","byteBudget","allocationBudget","elementBudget","bytes"],"properties":{"expected":{"$ref":"#/$defs/world.stamp"},"format":{"type":"integer","enum":[1,2,3]},"byteBudget":{"type":"integer","minimum":32,"maximum":268431360},"allocationBudget":{"type":"integer","minimum":1,"maximum":536870912},"elementBudget":{"type":"integer","minimum":1,"maximum":16777216},"bytes":{"type":"integer","minimum":32,"maximum":268431360}},"additionalProperties":false},
     "corot.checkpoint.import.response": {"type":"object","required":["bsi","kind","id","method","revision","status","basis","artifactNamespace","generation","token","sections","fullyConverged"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.checkpoint.import"},"revision":{"type":"integer"},"status":{"const":"restored"},"basis":{"$ref":"#/$defs/world.stamp"},"artifactNamespace":{"$ref":"#/$defs/id128"},"generation":{"type":"string","pattern":"^[0-9a-f]{16}$"},"token":{"$ref":"#/$defs/fracture.token"},"fullyConverged":{"type":"boolean"},"sections":{"$ref":"#/$defs/corot.sections"}},"additionalProperties":false}
   },
 
   "x-records": {
+    "corotShellLaws": {"bytes":56,"fields":[["material","i32"],["layerFirst","u32"],["layerCount","u32"],["reserved","u32"],["E","f64"],["nu","f64"],["yield","f64"],["isotropic","f64"],["kinematic","f64"]],"offsets":{"material":0,"layerFirst":4,"layerCount":8,"reserved":12,"E":16,"nu":24,"yield":32,"isotropic":40,"kinematic":48},"description":"ABI10 little-endian fixed record; engineering strain and tensor plastic shear, order xx yy zz xy yz xz; reserved bytes zero."},
+    "corotShellProfiles": {"bytes":88,"fields":[["shell","i32"],["available","u32"],["layerFirst","u32"],["layerCount","u32"],["pointFirst","u32"],["pointCount","u32"],["E","f64"],["nu","f64"],["yield","f64"],["isotropic","f64"],["kinematic","f64"],["storedEnergy","f64"],["dissipatedEnergy","f64"],["workPotential","f64"]],"offsets":{"shell":0,"available":4,"layerFirst":8,"layerCount":12,"pointFirst":16,"pointCount":20,"E":24,"nu":32,"yield":40,"isotropic":48,"kinematic":56,"storedEnergy":64,"dissipatedEnergy":72,"workPotential":80},"description":"ABI10 little-endian fixed record; engineering strain and tensor plastic shear, order xx yy zz xy yz xz; reserved bytes zero."},
+    "corotShellLayers": {"bytes":16,"fields":[["position","f64"],["weight","f64"]],"offsets":{"position":0,"weight":8},"description":"ABI10 little-endian fixed record; engineering strain and tensor plastic shear, order xx yy zz xy yz xz; reserved bytes zero."},
+    "corotTensorPoints": {"bytes":472,"fields":[["strain","f64[6]"],["plastic","f64[6]"],["accumulated","f64"],["dissipation","f64"],["stress","f64[6]"],["tangent","f64[36]"],["storedEnergy","f64"],["workPotential","f64"],["loading","u32"],["reserved","u32"]],"offsets":{"strain":0,"plastic":48,"accumulated":96,"dissipation":104,"stress":112,"tangent":160,"storedEnergy":448,"workPotential":456,"loading":464,"reserved":468},"description":"ABI10 little-endian fixed record; engineering strain and tensor plastic shear, order xx yy zz xy yz xz; reserved bytes zero."},
+    "corotRetiredShellProfiles": {"bytes":88,"fields":[["shell","i32"],["available","u32"],["layerFirst","u32"],["layerCount","u32"],["pointFirst","u32"],["pointCount","u32"],["E","f64"],["nu","f64"],["yield","f64"],["isotropic","f64"],["kinematic","f64"],["storedEnergy","f64"],["dissipatedEnergy","f64"],["workPotential","f64"]],"offsets":{"shell":0,"available":4,"layerFirst":8,"layerCount":12,"pointFirst":16,"pointCount":20,"E":24,"nu":32,"yield":40,"isotropic":48,"kinematic":56,"storedEnergy":64,"dissipatedEnergy":72,"workPotential":80},"description":"ABI10 little-endian fixed record; engineering strain and tensor plastic shear, order xx yy zz xy yz xz; reserved bytes zero."},
+    "corotRetiredShellLayers": {"bytes":16,"fields":[["position","f64"],["weight","f64"]],"offsets":{"position":0,"weight":8},"description":"ABI10 little-endian fixed record; engineering strain and tensor plastic shear, order xx yy zz xy yz xz; reserved bytes zero."},
+    "corotRetiredTensorPoints": {"bytes":472,"fields":[["strain","f64[6]"],["plastic","f64[6]"],["accumulated","f64"],["dissipation","f64"],["stress","f64[6]"],["tangent","f64[36]"],["storedEnergy","f64"],["workPotential","f64"],["loading","u32"],["reserved","u32"]],"offsets":{"strain":0,"plastic":48,"accumulated":96,"dissipation":104,"stress":112,"tangent":160,"storedEnergy":448,"workPotential":456,"loading":464,"reserved":468},"description":"ABI10 little-endian fixed record; engineering strain and tensor plastic shear, order xx yy zz xy yz xz; reserved bytes zero."},
+
     "pdeltaOptions": {"bytes": 56, "fields": [["loadFactor", "f64"], ["gravity", "f64[3]"], ["tolerance", "f64"], ["budgetDof", "u32"], ["numThreads", "u32"], ["maxIterations", "u32"], ["selfWeight", "u8"], ["route", "u8"], ["reserved", "u8[2]"]]},
     "pdeltaSample": {"bytes": 16, "fields": [["member", "i32"], ["side", "i32"], ["fraction", "f64"]]},
     "pdeltaIslands": {"bytes": 48, "fields": [["status", "u32"], ["freeDof", "u32"], ["iterations", "u32"], ["factors", "u32"], ["threadsUsed", "u32"], ["residualAvailable", "u8"], ["indicativeShell", "u8"], ["reserved", "u16"], ["residual", "f64"], ["pivotRatio", "f64"], ["reasonFirst", "u32"], ["reasonCount", "u32"]]},

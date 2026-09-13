@@ -508,7 +508,7 @@ class ArenaClient:
         if door == "declare":
             nb = d.get("body", {}).get("blocks", len(payload) // 40)
             self.world, self.attrs = payload[:nb * 40], payload[nb * 40:]
-        elif door in ("solve", "rigidStep", "pdeltaSolve", "pdeltaFracturePrepare", "corotSolve", "corotFracturePrepare", "corotCheckpointImport"):
+        elif door in ("solve", "rigidStep", "pdeltaSolve", "pdeltaFracturePrepare", "corotSolve", "corotFracturePrepare", "corotCheckpointImport", "corotCheckpointExport", "corotArcAdvance"):
             loads = payload
         elif door in ("rigidDeclare", "corotRigidDeclare"):
             self.world, self.attrs = payload, b""
@@ -676,6 +676,14 @@ def check_reply(schema, validator, method, reply, declared_blocks=None):
                     'corotArtifactMembers', 'corotArtifactShells', 'corotProfiles', 'corotFibers', 'corotStations', 'corotPoints']
         archive = ['corotArchives', 'corotRetiredMembers', 'corotRetiredShells', 'corotRetiredCells', 'corotArchiveOwners',
                    'corotRetiredProfiles', 'corotRetiredFibers', 'corotRetiredStations', 'corotRetiredPoints']
+        sections = h.get('sections', [])
+        present = {s['name'] for s in sections}
+        tensor = ['corotShellProfiles', 'corotShellLayers', 'corotTensorPoints']
+        retired_tensor = ['corotRetiredShellProfiles', 'corotRetiredShellLayers', 'corotRetiredTensorPoints']
+        if present.intersection(tensor):
+            analysis += tensor
+        if present.intersection(retired_tensor):
+            archive += retired_tensor
         if method.endswith('prepare'):
             want = fracture + analysis + ['corotDecisions', 'corotPhases', 'corotFailures', 'corotDecisionCells', 'corotFractureLoads'] + archive
         elif method.endswith('declare'):

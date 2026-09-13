@@ -851,3 +851,32 @@ options on a consumed source, older tokens and changed worlds are refused. All
 islands and owning native views are prepared before the shared atomic commit.
 Arena door `corotArcAdvance` has no input payload and uses the existing pending
 reply contract. Save the resulting state with checkpoint format 2.
+
+
+## ABI10：有限殼塑性
+
+能力 `bsi.corot.shell.materials` 追加 typed `corot_shell_solve`、
+`corot_shell_fracture_prepare`。新 wrapper 內嵌原 ABI7 request 與
+`bsi_corot_shell_input`；原被內嵌 request 的 layout 保持。
+
+wire 仍用 `bsi.corot.solve`／`bsi.corot.fracture.prepare`，可選計數
+`shellMaterials`／`shellLayers` 須同時為零或同時非零。payload 在原紀錄
+（fracture 的 rules 之後）追加 56 B shell law 與 16 B normalized layer。
+未選用時不增加資料段。律為指定名義 isotropic panel 的 E、nu、yield、
+Hiso、Hkin，按既有 strength/cure 縮放；層位置範圍 [-0.5,0.5]，嚴格遞增，
+正權重的 0／1／2 次矩為 1／0／1/12，容差 1e-12。
+
+analysis 尾部追加 `corotShellProfiles`／`corotShellLayers`／`corotTensorPoints`，
+88／16／472 B。退休部分同序追加 `corotRetiredShellProfiles`、
+`corotRetiredShellLayers`、`corotRetiredTensorPoints`。profile.shell 是本次
+shell 表索引；退休時是 corotRetiredShells 表索引。profile.available =
+0（無歷史）、6（保存歷史）、7（收斂材料），每個有效殼 4×layerCount 個點。
+
+tensor point 順序 xx yy zz xy yz xz；總應變及 tangent 使用工程剪，塑性應變
+使用張量剪。完整 state、stress、tangent、自由能、耗散及 loading 同源。
+reserved 必須為零，單位沿原模型。typed view 的新增尾指標依 struct_size
+判读；舊短 view 不讀尾部，選用新材料卻缺少 owning 結果則拒絕并要求重開。
+
+checkpoint 格式 3 保存殼材料與舊弧長資料；原格式 1／2 支援保持，但含張量
+歷史時拒絕較舊格式，避免靜默遺失。重裝沿原 opt-in 機制；幾何、律、厚度
+積分點須相同。殼裂縫／壓密、任意材料重網格仍不支援。

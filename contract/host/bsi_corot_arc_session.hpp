@@ -20,10 +20,12 @@
         const int status=engine_.vt->corot_arc_advance(inst_,&input,&arc,&writer);
         if(status!=BSI_OK){nativeFault_=false;errorFromBuilder(out,rq,status,builder);return;}
         corot_wire::Pack pack;
-        if(builder.hasError()||!arc||arc->struct_size<offsetof(bsi_corot_arc_view,analysis)+sizeof(arc->analysis)||arc->reserved||
+        if(builder.hasError()||!arc||reinterpret_cast<uintptr_t>(arc)%alignof(bsi_corot_arc_view)||
+           arc->struct_size<offsetof(bsi_corot_arc_view,analysis)+sizeof(arc->analysis)||arc->reserved||
            !std::isfinite(arc->radius)||arc->radius<input.minRadius||arc->radius>input.radius||
            !std::isfinite(arc->constraintResidual)||arc->constraintResidual<0||arc->constraintResidual>1e-10||
-           !arc->analysis||arc->analysis->struct_size<offsetof(bsi_corot_view,material)+sizeof(arc->analysis->material)||
+           !arc->analysis||reinterpret_cast<uintptr_t>(arc->analysis)%alignof(bsi_corot_view)||
+           arc->analysis->struct_size<offsetof(bsi_corot_view,material)+sizeof(arc->analysis->material)||
            !arc->analysis->fullyConverged||!fracture_wire::same(arc->analysis->basis,input.expected)||
            !corot_wire::analysis(arc->analysis,arc->analysis->options,artifactNamespace_,world_,owners_,vocab_,pack)){
             wireError(rq,out,"INTERNAL","invalid native arc result; reopen session");return;}

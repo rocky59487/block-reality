@@ -1,5 +1,6 @@
 #pragma once
 #include "bsi_corot_pack.hpp"
+#include "bsi_corot_tensor_wire.hpp"
 
 namespace bsi { namespace corot_wire {
 inline bool law(const bsi_corot_law& l) {
@@ -79,6 +80,6 @@ inline bool analysis(const bsi_corot_view* ptr,const bsi_corot_options& options,
     std::array<bsi_physical_properties,7> mass;mass[0]=v.physical;for(size_t i=0;i<6;++i)mass[i+1]=v.weightGroups[i];for(const auto& p:mass)if(!fracture_wire::physical(p))return false;
     if(!records(pack,"corotOptions",&v.options,1)||!pack.raw("corotPhysical",mass.data(),7)||!diagnostics(pack,v.islands,v.nIslands)||!records(pack,"corotNodes",v.nodes,v.nNodes)||!records(pack,"corotMembers",v.members,v.nMembers)||!records(pack,"corotShells",v.shells,v.nShells)||!records(pack,"corotJoints",v.joints,v.nJoints))return false;
     const size_t start=pack.table.size();if(!pdelta_wire::sources(pack,v.sources,v.nSources))return false;pack.table[start].name="corotSources";
-    return pack.raw("corotSourceIndices",v.sourceIndices,v.nSourceIndices)&&pack.raw("corotArtifacts",v.artifacts,v.nArtifacts)&&pack.raw("corotArtifactMembers",v.artifactMembers,v.nArtifactMembers)&&pack.raw("corotArtifactShells",v.artifactShells,v.nArtifactShells)&&material(pack,v.material);
+    return pack.raw("corotSourceIndices",v.sourceIndices,v.nSourceIndices)&&pack.raw("corotArtifacts",v.artifacts,v.nArtifacts)&&pack.raw("corotArtifactMembers",v.artifactMembers,v.nArtifactMembers)&&pack.raw("corotArtifactShells",v.artifactShells,v.nArtifactShells)&&material(pack,v.material)&&tensorMaterial(pack,v);
 }
 }} // namespace bsi::corot_wire
