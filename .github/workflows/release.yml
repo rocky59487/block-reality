@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to publish as (e.g. v0.1a)'
+        description: 'Existing tested tag (e.g. v0.4.0-alpha.1)'
         required: true
 
 permissions:
@@ -21,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
 
       # Publishing is now downstream of the suite rather than beside it. release.yml runs
       # no tests of its own and had no link to the one that does: a tag pushed from a side
@@ -34,13 +36,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -o pipefail
+          release_sha=$(git rev-parse HEAD)
           # ci.yml now runs on tag pushes too, so it is usually still going when this
           # starts. Wait for both required checks to CONCLUDE, then insist they concluded
           # green. A timeout is a refusal, not a pass — "we could not tell" and "it was
           # fine" must never be the same outcome.
           deadline=$(( $(date +%s) + 1500 ))
           while :; do
-            gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
+            gh api "repos/${{ github.repository }}/commits/$release_sha/check-runs" \
               --paginate --jq '.check_runs[] | [.name, (.conclusion // "pending")] | @tsv' > runs.tsv
             pending=0
             fail=0
@@ -50,7 +53,7 @@ jobs:
               case "${got:-missing}" in
                 success) ;;
                 pending|missing) pending=1 ;;
-                *) echo "::error::'$name' concluded '$got' on ${{ github.sha }}"; fail=1 ;;
+                *) echo "::error::'$name' concluded '$got' on $release_sha"; fail=1 ;;
               esac
             done
             [ "$fail" = 1 ] && exit 1
@@ -78,8 +81,8 @@ jobs:
           subprocess.run(['python3', 'scripts/prepare_shipped_engine.py', '--out',
             str(pathlib.Path(os.environ['RUNNER_TEMP']) / 'release-native')], check=True)
           PY
-          git fetch origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG"
-          test "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")" = "$(git rev-parse HEAD)"
+          git fetch origin "refs/tags/$RELEASE_TAG:refs/release-verification/$RELEASE_TAG"
+          test "$(git rev-parse "refs/release-verification/$RELEASE_TAG^{commit}")" = "$(git rev-parse HEAD)"
       - name: Publish alpha
         env:
           GH_TOKEN: ${{ github.token }}
