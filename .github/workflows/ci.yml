@@ -25,6 +25,11 @@ defaults:
   run:
     shell: bash
 
+# Exact native reply fixtures were qualified with this BLAS profile.
+env:
+  OPENBLAS_CORETYPE: Haswell
+  OPENBLAS_NUM_THREADS: '4'
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

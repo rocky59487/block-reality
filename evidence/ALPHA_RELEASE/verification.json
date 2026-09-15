@@ -63,6 +63,14 @@
     "windows-jar-commands.json": "2392ddc905e5b0e6fc9ebbbb9b12eaaa93eed92d02f144bd745638ee0ba790a3",
     "linux-jar.json": "919152c35b8e13a4db79443ce41d75e3e6b8462703ceb44e56f400fd4fcb8fd2",
     "linux-jar-commands.json": "0a8fb6d4a6f882eb2bc82cc2283fe97a055f9dfe2c6f701e7f0f9bd994a70758",
-    "linux-mount-first-failure.log": "deb94f7715bca7fee1327ca69d21801470d8351d0bbd25fc0ab34320b9f506ba"
+    "linux-mount-first-failure.log": "deb94f7715bca7fee1327ca69d21801470d8351d0bbd25fc0ab34320b9f506ba",
+    "ci-native-first-failure.log": "19c1602e7fc3e71ba54c4253f9a9ef113b137c54b548290b056dc02951a605eb",
+    "linux-fracture-focused.log": "bb17f4c897828e60c6b93bc5285a60b374adf68d490a346298018b4f5838fabc"
+  },
+  "native_ci_environment": {
+    "OPENBLAS_CORETYPE": "Haswell",
+    "OPENBLAS_NUM_THREADS": "4",
+    "first_failure": "CI omitted the qualified BLAS profile; 3 byte-comparison failures",
+    "linux_focused_replay": "unchanged fracture/transaction tests PASS with qualified environment"
   }
 }

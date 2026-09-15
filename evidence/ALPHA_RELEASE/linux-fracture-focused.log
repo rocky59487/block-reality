@@ -1,0 +1,94 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :api:compileJava
+> Task :api:processResources NO-SOURCE
+> Task :api:classes
+> Task :api:jar
+
+> Task :core:compileJava
+/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/src/main/java/com/blockreality/core/engine/BsiNative.java:118: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+                try (var ignored = profile.begin(REPLY_COPY)) {
+                         ^
+/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:144: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+        try (var ignored = profile.begin(WORLD_ENCODE)) { payload = BsiRecords.encodeBlocks(blocks); }
+                 ^
+/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:197: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(WORLD_MAP)) { blocks = snapshot.blocks(vocabulary); }
+                     ^
+/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:230: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+        try (var ignored = profile.begin(RESULT_DECODE)) {
+                 ^
+/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:271: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(FRAME_ENCODE)) { request = BsiFrame.encode(header, payload); }
+                     ^
+/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:274: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(FRAME_DECODE)) {
+                     ^
+6 warnings
+
+> Task :core:processResources
+> Task :core:classes
+
+> Task :core:compileTestJava
+/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/src/test/java/com/blockreality/core/diagnostics/PipelineProfileTest.java:60: warning: [try] auto-closeable resource s is never referenced in body of corresponding try statement
+        p.run(first,()->{try(var s=p.begin(RESULT_DECODE)){
+                                 ^
+/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/src/test/java/com/blockreality/core/transaction/JournalBootstrapTest.java:40: warning: [try] auto-closeable resource journal is never referenced in body of corresponding try statement
+        try (var journal = new FileTransactionJournal(root.resolve("valid"), DOMAIN)) {
+                 ^
+/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/src/test/java/com/blockreality/core/transaction/PendingRequestStoreTest.java:53: warning: [try] auto-closeable resource lock is never referenced in body of corresponding try statement
+        try(var channel=FileChannel.open(directory.resolve("pending.lock"),StandardOpenOption.WRITE);var lock=channel.lock()) {
+                                                                                                         ^
+3 warnings
+
+> Task :core:processTestResources
+> Task :core:testClasses
+
+> Task :core:test
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > L PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > mixed-supported PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > mixed-free PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > mechanism-rollback PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > mechanism-prefix PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > topology-B PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > topology-C PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > support-removed PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > support-retained PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > initial-mechanism PASSED
+
+NativeFractureTest > foreignSessionAndStoredTokensCannotCommit() PASSED
+
+NativeFractureTest > rejectedWorldAndOptionsPreserveLiveCandidateAndSource() PASSED
+
+NativeFractureTransactionsTest > interruptionsBeforeDecisionRestoreWholeSource() > checkpoint PASSED
+
+NativeFractureTransactionsTest > interruptionsBeforeDecisionRestoreWholeSource() > write PASSED
+
+NativeFractureTransactionsTest > interruptionsBeforeDecisionRestoreWholeSource() > flush PASSED
+
+NativeFractureTransactionsTest > interruptionsBeforeDecisionRestoreWholeSource() > omitted-world PASSED
+
+NativeFractureTransactionsTest > wrongPlanIsRejectedBeforeNativePreparationAndChangedKeyConflicts() PASSED
+
+NativeFractureTransactionsTest > recoveryCannotPublishAnotherJournalsWorld() PASSED
+
+NativeFractureTransactionsTest > committedDecisionSurvivesLostAckAndPublicationFailure() > decision-lost-ack PASSED
+
+NativeFractureTransactionsTest > committedDecisionSurvivesLostAckAndPublicationFailure() > native-closed PASSED
+
+NativeFractureTransactionsTest > committedDecisionSurvivesLostAckAndPublicationFailure() > publication PASSED
+
+NativeFractureTransactionsTest > durableReceiptReplayAndFreshSessionRecovery() PASSED
+
+BUILD SUCCESSFUL in 38s
+7 actionable tasks: 7 executed

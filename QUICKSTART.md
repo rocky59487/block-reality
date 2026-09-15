@@ -24,3 +24,6 @@ Windows 可使用 `python`；Linux 也可用 `python3` 或 `bash scripts/package
 
 日常核心測試：`cd mod && ./gradlew test`；若要真引擎測試，設定 `BR_ENGINE` 為原生庫絕對路徑。
 完整封裝命令會自行設定該路徑、執行核心與 Forge 測試。
+
+比對既有 native fixture 的逐位元結果時，使用 `OPENBLAS_CORETYPE=Haswell`、
+`OPENBLAS_NUM_THREADS=4`；CI 與完整封裝入口已固定這組驗收環境。
