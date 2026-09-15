@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/mnt/c/Users/wmc02/Desktop/block-reality/build/construction-transactions/run-linux-first.py", line 6, in <module>
+    assert Path(env['BR_ENGINE']).is_file(); assert Path(env['BR_SIDECAR']).is_file()
+AssertionError

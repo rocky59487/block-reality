@@ -15,11 +15,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BsiShellDisplayTest {
     @Test void legacyDegenerateGeometryKeepsDiagnosticsWithoutADrawableField() {
-        var old = new com.blockreality.api.ShellFieldSpec(List.of(Vec3d.ZERO,Vec3d.ZERO,Vec3d.ZERO,Vec3d.ZERO),
+        var old = new com.blockreality.testlegacy.ShellFieldSpec(List.of(Vec3d.ZERO,Vec3d.ZERO,Vec3d.ZERO,Vec3d.ZERO),
                 new Vec3d(1,0,0),new Vec3d(0,0,1),new Vec3d(0,-1,0),200,0,0,0,0,0,0,0,0,
-                java.util.Collections.nCopies(4,com.blockreality.api.ShellFieldSpec.Moments.ZERO));
-        var snapshot = new ShellSnapshot(1,"slab","slab",200,0,0,true,false,List.of(),java.util.Optional.of(old));
-        assertSame(old,snapshot.field().orElseThrow()); assertTrue(snapshot.display().isEmpty());
+                java.util.Collections.nCopies(4,com.blockreality.testlegacy.ShellFieldSpec.Moments.ZERO));
+        var legacy = new com.blockreality.testlegacy.ShellSnapshot(
+                1, "slab", "slab", 200, 0, 0, true, false, List.of(), java.util.Optional.of(old));
+        var snapshot = legacy.snapshot();
+        assertSame(old,legacy.field().orElseThrow()); assertTrue(snapshot.display().isEmpty());
         assertTrue(ShellMesh.locate(List.of(snapshot),Vec3d.ZERO).isEmpty());
         assertThrows(IllegalArgumentException.class,old::sampledDisplay);
     }
@@ -59,7 +61,7 @@ class BsiShellDisplayTest {
     @Test void unitsCornerOrderFacesAndFrameComeFromRecovery() {
         var s = sample(); var f = s.display().orElseThrow();
         assertEquals(200, s.thicknessMm()); assertEquals("slab", s.material());
-        assertTrue(s.field().isEmpty()); assertTrue(s.rawDc().isEmpty());
+        assertTrue(com.blockreality.testfixtures.NativeSnapshotChecks.hasNoLegacyField(s)); assertTrue(s.rawDc().isEmpty());
         assertEquals(new Vec3d(2500,8500,-3500), f.cornersMm().get(0));
         assertEquals(new Vec3d(4500,8500,500), f.cornersMm().get(2));
         assertEquals(new Vec3d(0,-1,0), f.normal()); assertEquals(6, s.blocks().size());
@@ -92,8 +94,7 @@ class BsiShellDisplayTest {
         var wall = new ShellDisplayField(List.of(new Vec3d(0,0,0),new Vec3d(0,0,1000),
                 new Vec3d(0,2000,1000),new Vec3d(0,2000,0)), new Vec3d(0,0,1),
                 new Vec3d(0,1,0),new Vec3d(-1,0,0),f.top(),f.bottom());
-        var other = new ShellSnapshot(8,"slab","slab",200,1,Double.NaN,true,false,List.of(),
-                java.util.Optional.empty(),java.util.Optional.of(wall),true,6);
+        var other = new ShellSnapshot(8, "slab", "slab", 200, 1, Double.NaN, true, false, List.of(), java.util.Optional.of(wall), true, 6);
         assertEquals(8, ShellMesh.locate(List.of(s,other),new Vec3d(0,1000,500)).orElseThrow().shell().id());
     }
     @Test void verdictIsIndependentOfTheDisplayedDc() {

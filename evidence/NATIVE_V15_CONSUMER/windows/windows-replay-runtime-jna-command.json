@@ -1,0 +1,29 @@
+{
+  "command": [
+    "C:\\Users\\wmc02\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\python.exe",
+    "-X",
+    "utf8",
+    "C:\\Users\\wmc02\\Desktop\\block-reality\\scripts\\check_native_jar.py",
+    "--jar",
+    "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-v1.5-consumer\\blockreality-0.4.0-dev-v1.5.jar",
+    "--java",
+    "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+    "--classes",
+    "C:\\Users\\wmc02\\Desktop\\block-reality\\mod\\core\\build\\classes\\java\\test",
+    "--jna",
+    "C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+    "--library",
+    "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-v1.5-consumer\\staged\\windows-x86_64\\bsi_tectonic.dll",
+    "--out",
+    "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-v1.5-consumer\\replay-runtime-jna",
+    "--version",
+    "1.5.0",
+    "--build-sha",
+    "42ba7eb",
+    "--eigen",
+    "--shell-eigen"
+  ],
+  "cwd": "C:\\Users\\wmc02\\Desktop\\block-reality",
+  "BR_ENGINE": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-v1.5-consumer\\staged\\windows-x86_64\\bsi_tectonic.dll",
+  "source": "fc5424fc2b7a6376047ded560201d1eb0f0e69bc"
+}

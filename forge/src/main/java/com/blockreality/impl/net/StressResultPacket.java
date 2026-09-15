@@ -8,22 +8,17 @@ import com.blockreality.api.UnassignedBlocks;
 import com.blockreality.api.UnassignedReason;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.api.WorldRevision;
-import com.blockreality.impl.BlockRealityMod;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * The drawable half of an analysis, sent to the client.
  *
- * <p>Channel 7 carries immutable beam/shell samples, complete per-element cell lists,
+ * <p>Channel 10 carries immutable beam/shell samples, complete per-element cell lists,
  * independent verdict flags and beam diagnostic end forces. It carries no mechanical field.
  *
  * <h2>Decoding never throws — and never launders</h2>
@@ -41,18 +36,20 @@ import java.util.function.Supplier;
  *       state and logs why, which is the same fail-closed posture the engine wire has.
  * </ul>
  *
- * <p>Element flags are forwarded independently of their f64 DC values. Global maxDc and
- * buckling still use the legacy float/flag compatibility path pending MC64_FORWARD.
+ * <p>Channel 10 forwards global and element flags independently of their f64 values.
  */
 public final class StressResultPacket {
 
-    /** Above this many members the rest are dropped — and the drop is logged, never silent. */
-    private static final int MAX_MEMBERS = 64;
-    /** Facets sent. A floor meshes into one facet per 2x2 block square, so this fills up
-     *  far faster than members do — and, like members, the drop is logged. */
-    private static final int MAX_SHELLS = 512;
+    /** Candidate caps are shared with the total byte/cell/station policy. Omission travels in the packet. */
+    private static final int MAX_MEMBERS = DisplayDelivery.MAX_MEMBERS;
+    /** Facet candidates, including the governing facet when present. */
+    private static final int MAX_SHELLS = DisplayDelivery.MAX_SHELLS;
 
 
+    private final DisplayDelivery delivery;
+    private final int governing;
+    private final String governingKind;
+    private final boolean governingOmitted;
     private final boolean valid;
     private final String invalidReason;
 
@@ -61,12 +58,12 @@ public final class StressResultPacket {
     private final String dimension;
     private final boolean singular;
     private final double maxDc;
-    /** Server-side double verdict of {@code maxDc > 1}; see the class javadoc. */
+    /** Supplied capacity verdict; independent of the display number. */
     private final boolean overCapacity;
     private final int islands;
     private final int singularIslands;
     private final double bucklingFactor;
-    /** Server-side double verdict of {@code 0 < bucklingFactor <= 1}. */
+    /** Supplied buckling verdict; its boundary belongs to the originating engine. */
     private final boolean bucklingCritical;
     /**
      * What the buckling number is, in one field instead of a factor plus a flag.
@@ -112,7 +109,12 @@ public final class StressResultPacket {
                                int totalMembers, int totalShells,
                                int truncatedBlocks,
                                Set<Integer> withheldMembers, Set<Integer> withheldShells,
-                               List<MemberSnapshot> members, List<ShellSnapshot> shells) {
+                               List<MemberSnapshot> members, List<ShellSnapshot> shells,
+                               int governing, String governingKind, boolean governingOmitted, DisplayDelivery delivery) {
+        this.delivery = delivery;
+        this.governing = governing;
+        this.governingKind = governingKind;
+        this.governingOmitted = governingOmitted;
         this.valid = valid;
         this.invalidReason = invalidReason;
         this.revision = revision;
@@ -140,7 +142,7 @@ public final class StressResultPacket {
 
     private static StressResultPacket invalid(String reason) {
         return new StressResultPacket(false, reason, 0, "", false, 0, false, 0, 0, 0, false,
-                BucklingState.UNKNOWN, null, 0, 0, 0, Set.of(), Set.of(), List.of(), List.of());
+                BucklingState.UNKNOWN, null, 0, 0, 0, Set.of(), Set.of(), List.of(), List.of(), -1, "", false, null);
     }
 
     /** A per-reason tally sized to this build of the enum, whatever the caller passed. */
@@ -159,12 +161,12 @@ public final class StressResultPacket {
     public static StressResultPacket of(AnalysisResult r, String dimension, boolean bucklingSkipped,
                                         Set<Integer> withheldMembers, Set<Integer> withheldShells,
                                         int truncatedBlocks) {
-        List<MemberSnapshot> m = keepGoverning(r.members(), MAX_MEMBERS,
-                "member".equals(r.governingKind()) ? r.governing() : Integer.MIN_VALUE,
-                MemberSnapshot::id, "members");
-        List<ShellSnapshot> s = keepGoverning(r.shells(), MAX_SHELLS,
-                "shell".equals(r.governingKind()) ? r.governing() : Integer.MIN_VALUE,
-                ShellSnapshot::id, "plate facets");
+        if (!r.ok()) return invalid("analysis failed: " + r.diagnostic());
+        DisplayDelivery delivery = DisplayDelivery.prepare(r,
+                withheldMembers == null ? Set.of() : withheldMembers, withheldShells == null ? Set.of() : withheldShells);
+        List<MemberSnapshot> m = delivery.members();
+        List<ShellSnapshot> s = delivery.shells();
+        boolean omitted = omitted(r.governingKind(), r.governing(), m, s);
         // The one place DISABLED_BY_SCALE can be said. The engine was asked not to run
         // the screen and answered accordingly; only this side knows the reason was size.
         BucklingState state = bucklingSkipped ? BucklingState.DISABLED_BY_SCALE : r.bucklingState();
@@ -174,36 +176,32 @@ public final class StressResultPacket {
         }
         return new StressResultPacket(true, "",
                 r.revision().value(), dimension, r.singular(),
-                r.maxDc(), r.maxDc() > 1.0,
+                r.maxDc(), r.overCapacity(),
                 r.islands(), r.singularIslands(),
                 r.bucklingFactor(), r.bucklingCritical(), state, byReason,
                 r.members().size(), r.shells().size(),
-                truncatedBlocks, withheldMembers, withheldShells, m, s);
+                truncatedBlocks, selectedWithheld(withheldMembers, m.stream().map(MemberSnapshot::id).toList()),
+                selectedWithheld(withheldShells, s.stream().map(ShellSnapshot::id).toList()),
+                m, s, r.governing(), r.governingKind(), omitted, delivery);
     }
 
-    /**
-     * Truncates to {@code max}, but never drops the governing element: the one number
-     * the HUD headlines must correspond to something the player can find drawn, or the
-     * overlay says "max D/C 1.31" while every visible element reads safe (#42).
-     */
-    private static <T> List<T> keepGoverning(List<T> all, int max, int governingId,
-                                             java.util.function.ToIntFunction<T> id, String what) {
-        if (all.size() <= max) return all;
-        BlockRealityMod.LOG.warn(
-                "stress overlay truncated: {} {} solved, {} sent — the rest are not drawn",
-                all.size(), what, max);
-        List<T> kept = new ArrayList<>(all.subList(0, max));
-        if (governingId != Integer.MIN_VALUE
-                && kept.stream().noneMatch(t -> id.applyAsInt(t) == governingId)) {
-            for (T t : all) {
-                if (id.applyAsInt(t) == governingId) {
-                    kept.set(max - 1, t);
-                    break;
-                }
-            }
-        }
-        return kept;
+    private static Set<Integer> selectedWithheld(Set<Integer> all, List<Integer> selected) {
+        if (all == null || all.isEmpty()) return Set.of();
+        Set<Integer> out = new java.util.HashSet<>();
+        for (int id : selected) if (all.contains(id)) out.add(id);
+        return out;
     }
+
+    private static boolean omitted(String kind, int id, List<MemberSnapshot> m, List<ShellSnapshot> s) {
+        return "member".equals(kind) ? m.stream().noneMatch(v -> v.id() == id)
+                : "shell".equals(kind) && s.stream().noneMatch(v -> v.id() == id);
+    }
+    public int governing() { return governing; }
+    public String governingKind() { return governingKind; }
+    public boolean governingOmitted() { return governingOmitted; }
+    /** A received summary remains analysis even if no complete element fits the display budget. */
+    public boolean hasSummary() { return valid && revision >= 0; }
+    public boolean allMechanism() { return singular && islands > 0 && singularIslands == islands; }
 
     /** False when decoding failed; the handler must drop the packet, not render it. */
     public boolean valid() { return valid; }
@@ -225,7 +223,7 @@ public final class StressResultPacket {
 
     public int singularIslands() { return singularIslands; }
 
-    /** Smallest linear-buckling load factor; {@code <= 1} means already unstable. */
+    /** Smallest supplied linear-buckling factor. Read bucklingCritical() for the verdict. */
     public double bucklingFactor() { return bucklingFactor; }
 
     /** The server's double-precision verdict; the client never re-derives it. */
@@ -270,19 +268,18 @@ public final class StressResultPacket {
 
     // ---------------------------------------------------------------- encode
     //
-    // Legacy beams still carry the FIELD; shells carry native recovery samples (channel 6). Thirty-odd numbers per member replace eleven
-    // stations of four fibres each — about a seventh of the bytes — and the client can
-    // then evaluate the exact stress at any point of any block face, which is what a
-    // surface contour needs and what interpolating between samples could never give.
+    // Shared beam/shell samples and independent global verdicts; no force reconstruction.
     public static void encode(StressResultPacket p, FriendlyByteBuf buf) {
+        if (!p.valid) throw new IllegalArgumentException("cannot encode invalid analysis packet");
+        int start = buf.writerIndex();
         buf.writeVarLong(p.revision);
         buf.writeUtf(p.dimension, 256);
         buf.writeBoolean(p.singular);
-        buf.writeFloat((float) p.maxDc);
+        buf.writeDouble(p.maxDc);
         buf.writeBoolean(p.overCapacity);
         buf.writeVarInt(Math.max(0, p.islands));
         buf.writeVarInt(Math.max(0, p.singularIslands));
-        buf.writeFloat((float) p.bucklingFactor);
+        buf.writeDouble(p.bucklingFactor);
         buf.writeBoolean(p.bucklingCritical);
         buf.writeByte(p.bucklingState.ordinal());
         // Fixed length: both ends come out of the same jar, so the enum cannot differ
@@ -293,15 +290,22 @@ public final class StressResultPacket {
         buf.writeVarInt(Math.max(0, p.totalShells));
         buf.writeVarInt(Math.min(p.members.size(), MAX_MEMBERS));
 
-        for (int i = 0; i < p.members.size() && i < MAX_MEMBERS; i++) {
+        if (p.delivery != null) p.delivery.writeMembers(buf);
+        else for (int i = 0; i < p.members.size() && i < MAX_MEMBERS; i++) {
             MemberPacketCodec.write(buf, p.members.get(i), p.withheldMembers.contains(p.members.get(i).id()));
         }
 
         buf.writeVarInt(Math.min(p.shells.size(), MAX_SHELLS));
-        for (int i = 0; i < p.shells.size() && i < MAX_SHELLS; i++) {
+        if (p.delivery != null) p.delivery.writeShells(buf);
+        else for (int i = 0; i < p.shells.size() && i < MAX_SHELLS; i++) {
             ShellSnapshot s = p.shells.get(i);
             ShellPacketCodec.write(buf, s, p.withheldShells.contains(s.id()));
         }
+        buf.writeByte("member".equals(p.governingKind) ? 1 : "shell".equals(p.governingKind) ? 2 : 0);
+        buf.writeVarInt(p.governing);
+        buf.writeBoolean(p.governingOmitted);
+        if (buf.writerIndex() - start > DisplayDelivery.MAX_PACKET_BYTES)
+            throw new IllegalStateException("display header exceeded reserved budget");
     }
 
     /**
@@ -310,7 +314,7 @@ public final class StressResultPacket {
      * <p>{@code writeUtf(s, max)} throws when {@code s} is longer, and this encode runs
      * inside the broadcast loop — one over-long token from an engine that is not the one
      * this build ships would take out the send to every player, not just the drawing of
-     * one member. {@code EngineStatusPacket} already guards its two strings this way; the
+     * one member. {@code AnalysisUpdatePacket} already guards its two strings this way; the
      * two element tokens did not (PR26_REVIEW ATK-10 / DF-11). Tokens come from the
      * engine, so this should never fire; a guard that never fires is the point.
      */
@@ -340,16 +344,18 @@ public final class StressResultPacket {
     }
 
     private static StressResultPacket decodeStrict(FriendlyByteBuf buf) {
+        if (buf.readableBytes() > DisplayDelivery.MAX_PACKET_BYTES) throw new Bad("display frame budget exceeded");
+        var budget = new DisplayDelivery.ReadBudget();
         long revision = buf.readVarLong();
         if (revision < 0) throw new Bad("negative revision");
         String dimension = buf.readUtf(256);
         boolean singular = buf.readBoolean();
-        double maxDc = finite(buf.readFloat(), "maxDc");
+        double maxDc = finite(buf.readDouble(), "maxDc");
+        if (maxDc < 0) throw new Bad("negative maxDc");
         boolean overCapacity = buf.readBoolean();
-        maxDc = alignToVerdict(maxDc, overCapacity);
         int islands = count(buf.readVarInt(), Integer.MAX_VALUE, "islands");
         int singularIslands = count(buf.readVarInt(), Integer.MAX_VALUE, "singularIslands");
-        double bucklingFactor = finite(buf.readFloat(), "bucklingFactor");
+        double bucklingFactor = finite(buf.readDouble(), "bucklingFactor");
         if (bucklingFactor < 0) throw new Bad("negative bucklingFactor");
         boolean bucklingCritical = buf.readBoolean();
         int stateOrdinal = buf.readByte();
@@ -357,13 +363,7 @@ public final class StressResultPacket {
             throw new Bad("unknown bucklingState ordinal " + stateOrdinal);
         }
         BucklingState bucklingState = BucklingState.values()[stateOrdinal];
-        // A positive factor smaller than the smallest float degrades to 0.0f in transit,
-        // which would look like a contradiction while being nothing but the same lossy
-        // trip alignToVerdict already handles for maxDc. The server said a factor was
-        // computed and that it was positive; the magnitude is what the wire lost, so
-        // restore the smallest positive value rather than reject the packet. The
-        // verdict itself never depended on this number — it travels as its own flag.
-        if (bucklingState.hasFactor() && bucklingFactor == 0) bucklingFactor = Float.MIN_VALUE;
+        // f64 preserves even subnormal factors. Contradictions are rejected, never repaired.
         // A factor and a state that disagree is a contradiction, not a schema: every
         // state but COMPUTED means the number was never produced.
         if (bucklingState.hasFactor() != (bucklingFactor > 0)) {
@@ -377,23 +377,36 @@ public final class StressResultPacket {
         int totalMembers = count(buf.readVarInt(), Integer.MAX_VALUE, "totalMembers");
         int totalShells = count(buf.readVarInt(), Integer.MAX_VALUE, "totalShells");
         int nMembers = count(buf.readVarInt(), MAX_MEMBERS, "members");
+        if (nMembers > totalMembers || singularIslands > islands) throw new Bad("summary count contradiction");
 
         Set<Integer> withheldMembers = new java.util.LinkedHashSet<>();
         Set<Integer> withheldShells = new java.util.LinkedHashSet<>();
+        Set<Integer> memberIds = new java.util.HashSet<>(), shellIds = new java.util.HashSet<>();
         List<MemberSnapshot> members = new ArrayList<>(nMembers);
         for (int i = 0; i < nMembers; i++) {
-            MemberPacketCodec.Entry entry = MemberPacketCodec.read(buf);
+            MemberPacketCodec.Entry entry = MemberPacketCodec.read(buf, budget);
+            if (!memberIds.add(entry.member().id())) throw new Bad("duplicate member id");
             members.add(entry.member());
             if (entry.withheld()) withheldMembers.add(entry.member().id());
         }
 
         int nShells = count(buf.readVarInt(), MAX_SHELLS, "shells");
+        if (nShells > totalShells) throw new Bad("shell total smaller than sent count");
         List<ShellSnapshot> shells = new ArrayList<>(nShells);
         for (int i = 0; i < nShells; i++) {
-            ShellPacketCodec.Entry entry = ShellPacketCodec.read(buf);
+            ShellPacketCodec.Entry entry = ShellPacketCodec.read(buf, budget);
+            if (entry.shell().id() < 0 || !shellIds.add(entry.shell().id())) throw new Bad("invalid/duplicate shell id");
             shells.add(entry.shell());
             if (entry.withheld()) withheldShells.add(entry.shell().id());
         }
+
+        int kindCode = count(buf.readUnsignedByte(), 2, "governing kind");
+        String governingKind = kindCode == 1 ? "member" : kindCode == 2 ? "shell" : "";
+        int governing = buf.readVarInt();
+        boolean governingOmitted = buf.readBoolean();
+        if (governing < -1 || (kindCode == 0 ? governing != -1 : governing < 0)
+                || governingOmitted != omitted(governingKind, governing, members, shells))
+            throw new Bad("governing delivery contradiction");
 
         // Nothing was left out, yet something claims its input was cut. The server sets
         // both from one computation, so this cannot happen honestly — and a withheld
@@ -414,19 +427,8 @@ public final class StressResultPacket {
                 maxDc, overCapacity, islands, singularIslands,
                 bucklingFactor, bucklingCritical, bucklingState, unassignedByReason,
                 totalMembers, totalShells,
-                truncatedBlocks, withheldMembers, withheldShells, members, shells);
-    }
-
-    /**
-     * Nudges a float-degraded D/C onto the side of 1.0 the server ruled for, so every
-     * downstream comparison ({@code isOverloaded}, palette thresholds) agrees with the
-     * carried verdict. The shift is at most one ulp around 1.0 — far inside the display
-     * track's 1e-5 budget — and only fires when the rounding actually crossed the line.
-     */
-    private static double alignToVerdict(double dc, boolean overloaded) {
-        if (overloaded && dc <= 1.0) return Math.nextUp(1.0);
-        if (!overloaded && dc > 1.0) return 1.0;
-        return dc;
+                truncatedBlocks, withheldMembers, withheldShells, members, shells,
+                governing, governingKind, governingOmitted, null);
     }
 
     /** Out-of-range counts reject the packet: a count past the cap is not this schema. */
@@ -441,26 +443,9 @@ public final class StressResultPacket {
      * engine wire, which is itself finite-checked, so a well-behaved server can never
      * hit this.
      */
-    private static double finite(float f, String what) {
-        if (!Float.isFinite(f)) throw new Bad(what + " is not finite");
+    private static double finite(double f, String what) {
+        if (!Double.isFinite(f)) throw new Bad(what + " is not finite");
         return f;
-    }
-
-    // ---------------------------------------------------------------- handle
-    /**
-     * The client-only type is named by its fully qualified name inside the supplier, and
-     * is deliberately <em>not</em> imported. An import would put it in this class's
-     * constant pool, and a dedicated server verifying this class would then try to
-     * resolve a class that does not exist on its side.
-     */
-    public static void handle(StressResultPacket p, Supplier<NetworkEvent.Context> ctx) {
-        if (!p.valid) {
-            BlockRealityMod.LOG.warn("dropping malformed stress packet: {}", p.invalidReason);
-        } else {
-            ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                    () -> () -> com.blockreality.impl.client.ClientStressState.accept(p)));
-        }
-        ctx.get().setPacketHandled(true);
     }
 
     public WorldRevision worldRevision() { return new WorldRevision(revision); }

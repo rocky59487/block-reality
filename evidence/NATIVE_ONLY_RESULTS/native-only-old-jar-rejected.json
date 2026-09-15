@@ -1,0 +1,26 @@
+{
+  "classes": 172,
+  "errors": [
+    "forbidden constant: com/blockreality/api/MemberSnapshot.class -> com/blockreality/api/StressFieldSpec",
+    "forbidden entry: com/blockreality/api/ShellFieldSpec$Moments.class",
+    "forbidden constant: com/blockreality/api/ShellFieldSpec$Moments.class -> com/blockreality/api/ShellFieldSpec",
+    "forbidden entry: com/blockreality/api/ShellFieldSpec$Surface.class",
+    "forbidden constant: com/blockreality/api/ShellFieldSpec$Surface.class -> com/blockreality/api/ShellFieldSpec",
+    "forbidden entry: com/blockreality/api/ShellFieldSpec.class",
+    "forbidden constant: com/blockreality/api/ShellFieldSpec.class -> com/blockreality/api/ShellFieldSpec",
+    "forbidden constant: com/blockreality/api/ShellSnapshot.class -> com/blockreality/api/ShellFieldSpec",
+    "forbidden entry: com/blockreality/api/StressFieldSpec.class",
+    "forbidden constant: com/blockreality/api/StressFieldSpec.class -> com/blockreality/api/StressFieldSpec",
+    "forbidden entry: com/blockreality/core/protocol/BinaryCodec.class",
+    "forbidden constant: com/blockreality/core/protocol/BinaryCodec.class -> com/blockreality/api/StressFieldSpec",
+    "forbidden constant: com/blockreality/core/protocol/BinaryCodec.class -> com/blockreality/api/ShellFieldSpec",
+    "forbidden constant: com/blockreality/core/protocol/BinaryCodec.class -> com/blockreality/core/protocol/BinaryCodec",
+    "forbidden entry: com/blockreality/core/protocol/ProtocolCodec$Reject.class",
+    "forbidden constant: com/blockreality/core/protocol/ProtocolCodec$Reject.class -> com/blockreality/core/protocol/ProtocolCodec",
+    "forbidden entry: com/blockreality/core/protocol/ProtocolCodec.class",
+    "forbidden constant: com/blockreality/core/protocol/ProtocolCodec.class -> com/blockreality/api/StressFieldSpec",
+    "forbidden constant: com/blockreality/core/protocol/ProtocolCodec.class -> com/blockreality/api/ShellFieldSpec",
+    "forbidden constant: com/blockreality/core/protocol/ProtocolCodec.class -> com/blockreality/core/protocol/ProtocolCodec"
+  ],
+  "sha256": "ad0b906d31c7fae9f549fd0f5756df22d1084f238ea5eba1f8d2e7befb8d52f9"
+}

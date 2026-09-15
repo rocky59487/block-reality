@@ -1,0 +1,24 @@
+[
+  {
+    "arm": "checksum",
+    "exit": 1,
+    "behavioral_oracle": [
+      {
+        "test": "damagedChecksumsAndEveryTruncationFailClosed()",
+        "failure": "org.opentest4j.AssertionFailedError"
+      }
+    ],
+    "pass": true
+  },
+  {
+    "arm": "missing-input",
+    "exit": 1,
+    "behavioral_oracle": [
+      {
+        "test": "unreadableStructureAndGroundNeverDispatch()",
+        "failure": "org.opentest4j.AssertionFailedError"
+      }
+    ],
+    "pass": true
+  }
+]

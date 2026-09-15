@@ -91,10 +91,28 @@ jobs:
         run: |
           chmod +x dist/br-sidecar mod/gradlew
           cd mod && ./gradlew --no-daemon test "-Dbr.sidecar=$GITHUB_WORKSPACE/dist/br-sidecar"
+      - name: construction journal survives interrupted JVMs (file participants)
+        working-directory: mod
+        run: ./gradlew --no-daemon :core:constructionRecoveryGate "-Dbr.transactionEvidence=$RUNNER_TEMP/construction-recovery"
+      - name: preserve construction process interruption receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: construction-core-recovery
+          path: ${{ runner.temp }}/construction-recovery
       - name: forge build and tests
         run: |
           chmod +x forge/gradlew
           cd forge && ./gradlew --no-daemon build
+
+      # Compile opt-in measurement drivers without running hardware benchmarks or
+      # adding their classes to the ordinary source sets/jar.
+      - name: compile core registry profile driver
+        working-directory: mod
+        run: ./gradlew --no-daemon -I ../scripts/registry-scaling.gradle :core:compileRegistryProfileJava
+      - name: compile Forge registry save profile driver
+        working-directory: forge
+        run: ./gradlew --no-daemon -I ../scripts/registry-save-profile.gradle compileRegistrySaveProfileJava
 
       # Runs LAST because it reads gradle's JUnit XML, which only exists once both
       # suites have run. Every check count quoted in a document is compared against
@@ -167,7 +185,16 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: dependencies
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq cmake g++
+        run: |
+          if ! command -v cmake >/dev/null || ! command -v g++ >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq cmake g++
+          fi
+          cmake --version
+          g++ --version
+
+      - name: RCON framing used by server smoke tests
+        run: python3 scripts/test_rcon_client.py
 
       - name: build the BSI host and its stub engines
         run: |
@@ -198,11 +225,18 @@ jobs:
       # mutation binaries that never ran once were scored as ten that did).
       - name: a foreign engine ABI is refused
         run: |
-          test -f build/host/libbsi_stub_engine_abi2.so
-          if python3 contract/conformance/run.py --adapter engine \
-               --lib build/host/libbsi_stub_engine_abi2.so --hostd build/host/bsi-hostd --stub; then
-            echo "an ABI-2 engine was loaded; the version gate did nothing"; exit 1
+          # Use one past the current ABI; a newly supported version is not foreign.
+          abi=$(awk '$1=="#define" && $2=="BSI_ENGINE_ABI" {sub(/u$/, "", $3); print $3}' contract/bsi_engine.h)
+          test -n "$abi"
+          g++ -std=c++17 -shared -fPIC '-DBSI_STUB_ABI=(BSI_ENGINE_ABI+1u)' contract/host/test/stub_engine.cpp \
+              -o build/host/libbsi_stub_engine_unknown.so
+          test -f build/host/libbsi_stub_engine_unknown.so
+          if build/host/bsi-hostd --engine build/host/libbsi_stub_engine_unknown.so \
+              </dev/null >build/host/unknown-abi.log 2>&1; then
+            echo "an unknown engine ABI was loaded; the version gate did nothing"; exit 1
           fi
+          cat build/host/unknown-abi.log
+          grep -F "bsi_engine_entry returned NULL (host ABI $abi not supported)" build/host/unknown-abi.log
 
       # ---------------------------------------------------------------- N24-a, packaging
       #

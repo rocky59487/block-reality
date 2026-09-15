@@ -1,0 +1,165 @@
+{
+  "kind": "locally qualified candidate",
+  "version": "1.3.0",
+  "source_commit": "42e10f5f7af166788588afcd2fb2fd97101d16dc",
+  "contract_sha256": "4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801",
+  "platforms": {
+    "windows": {
+      "artifact": {
+        "platform": "windows-x86_64",
+        "exports": [
+          "bsi_capi_abi_version",
+          "bsi_capi_call",
+          "bsi_capi_close",
+          "bsi_capi_last_error",
+          "bsi_capi_open",
+          "bsi_engine_entry"
+        ],
+        "dependencies": [
+          "kernel32.dll",
+          "msvcrt.dll"
+        ],
+        "binary_sha256": "9761d73586277614a56132ec3492d324ae83c8489068c00c266c3d56f530acea",
+        "bytes": 31769600,
+        "raw": {},
+        "hello": {
+          "bsi": 1,
+          "kind": "response",
+          "id": "hello",
+          "method": "bsi.hello",
+          "revision": 1,
+          "status": "ok",
+          "engine": "tectonic",
+          "version": "1.3.0",
+          "buildSha": "42e10f5",
+          "contractSha256": "4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801",
+          "capabilities": [
+            "bsi.buckling.eigen",
+            "bsi.core",
+            "bsi.precision.f32",
+            "bsi.readback.memberGeometry",
+            "bsi.readback.members",
+            "bsi.readback.shells",
+            "bsi.readback.stationIdentity",
+            "bsi.readback.stations"
+          ],
+          "threads": 32,
+          "arena": {
+            "required": false,
+            "minReplyBytes": 65536
+          },
+          "precision": {
+            "tiers": [
+              "commit"
+            ],
+            "storage": [
+              "f64",
+              "f32"
+            ],
+            "warmStart": false
+          },
+          "transports": [
+            "frame",
+            "arena",
+            "stdio-b64"
+          ]
+        }
+      },
+      "acceptance": {
+        "boundary": "PASS DET3",
+        "corpus": "PASS DET3",
+        "binary_sha256": "9761d73586277614a56132ec3492d324ae83c8489068c00c266c3d56f530acea",
+        "contract_sha256": "4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801"
+      },
+      "build_provenance_sha256": "544920236979e2db50b5701bdab43d65002d15e7a5dec748b56ce947241df220"
+    },
+    "linux": {
+      "artifact": {
+        "platform": "linux-x86_64",
+        "exports": [
+          "bsi_capi_abi_version",
+          "bsi_capi_call",
+          "bsi_capi_close",
+          "bsi_capi_last_error",
+          "bsi_capi_open",
+          "bsi_engine_entry"
+        ],
+        "dependencies": [
+          "libm.so.6",
+          "libc.so.6",
+          "ld-linux-x86-64.so.2"
+        ],
+        "binary_sha256": "53aae7156b94c0a761ef5abb2322ad47a708362f417a50ca3f04105d9c50abf1",
+        "bytes": 28500368,
+        "raw": {
+          "exports": {
+            "stdout_base64": "MDAwMDAwMDAwMDBlZTY5MCBUIGJzaV9jYXBpX2FiaV92ZXJzaW9uCjAwMDAwMDAwMDAwZWU2YTAgVCBic2lfY2FwaV9jYWxsCjAwMDAwMDAwMDAwZWYyOTAgVCBic2lfY2FwaV9jbG9zZQowMDAwMDAwMDAwMGVmNDEwIFQgYnNpX2NhcGlfbGFzdF9lcnJvcgowMDAwMDAwMDAwMGVmNGUwIFQgYnNpX2NhcGlfb3BlbgowMDAwMDAwMDAwMDU4YWEwIFQgYnNpX2VuZ2luZV9lbnRyeQo=",
+            "stdout_sha256": "c50bc3de5849dc1a9b4b3053df3352a9957263f04c9128a5ce90f0d59e982ff0",
+            "stderr_base64": "",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "imports": {
+            "stdout_base64": "CkR5bmFtaWMgc2VjdGlvbiBhdCBvZmZzZXQgMHgxYjE1YzIwIGNvbnRhaW5zIDI3IGVudHJpZXM6CiAgVGFnICAgICAgICBUeXBlICAgICAgICAgICAgICAgICAgICAgICAgIE5hbWUvVmFsdWUKIDB4MDAwMDAwMDAwMDAwMDAwMSAoTkVFREVEKSAgICAgICAgICAgICBTaGFyZWQgbGlicmFyeTogW2xpYm0uc28uNl0KIDB4MDAwMDAwMDAwMDAwMDAwMSAoTkVFREVEKSAgICAgICAgICAgICBTaGFyZWQgbGlicmFyeTogW2xpYmMuc28uNl0KIDB4MDAwMDAwMDAwMDAwMDAwMSAoTkVFREVEKSAgICAgICAgICAgICBTaGFyZWQgbGlicmFyeTogW2xkLWxpbnV4LXg4Ni02NC5zby4yXQogMHgwMDAwMDAwMDAwMDAwMDBlIChTT05BTUUpICAgICAgICAgICAgIExpYnJhcnkgc29uYW1lOiBbbGliYnNpX3RlY3RvbmljLnNvXQogMHgwMDAwMDAwMDAwMDAwMDBjIChJTklUKSAgICAgICAgICAgICAgIDB4NGEwMDAKIDB4MDAwMDAwMDAwMDAwMDAwZCAoRklOSSkgICAgICAgICAgICAgICAweDFhMjUzNjAKIDB4MDAwMDAwMDAwMDAwMDAxOSAoSU5JVF9BUlJBWSkgICAgICAgICAweDFiMTRkNjAKIDB4MDAwMDAwMDAwMDAwMDAxYiAoSU5JVF9BUlJBWVNaKSAgICAgICA0MCAoYnl0ZXMpCiAweDAwMDAwMDAwMDAwMDAwMWEgKEZJTklfQVJSQVkpICAgICAgICAgMHgxYjE0ZDg4CiAweDAwMDAwMDAwMDAwMDAwMWMgKEZJTklfQVJSQVlTWikgICAgICAgMTYgKGJ5dGVzKQogMHgwMDAwMDAwMDZmZmZmZWY1IChHTlVfSEFTSCkgICAgICAgICAgIDB4MmQwCiAweDAwMDAwMDAwMDAwMDAwMDUgKFNUUlRBQikgICAgICAgICAgICAgMHhlOTgKIDB4MDAwMDAwMDAwMDAwMDAwNiAoU1lNVEFCKSAgICAgICAgICAgICAweDMxMAogMHgwMDAwMDAwMDAwMDAwMDBhIChTVFJTWikgICAgICAgICAgICAgIDE2NDMgKGJ5dGVzKQogMHgwMDAwMDAwMDAwMDAwMDBiIChTWU1FTlQpICAgICAgICAgICAgIDI0IChieXRlcykKIDB4MDAwMDAwMDAwMDAwMDAwMyAoUExUR09UKSAgICAgICAgICAgICAweDFiMTcwMDAKIDB4MDAwMDAwMDAwMDAwMDAwMiAoUExUUkVMU1opICAgICAgICAgICAyNTkyIChieXRlcykKIDB4MDAwMDAwMDAwMDAwMDAxNCAoUExUUkVMKSAgICAgICAgICAgICBSRUxBCiAweDAwMDAwMDAwMDAwMDAwMTcgKEpNUFJFTCkgICAgICAgICAgICAgMHg0ODc5MAogMHgwMDAwMDAwMDAwMDAwMDA3IChSRUxBKSAgICAgICAgICAgICAgIDB4MTcyMAogMHgwMDAwMDAwMDAwMDAwMDA4IChSRUxBU1opICAgICAgICAgICAgIDI5MDkyOCAoYnl0ZXMpCiAweDAwMDAwMDAwMDAwMDAwMDkgKFJFTEFFTlQpICAgICAgICAgICAgMjQgKGJ5dGVzKQogMHgwMDAwMDAwMDZmZmZmZmZlIChWRVJORUVEKSAgICAgICAgICAgIDB4MTYwMAogMHgwMDAwMDAwMDZmZmZmZmZmIChWRVJORUVETlVNKSAgICAgICAgIDMKIDB4MDAwMDAwMDA2ZmZmZmZmMCAoVkVSU1lNKSAgICAgICAgICAgICAweDE1MDQKIDB4MDAwMDAwMDA2ZmZmZmZmOSAoUkVMQUNPVU5UKSAgICAgICAgICAxMjA5NwogMHgwMDAwMDAwMDAwMDAwMDAwIChOVUxMKSAgICAgICAgICAgICAgIDB4MAo=",
+            "stdout_sha256": "e7b0ce0f7e9f3dd585feaf7f4ae4d6e3eca042143a96d4f94554f314dfd57619",
+            "stderr_base64": "",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "hello": {
+          "bsi": 1,
+          "kind": "response",
+          "id": "hello",
+          "method": "bsi.hello",
+          "revision": 1,
+          "status": "ok",
+          "engine": "tectonic",
+          "version": "1.3.0",
+          "buildSha": "42e10f5",
+          "contractSha256": "4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801",
+          "capabilities": [
+            "bsi.buckling.eigen",
+            "bsi.core",
+            "bsi.precision.f32",
+            "bsi.readback.memberGeometry",
+            "bsi.readback.members",
+            "bsi.readback.shells",
+            "bsi.readback.stationIdentity",
+            "bsi.readback.stations"
+          ],
+          "threads": 32,
+          "arena": {
+            "required": false,
+            "minReplyBytes": 65536
+          },
+          "precision": {
+            "tiers": [
+              "commit"
+            ],
+            "storage": [
+              "f64",
+              "f32"
+            ],
+            "warmStart": false
+          },
+          "transports": [
+            "frame",
+            "arena",
+            "stdio-b64"
+          ]
+        }
+      },
+      "acceptance": {
+        "boundary": "PASS DET3",
+        "corpus": "PASS DET3",
+        "binary_sha256": "53aae7156b94c0a761ef5abb2322ad47a708362f417a50ca3f04105d9c50abf1",
+        "contract_sha256": "4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801"
+      },
+      "build_provenance_sha256": "866db206b06504e20f2fa918bc85db0bab7182b21546a196448924f1883644d8"
+    }
+  },
+  "limitations": [
+    "not a published replacement for v1.3",
+    "Minecraft GAME_SWAP and HUD qualification pending",
+    "v2/v3/v4 roadmap incomplete"
+  ]
+}

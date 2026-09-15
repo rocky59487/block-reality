@@ -1,0 +1,13 @@
+[
+  {
+    "arm": "stopped-span",
+    "exit": 1,
+    "behavioral_oracle": [
+      {
+        "test": "stopAndRestartRejectOldWorkAndPreserveImmutableStoppedSnapshot()",
+        "failure": "org.opentest4j.AssertionFailedError"
+      }
+    ],
+    "pass": true
+  }
+]

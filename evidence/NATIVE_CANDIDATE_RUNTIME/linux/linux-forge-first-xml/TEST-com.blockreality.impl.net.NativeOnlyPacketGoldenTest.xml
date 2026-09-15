@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.net.NativeOnlyPacketGoldenTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-10T00:27:09" hostname="rockylaptop" time="0.016">
+  <properties/>
+  <testcase name="fixedPacketsRemainByteIdenticalAcrossLegacyRemoval()" classname="com.blockreality.impl.net.NativeOnlyPacketGoldenTest" time="0.016"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

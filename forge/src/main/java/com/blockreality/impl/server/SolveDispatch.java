@@ -1,7 +1,5 @@
 package com.blockreality.impl.server;
 
-import com.blockreality.api.AnalysisResult;
-
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -44,11 +42,11 @@ final class SolveDispatch {
      * @param errors       where failures are recorded — a silent swallow here would
      *                     turn "analysis died" into "analysis is mysteriously slow"
      */
-    static void run(Supplier<AnalysisResult> solve,
-                    Consumer<AnalysisResult> deliver,
+    static <T> void run(Supplier<T> solve,
+                    Consumer<T> deliver,
                     Runnable releaseInFlight,
                     ErrorSink errors) {
-        AnalysisResult result;
+        T result;
         try {
             result = solve.get();
         } catch (Throwable t) {

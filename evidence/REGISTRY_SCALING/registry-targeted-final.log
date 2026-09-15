@@ -1,0 +1,51 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes
+> Task :core:compileTestJava UP-TO-DATE
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses UP-TO-DATE
+
+> Task :core:test
+
+ConstructionSnapshotTest > workAndGraphViewsRejectEveryMutableEntryPoint() PASSED
+
+ConstructionSnapshotTest > backgroundSnapshotRemainsStableDuringEditsAndStaleResultCannotPublish() PASSED
+
+ConstructionSnapshotTest > snapshotNullRejectionSurvivesHashBackedStorage() PASSED
+
+ConstructionSnapshotTest > workSnapshotDoesNotAliasCallerCollections() PASSED
+
+ConstructionSnapshotTest > graphRecordsAndRangeViewsNeverExposeMutableEntries() PASSED
+
+ConstructionCodecTest > resignedUnknownSchemaAndInvalidEpochCounterAndCountsStillRefuse() PASSED
+
+ConstructionCodecTest > corruptionTruncationAndTrailingDataAlwaysRefuse() PASSED
+
+ConstructionCodecTest > duplicateIdsOwnershipAndOrphanParentsRefuseEvenWithValidChecksum() PASSED
+
+ConstructionLedgerTest > cellAndEpochBoundsRefuseWithoutEvictionOrWraparound() PASSED
+
+ConstructionLedgerTest > frameRunsKeepParallelCrossingProductAndUndeclaredAxesSeparate() PASSED
+
+ConstructionLedgerTest > immutableWorkerInputAndStaleCompletionCannotOverwriteNewEdits() PASSED
+
+ConstructionLedgerTest > historyAndLineageBoundsCannotEvictPublishedAncestors() PASSED
+
+ConstructionLedgerTest > restoredRegistryIsIndependentOfLoadedObservationOrderAndEmptyWorldRetires() PASSED
+
+ConstructionLedgerTest > splitRetiresParentEvenWhenOneChildWasCompletelyReplacedInTheBatch() PASSED
+
+ConstructionLedgerTest > monolithAndPanelGroupsUseOnlyDeclaredProductsAndFaceAdjacency() PASSED
+
+ConstructionLedgerTest > splitAndMergeCreateNewIdentitiesWithExactLineage() PASSED
+
+ConstructionLedgerTest > fullDestructionAndSameTickReplacementCannotResurrectIdentityEvenAfterPendingSave() PASSED
+
+ConstructionLedgerTest > noOpExtensionTrimAndUnrelatedObjectsRetainPublishedIdentity() PASSED
+
+BUILD SUCCESSFUL in 2s
+7 actionable tasks: 2 executed, 5 up-to-date

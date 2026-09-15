@@ -1,0 +1,210 @@
+{
+  "jar-0": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\native-candidate-runtime\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "build\\native-candidate-runtime\\blockreality-0.4.0-dev.jar",
+      "build\\native-candidate-runtime\\jar-windows-first\\cache",
+      "build\\native-candidate-runtime\\jar-windows-first\\inputs",
+      "build\\native-candidate-runtime\\jar-windows-first\\jar-0"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gYnVpbGRcbmF0aXZlLWNhbmRpZGF0ZS1ydW50aW1lXGphci13aW5kb3dzLWZpcnN0XGNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFw5NzYxZDczNTg2Mjc3NjE0YTU2MTMyZWMzNDkyZDMyNGFlODNjODQ4OTA2OGMwMGMyNjZjM2Q1NmY1MzBhY2VhXGJzaV90ZWN0b25pYy5kbGwgKDMxNzY5NjAwIGJ5dGVzLCBlbmdpbmUgdGVjdG9uaWMtMS4zLjArNDJlMTBmNSwgY29udHJhY3QgNGIxMWNjNzM4NzkwoUspDQpQQVNTIGphciByZXBsYXkgNDggZnJhbWVzOyBidWlsZFxuYXRpdmUtY2FuZGlkYXRlLXJ1bnRpbWVcamFyLXdpbmRvd3MtZmlyc3RcY2FjaGVcbGliXHdpbmRvd3MteDg2XzY0XDk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWFcYnNpX3RlY3RvbmljLmRsbCBzaGEyNTY9OTc2MWQ3MzU4NjI3NzYxNGE1NjEzMmVjMzQ5MmQzMjRhZTgzYzg0ODkwNjhjMDBjMjY2YzNkNTZmNTMwYWNlYQ0K",
+    "stdout_sha256": "f7b8773d12a42e36d1f9601e73f825a7b6210abeec0510d3c44ad4d6ca7697a8",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "jar-1": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\native-candidate-runtime\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "build\\native-candidate-runtime\\blockreality-0.4.0-dev.jar",
+      "build\\native-candidate-runtime\\jar-windows-first\\cache",
+      "build\\native-candidate-runtime\\jar-windows-first\\inputs",
+      "build\\native-candidate-runtime\\jar-windows-first\\jar-1"
+    ],
+    "exit": 0,
+    "stdout_base64": "UEFTUyBqYXIgcmVwbGF5IDQ4IGZyYW1lczsgYnVpbGRcbmF0aXZlLWNhbmRpZGF0ZS1ydW50aW1lXGphci13aW5kb3dzLWZpcnN0XGNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFw5NzYxZDczNTg2Mjc3NjE0YTU2MTMyZWMzNDkyZDMyNGFlODNjODQ4OTA2OGMwMGMyNjZjM2Q1NmY1MzBhY2VhXGJzaV90ZWN0b25pYy5kbGwgc2hhMjU2PTk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWENCg==",
+    "stdout_sha256": "7083593d0d7121ee74652acc83764a185be82a9e67179c31af518eceffa8ed6d",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "jar-2": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\native-candidate-runtime\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "build\\native-candidate-runtime\\blockreality-0.4.0-dev.jar",
+      "build\\native-candidate-runtime\\jar-windows-first\\cache",
+      "build\\native-candidate-runtime\\jar-windows-first\\inputs",
+      "build\\native-candidate-runtime\\jar-windows-first\\jar-2"
+    ],
+    "exit": 0,
+    "stdout_base64": "UEFTUyBqYXIgcmVwbGF5IDQ4IGZyYW1lczsgYnVpbGRcbmF0aXZlLWNhbmRpZGF0ZS1ydW50aW1lXGphci13aW5kb3dzLWZpcnN0XGNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFw5NzYxZDczNTg2Mjc3NjE0YTU2MTMyZWMzNDkyZDMyNGFlODNjODQ4OTA2OGMwMGMyNjZjM2Q1NmY1MzBhY2VhXGJzaV90ZWN0b25pYy5kbGwgc2hhMjU2PTk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWENCg==",
+    "stdout_sha256": "7083593d0d7121ee74652acc83764a185be82a9e67179c31af518eceffa8ed6d",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "faults": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\native-candidate-runtime\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "faults",
+      "build\\native-candidate-runtime\\blockreality-0.4.0-dev.jar",
+      "build\\native-candidate-runtime\\jar-windows-first\\fault-cache",
+      "build\\native-candidate-runtime\\jar-windows-first\\inputs",
+      "build\\native-candidate-runtime\\jar-windows-first\\faults"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gYnVpbGRcbmF0aXZlLWNhbmRpZGF0ZS1ydW50aW1lXGphci13aW5kb3dzLWZpcnN0XGZhdWx0LWNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFw5NzYxZDczNTg2Mjc3NjE0YTU2MTMyZWMzNDkyZDMyNGFlODNjODQ4OTA2OGMwMGMyNjZjM2Q1NmY1MzBhY2VhXGJzaV90ZWN0b25pYy5kbGwgKDMxNzY5NjAwIGJ5dGVzLCBlbmdpbmUgdGVjdG9uaWMtMS4zLjArNDJlMTBmNSwgY29udHJhY3QgNGIxMWNjNzM4NzkwoUspDQpidW5kbGVkIGVuZ2luZSBjb250cmFjdCBmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmICE9IG1vZCBjb250cmFjdCA0YjExY2M3Mzg3OTBkMzJkNTc2YWM3MWVjZDFjYjU3ZjA0ZDNlZDkxODZhOWU0M2Y4OTQ5MmFlMTNjMjU4ODAxDQpidW5kbGVkIGVuZ2luZSBjb250cmFjdCBmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmICE9IG1vZCBjb250cmFjdCA0YjExY2M3Mzg3OTBkMzJkNTc2YWM3MWVjZDFjYjU3ZjA0ZDNlZDkxODZhOWU0M2Y4OTQ5MmFlMTNjMjU4ODAxDQp1bnBhY2tlZCB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeSB0byBidWlsZFxuYXRpdmUtY2FuZGlkYXRlLXJ1bnRpbWVcamFyLXdpbmRvd3MtZmlyc3RcZmF1bHQtY2FjaGVcbGliXHdpbmRvd3MteDg2XzY0XGZjMzc4NzQ4ZmVlMzcxMGJmM2U4MzVhNThjOTMzNDFjZTAxY2M5YzhlODllZjBlOWNkOTZkN2JlNDU4NmRlYTRcYnNpX3RlY3RvbmljLmRsbCAoMzE3Njk2MDAgYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0xLjMuMCs0MmUxMGY1LCBjb250cmFjdCA0YjExY2M3Mzg3OTChSykNCnVucGFja2VkIHRoZSBidW5kbGVkIGVuZ2luZSBsaWJyYXJ5IHRvIGJ1aWxkXG5hdGl2ZS1jYW5kaWRhdGUtcnVudGltZVxqYXItd2luZG93cy1maXJzdFxmYXVsdC1jYWNoZVxsaWJcd2luZG93cy14ODZfNjRcOTc2MWQ3MzU4NjI3NzYxNGE1NjEzMmVjMzQ5MmQzMjRhZTgzYzg0ODkwNjhjMDBjMjY2YzNkNTZmNTMwYWNlYVxic2lfdGVjdG9uaWMuZGxsICgzMTc2OTYwMCBieXRlcywgZW5naW5lIHRlY3RvbmljLTEuMy4wKzQyZTEwZjUsIGNvbnRyYWN0IDRiMTFjYzczODc5MKFLKQ0KY291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5pby5JT0V4Y2VwdGlvbjogYnVuZGxlZCBic2lfdGVjdG9uaWMuZGxsIGlzIDMxNzY5NjAwIGJ5dGVzIC8gZmMzNzg3NDhmZWUzNzEwYmYzZTgzNWE1OGM5MzM0MWNlMDFjYzljOGU4OWVmMGU5Y2Q5NmQ3YmU0NTg2ZGVhNCwgbWFuaWZlc3Qgc2F5cyAzMTc2OTYwMCAvIDk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWENCmNvdWxkIG5vdCB1bnBhY2sgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnk6IGphdmEuaW8uSU9FeGNlcHRpb246IGJ1bmRsZWQgYnNpX3RlY3RvbmljLmRsbCBpcyAzMTc2OTU5OSBieXRlcyAvIDNlZjg3ZGQ0MzgyYmFmYzU4ODA1YjIzZGZiOWEyNWM1MzljMzQxNDY1YmU2OTA3MGQxOWFhNzg2NjQ5MDNmZWIsIG1hbmlmZXN0IHNheXMgMzE3Njk2MDAgLyA5NzYxZDczNTg2Mjc3NjE0YTU2MTMyZWMzNDkyZDMyNGFlODNjODQ4OTA2OGMwMGMyNjZjM2Q1NmY1MzBhY2VhDQpjb3VsZCBub3QgdW5wYWNrIHRoZSBidW5kbGVkIGVuZ2luZSBsaWJyYXJ5OiBqYXZhLmlvLklPRXhjZXB0aW9uOiBidW5kbGVkIGJzaV90ZWN0b25pYy5kbGwgZXhjZWVkcyBtYW5pZmVzdCBzaXplIDMxNzY5NjAwDQpjb3VsZCBub3QgdW5wYWNrIHRoZSBidW5kbGVkIGVuZ2luZSBsaWJyYXJ5OiBqYXZhLmlvLkludGVycnVwdGVkSU9FeGNlcHRpb246IGluamVjdGVkIHJlYWwtcmVzb3VyY2UgaW50ZXJydXB0aW9uDQpQQVNTIHJlYWwgYnl0ZXM6IGNhY2hlIGFkb3B0aW9uLCBjb250cmFjdCBwcmVjaGVjaywgdmVyc2lvbiByZXRlbnRpb24sIGNvcnJ1cHRpb24gcmVwYWlyLCBoYXNoL3Nob3J0L292ZXJsb25nL2ludGVycnVwdGlvbiwgdGVtcG9yYXJ5IGNsZWFudXANCg==",
+    "stdout_sha256": "c6f2ff74e53f30d88a690661108e9605b4397ed87b5e657b76a849e28011bbc5",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deny-acl": {
+    "command": [
+      "icacls",
+      "build\\native-candidate-runtime\\jar-windows-first\\denied-cache",
+      "/deny",
+      "ROCKYLAPTOP\\wmc02:(OI)(CI)(W)"
+    ],
+    "exit": 0,
+    "stdout_base64": "cHJvY2Vzc2VkIGZpbGU6IGJ1aWxkXG5hdGl2ZS1jYW5kaWRhdGUtcnVudGltZVxqYXItd2luZG93cy1maXJzdFxkZW5pZWQtY2FjaGUNClN1Y2Nlc3NmdWxseSBwcm9jZXNzZWQgMSBmaWxlczsgRmFpbGVkIHByb2Nlc3NpbmcgMCBmaWxlcw0K",
+    "stdout_sha256": "c805237a69e7d8b2e28cd8b20c83bb6777288562433dffcbe0f83651d863e563",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "denied": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\native-candidate-runtime\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "denied",
+      "build\\native-candidate-runtime\\blockreality-0.4.0-dev.jar",
+      "build\\native-candidate-runtime\\jar-windows-first\\denied-cache",
+      "build\\native-candidate-runtime\\jar-windows-first\\inputs",
+      "build\\native-candidate-runtime\\jar-windows-first\\denied"
+    ],
+    "exit": 0,
+    "stdout_base64": "Y291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5uaW8uZmlsZS5BY2Nlc3NEZW5pZWRFeGNlcHRpb246IEM6XFVzZXJzXHdtYzAyXERlc2t0b3BcYmxvY2stcmVhbGl0eVxidWlsZFxuYXRpdmUtY2FuZGlkYXRlLXJ1bnRpbWVcamFyLXdpbmRvd3MtZmlyc3RcZGVuaWVkLWNhY2hlXGxpYg0KUEFTUyBkZW5pZWQgY2FjaGUNCg==",
+    "stdout_sha256": "d0db1cefef2fb393d3328c1e2e968ead5cd9740562d98a2d7c2cce6e57956efa",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "restore-acl": {
+    "command": [
+      "icacls",
+      "build\\native-candidate-runtime\\jar-windows-first\\denied-cache",
+      "/remove:d",
+      "ROCKYLAPTOP\\wmc02"
+    ],
+    "exit": 0,
+    "stdout_base64": "cHJvY2Vzc2VkIGZpbGU6IGJ1aWxkXG5hdGl2ZS1jYW5kaWRhdGUtcnVudGltZVxqYXItd2luZG93cy1maXJzdFxkZW5pZWQtY2FjaGUNClN1Y2Nlc3NmdWxseSBwcm9jZXNzZWQgMSBmaWxlczsgRmFpbGVkIHByb2Nlc3NpbmcgMCBmaWxlcw0K",
+    "stdout_sha256": "c805237a69e7d8b2e28cd8b20c83bb6777288562433dffcbe0f83651d863e563",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "race-0": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\native-candidate-runtime\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "race",
+      "build\\native-candidate-runtime\\blockreality-0.4.0-dev.jar",
+      "build\\native-candidate-runtime\\jar-windows-first\\race\\cache",
+      "build\\native-candidate-runtime\\jar-windows-first\\inputs",
+      "build\\native-candidate-runtime\\jar-windows-first\\race\\0",
+      "0"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gYnVpbGRcbmF0aXZlLWNhbmRpZGF0ZS1ydW50aW1lXGphci13aW5kb3dzLWZpcnN0XHJhY2VcY2FjaGVcbGliXHdpbmRvd3MteDg2XzY0XDk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWFcYnNpX3RlY3RvbmljLmRsbCAoMzE3Njk2MDAgYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0xLjMuMCs0MmUxMGY1LCBjb250cmFjdCA0YjExY2M3Mzg3OTChSykNClBBU1MgamFyIHJlcGxheSA0OCBmcmFtZXM7IGJ1aWxkXG5hdGl2ZS1jYW5kaWRhdGUtcnVudGltZVxqYXItd2luZG93cy1maXJzdFxyYWNlXGNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFw5NzYxZDczNTg2Mjc3NjE0YTU2MTMyZWMzNDkyZDMyNGFlODNjODQ4OTA2OGMwMGMyNjZjM2Q1NmY1MzBhY2VhXGJzaV90ZWN0b25pYy5kbGwgc2hhMjU2PTk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWENCg==",
+    "stdout_sha256": "5791f51a874bdfd4ab4c77322aa934881f975b4acd974e4e41667d8399a7997a",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "race-1": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\native-candidate-runtime\\blockreality-0.4.0-dev.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "race",
+      "build\\native-candidate-runtime\\blockreality-0.4.0-dev.jar",
+      "build\\native-candidate-runtime\\jar-windows-first\\race\\cache",
+      "build\\native-candidate-runtime\\jar-windows-first\\inputs",
+      "build\\native-candidate-runtime\\jar-windows-first\\race\\1",
+      "1"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gYnVpbGRcbmF0aXZlLWNhbmRpZGF0ZS1ydW50aW1lXGphci13aW5kb3dzLWZpcnN0XHJhY2VcY2FjaGVcbGliXHdpbmRvd3MteDg2XzY0XDk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWFcYnNpX3RlY3RvbmljLmRsbCAoMzE3Njk2MDAgYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0xLjMuMCs0MmUxMGY1LCBjb250cmFjdCA0YjExY2M3Mzg3OTChSykNClBBU1MgamFyIHJlcGxheSA0OCBmcmFtZXM7IGJ1aWxkXG5hdGl2ZS1jYW5kaWRhdGUtcnVudGltZVxqYXItd2luZG93cy1maXJzdFxyYWNlXGNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFw5NzYxZDczNTg2Mjc3NjE0YTU2MTMyZWMzNDkyZDMyNGFlODNjODQ4OTA2OGMwMGMyNjZjM2Q1NmY1MzBhY2VhXGJzaV90ZWN0b25pYy5kbGwgc2hhMjU2PTk3NjFkNzM1ODYyNzc2MTRhNTYxMzJlYzM0OTJkMzI0YWU4M2M4NDg5MDY4YzAwYzI2NmMzZDU2ZjUzMGFjZWENCg==",
+    "stdout_sha256": "5791f51a874bdfd4ab4c77322aa934881f975b4acd974e4e41667d8399a7997a",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "missing-pin": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\native-candidate-runtime\\jar-windows-first\\missing.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "build\\native-candidate-runtime\\jar-windows-first\\missing.jar",
+      "build\\native-candidate-runtime\\jar-windows-first\\missing-cache",
+      "build\\native-candidate-runtime\\jar-windows-first\\inputs",
+      "build\\native-candidate-runtime\\jar-windows-first\\missing-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMSAhPSBtb2QgY29udHJhY3QgbnVsbA0KUEFTUyBtaXNzaW5nL2JhZCBwaW4NCg==",
+    "stdout_sha256": "045ea4f2860e11783394b405ce1d63964ebd3cb6d886ab8515ab525f6b003377",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "invalid-pin": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\native-candidate-runtime\\jar-windows-first\\invalid.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "build\\native-candidate-runtime\\jar-windows-first\\invalid.jar",
+      "build\\native-candidate-runtime\\jar-windows-first\\invalid-cache",
+      "build\\native-candidate-runtime\\jar-windows-first\\inputs",
+      "build\\native-candidate-runtime\\jar-windows-first\\invalid-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMSAhPSBtb2QgY29udHJhY3QgbnVsbA0KUEFTUyBtaXNzaW5nL2JhZCBwaW4NCg==",
+    "stdout_sha256": "045ea4f2860e11783394b405ce1d63964ebd3cb6d886ab8515ab525f6b003377",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "overlong-pin": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.18.8-hotspot\\bin\\java.exe",
+      "-cp",
+      "build\\native-candidate-runtime\\jar-windows-first\\overlong.jar;mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "build\\native-candidate-runtime\\jar-windows-first\\overlong.jar",
+      "build\\native-candidate-runtime\\jar-windows-first\\overlong-cache",
+      "build\\native-candidate-runtime\\jar-windows-first\\inputs",
+      "build\\native-candidate-runtime\\jar-windows-first\\overlong-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMSAhPSBtb2QgY29udHJhY3QgbnVsbA0KUEFTUyBtaXNzaW5nL2JhZCBwaW4NCg==",
+    "stdout_sha256": "045ea4f2860e11783394b405ce1d63964ebd3cb6d886ab8515ab525f6b003377",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

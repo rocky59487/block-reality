@@ -1,0 +1,21 @@
+{
+  "complete_receipts_equal_except_png_size": [
+    "beam-en_us-1280",
+    "beam-en_us-1920",
+    "beam-zh_tw-1280",
+    "beam-zh_tw-1920",
+    "catalogue-en_us-1280",
+    "catalogue-en_us-1920",
+    "catalogue-zh_tw-1280",
+    "catalogue-zh_tw-1920",
+    "column-en_us-1280",
+    "column-en_us-1920",
+    "column-zh_tw-1280",
+    "column-zh_tw-1920",
+    "panel-en_us-1280",
+    "panel-en_us-1920",
+    "panel-zh_tw-1280",
+    "panel-zh_tw-1920"
+  ],
+  "passed_coordinator_assertions": 45
+}

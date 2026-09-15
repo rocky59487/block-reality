@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.engine.GameWorldSnapshotTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-09T22:45:10" hostname="ROCKYLAPTOP" time="0.038">
+  <properties/>
+  <testcase name="rejectsUnknownOrUnobservedInputsBeforeSending()" classname="com.blockreality.core.engine.GameWorldSnapshotTest" time="0.019"/>
+  <testcase name="snapshotOwnsItsCollections()" classname="com.blockreality.core.engine.GameWorldSnapshotTest" time="0.002"/>
+  <testcase name="includesAllSixObservedContactsOnceInCanonicalOrder()" classname="com.blockreality.core.engine.GameWorldSnapshotTest" time="0.002"/>
+  <testcase name="preservesDeclaredAxesRotationJointAndSiValues()" classname="com.blockreality.core.engine.GameWorldSnapshotTest" time="0.002"/>
+  <testcase name="shippedVocabularyUsesSiAndExplicitProductRoles()" classname="com.blockreality.core.engine.GameWorldSnapshotTest" time="0.009"/>
+  <testcase name="contactsCommuteWithMirrorAndRotation()" classname="com.blockreality.core.engine.GameWorldSnapshotTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,73 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava UP-TO-DATE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:compileTestJava UP-TO-DATE
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses UP-TO-DATE
+
+> Task :core:test
+
+SidecarEngineTest > theWorstSectionCanBeInTheMiddleAndTheScreenMustSeeIt() PASSED
+
+SidecarEngineTest > aLoadInsideAMemberSplitsItAtThatPoint() PASSED
+
+SidecarEngineTest > anUnknownSectionIsRefusedRatherThanDefaulted() PASSED
+
+SidecarEngineTest > aSectionChangeSplitsTheMemberButKeepsItConnected() PASSED
+
+SidecarEngineTest > theSupportMomentIsRecoveredAndNeverLowersADemand() PASSED
+
+SidecarEngineTest > repeatedSolvesAtTheSameRevisionAreIdentical() PASSED
+
+SidecarEngineTest > aFloorCarriesNoMembraneForceUnderItsOwnWeight() PASSED
+
+SidecarEngineTest > aShearWallCarriesLoadInItsOwnPlane() PASSED
+
+SidecarEngineTest > overloadingTheMemberPushesDemandOverCapacity() PASSED
+
+SidecarEngineTest > shmAndJsonTransportsAgree() PASSED
+
+SidecarEngineTest > everyBlockCentreIsInsideTheMeshAndOnlyTheOuterHalfBlockIsClamped() PASSED
+
+SidecarEngineTest > aLoadOnNoElementAtAllIsStillRefused() PASSED
+
+SidecarEngineTest > everySolveCarriesItsOwnEquilibriumCheck() PASSED
+
+SidecarEngineTest > shmTransportCarriesShellsIdentically() PASSED
+
+SidecarEngineTest > anUnsupportedStructureIsReportedAsAMechanism() PASSED
+
+SidecarEngineTest > oneUnsupportedBuildingDoesNotSilenceTheOthers() PASSED
+
+SidecarEngineTest > everyStationMatchesTheClosedFormBendingStress() PASSED
+
+SidecarEngineTest > aRunOfBlocksBecomesOneMemberNotFive() PASSED
+
+SidecarEngineTest > aSlabBecomesPlateFacetsAndNotAGridOfBeams() PASSED
+
+SidecarEngineTest > aSlenderColumnIsCalledSafeByStressAndUnstableByBuckling() PASSED
+
+SidecarEngineTest > handshakeReportsTheCatalogue() PASSED
+
+SidecarEngineTest > theSpanMomentMatchesTimoshenko() PASSED
+
+SidecarEngineTest > aSingleBlockIsNotABeam() PASSED
+
+SidecarEngineTest > aColumnSharesItsTopNodeWithTheFloorItHoldsUp() PASSED
+
+SidecarEngineTest > theFreeEndCarriesNoBendingStress() PASSED
+
+SidecarEngineTest > aBeamHeldAtBothEndsHogsAtTheSupportAndSagsBetween() PASSED
+
+SidecarEngineTest > theOverlayDrawnFromRealEngineOutputIsBlueOnTopAndRedBelow() PASSED
+
+SidecarEngineTest > topFibreIsInTensionAndBottomInCompression() PASSED
+
+BUILD SUCCESSFUL in 7s
+7 actionable tasks: 1 executed, 6 up-to-date

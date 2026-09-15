@@ -1,0 +1,3 @@
+Recorded 1 cells, 8 warmup + 40 measured journal create/decide/replay; total_ns=536707656
+Recorded 128 cells, 8 warmup + 40 measured journal create/decide/replay; total_ns=617644184
+Recorded 4096 cells, 8 warmup + 40 measured journal create/decide/replay; total_ns=2203675375

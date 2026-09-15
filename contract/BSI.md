@@ -457,3 +457,426 @@ Computed 世界因子由各 computed 島最小值導出；header 仍只有 kind/
 世界拒絕不抹除成功島的結果或 bit2；每格嚴格 double λ<1 的旗標仍對自己的島雙向核對。
 budgetDof 為 0..2147483647；0 取引擎預算。ABI 1 結構未變；tectonic eigen 此版採
 subdiv=2、maxIter=300、tol=1e-8，未提供這三項的 BSI 請求欄位。未知請求欄位依原規拒絕。
+
+## Part G — 2026-09-11：物理材料自重與 engine ABI2
+
+`bsi.solve.body.massModel` 為 `analysis`（預設）或 `physical`。physical 要求能力
+`bsi.mass.physical`，採實際材料格質量及一階矩計自重，包含分析端點外的半格；
+不修改中心線幾何、剛度或其他載荷。`selfWeight` 仍是獨立重力開關，預設 true。
+每次請求選模式，沒有延續上次的隱含狀態。沒有請求時保留原analysis行為與response。
+不新增equilibrium／quality記錄尺寸；不表示rope非線性、持久碎塊或動力能力。
+
+BSI wire major、T-A五函式及`BSI_CAPI_ABI`仍為1。**Engine adapter ABI升為2**，
+原vtable prefix、`bsi_solve_options` layout與其selfWeight非零語意保持。尾端的可選
+`solve_v2` 接收帶struct_size／原common選項／massModel的`bsi_solve_options_v2`。
+必須先確認struct_size涵蓋massModel欄位，才可讀common及massModel；未知massModel拒絕。
+缺新slot或只有ABI1，即使錯宣告physical能力也必須在呼叫前回UNSUPPORTED。
+
+新host先呼叫entry(2)，只有NULL才重試entry(1)，回覆abi_version須符合詢問值。
+ABI1時不能讀尾端solve_v2。analysis仍走原solve，physical才走solve_v2。
+新tectonic adapter支援entry(1)原prefix／原能力，也支援entry(2)的新slot／physical能力；
+其他引擎可維持ABI1，新host仍可使用它的原analysis功能。此版本與引擎產品v2不是同一編號。
+
+## Part G — 2026-09-11：engine ABI3 identified fracture typed出口
+
+Engine adapter ABI3在ABI2之後追加四個可選slot：world_declare_identified、
+world_edit_identified、fracture_prepare、fracture_finish，型別見bsi_fracture.h。
+host依3→2→1協商，僅entry回NULL才能降版；回錯版本立即拒絕。ABI1/2原prefix
+與物理自重語意保持。這是typed準備點；本批未新增wire動詞或宣告bsi.fracture，
+對應shared-host與consumer接線完成後才開啟能力。
+
+所有新input先核對struct_size涵蓋最後已知欄位，才讀剩餘內容；未知tier/action拒絕。
+world identity含非零128-bit domain、非負signed-i64 revision、非零artifact namespace，
+及完整structural格的positive signed-i64 owner，座標不是analysis index。
+identified edit成功恰增revision1，仍沿引擎同一A/B/C編譯路徑；失敗不半提交。
+prepare要求非零request、commit tier、有限gravity、budget1..4096、threads0..256，
+0 threads依引擎預設；第一版為物理材料自重的靜力級聯，沒有外加荷載／非線性選項。
+缺本構所需的有限正capacity輸入須明示拒絕，不得當成永不失效。
+
+prepare不改世界，回傳instance context128+positive sequence64的暫態token。
+同request/basis/完整選項重試保留原候選；同ID換選項拒絕。每instance至多一候選，
+新prepare成功才替換，失敗保留。commit核對token/request/before/after revision，
+一次發布原候選；當前同handle重放回replayed，後續世界／另一instance／舊token拒絕。
+discard釋放候選、不撤销已提交世界。identity及持久request去重由caller journal擁有。
+
+view保存原PFT材料分割、全部source cells與artifact、逐格mass/COM/完整COM tensor、
+broken事件的source索引／capacity face／utilization、detached fragments與去重parents、
+mechanism回滾格、steps/exhausted。group0為remaining、1為broken、2起為fragment index+2；
+unrepresented只能屬remaining。capacity face不得冒名材料種類或concrete crush。
+來源格以x/y/z規範序；碎塊順序與其來源格序對位，parents數值升序；事件保留級聯順序。
+fragments的release/tensionOnly/coupling flags不是剛體資格或接觸／滾動能力。
+
+新的physical records自然8-byte alignment：properties80B、cell144B（physical offset64）、
+fragment96B、event24B；reserved皆0。owner沿packed20B。tensor順序為xx/yy/zz/xy/xz/yz，
+COM tensor項不取负，全部SI f64。任何wire bytes須複製至合格typed storage再存取。
+view的借用資料在成功世界修改、成功替換、discard或close時失效，caller須事先複製。
+只有native位址生命週期，沒有永久指標／磁碟journal；CAPI未知dispatch失敗仍須關閉
+失效handle後重新同步，NEED_BIGGER精確重試只重送已保存reply。
+
+### 2026-09-11：ABI3 identified world 與 fracture 的共用 wire
+
+本加法把上述 typed 候選接至同一 shared Session；ABI3 新宣告
+`bsi.world.identity`、`bsi.fracture`，ABI1/2 的能力集合不變。
+`world.declare.body.identity` 為 `{domain,revision,artifactNamespace,owners}`，
+`attrs` 必為0，payload為 blocks40×B + artifactOwners20×O；
+`world.edit.body.identity` 為 `{domain,revision,owners}`，payload為 edits41×N +
+完整after-world的owners20×O。domain/namespace/requestId以非零32位lowercase hex表示，
+高64位在前；revision為非負i64。body identity中的revision才是expected base，
+envelope revision只回音。輸入可亂序，source/owners按xyz正規化；update不存在的格不新增。
+回應維持原diag/edit欄位，末尾新增 `identity:{domain,revision,artifactNamespace}`。
+
+`bsi.fracture.prepare` 的body固定為 `{expected:{domain,revision},requestId,gravity,
+budget,tier,numThreads?}`；payload空，gravity有限vec3，budget1..4096、tier只能commit，
+threads0..256（省略時用host default）。不接受未接的loads/nonlinear選項。
+回應欄位與schema順序一致：base、status=prepared、requestId、before、after、
+artifactNamespace、token、steps、flags、remainingBlocks、sections。
+token=`{context:32位hex,sequence:16位hex}`，兩者非零；after revision恰為before+1。
+固定包含全部七個section，即使count0亦不可省略：physicalTotals80×3（before、remaining、
+broken）、fractureCells144、fractureFragments96、fractureParents8、fractureEvents24、
+fractureEventCells4、fractureMechanism12。全部為上述typed格式、LE/SI/f64、reserved0；
+offset相對payload，沒有pointer與浮點JSON。cell/group/parents/events必完整且來源一致。
+
+`bsi.fracture.finish` 的body為 `{expected,requestId,token,resultRevision,action}`，
+action為commit/discard，payload空；回應base、status=committed/replayed/discarded、
+requestId、token、identity。identity回當前已提交world；discard不撤銷先前commit。
+host只在Committed移交預建的remaining source/owners快取，Replayed不再修改。
+新入口嚴格拒絕重複JSON keys。input與output header≤4096、payload≤256MiB−4096−12；
+完整frame≤256MiB。無法完整交付不裁資料。成功native dispatch後發現壞receipt/diag或
+包裝失敗，session失效必須重開；native明示拒絕則保留host的已提交快取。
+
+arena新增 `fracturePrepare`／`fractureFinish` doors；identified declare的world region
+為block40、attrs region為owner20，identified edit的world region為完整edits+owners。
+先驗region bounds，再按method驗record長度。無identity的arena edit仍UNSUPPORTED。
+回覆空間不足時保留原request/reply；相同header/payload重試可改doorbell seq，只複製原
+reply，禁止重新dispatch。不同pending request拒絕，原reply保留。CAPI沿原pending機制。
+這是原生資料/提交入口；跨restart持久去重仍由消費者journal負責。
+
+### 2026-09-13：ABI4 原生運動 typed 出口
+
+adapter ABI4 追加 `motion_declare`、`motion_step`，型別在 `bsi_motion.h`。
+host 按4→3→2→1協商；僅NULL可降版。ABI1/2/3 prefix及原能力維持。
+這個階段沒有新wire動詞或motion capability，不以typed slot冒充五函式CAPI已可呼叫。
+
+`motion_declare` 接宿主保存的完整碎塊來源及固定碰撞地形。每body保留正signed-i64 id、
+birthWorld、artifactNamespace、fractureRequest、原fragment group≥2、原physical properties，
+cells使用原144B fracture cell；各range恰好分割cell span，flags/reserved必須0。
+每body來源座標唯一、cell.group相符、artifact正signed-i64；不同body可有相同歷史座標。
+來源PMA與fragment total須符合引擎材質／截面及完整來源幾何；不接受articulated flags。
+group與request識別原斷裂來源，body id由宿主持久分配，兩者不能冒名分析索引。
+scene是宿主分配的獨立非零domain/非負revision；同stamp的等價規範宣告可重用，
+同stamp換內容拒絕，同domain的不同內容須更高revision。換domain可重建。
+來源／state由宿主journal保有；native不認證外部journal的真實性或跨重啟去重。
+
+宣告選項全部必填：maxBodies 1..65536、maxCells 1..1048576、maxColliders 1..1048576、
+maxVertices 1..16777216、正有限chordTolerance。所有body與地形共用幾何預算。
+terrain為120B定向長方體，其id在地形中唯一；size三軸正有限、pose有效。
+surface為32B：friction≥0、restitution∈[0,1]、rolling/spinningResistance≥0，全部有限。
+後兩者單位m，是接觸承載所限制的力偶長度，並非每tick速度衰減率。
+geometry view交104B body描述、48B piece、24B vertex及12B triangle；vertex相對body COM，
+triangle索引整個vertex span且朝外。body描述保留原source COM與完整body-frame inertia，
+piece保留body/part及原source xyz/sourcePart。显示mesh不重算質量或取代解析圓形碰撞。
+
+`motion_step` 收scene stamp、非零request及全部body的128B state，順序可亂但id唯一且完整。
+state依序id/revision/time、COM position xyz、Hamilton body→world wxyz、世界P xyz與L xyz。
+revision為0..INT64_MAX-1，time非負有限且所有body相同，pose有效；引擎從scene取mass/inertia。
+force為56B id/force xyz/關於COM的torque xyz，id唯一並屬本scene。dt正有限，gravity有限。
+maxStep∈(0,1]；maxSubsteps/maxTrials∈1..1048576，maxPairs/maxPoints/maxSurfaceTests依共同
+scene預算，maxSweeps∈1..4096，enableSleep只能0/1。其餘物理容差使用共同引擎預設。
+成功完整dt、每body revision恰+1，輸出按body id；並交sleeping/woken id與具名工作計數。
+world計數描述最後接受的world trial，wakeTrials/integratedBodies含喚醒重算工作。
+numericalEnergyRemoved只記睡眠清理的有界數值殘餘；它不是碰撞總耗散。
+
+step只試算宿主送入的狀態，不暗中提交持久世界。宿主先保存結果再用作下一步輸入。
+目前scene最後成功request相同且完整輸入／選項等價時重放原結果；同ID換值拒絕。
+新request替換暫態重試快取；失敗保留舊場景、結果及cache。重建可丟棄sleep cache，
+但不得把cache或native指標當成永久token。typed view在成功替換相應結果／換scene或close後
+失效，caller必須先複製；拒絕不使舊view失效。沒有自動改寫宿主journal或遊戲實體。
+
+### ABI4 shared wire：剛體來源與步進
+
+`bsi.rigid.motion` 需要 ABI4 及兩個 motion 槽；舊 ABI1–3 不宣告此能力。
+使用既有五函式 CAPI／frame／stdio-b64／arena，不增加另一種引擎或積分器。
+hello 與 vocab.declare 之後即可宣告獨立剛體 scene，不需要重建靜力 world。
+scene 只代表當前碎塊與固定地形；birthWorld 保留碎塊誕生時的歷史來源。
+
+`bsi.rigid.declare` body 必填 `scene`、`bodies`、`cells`、`terrain`、`chordTolerance`、
+`maxBodies`、`maxCells`、`maxColliders`、`maxVertices`，範圍見 schema 與上面的 typed ABI。
+payload 依序為 motionSources192 × bodies、fractureCells144 × cells、motionTerrain120 × terrain。
+所有 source 的 cellFirst/cellCount 互斥且完整覆蓋 cells，來源內部可以 canonical 重排。
+固定地形不出現在可渲染碎塊 mesh 中。空 scene 合法，也可用新的 scene revision 清空。
+成功 `status:"declared"`、`scene`、四列 `sections` 依序為 motionBodies104、motionPieces48、
+motionVertices24、motionTriangles12；offset 從0連續，空段也列出，完整交付不裁剪。
+同 scene stamp 相同來源重用；同 domain 的舊 revision 或相同 revision 異來源拒絕。
+
+`bsi.rigid.step` body 必填 `scene`、`requestId`、`states`、`forces`、`dt`、`gravity`、
+`maxStep`、`maxSubsteps`、`maxTrials`、`maxPairs`、`maxPoints`、`maxSurfaceTests`、`maxSweeps`、
+`enableSleep`（JSON boolean）。payload 依序 motionStates128 × states、motionForces56 × forces。
+呼叫者提供完整當前 state；力／力矩為 world-space，扭矩作用於 body COM，重力另由核心計算。
+body id 與 revision 是精確整數，所有姿態、動量与时间為 binary f64；單位沿上面的 typed ABI。
+成功 `status:"stepped"`、`scene`、`requestId`、四列 sections 依序為 motionReport104（恆1列）、
+motionStates128、motionSleeping8、motionWoken8。report 的前4個 f64 為 elapsed、maxPenetration、
+positionCorrection、numericalEnergyRemoved；後8個 u64 為 substeps、trials、contactSolves、
+contactPoints、projectionSweeps、wakeTrials、integratedBodies、equilibriumSolves，最後 fullFallback
+u8 及7個零 reserved。P4：回應 header 不放浮點結果。關閉 sleep 時 sleep wrapper 計數為0，
+world 計數仍記实际積分工作；sleeping/woken 為 canonical body id 集合，可能重疊。
+
+envelope revision 只回顯，不能取代 scene/body revision。requestId 只重用最後成功 trial，
+不是永久交易 token；成功結果由呼叫者持久化後作下一步輸入。重開 session 後重新宣告
+持久來源與地形、送回已保存 state 即可接續，休眠 cache 可以丟棄。
+header 上限4096B，payload上限256MiB-4096-12；超額拒絕，沒有部分姿態／mesh交付。
+正常拒絕可繼續呼叫；native malformed success 或 dispatch 後例外會使 Session 失效，必須重開。
+arena door `rigidDeclare` 將完整 payload 放 world region，`rigidStep` 放 loads region；
+其他 region 不參與這次呼叫。NEED_BIGGER 保留既有結果，擴容重取不重新執行 step。
+arena 仍依 Part G 僅支援 Linux；Windows 使用 CAPI、frame 或 stdio-b64，frame 的 stdio
+明確設為 binary mode，不能以 CRT 文字模式傳輸 f64／記錄資料。
+
+### 2026-09-13：ABI6 二階分析與共同斷裂
+
+engine vtable ABI6在ABI5的`pdelta_solve`／`pdelta_station`後追加
+`pdelta_fracture_prepare`；loader按6→5→4→3→2→1協商。ABI1..5前綴及能力維持。
+ABI6新增`bsi.pdelta`及`bsi.pdelta.fracture`，五函式CAPI／BSI訊息版本均仍1。
+型別見`bsi_pdelta.h`、`bsi_pdelta_fracture.h`、`bsi_pdelta_wire.h`。
+
+`bsi.pdelta.solve`必須先hello／vocab／identified world。body必填`expected`、
+`loadFactor`、`gravity[3]`、`selfWeight`、`tolerance`、`budgetDof`、`maxIterations`、
+`route`（direct／frozen）、`loads`；`numThreads`可省略，沿host設定。
+loadFactor為有限數，tolerance嚴格在0..1內，其餘範圍見schema。
+payload是load64×loads，世界座標力N；flags及力矩必須0，所有值有限。
+這三個新動詞的load64保留原始順序及重複，不套用舊線性solve的canonical重排規則。
+loadFactor只由共同二階分析乘一次；loads是未乘係數的原輸入，selfWeight可關閉。
+
+成功回傳basis／artifactNamespace／generation（16位hex）與analysis token。
+依序13段：pdeltaOptions56、pdeltaPhysical80、pdeltaIslands48、pdeltaText1、
+pdeltaNodes136、pdeltaMembers560、pdeltaShells440、pdeltaSources56、pdeltaSourceIndices4、
+pdeltaArtifacts24、pdeltaArtifactMembers4、pdeltaArtifactShells4、pdeltaLoads64。
+options恆1筆，physical恆7筆：實際全部材料量，再按disposition 0..5的材料量。
+disposition為attached、ground、unrepresented、inactive、rope、retired；
+support等沒有材料重量的來源使用6（none）。解析前先驗section offset/count/bytes。
+island status為0 converged、1 unstable、2 notConverged、3 unsupported。
+僅converged的位移／反力有效；member available為bit0 solved、bit1 elastic、
+bit2 capacity、bit3 capacityComplete、bit4 fibres，不能把部分容量當成完整強度。
+梁displacement及endAction各12筆，採局部自由度；殼各24筆，採世界節點自由度。
+peak的forces依序N（壓正）、Vy、Vz、T、My、Mz；sigma四角順序(+cz,+cy)、
+(+cz,-cy)、(-cz,+cy)、(-cz,-cy)，拉應力正。數值採SI/f64，回應header沒有浮點。
+source範圍／artifact範圍指向各自索引段，element index只在本analysis有效。
+reasonFirst/Count指向pdeltaText的UTF-8 byte範圍，不含NUL；單筆最多4095 bytes。
+
+`bsi.pdelta.station` body是`{token,member,fraction,side}`，payload空，fraction在0..1、
+side為-1或1。回傳pdeltaStation112、pdeltaSample16；sample保留member/side/fraction。
+token只認同handle最後成功analysis及當前world handle/generation；失敗保留舊結果，
+成功新analysis、world修改、即使同stamp的重新宣告也使舊token失效。
+typed view本體仍可作歷史讀取直到下一次成功同類結果替換或close，但不能再用舊token查詢。
+
+`bsi.pdelta.fracture.prepare`沿solve body增加非零`requestId`、`budget`（1..4096）、
+`tier:"commit"`，可帶`initialAnalysis`。初始token必須是相同world／options／loads的
+analysis，世界若先拆出自由碎塊則需重新分析；pdeltaFlags bit0明示實際有無重用。
+同完整requestId重送返回同一候選；改load順序、任何options或初始token都衝突。
+新request替換暫態候選；失敗保留舊候選。被替換／丟棄的token不能用於finish，
+requestId不是跨重啟journal，也不是永久的去重集合。prepare不修改已提交world。
+
+回應前7段沿原fracture.prepare：physicalTotals、fractureCells、fractureFragments、
+fractureParents、fractureEvents、fractureEventCells、fractureMechanism；再追加
+pdeltaOptions56、pdeltaDecisions104、pdeltaDecisionCells4、pdeltaIslands48、pdeltaText1、
+pdeltaFractureLoads72。原physical token用既有`bsi.fracture.finish` commit/discard/replay。
+decisions先列已接受的break，再列可選pending；microStep／member屬該次重建的分析，
+來源格索引才是跨步對位。各islandFirst/Count涵蓋該決策分析；其後是rollback islands。
+load記錄為原load64加fractureCells索引及group（0留存、1破壞、2+fragment index）。
+steps可為budget+1，因為每次切斷後必須驗證一次；重用初始analysis可省第一次solve。
+end為0 withinCapacity、1 unqualified、2 budget、3 unstableCutRolledBack；
+qualification bit0容量不完整、bit1殼強度未提供、bit2存在未表示材料；flags不會把
+budget或失穩轉成安全。pending=-1表示無待切項，否則索引最後一個decision。
+rollbackReasonFirst/Count指向pdeltaText；正常完成為空。真正失穩只回滾最後一刀；
+未收斂／Unsupported／非法資料使整次prepare拒絕，不能提交半份結果。
+
+所有新wire記錄無指標，padding／reserved均0，完整欄位見schema的x-records。
+host核對來源／容量資格／索引／token／有限值後才公開完整payload；壞native成功使
+session失效，重開後從宿主保存的world重建。arena door `pdeltaSolve`、
+`pdeltaFracturePrepare`使用loads region，`pdeltaStation`無payload；pending擴容沿原機制。
+完整倒塌尚需COROT／PLASTIC／DAMAGE、局部裂縫／壓碎及動量交棒；本入口是整構件斷裂。
+
+
+## ABI7 finite material delivery
+
+Additive capabilities `bsi.corot`, `bsi.corot.fracture`, `bsi.corot.rigid` and
+`bsi.material.composite` use the original CAPI1 frames and shared world, fracture and
+motion authorities. Engine ABI1..6 keep their existing prefixes and semantics.
+The three ABI7 vtable callbacks are declared in `bsi_corot.h`. All wire records are
+little-endian; f64 is never narrowed, padding and reserved bytes are zero. Exact
+sizes, field offsets, nested arrays and response section names are in `x-records`.
+
+| Method | Ordered input payload | Output |
+|---|---|---|
+| `bsi.corot.solve` | materials152, cellLoads64, prescribed64, generalizedLoads144 | finite options/physical/islands/text/nodes/members/shells/joints/sources/artifacts/material |
+| `bsi.corot.fracture.prepare` | same four groups, then failureRules40 | original physical fracture, remaining finite analysis, decisions/phases/final failures/load ledger/archives/retired material |
+| `bsi.corot.rigid.declare` | bodies72, endpointVelocities64, terrain120 | original motion geometry, initial states128, body energy48, source archives/retired material |
+
+Record group counts are declared in the schema-validated method body. Empty output
+sections remain present in fixed order. Each section has byte offset, count and
+byte length. The schema `corot.options` defines all solver, path and fiber budgets;
+`numThreads` alone may default to the host value. `corot.solve.body` adds the four
+input group counts. `corot.fracture.prepare.body` adds requestId, budget, rules and
+optional initialAnalysis. The finite motion body defines scene, fracture token,
+three group counts and all geometry/integration budgets.
+
+Generalized load kinds 0..4 are node force/moment, member point force, member line
+force/couple, member UDL and shell pressure. Targets are ordered stable node keys,
+not current extraction indices. Unused targets, intervals and components must be
+zero. Kind 0 is world-frame; kind 4 pressure uses the shell normal and localFrame=0.
+Finite fracture accepts all five generalized load kinds when the engine advertises
+`bsi.corot.fracture.loads`; older engines continue to reject that optional input.
+Each target is bound to its ordered node keys and material owners before the first
+cut. Surviving targets retain their values, frame and intervals as indices change;
+fully retired targets stop loading the remaining structure. Partial remeshing or
+owner changes that cannot preserve the original load target refuse the transaction.
+For requests containing generalized loads, retired member/shell `mechanics.external`
+contains the actual final source load field. Empty generalized requests retain the
+previous response layout and values. A cell load has no moment; use a node wrench
+for moments. Pressure, member loads and constraints use the same C++ implementation.
+Original loads are not automatically converted into fragment momentum or continuing
+rigid-body forces: the caller supplies those forces to the shared motion API.
+
+Uniaxial kinds 0,1,2 are plasticity, damage, and compression damage/plasticity. The
+law includes E, tension/compression strength, kinematic/isotropic hardening,
+fractureEnergyT/C and compressionPlasticity. Composite records carry separate
+primary and concrete laws. A member profile owns fiber/station/point ranges; the
+retired tables use their own ranges. Point strain, plasticStrain, accumulatedPlastic,
+plasticDissipation, maximumT/C, damageDissipation, stress, tangent, storedEnergy,
+dissipatedEnergy, workPotential, damageT/C and loading are all preserved. `workPotential`
+is the last accepted substep value, not total work. `available` bits are solved=1,
+checkpoint=2, material=4. An unavailable island keeps a qualified checkpoint and
+does not fabricate available mechanics. Island reasons are UTF-8 byte ranges in
+corotText, without a terminating null. Diagnostic historyError may be positive
+infinity only for an unavailable, nonconverged path.
+
+A finite analysis token refers to one world/mechanics snapshot. A world edit or
+same-stamp redeclaration, newer finite analysis, foreign context or changed token
+cannot authorize an old initial analysis. A prepared finite fracture uses the
+shared fracture_finish commit/discard authority and compares both world and
+material basis. Exact retries preserve history; any effective input change with
+the same requestId conflicts. Native view storage is built before publication.
+Malformed native output or an interrupted post-publication serialization poisons
+the host handle: reopen instead of retrying a potentially repeated material step.
+
+Finite motion requires the exact committed finite fracture token on this handle
+and unchanged resulting world. Endpoint velocities cover each selected fragment's
+stable nodes exactly once. Initial P/L, COM/full inertia, geometry and rigid/internal
+kinetic partition come from the actual finite material domain. Geometry vertices
+are body-local about the returned current COM; initial state orientation maps them
+to world coordinates. Material stored/dissipated energy remains separate from
+kinetic energy. `motion_step` is the original contact/friction/rolling/CCD path.
+The source archive remains owned for the finite motion view lifetime. Unsupported
+material domains are explicit failures, never replacement reference-cell cubes.
+
+Finite panel domains use all four stable shell nodes and their finite material
+directors, with the same Q4 field as physical self-weight. Reference material
+thickness and mass are preserved; current COM/full inertia/P/L/K use positive
+tensor quadrature, and collision hulls enclose each physical cell separately.
+Coplanar shell-represented monoliths use their full physical box thickness.
+Planar same-material panel components use their uniquely determined plane,
+including cells bordering openings. Ambiguous line or nonplanar components keep
+the original local plane selection. Articulated/released/coupled assemblies and
+ambiguous member/shell material ownership remain explicit failures.
+
+Arena doors are corotSolve, corotFracturePrepare and corotRigidDeclare. The first two
+read their complete mixed-record payload from loads; corotRigidDeclare reads world.
+No legacy 64-byte load divisibility assumption applies to these mixed groups.
+Frame, stdio-base64 and arena call the same dispatch. NEED_BIGGER caches the full
+response after one execution and requires identical request header/payload bytes;
+a different request cannot consume or replace the pending result.
+
+`corot.options.reinstallRetired` (optional, false by default; typed options bit5)
+allows complete retired elements to return with their original irreversible
+material history. It requires retainLoadPath and transferTopology. Reference
+nodes, physical cells, artifact owners, material/section/fiber identity and release
+configuration must match an unused owning retirement. Each removal is consumed
+once; a later removal creates a new source. Old archives remain historical records,
+not current inventory. Changed material domains and process restart imports need
+explicit history projection/import and are rejected by this option.
+
+## Engine ABI8: portable finite checkpoints
+
+`bsi.corot.checkpoint` adds two vtable slots after the ABI7 prefix; ABI1–7 keep
+their existing capabilities and layouts. `bsi.corot.checkpoint.export` takes
+`expected`, `format` (1 or 2), `byteBudget`, `allocationBudget` and `elementBudget`, with
+an empty payload. Its `exported` response contains `basis`, `format` and `bytes`;
+the payload is an opaque little-endian CRC64-protected engine checkpoint.
+
+`bsi.corot.checkpoint.import` uses the same body plus `bytes`, and that complete
+blob as payload. First declare the identical vocabulary, current world and full
+world identity, including owners. Import returns `restored` with the existing
+corot analysis sections and a fresh process-local token. Indices may change
+after a clean extraction; the common topology transfer matches stable sources.
+An unbalanced checkpoint cannot be promoted to a solved result by import.
+
+Only a world without an existing finite history accepts import. An identical
+successful import can replay while its restored state is still current; later
+solves or edits prevent rollback to that blob. CRC detects corruption and is not
+source authentication. The caller owns durable file/journal transactions.
+Unknown formats, invalid state/source/owner data and exceeded decode budgets
+are errors with no world publication. Export failure preserves the prior view.
+Arena doors are `corotCheckpointExport` (empty payload) and
+`corotCheckpointImport` (loads region); all transports use the same dispatcher
+and pending-response retry contract. Ordinary `world.edit` uses the world region.
+
+Format 1 retains the original finite-state layout. Format 2 additionally owns
+arc-continuation direction and scales. Readers accept both; an explicit format 1
+export refuses a state with arc history. The envelope version must equal the
+request's format, including on replay. Reindexed roots use stable node identities.
+
+## Engine ABI9: whole-world arc continuation
+
+`bsi.corot.arc` adds `corot_arc_advance` after the ABI8 prefix. The 152-byte typed
+request and 32-byte view are declared in `bsi_corot_arc.h`; no older slot or record
+stride changes. `bsi.corot.arc.advance` takes an empty payload and a body containing
+`expected`, `initialAnalysis`, `radius`, `minRadius`, `lengthScale`, `loadScale`,
+`relativeTolerance`, `forceTolerance`, `momentTolerance`, `linearTolerance`,
+`pathTolerance`, `maxIterations`, `maxAttempts`, `maxBacktracks`, `linearIterations`,
+`restart` and `initialDirection` (1 or -1). The complete proportional load catalog
+and material history belong to the committed source analysis.
+
+The `advanced` response contains the original analysis sections and a new token,
+plus scalar JSON numbers `loadFactor`, `radius` and `constraintResidual` before
+`sections`. Every active island uses this one load factor. The metric is the sum
+of squared independent-root translations divided by lengthScale squared, plus
+the squared load-factor increment times loadScale squared. The load term occurs
+once per world. The relative arc constraint error cannot exceed 1e-10; the existing
+force, moment, linear and material-path criteria must also pass before publication.
+
+A step requires a converged source, at least one free root translation, a nonzero
+proportional load direction and homogeneous prescribed constraints. Nonzero
+prescribed displacement paths remain the responsibility of the original solve
+interface. This static continuation is not a physical time step across an instability.
+Immediately identical source-token/options retries replay the same result; changed
+options on a consumed source, older tokens and changed worlds are refused. All
+islands and owning native views are prepared before the shared atomic commit.
+Arena door `corotArcAdvance` has no input payload and uses the existing pending
+reply contract. Save the resulting state with checkpoint format 2.
+
+
+## ABI10：有限殼塑性
+
+能力 `bsi.corot.shell.materials` 追加 typed `corot_shell_solve`、
+`corot_shell_fracture_prepare`。新 wrapper 內嵌原 ABI7 request 與
+`bsi_corot_shell_input`；原被內嵌 request 的 layout 保持。
+
+wire 仍用 `bsi.corot.solve`／`bsi.corot.fracture.prepare`，可選計數
+`shellMaterials`／`shellLayers` 須同時為零或同時非零。payload 在原紀錄
+（fracture 的 rules 之後）追加 56 B shell law 與 16 B normalized layer。
+未選用時不增加資料段。律為指定名義 isotropic panel 的 E、nu、yield、
+Hiso、Hkin，按既有 strength/cure 縮放；層位置範圍 [-0.5,0.5]，嚴格遞增，
+正權重的 0／1／2 次矩為 1／0／1/12，容差 1e-12。
+
+analysis 尾部追加 `corotShellProfiles`／`corotShellLayers`／`corotTensorPoints`，
+88／16／472 B。退休部分同序追加 `corotRetiredShellProfiles`、
+`corotRetiredShellLayers`、`corotRetiredTensorPoints`。profile.shell 是本次
+shell 表索引；退休時是 corotRetiredShells 表索引。profile.available =
+0（無歷史）、6（保存歷史）、7（收斂材料），每個有效殼 4×layerCount 個點。
+
+tensor point 順序 xx yy zz xy yz xz；總應變及 tangent 使用工程剪，塑性應變
+使用張量剪。完整 state、stress、tangent、自由能、耗散及 loading 同源。
+reserved 必須為零，單位沿原模型。typed view 的新增尾指標依 struct_size
+判读；舊短 view 不讀尾部，選用新材料卻缺少 owning 結果則拒絕并要求重開。
+
+checkpoint 格式 3 保存殼材料與舊弧長資料；原格式 1／2 支援保持，但含張量
+歷史時拒絕較舊格式，避免靜默遺失。重裝沿原 opt-in 機制；幾何、律、厚度
+積分點須相同。殼裂縫／壓密、任意材料重網格仍不支援。

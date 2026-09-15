@@ -1,0 +1,13 @@
+{
+  "command": [
+    "cmd",
+    "/c",
+    "gradlew.bat",
+    "--no-daemon",
+    "--console=plain",
+    "check"
+  ],
+  "cwd": "C:\\Users\\wmc02\\Desktop\\block-reality\\mod",
+  "BR_ENGINE": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-v1.5-consumer\\staged\\windows-x86_64\\bsi_tectonic.dll",
+  "source": "fc5424fc2b7a6376047ded560201d1eb0f0e69bc"
+}

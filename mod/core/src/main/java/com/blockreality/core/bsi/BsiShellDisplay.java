@@ -37,8 +37,7 @@ public final class BsiShellDisplay {
                     convert(s.top()), convert(s.bottom()));
             // BSI identifies panels by material, with no separate legacy plate token or dcRaw.
             out.add(new ShellSnapshot(f.id(), material, material, f.thicknessM() * 1000, f.dc(), Double.NaN,
-                    f.governingTop(), false, blocks, Optional.empty(), Optional.of(display),
-                    f.overloaded(), f.governingFibre()));
+                    f.governingTop(), false, blocks, Optional.of(display), f.overloaded(), f.governingFibre()));
         }
         return List.copyOf(out);
     }

@@ -1,0 +1,23 @@
+{
+  "source": "d1457a7",
+  "tests": {
+    "core": {
+      "tests": 412,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 28
+    },
+    "forge": {
+      "tests": 107,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    }
+  },
+  "jar": {
+    "file": "blockreality-0.4.0-dev.jar",
+    "bytes": 457921,
+    "sha256": "2455368ac184d2d424861905e992bf60757b990e911ef8effded7891eb6f008b",
+    "classes": 200
+  }
+}

@@ -23,6 +23,7 @@ sourceSets.main.java.srcDirs += [
         '../mod/api/src/main/java',
         '../mod/core/src/main/java',
 ]
+sourceSets.main.resources.srcDir '../mod/core/src/main/resources'
 
 minecraft {
     // Official Mojang mappings, matching the previous project's convention.
@@ -34,11 +35,9 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            // Optional. The mod also finds the engine through the config file, the
-            // BR_SIDECAR environment variable, the game directory, or PATH — see
-            // SidecarLocator. Absent everywhere just means analysis is off.
-            if (System.getenv('BR_SIDECAR')) {
-                property 'br.sidecar', System.getenv('BR_SIDECAR')
+            // Development override; GameNativeLoader resolves the library lazily on a worker.
+            if (System.getenv('BR_ENGINE')) {
+                property 'br.engine', System.getenv('BR_ENGINE')
             }
             mods { blockreality { source sourceSets.main } }
         }
@@ -73,49 +72,28 @@ test {
     testLogging { events 'passed', 'skipped', 'failed'; exceptionFormat 'full' }
 }
 
+apply from: rootProject.file('../gradle/contract-resources.gradle')
+
 // ---------------------------------------------------------------- bundled engine
 //
-// The analysis engine travels INSIDE the jar and unpacks itself on first use (D-027).
-// On CurseForge and Modrinth a mod is one jar dropped into mods/; an engine the player
-// has to fetch and place separately is not a distribution, and the installer scripts that
-// made it bearable cannot run at all when the jar arrives through a launcher.
-//
-// Nothing is downloaded, here or at runtime. These are bytes that scripts/package.sh has
-// already built and gated, copied in with their SHA-256 recorded beside them; the runtime
-// refuses anything whose hash does not match (BundledEngine).
-//
-//   -PbrEngineDir=<dir>    where to take br-sidecar / br-sidecar.exe from
-//   -PbrEngineDir=none     build a jar with no engine in it
-//
-// A jar built with no engine is a legitimate outcome, not a failure: it is the normal
-// development flow, and the mod still finds an engine through sidecarPath, -Dbr.sidecar,
-// BR_SIDECAR, the game directory or PATH. What must never happen is a jar that SAYS it
-// carries an engine and does not, which is why the manifest is generated from the files
-// actually copied rather than written ahead of them.
-//
-// TWO SHAPES, ONE TASK (D-044). The engine is moving from an EXECUTABLE the mod starts as a
-// child process to a LIBRARY the mod loads in-process, because a jar containing a program
-// does not pass distribution review. Both shapes are built by this one task and never by
-// two, because the task DELETES ITS WHOLE OUTPUT DIRECTORY first — a second task writing
-// into the same place would have its work thrown away or, worse, would ship both engines
-// (which is the 2.4 MB -> 4.5 MB bug this deletion was added to fix).
-//
-//   -PbrEngineDir=<dir>     sidecar executables (br-sidecar, br-sidecar.exe). Default ../dist.
-//   -PbrNativesDir=<dir>    engine libraries, laid out by scripts/stage_natives.py as
-//                           <os>-<arch>/<file> plus provenance.json. Default none.
-//
-// A jar must carry ONE of them. Shipping both would mean whichever the runtime picked, the
-// other travelled for nothing, and "which engine is this jar" would have two answers.
-def brEngineDir = project.findProperty('brEngineDir') ?: '../dist'
+// Only shared libraries enter the game jar (D-044, GAME_RUNTIME GR-6).
+// -PbrNativesDir=<dir> consumes staged <os>-<arch>/<file> plus provenance.json.
+// Default none makes a development jar; config/-Dbr.engine/BR_ENGINE may supply a library.
+// Legacy scripts may still pass -PbrEngineDir=none. An executable directory is rejected.
+if ((project.findProperty('brEngineDir') ?: 'none') != 'none') {
+    throw new GradleException('GAME_RUNTIME: executable engine packaging is retired; use -PbrNativesDir or none')
+}
 def brNativesDir = project.findProperty('brNativesDir') ?: 'none'
 def brEngineOut = layout.buildDirectory.dir('generated/engine').get().asFile
 
 tasks.register('bundleEngines') {
-    description = 'Copies the built engine (executable or library) into the jar, with a hash manifest.'
+    description = 'Copies staged native libraries into the jar with provenance and a hash manifest.'
     group = 'build'
-    def src = brEngineDir == 'none' ? null : file(brEngineDir)
     def natSrc = brNativesDir == 'none' ? null : file(brNativesDir)
-    if (src != null) inputs.files(fileTree(src) { include 'br-sidecar', 'br-sidecar.exe' })
+    inputs.property('nativeStagingDirectory', brNativesDir)
+    inputs.file(rootProject.file('../contract/CONTRACT_SHA256')).withPropertyName('contractPin')
+    inputs.files(rootProject.file('../LICENSE'), rootProject.file('../NOTICE')).withPropertyName('distributionNotices')
+    inputs.files(fileTree(rootProject.file('../third_party'))).withPropertyName('thirdPartyNotices')
     if (natSrc != null) inputs.files(fileTree(natSrc))
     outputs.dir(brEngineOut)
     doLast {
@@ -130,24 +108,6 @@ tasks.register('bundleEngines') {
         // see BundledEngine.DIR. Changing it here means changing it there.
         def dest = new File(brEngineOut, 'blockreality-engine')
         dest.mkdirs()
-        def lines = []
-        // (file name, os, arch). Only x86-64 binaries are built today; a platform with no
-        // entry gets a clear "nothing shipped for you" at runtime rather than a binary for
-        // the wrong architecture.
-        [['br-sidecar.exe', 'windows', 'x86_64'], ['br-sidecar', 'linux', 'x86_64']].each { name, os, arch ->
-            if (src == null) return
-            def f = new File(src, name)
-            if (!f.isFile()) return
-            def md = java.security.MessageDigest.getInstance('SHA-256')
-            f.withInputStream { ins ->
-                byte[] buf = new byte[65536]
-                int n
-                while ((n = ins.read(buf)) > 0) md.update(buf, 0, n)
-            }
-            def hex = md.digest().collect { String.format('%02x', it) }.join('')
-            new File(dest, name).bytes = f.bytes
-            lines << "${os} ${arch} ${name} ${hex} ${f.length()}"
-        }
         // ---------------------------------------------------------------- the library shape
         //
         // Everything here is filled in from provenance.json, which scripts/stage_natives.py
@@ -165,23 +125,29 @@ tasks.register('bundleEngines') {
             }
             def doc = new groovy.json.JsonSlurper().parse(prov)
             def pin = new File(project.projectDir, '../contract/CONTRACT_SHA256').text.trim().split()[0].toLowerCase()
+            def platforms = new HashSet<String>()
+            if (doc.contractSha256 != pin) throw new GradleException('provenance contract pin mismatch')
             doc.libraries.each { lib ->
+                if (!(lib.os in ['windows', 'linux', 'macos']) || !(lib.arch in ['x86_64', 'aarch64']) ||
+                        lib.platform != "${lib.os}-${lib.arch}" || !platforms.add(lib.platform) ||
+                        !(lib.file ==~ /[A-Za-z0-9][A-Za-z0-9_.-]*/) ||
+                        !(lib.sha256 ==~ /[0-9a-f]{64}/) || !(lib.engineVersion ==~ /\S+/)) {
+                    throw new GradleException('invalid or duplicate native provenance entry')
+                }
                 def f = new File(new File(natSrc, lib.platform), lib.file)
                 if (!f.isFile()) {
                     throw new GradleException("provenance.json lists ${lib.platform}/${lib.file}, " +
                             "which is not in ${natSrc}")
                 }
-                def md = java.security.MessageDigest.getInstance('SHA-256')
-                f.withInputStream { ins ->
-                    byte[] buf = new byte[65536]
-                    int n
-                    while ((n = ins.read(buf)) > 0) md.update(buf, 0, n)
-                }
-                def hex = md.digest().collect { String.format('%02x', it) }.join('')
+                // Validate the exact bytes subsequently written; do not reopen the source
+                // after hashing and leave a hash/copy race in the manifest's identity.
+                byte[] nativeBytes = f.bytes
+                def hex = java.security.MessageDigest.getInstance('SHA-256').digest(nativeBytes)
+                        .collect { String.format('%02x', it) }.join('')
                 // The provenance was written from a copy; this is the copy going into the
                 // jar. They must be the same bytes, or the manifest describes a file the
                 // player never receives.
-                if (hex != lib.sha256) {
+                if (hex != lib.sha256 || nativeBytes.length != lib.size) {
                     throw new GradleException("${lib.platform}/${lib.file} is ${hex.take(12)}… " +
                             "but provenance.json recorded ${lib.sha256.take(12)}… — the staging " +
                             'directory changed under the build')
@@ -192,19 +158,14 @@ tasks.register('bundleEngines') {
                 }
                 def pdir = new File(dest, lib.platform)
                 pdir.mkdirs()
-                new File(pdir, lib.file).bytes = f.bytes
-                natLines << "${lib.os} ${lib.arch} ${lib.file} ${hex} ${f.length()} ${lib.engineVersion} ${lib.contractSha256}"
+                new File(pdir, lib.file).bytes = nativeBytes
+                natLines << "${lib.os} ${lib.arch} ${lib.file} ${hex} ${nativeBytes.length} ${lib.engineVersion} ${lib.contractSha256}"
             }
             if (natLines.isEmpty()) {
                 throw new GradleException("-PbrNativesDir=${brNativesDir} was asked for and " +
                         'staged no library. An explicit request that produces nothing is a ' +
                         'failure, not a quiet development build; pass none to mean none.')
             }
-        }
-        if (!lines.isEmpty() && !natLines.isEmpty()) {
-            throw new GradleException('this build carries BOTH a sidecar executable and an ' +
-                    'engine library. Pass -PbrEngineDir=none when passing -PbrNativesDir, so ' +
-                    '"which engine is this jar" has one answer.')
         }
 
         // Apache-2.0 4(a) and 4(d) are about the ARTEFACT, not the repository: a
@@ -219,19 +180,21 @@ tasks.register('bundleEngines') {
         def tp = new File(meta, 'third_party')
         tp.mkdirs()
         file('../third_party').listFiles()?.each { f -> new File(tp, f.name).bytes = f.bytes }
+        if (natSrc != null) {
+            copy { from new File(natSrc, 'licenses'); into new File(tp, 'native-release') }
+            def receipt = new File(meta, 'native-release')
+            receipt.mkdirs()
+            new File(receipt, 'provenance.json').bytes = new File(natSrc, 'provenance.json').bytes
+            copy { from new File(natSrc, 'release'); into receipt }
+        }
 
         if (!natLines.isEmpty()) {
             new File(dest, 'natives.manifest').setText(
                     "# os arch file sha256 size engineVersion contractSha256\n"
                             + natLines.join('\n') + '\n', 'UTF-8')
             logger.lifecycle("bundleEngines: ${natLines.size()} engine library/libraries from ${natSrc}")
-        } else if (lines.isEmpty()) {
-            logger.lifecycle("bundleEngines: no engine found in ${src ?: 'none'} — " +
-                    'building a jar without one (development build)')
         } else {
-            new File(dest, 'engine.manifest').setText(
-                    "# os arch file sha256 size\n" + lines.join('\n') + '\n', 'UTF-8')
-            logger.lifecycle("bundleEngines: ${lines.size()} engine(s) from ${src}")
+            logger.lifecycle('bundleEngines: no native library requested (development build)')
         }
     }
 }
@@ -255,3 +218,20 @@ tasks.named('jar') {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
+
+// Test-only compatibility fixtures; never part of main resources or the shipped jar.
+sourceSets.test.java.srcDir "../mod/core/src/testFixtures/java"
+
+// Inspect the actual reobfuscated artifact, including dormant bytecode references.
+tasks.register('checkNativeOnlyJar', Exec) {
+    dependsOn 'reobfJar'
+    workingDir rootProject.file('..')
+    doFirst {
+        commandLine 'python3', 'scripts/check_native_only_jar.py',
+                tasks.named('jar').get().archiveFile.get().asFile.absolutePath,
+                '--mutation-checks', '--javac',
+                javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(17) }
+                        .get().executablePath.asFile.absolutePath
+    }
+}
+tasks.named('check') { dependsOn 'checkNativeOnlyJar' }

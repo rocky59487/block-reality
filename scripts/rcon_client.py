@@ -33,7 +33,8 @@ class MinecraftRCON:
 
     def _send(self, ptype, body):
         self.req_id += 1
-        data = struct.pack("<iii", 10 + len(body), self.req_id, ptype) + body.encode("utf-8") + b"\x00\x00"
+        encoded = body.encode("utf-8")
+        data = struct.pack("<iii", 10 + len(encoded), self.req_id, ptype) + encoded + b"\x00\x00"
         self.sock.sendall(data)
 
     def _recv_exact(self, n):
@@ -48,13 +49,10 @@ class MinecraftRCON:
         return buf
 
     def _read(self):
-        try:
-            head = self._recv_exact(12)
-        except ConnectionError:
-            return -1, 0, ""
+        head = self._recv_exact(12)
         length, req_id, ptype = struct.unpack("<iii", head)
         if length < 10:
-            return -1, 0, ""
+            raise ConnectionError("invalid RCON frame length")
         body = self._recv_exact(length - 8)
         return req_id, ptype, body[:-2].decode("utf-8", errors="replace")
 
@@ -63,16 +61,21 @@ class MinecraftRCON:
             cmd = cmd[1:]
         self._send(2, cmd)  # type 2 = EXECCOMMAND
         cmd_id = self.req_id
+        # Minecraft 1.20.1 accepts one request per socket read. Wait for its first
+        # response before sending the delimiter so the requests cannot coalesce.
+        first_id, _, first = self._read()
+        if first_id != cmd_id:
+            raise ConnectionError("unexpected RCON response identity")
         # The server fragments long replies across packets with no end marker. The
         # standard delimiter: send a junk RESPONSE_VALUE packet right behind, which
         # the server answers in order — everything before that answer is our reply.
         self._send(0, "")
         end_id = self.req_id
-        parts = []
+        parts = [first]
         while True:
             req_id, ptype, body = self._read()
             if req_id == -1:
-                break
+                raise ConnectionError("RCON request was refused")
             if req_id == end_id:
                 break
             if req_id == cmd_id:

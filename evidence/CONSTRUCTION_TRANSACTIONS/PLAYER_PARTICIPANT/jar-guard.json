@@ -1,0 +1,30 @@
+{
+  "classes": 236,
+  "errors": [],
+  "sha256": "74aa09815fd335f25af2b7f27a62d53e13ba7ffa07c512112a0c6b997b27531a",
+  "mutations": [
+    {
+      "arm": "bundled-legacy",
+      "compileExit": 0,
+      "refused": [
+        "forbidden entry: com/blockreality/testlegacy/Forbidden.class",
+        "forbidden constant: com/blockreality/testlegacy/Forbidden.class -> com/blockreality/testlegacy/"
+      ]
+    },
+    {
+      "arm": "dormant-reference",
+      "compileExit": 0,
+      "refused": [
+        "forbidden constant: com/blockreality/impl/ResurrectedReference.class -> com/blockreality/testlegacy/"
+      ]
+    },
+    {
+      "arm": "construction-process-driver",
+      "compileExit": 0,
+      "refused": [
+        "forbidden entry: com/blockreality/core/transaction/TransactionProcessLeak.class",
+        "forbidden constant: com/blockreality/core/transaction/TransactionProcessLeak.class -> com/blockreality/core/transaction/TransactionProcess"
+      ]
+    }
+  ]
+}

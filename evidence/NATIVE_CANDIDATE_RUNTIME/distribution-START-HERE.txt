@@ -1,0 +1,8 @@
+Block Reality 0.4.0-dev — local native candidate
+
+Forge 1.20.1 / Java 17. Windows x86_64 and Linux x86_64 native libraries are inside this jar.
+Place blockreality-0.4.0-dev.jar in an isolated Forge profile mods directory.
+Engine source: 42e10f5f7af166788588afcd2fb2fd97101d16dc, candidate build of tectonic2 1.3.0.
+This is a module integration candidate, not v1 or a replacement of the formal engine release.
+See evidence/NATIVE_CANDIDATE_RUNTIME/RESULTS.md in the module source for the exact qualification scope.
+Java does not implement engineering verdicts, fracture, crushing or rigid-body motion.

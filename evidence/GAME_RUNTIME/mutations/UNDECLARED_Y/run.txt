@@ -1,0 +1,31 @@
+> Task :compileJava UP-TO-DATE
+> Task :bundleEngines UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+
+> Task :compileGameRuntimeMutation
+
+> Task :compileTestJava UP-TO-DATE
+> Task :processTestResources NO-SOURCE
+> Task :testClasses UP-TO-DATE
+
+> Task :gameRuntimeMutation FAILED
+
+PlacementAxisTest > undeclaredLegacyBlocksNeverInventAWorldAxis() FAILED
+    org.opentest4j.AssertionFailedError at PlacementAxisTest.java:10
+6 actionable tasks: 2 executed, 4 up-to-date
+Note: C:\Users\wmc02\Desktop\block-reality\build\game-runtime-mutations\UNDECLARED_Y\StructuralBlock.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+1 test completed, 1 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':gameRuntimeMutation'.
+> There were failing tests. See the results at: file:///C:/Users/wmc02/Desktop/block-reality/build/game-runtime-mutations/UNDECLARED_Y/results/
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 9s

@@ -1,0 +1,86 @@
+{
+  "note": "Text copies trim trailing whitespace; original byte identities are recorded. RCON replies are format-stripped; no credentials or server config copied.",
+  "files": {
+    "ui-verdicts-targeted.log": {
+      "source": "build/ui-verdicts-targeted.log",
+      "rawSha256": "9c3618902f467f3f711234b73c7edc769d2bf9a38ea78540e63c73c222cff41a",
+      "rawBytes": 651
+    },
+    "ui-verdicts-forge.log": {
+      "source": "build/ui-verdicts-forge.log",
+      "rawSha256": "250ccdd849eed46e9040964e35a0fd723daba13be5648e235f0429c5d979783b",
+      "rawBytes": 8801
+    },
+    "ui-verdicts-language-first.xml": {
+      "source": "build/ui-verdicts-language-first.xml",
+      "rawSha256": "816956034831cf1c3fc856de73cf2a3161fa16fca0806c4610ed9436c3815315",
+      "rawBytes": 2053
+    },
+    "ui-verdicts-core-final.log": {
+      "source": "build/ui-verdicts-core-final.log",
+      "rawSha256": "3ec101886368c95bb0f01301ae573102e056576be8926d3b569189440018e1d5",
+      "rawBytes": 29074
+    },
+    "ui-verdicts-forge-final.log": {
+      "source": "build/ui-verdicts-forge-final.log",
+      "rawSha256": "b64a7793e7e414d8139231fbe571d092835e44c86e01a5c818139ef25f09241e",
+      "rawBytes": 7332
+    },
+    "ui-verdicts-server-first.json": {
+      "source": "build/ui-verdicts-server-first.json",
+      "rawSha256": "d48ae231943c49da5433117f7bb47a9351ce0b849df9e60f22b1526778b4c02b",
+      "rawBytes": 19793
+    },
+    "ui-verdicts-server-stop.json": {
+      "source": "build/ui-verdicts-server-stop.json",
+      "rawSha256": "08c27e8096672a090e34d0d431fe3dd7dd1546c20d9aa8b73cb030cdf95cfbd2",
+      "rawBytes": 75
+    },
+    "mutations/counts.json": {
+      "source": "build/ui-verdicts-mutations/counts.json",
+      "rawSha256": "58564234b5c008e5a6a36acc87f6ae659d92888907aca6b28a222f06fd961c40",
+      "rawBytes": 337
+    },
+    "mutations/HIDE_LOCAL/run.txt": {
+      "source": "build/ui-verdicts-mutations/HIDE_LOCAL/run.txt",
+      "rawSha256": "6b3008be3699690c20b41286d01e9d89746065bc25cc53bfab2a1165a285bcea",
+      "rawBytes": 1024
+    },
+    "mutations/RECOMPUTE_FLAG/run.txt": {
+      "source": "build/ui-verdicts-mutations/RECOMPUTE_FLAG/run.txt",
+      "rawSha256": "c5b4503553916e14b03a3e3e5ac1f7aac789d0437cf402c4dcca9bdf73537869",
+      "rawBytes": 1022
+    },
+    "mutations/HIDE_LOCAL/results/TEST-com.blockreality.core.render.BucklingReadoutTest.xml": {
+      "source": "build/ui-verdicts-mutations/HIDE_LOCAL/results/TEST-com.blockreality.core.render.BucklingReadoutTest.xml",
+      "rawSha256": "121ce2829ecf625a59da243bffd8b0d76f22f557c014e2ba78fc0c11f097df67",
+      "rawBytes": 1560
+    },
+    "mutations/RECOMPUTE_FLAG/results/TEST-com.blockreality.core.render.BucklingReadoutTest.xml": {
+      "source": "build/ui-verdicts-mutations/RECOMPUTE_FLAG/results/TEST-com.blockreality.core.render.BucklingReadoutTest.xml",
+      "rawSha256": "b587a32a7a6f7befae695c6ad968f3d8948a912aff5f2b0a6966f55aa8ed169b",
+      "rawBytes": 1589
+    },
+    "junit/TEST-com.blockreality.core.render.BucklingReadoutTest.xml": {
+      "source": "mod/core/build/test-results/test/TEST-com.blockreality.core.render.BucklingReadoutTest.xml",
+      "rawSha256": "547577c714c35e2649094759fa678dba4f03cfbf8f08793100c18cc02cd38a1a",
+      "rawBytes": 756
+    },
+    "server-excerpt.log": {
+      "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-ui-verdicts-server.log",
+      "rawSha256": "a4bd173787b365dd8c9553a6b3885ee2ae7b2c69473254b300971557f0b8b37b",
+      "rawBytes": 114336,
+      "selection": "native load/status, Done, stop and Gradle outcome only"
+    },
+    "ui-verdicts-forge-cache.log": {
+      "source": "build/ui-verdicts-forge-cache.log",
+      "rawSha256": "f140ef1443228f032fca86844378059fe1094734339edb06d3a5f1687596fd2c",
+      "rawBytes": 7332
+    },
+    "ui-verdicts-docs.log": {
+      "source": "build/ui-verdicts-docs.log",
+      "rawSha256": "e0376ea724bd7125b7369bd2db1e902d152ea50a1d7f62f4d25c1908aea3f11f",
+      "rawBytes": 118
+    }
+  }
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.bsi.BsiBeamDisplayTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:31:41" hostname="ROCKYLAPTOP" time="0.107">
+  <properties/>
+  <testcase name="surfaceTilesSplitWithoutSmearingAcrossTheJump()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.049"/>
+  <testcase name="neutralAxisIsSuppliedDataAndSegmentsDoNotCrossMissingOrDuplicateStations()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.017"/>
+  <testcase name="malformedDataAndExternalMutationCannotReachTheDisplay()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.004"/>
+  <testcase name="unequalVisualExtentsRetainIndependentNativeFacesAndBothSidesOfAJump()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.019"/>
+  <testcase name="boundedInterpolationUsesFaceCentresAndClamps()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.002"/>
+  <testcase name="samplesUnitsAndDiagnosticConventionComeFromWire()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.006"/>
+  <testcase name="revisionSectionsAndCatalogueAreRequiredButRequestedZeroIsValid()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.003"/>
+  <testcase name="duplicateStationsRetainBothSidesAndNeverInventAGoverningSide()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.004"/>
+  <testcase name="nativeVerdictNeverDependsOnDisplayedDc()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

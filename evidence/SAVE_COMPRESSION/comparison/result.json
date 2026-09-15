@@ -1,0 +1,10 @@
+{
+  "iteration_pairs": 900,
+  "measured_pairs": 720,
+  "canonical_payloads": 150,
+  "changed_source_files": [
+    "forge/src/main/java/com/blockreality/impl/server/WorldIndexData.java"
+  ],
+  "failures": [],
+  "pass": true
+}

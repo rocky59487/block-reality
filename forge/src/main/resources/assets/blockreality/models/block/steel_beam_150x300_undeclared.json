@@ -1,0 +1,5 @@
+{
+  "parent": "blockreality:block/steel_beam_150x300",
+  "loader": "blockreality:product",
+  "undeclared": true
+}

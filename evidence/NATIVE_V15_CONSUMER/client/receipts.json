@@ -1,0 +1,38 @@
+{
+  "ci-f7f9533.json": {
+    "bytes": 13467,
+    "sha256": "ae7e2100076f0312bc08602fbe43142aff2cc8a64eab51dd820c3acaaf04a5b3"
+  },
+  "raw-observations.zip": {
+    "bytes": 2277598,
+    "sha256": "bd6ff83e9f2d72423079da7a12af752898e08d677ac303f00362bab8992d8b56"
+  },
+  "render-source.json": {
+    "bytes": 270,
+    "sha256": "9208c6d3560d095538931d1b55a906649e6581fa2f78220d2fc664b8f3580f59"
+  },
+  "summary.json": {
+    "bytes": 551,
+    "sha256": "71176e9364084fe216f1f20f77a7283693d491ff27d6b2b701f9af73c0a1688b"
+  },
+  "helpers/archive-client.py": {
+    "bytes": 3391,
+    "sha256": "f30a910a52867dea95627c7c719e037731ca79336163e9846ab28f581b5ef2eb"
+  },
+  "helpers/launch-render.py": {
+    "bytes": 2253,
+    "sha256": "c56747cd23c46e5327dc5d6542a54afccc97bacb6d9a6dbda3377fba5aa9a608"
+  },
+  "helpers/run-render-scenes.py": {
+    "bytes": 1297,
+    "sha256": "d2102b140504e04b92615a3680c3c341c25b5d5e24ce1b6e01290a36a75b39c2"
+  },
+  "helpers/setup-render-linux.py": {
+    "bytes": 1585,
+    "sha256": "f7fa3786401bd4e85f929ccd5772b1970aeefb1d15bdb2ec5f3357f0d72468db"
+  },
+  "helpers/setup-render.py": {
+    "bytes": 790,
+    "sha256": "75aad79552ff06bcef368867350a41d38a4b6bba0b5669fd622193f4ea55165f"
+  }
+}

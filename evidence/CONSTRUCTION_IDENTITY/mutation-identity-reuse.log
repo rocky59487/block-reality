@@ -1,0 +1,36 @@
+> Task :api:compileJava
+> Task :api:processResources NO-SOURCE
+> Task :api:classes
+> Task :api:jar
+> Task :core:compileJava
+> Task :core:processResources
+> Task :core:classes
+> Task :core:compileTestJava
+> Task :core:processTestResources
+> Task :core:testClasses
+
+> Task :core:test FAILED
+
+ConstructionLedgerTest > fullDestructionAndSameTickReplacementCannotResurrectIdentityEvenAfterPendingSave() FAILED
+    org.opentest4j.AssertionFailedError: expected: not equal but was: <1>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertNotEquals.failEqual(AssertNotEquals.java:277)
+        at app//org.junit.jupiter.api.AssertNotEquals.assertNotEquals(AssertNotEquals.java:119)
+        at app//org.junit.jupiter.api.AssertNotEquals.assertNotEquals(AssertNotEquals.java:111)
+        at app//org.junit.jupiter.api.Assertions.assertNotEquals(Assertions.java:2121)
+        at app//com.blockreality.core.world.ConstructionLedgerTest.fullDestructionAndSameTickReplacementCannotResurrectIdentityEvenAfterPendingSave(ConstructionLedgerTest.java:86)
+
+1 test completed, 1 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:test'.
+> There were failing tests. See the report at: file:///C:/Users/wmc02/Desktop/block-reality/build/ci-mutants-73wjecj1/mod/core/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 6s
+7 actionable tasks: 7 executed

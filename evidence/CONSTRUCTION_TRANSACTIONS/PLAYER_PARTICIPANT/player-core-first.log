@@ -1,0 +1,75 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes
+> Task :core:compileTestJava
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses
+
+> Task :core:test
+
+AtomicConstructionCoordinatorTest > everyPrepareAndCommitStorageStageFailureEitherAbortsOrRetainsDurableCommit() PASSED
+
+AtomicConstructionCoordinatorTest > decisionVerificationFailureDoesNotGuessRollbackAndMissingPreparedFileDoesNotReopenWrites() PASSED
+
+AtomicConstructionCoordinatorTest > everyParticipantWriteAndFlushFailureRestoresAllBeforeImagesWithoutPublication() PASSED
+
+AtomicConstructionCoordinatorTest > secondPlayerOnSameBaseIsRejectedAndOrderedNonconflictingCommitAdvancesOnlyOnce() PASSED
+
+AtomicConstructionCoordinatorTest > unknownExternalValueOrRevisionPreventsAnyRecoveryWrite() PASSED
+
+AtomicConstructionCoordinatorTest > abortDecisionFailuresKeepRestoredImagesAndRequireRecoveryUntilTheMarkerIsDurable() PASSED
+
+AtomicConstructionCoordinatorTest > commitConsumesAllImagesOnceAndReplaySurvivesRestartAndLaterEdits() PASSED
+
+AtomicConstructionCoordinatorTest > checkpointCannotHideChangedImagesOrRevision() PASSED
+
+AtomicConstructionCoordinatorTest > collisionsBindActorSessionDomainPayloadAndBaseWithoutChangingOriginalDecision() PASSED
+
+AtomicConstructionCoordinatorTest > lostPublicationKeepsCommittedDecisionAndRecoveryPublishesBaselineWithoutApplyingAgain() PASSED
+
+AtomicConstructionCoordinatorTest > callbacksCannotReenterCoordinatorAndBaselineFailureLeavesItClosed() PASSED
+
+AtomicConstructionCoordinatorTest > checkpointMakesUnsavedBaselineDurableBeforePreparedAndIsNeverRepeatedForReplay() PASSED
+
+AtomicConstructionCoordinatorTest > corruptionCannotBeClearedByPublishingABaselineWithoutReopeningTheJournal() PASSED
+
+AtomicConstructionCoordinatorTest > failedCheckpointCreatesNoIntentAndDoesNotChangeVisibleParticipants() PASSED
+
+AtomicConstructionCoordinatorTest > validationStaleBaseAndConflictingImagesRefuseBeforeWritesAndRetainReplay() PASSED
+
+AtomicConstructionCoordinatorTest > missingRevisionParticipantCannotCommitEvenWhenEverySuppliedImageMatches() PASSED
+
+AtomicConstructionCoordinatorTest > failedRollbackRetainsPreparedAndBlocksUntilExplicitSuccessfulRecovery() PASSED
+
+FileTransactionJournalTest > fullKeyAndByteQuotasRefuseNewKeysButStillAllowTheReservedDecisionAndReplay() PASSED
+
+FileTransactionJournalTest > refusedAndAbortedKeysAreNeverEvictedAndClosedStoresCannotMutate() PASSED
+
+FileTransactionJournalTest > everyAtomicWriteFaultIsResolvedFromRealFilesAndTempsRemainEvidence() PASSED
+
+FileTransactionJournalTest > onlyOnePreparedIntentAndNoForeignDomainOrPrematureTerminalCreation() PASSED
+
+FileTransactionJournalTest > corruptRecordsUnknownSchemaTruncationAndDomainMarkerArePreservedAndRefused() PASSED
+
+FileTransactionJournalTest > exclusiveOwnerDomainPinAndLazyRestartReplayRetainOriginalImages() PASSED
+
+FileTransactionJournalTest > readThroughDetectsDeletionAndCorruptionInsteadOfServingCachedSuccess() PASSED
+
+TransactionCodecTest > aggregateSizeAndIndividualResourcePieceAndBindingBoundsApplyBeforeEncoding() PASSED
+
+TransactionCodecTest > imagesAndListsAreImmutableAndMissingIsNotEmpty() PASSED
+
+TransactionCodecTest > resignedSchemaPhaseReasonRevisionCountsAndNoncanonicalKeysRefuse() PASSED
+
+TransactionCodecTest > phasesRoundTripCanonicallyAndOnlyCommittedReceiptsExposePieceIds() PASSED
+
+TransactionCodecTest > terminalPhasesCannotChangeOrSmuggleDifferentImages() PASSED
+
+TransactionCodecTest > everyCorruptedByteEveryTruncationAndTrailingDataRefuse() PASSED
+
+BUILD SUCCESSFUL in 4s
+7 actionable tasks: 3 executed, 4 up-to-date

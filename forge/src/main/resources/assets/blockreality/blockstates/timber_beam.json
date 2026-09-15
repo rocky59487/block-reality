@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "axis=x": {
+      "model": "blockreality:block/timber_beam",
+      "y": 90
+    },
+    "axis=y": {
+      "model": "blockreality:block/timber_beam",
+      "x": 90,
+      "y": 90
+    },
+    "axis=z": {
       "model": "blockreality:block/timber_beam"
+    },
+    "axis=undeclared": {
+      "model": "blockreality:block/timber_beam_undeclared"
     }
   }
 }

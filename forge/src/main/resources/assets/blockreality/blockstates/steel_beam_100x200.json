@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "axis=x": {
+      "model": "blockreality:block/steel_beam_100x200",
+      "y": 90
+    },
+    "axis=y": {
+      "model": "blockreality:block/steel_beam_100x200",
+      "x": 90,
+      "y": 90
+    },
+    "axis=z": {
       "model": "blockreality:block/steel_beam_100x200"
+    },
+    "axis=undeclared": {
+      "model": "blockreality:block/steel_beam_100x200_undeclared"
     }
   }
 }

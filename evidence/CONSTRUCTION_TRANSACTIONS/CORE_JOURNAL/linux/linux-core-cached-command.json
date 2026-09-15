@@ -1,0 +1,14 @@
+{
+  "command": [
+    "bash",
+    "gradlew",
+    "--no-daemon",
+    "check",
+    ":core:constructionRecoveryGate",
+    "-Dbr.transactionEvidence=/home/rocky/br-construction-transactions/qualification/process-linux-cached",
+    "--console=plain"
+  ],
+  "cwd": "/home/rocky/br-construction-transactions/mod",
+  "BR_ENGINE": "/home/rocky/br-native-candidate-runtime/staged/linux-x86_64/libbsi_tectonic.so",
+  "BR_SIDECAR": "/home/rocky/br-native-candidate-runtime/dist/br-sidecar"
+}

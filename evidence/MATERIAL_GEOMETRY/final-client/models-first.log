@@ -1,0 +1,127 @@
+all nine registered products observed: PASS
+brick_pier four actual states: PASS
+brick_pier undeclared baked target and collision agree: PASS
+brick_pier undeclared real atlas sprites: PASS
+brick_pier warning on all six faces: PASS
+brick_pier x baked target and collision agree: PASS
+brick_pier x real atlas sprites: PASS
+brick_pier x declared end faces: PASS
+brick_pier y baked target and collision agree: PASS
+brick_pier y real atlas sprites: PASS
+brick_pier y declared end faces: PASS
+brick_pier z baked target and collision agree: PASS
+brick_pier z real atlas sprites: PASS
+brick_pier z declared end faces: PASS
+brick_pier actual item geometry and sprites: PASS
+concrete_beam four actual states: PASS
+concrete_beam undeclared baked target and collision agree: PASS
+concrete_beam undeclared real atlas sprites: PASS
+concrete_beam warning on all six faces: PASS
+concrete_beam x baked target and collision agree: PASS
+concrete_beam x real atlas sprites: PASS
+concrete_beam x declared end faces: PASS
+concrete_beam y baked target and collision agree: PASS
+concrete_beam y real atlas sprites: PASS
+concrete_beam y declared end faces: PASS
+concrete_beam z baked target and collision agree: PASS
+concrete_beam z real atlas sprites: PASS
+concrete_beam z declared end faces: PASS
+concrete_beam actual item geometry and sprites: PASS
+concrete_slab four actual states: PASS
+concrete_slab undeclared baked target and collision agree: PASS
+concrete_slab undeclared real atlas sprites: PASS
+concrete_slab warning on all six faces: PASS
+concrete_slab x baked target and collision agree: PASS
+concrete_slab x real atlas sprites: PASS
+concrete_slab x declared end faces: PASS
+concrete_slab y baked target and collision agree: PASS
+concrete_slab y real atlas sprites: PASS
+concrete_slab y declared end faces: PASS
+concrete_slab z baked target and collision agree: PASS
+concrete_slab z real atlas sprites: PASS
+concrete_slab z declared end faces: PASS
+concrete_slab actual item geometry and sprites: PASS
+concrete_slab_150 four actual states: PASS
+concrete_slab_150 undeclared baked target and collision agree: PASS
+concrete_slab_150 undeclared real atlas sprites: PASS
+concrete_slab_150 warning on all six faces: PASS
+concrete_slab_150 x baked target and collision agree: PASS
+concrete_slab_150 x real atlas sprites: PASS
+concrete_slab_150 x declared end faces: PASS
+concrete_slab_150 y baked target and collision agree: PASS
+concrete_slab_150 y real atlas sprites: PASS
+concrete_slab_150 y declared end faces: PASS
+concrete_slab_150 z baked target and collision agree: PASS
+concrete_slab_150 z real atlas sprites: PASS
+concrete_slab_150 z declared end faces: PASS
+concrete_slab_150 actual item geometry and sprites: PASS
+steel_beam four actual states: PASS
+steel_beam undeclared baked target and collision agree: PASS
+steel_beam undeclared real atlas sprites: PASS
+steel_beam warning on all six faces: PASS
+steel_beam x baked target and collision agree: PASS
+steel_beam x real atlas sprites: PASS
+steel_beam x declared end faces: PASS
+steel_beam y baked target and collision agree: PASS
+steel_beam y real atlas sprites: PASS
+steel_beam y declared end faces: PASS
+steel_beam z baked target and collision agree: PASS
+steel_beam z real atlas sprites: PASS
+steel_beam z declared end faces: PASS
+steel_beam actual item geometry and sprites: PASS
+steel_beam_100x200 four actual states: PASS
+steel_beam_100x200 undeclared baked target and collision agree: PASS
+steel_beam_100x200 undeclared real atlas sprites: PASS
+steel_beam_100x200 warning on all six faces: PASS
+steel_beam_100x200 x baked target and collision agree: PASS
+steel_beam_100x200 x real atlas sprites: PASS
+steel_beam_100x200 x declared end faces: PASS
+steel_beam_100x200 y baked target and collision agree: PASS
+steel_beam_100x200 y real atlas sprites: PASS
+steel_beam_100x200 y declared end faces: PASS
+steel_beam_100x200 z baked target and collision agree: PASS
+steel_beam_100x200 z real atlas sprites: PASS
+steel_beam_100x200 z declared end faces: PASS
+steel_beam_100x200 actual item geometry and sprites: PASS
+steel_beam_150x300 four actual states: PASS
+steel_beam_150x300 undeclared baked target and collision agree: PASS
+steel_beam_150x300 undeclared real atlas sprites: PASS
+steel_beam_150x300 warning on all six faces: PASS
+steel_beam_150x300 x baked target and collision agree: PASS
+steel_beam_150x300 x real atlas sprites: PASS
+steel_beam_150x300 x declared end faces: PASS
+steel_beam_150x300 y baked target and collision agree: PASS
+steel_beam_150x300 y real atlas sprites: PASS
+steel_beam_150x300 y declared end faces: PASS
+steel_beam_150x300 z baked target and collision agree: PASS
+steel_beam_150x300 z real atlas sprites: PASS
+steel_beam_150x300 z declared end faces: PASS
+steel_beam_150x300 actual item geometry and sprites: PASS
+steel_plate four actual states: PASS
+steel_plate undeclared baked target and collision agree: PASS
+steel_plate undeclared real atlas sprites: PASS
+steel_plate warning on all six faces: PASS
+steel_plate x baked target and collision agree: PASS
+steel_plate x real atlas sprites: PASS
+steel_plate x declared end faces: PASS
+steel_plate y baked target and collision agree: PASS
+steel_plate y real atlas sprites: PASS
+steel_plate y declared end faces: PASS
+steel_plate z baked target and collision agree: PASS
+steel_plate z real atlas sprites: PASS
+steel_plate z declared end faces: PASS
+steel_plate actual item geometry and sprites: PASS
+timber_beam four actual states: PASS
+timber_beam undeclared baked target and collision agree: PASS
+timber_beam undeclared real atlas sprites: PASS
+timber_beam warning on all six faces: PASS
+timber_beam x baked target and collision agree: PASS
+timber_beam x real atlas sprites: PASS
+timber_beam x declared end faces: PASS
+timber_beam y baked target and collision agree: PASS
+timber_beam y real atlas sprites: PASS
+timber_beam y declared end faces: PASS
+timber_beam z baked target and collision agree: PASS
+timber_beam z real atlas sprites: PASS
+timber_beam z declared end faces: PASS
+timber_beam actual item geometry and sprites: PASS

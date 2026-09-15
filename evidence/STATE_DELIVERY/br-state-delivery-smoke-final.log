@@ -1,0 +1,16 @@
+OFF startup has no result: PASS
+Traceback (most recent call last):
+  File "/mnt/c/Users/wmc02/Desktop/block-reality/scripts/game_runtime_smoke.py", line 157, in <module>
+    main()
+  File "/mnt/c/Users/wmc02/Desktop/block-reality/scripts/game_runtime_smoke.py", line 75, in main
+    wait_for("config enable recovers native analysis", lambda s:
+  File "/mnt/c/Users/wmc02/Desktop/block-reality/scripts/game_runtime_smoke.py", line 42, in wait_for
+    raise AssertionError(name + ": " + reply)
+AssertionError: config enable recovers native analysis: Block Reality
+  dimension       minecraft:overworld
+  engine          DISABLED
+  native engine not loaded yet
+  revision        2   (rejected as stale: 0)
+  blocks          27   test loads: 0
+  analysis        OFF
+  last result     none yet

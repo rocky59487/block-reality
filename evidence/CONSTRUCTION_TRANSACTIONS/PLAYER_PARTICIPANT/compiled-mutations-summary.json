@@ -1,0 +1,26 @@
+{
+  "source": "5d1fb6f4a02d3f082fd879690a04c216b5b319fa",
+  "control": 45,
+  "arms": [
+    {
+      "arm": "skip-checkpoint",
+      "compiled": true,
+      "caught_by": "checkpointMakesUnsavedBaselineDurableBeforePreparedAndIsNeverRepeatedForReplay()",
+      "failure_type": "org.opentest4j.AssertionFailedError"
+    },
+    {
+      "arm": "lose-unrelated-player-data",
+      "compiled": true,
+      "caught_by": "exactFullPlayerSurvivesVanillaAndOfflineReloadWithInventoryOnlyChange()",
+      "failure_type": "org.opentest4j.AssertionFailedError"
+    },
+    {
+      "arm": "accept-duplicate-slots",
+      "compiled": true,
+      "caught_by": "rejectsDuplicateUnknownMistypedAndMalformedInventoryWithoutMutation()",
+      "failure_type": "org.opentest4j.AssertionFailedError"
+    }
+  ],
+  "restored": 45,
+  "status": "PASS"
+}

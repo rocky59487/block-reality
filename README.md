@@ -13,7 +13,7 @@
 
 ![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A)
 ![Release v0.3c](https://img.shields.io/badge/release-v0.3c-3B82F6)
-![Verification](https://img.shields.io/badge/verification-330_engine_%2B_369_Java_checks_registered-blue)
+![Verification](https://img.shields.io/badge/verification-330_engine_%2B_647_Java_checks_registered-blue)
 [![License](https://img.shields.io/github/license/rocky59487/block-reality)](LICENSE)
 
 Block Reality is a structural analysis mod for Minecraft 1.20.1. Blocks placed in the
@@ -141,6 +141,13 @@ searched before the copy inside the jar; a mod update does not require rebuildin
 engine. When the two do not agree, the mod says so in one line naming both revisions,
 rather than failing somewhere further along.
 
+The current development branch now uses this native path in the actual server loop.
+Linux server evidence and migration instructions are in [GAME_RUNTIME](docs/GAME_RUNTIME.md).
+The default development jar contains no native library; the latest contract-compatible
+Windows/Linux release assets and client N25 acceptance are still pending. The install and
+play examples below describe the released v0.3c; the development branch requires explicit
+placement axes and observes ground contacts on all six faces.
+
 ### Running from source
 
 `run.bat` (Windows) or `./run.sh` (Linux) in the repository root starts the development
@@ -150,7 +157,7 @@ first run.
 Minecraft and Forge cannot be redistributed, so no archive that can be handed to someone
 else can contain them, and there is no extract-and-play package.
 
-## Using it
+## Using the released v0.3c
 
 The creative tab "Block Reality" holds the structural blocks and the Stress Glasses.
 A block's token decides which element it becomes — beams and plates are different
@@ -267,7 +274,7 @@ a gate that has run — is why this paragraph exists rather than a quieter omiss
 | | |
 |---|---|
 | Engine | `sidecar/verify.py`, 330 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
-| Java | 369 tests registered (305 core, 64 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real, and 12 load the v0.4 engine library in-process |
+| Java | 647 tests registered (523 core, 124 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real, and 42 cover in-process BSI engine integration |
 | Closed form | 31 non-zero references, worst relative error 1.2e-14; 10 zero references, worst absolute residual 1.5e-08. (Two earlier releases quoted 1.6e-10 here — that floor turned out to be the old wire's 10-digit truncation, not the engine) |
 | Transport | numbers cross as raw little-endian doubles in shared memory, never textualised; the JSON fallback prints 17 significant digits. Gate: three representative solves bit-identical across both transports |
 | Shell convergence | clamped square plate: span moment 1.75% at 8 elements down to 0.28% at 20, observed convergence order 2.06; recovered support moment 2.7% at 20 |
@@ -517,7 +524,7 @@ Greenhill 的精確解是 9.89，**低 68%**；逼出 2、4、10、19 個元素�
 | | |
 |---|---|
 | 引擎 | `sidecar/verify.py` 330 項全過，每一項都對閉合解、不依賴求解器的不變量,或傳輸等價 oracle |
-| Java | 369 項測試已登錄（core 305、Forge 側 64），其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore，另有 12 項在同一個程序內載入 v0.4 的引擎函式庫 |
+| Java | 647 項測試已登錄（core 523、Forge 側 124），其中 28 項會實際啟動 `br-sidecar` 執行 FrameCore，另有 42 項涵蓋 BSI 程序內引擎整合 |
 | 對閉合解 | 31 項非零參考，最差相對誤差 1.2e-14；10 項零參考，最差絕對殘差 1.5e-08。（前兩版在這裡引用的 1.6e-10,後來查明是舊 wire 的 10 位截斷,不是引擎） |
 | 傳輸 | 數值以 raw little-endian double 走共用記憶體,從不文字化;JSON fallback 印 17 位有效數字。gate:三個代表案兩種傳輸逐位元相同 |
 | 板元素收斂 | 固端方形板：跨中彎矩 8 元素 1.75%、20 元素 0.28%，實測收斂階 2.06；還原後的支承彎矩 20 元素 2.7% |
@@ -554,3 +561,5 @@ Block Reality 以 Apache License 2.0 授權，見 `LICENSE` 與 `NOTICE`。
 授權。其他第三方元件保留各自的授權與著作權聲明。
 
 Java 總數包含環境 SKIP；最新 Windows core305=293PASS/12SKIP、Forge64PASS，真原生JNA12/12。梁殼顯示與 channel8 使用不可變引擎樣本；BSI stationIdentity 可選雙側身份已接到真JNA/顯示與封包，舊請求維持單側，詳見 docs/GATES.md。BSI 遊戲入口仍未換裝。
+
+Native engine packaging for the current development branch is documented in [NATIVE_PACKAGING](docs/NATIVE_PACKAGING.md). The Windows/Linux jar has been validated with real v1.3 libraries; Minecraft game-loop migration remains pending.

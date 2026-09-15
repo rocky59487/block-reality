@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.block.ProductTooltipTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-09T23:11:23" hostname="rockylaptop" time="0.032">
+  <properties/>
+  <testcase name="solidCellsAndPanelsDescribeDifferentRolesWithoutInventingANormal()" classname="com.blockreality.impl.block.ProductTooltipTest" time="0.029"/>
+  <testcase name="millimetresRetainNonSquareOrderWithoutBinaryRoundingOrLocaleDrift()" classname="com.blockreality.impl.block.ProductTooltipTest" time="0.001"/>
+  <testcase name="unknownProductsShowInformationUnavailableInsteadOfAnEmptyOrFictionalSize()" classname="com.blockreality.impl.block.ProductTooltipTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

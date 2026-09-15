@@ -7,8 +7,13 @@
 #include "bsi_schema.hpp"
 #include "bsi_sha256.hpp"
 #include "bsi_vocab.hpp"
+#include "bsi_fracture_wire.hpp"
+#include "bsi_motion_wire.hpp"
+#include "bsi_pdelta_fracture_wire.hpp"
+#include "bsi_corot_fracture_wire.hpp"
 #include <algorithm>
 #include <array>
+#include <charconv>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
@@ -48,7 +53,7 @@ public:
     }
     ~SessionImpl() { if (inst_) engine_.vt->close(inst_); }
 
-    bool poisoned() const { return poisoned_; }
+    bool poisoned() const { return poisoned_ || nativeFault_; }
     const HostOptions& options() const { return opts_; }
     const Engine& engine() const { return engine_; }
 
@@ -64,6 +69,7 @@ public:
         if (const json::Value* v = rq.hdr.find("revision")) if (v->isInt) rq.revision = v->i64;
         if (!rq.method.empty() && !sch.isVerb(rq.method)) { errorReply(out, rq.id, rq.method, rq.revision, "UNKNOWN_METHOD", rq.method); return; }
         if (!base.ok) { errorReply(out, rq.id, rq.method, rq.revision, "PROTOCOL_ERROR", "request header: " + firstProblem(base)); return; }
+        if (payloadLen && !payload) { errorReply(out, rq.id, rq.method, rq.revision, "PROTOCOL_ERROR", "NULL payload"); return; }
         for (const auto& kv : rq.hdr.obj) {
             if (kTopLevelKeys.count(kv.first)) continue;
             if (kv.first.size() >= 2 && kv.first[0] == 'x' && kv.first[1] == '-') { ++rq.ignoredExt; continue; }
@@ -76,9 +82,42 @@ public:
             if (ps->isStr() && ps->str != sha256::hex(payload, payloadLen)) { errorReply(out, rq.id, rq.method, rq.revision, "PROTOCOL_ERROR", "payloadSha256 mismatch"); return; }
         }
         rq.body = rq.hdr.find("body");
+        if (nativeFault_) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", "session invalid after native operation; reopen session"); return; }
         if (poisoned_) { errorReply(out, rq.id, rq.method, rq.revision, "BSI_VERSION", "session refused after a contract mismatch"); return; }
         if (!sch.isVerb(rq.method)) { errorReply(out, rq.id, rq.method, rq.revision, "UNKNOWN_METHOD", rq.method); return; }
         if (!helloSeen_ && rq.method != "bsi.hello") { errorReply(out, rq.id, rq.method, rq.revision, "EXPECTED_HELLO", "first request must be bsi.hello"); return; }
+        const bool identifiedRequest = rq.body && rq.body->find("identity") &&
+            (rq.method == "bsi.world.declare" || rq.method == "bsi.world.edit");
+        const bool fractureRequest = rq.method == "bsi.fracture.prepare" || rq.method == "bsi.fracture.finish";
+        const bool motion = rq.method == "bsi.rigid.declare" || rq.method == "bsi.rigid.step";
+        const bool pdelta = rq.method=="bsi.pdelta.solve" || rq.method=="bsi.pdelta.station" || rq.method=="bsi.pdelta.fracture.prepare";
+        const bool checkpoint = rq.method=="bsi.corot.checkpoint.export" || rq.method=="bsi.corot.checkpoint.import";
+        const bool arc = rq.method=="bsi.corot.arc.advance";
+        const bool corot = rq.method=="bsi.corot.solve" || rq.method=="bsi.corot.fracture.prepare" || rq.method=="bsi.corot.rigid.declare" || checkpoint || arc;
+        if (identifiedRequest || fractureRequest || motion || pdelta || corot) {
+            if (
+#ifndef BSI_TEST_NFW_LIMIT
+#ifndef BSI_TEST_RMW_LIMIT
+                header.size() > fracture_wire::kHeaderLimit ||
+#endif
+#endif
+                payloadLen > fracture_wire::kPayloadLimit || (payloadLen && !payload)) {
+                wireError(rq, out, "PROTOCOL_ERROR", "fracture request exceeds wire budget or has NULL payload"); return;
+            }
+            try {
+                if (arc) corotArcRequest(rq,payloadLen,out);
+                else if (checkpoint) corotCheckpointRequest(rq,payload,payloadLen,out);
+                else if (corot) corotRequest(rq,payload,payloadLen,out);
+                else if (pdelta) pdeltaRequest(rq,payload,payloadLen,out);
+                else if (motion) motionRequest(rq,payload,payloadLen,out,rq.method=="bsi.rigid.declare");
+                else if (identifiedRequest) identifiedWorld(rq, payload, payloadLen, out, rq.method == "bsi.world.edit");
+                else if (rq.method == "bsi.fracture.prepare") fracturePrepare(rq, payloadLen, out);
+                else fractureFinish(rq, payloadLen, out);
+            } catch (...) {
+                wireError(rq, out, "INTERNAL", nativeFault_ ? "native operation interrupted; reopen session" : "fracture request could not be allocated");
+            }
+            return;
+        }
         if (rq.method == "bsi.hello") hello(rq, out);
         else if (rq.method == "bsi.vocab.declare") vocabDeclare(rq, out);
         else if (rq.method == "bsi.vocab.query") vocabQuery(rq, out);
@@ -103,6 +142,13 @@ private:
     std::vector<bsi_block> world_;
     std::vector<bsi_attr> attrs_;
     int worldExt_ = 0;
+
+#include "bsi_fracture_session.hpp"
+#include "bsi_motion_session.hpp"
+#include "bsi_pdelta_session.hpp"
+#include "bsi_corot_session.hpp"
+#include "bsi_corot_checkpoint_session.hpp"
+#include "bsi_corot_arc_session.hpp"
 
     void logf(int level, const char* fmt, ...) {
         if (level > opts_.logLevel) return;
@@ -281,6 +327,7 @@ private:
         }
         ReplyBuilder b((uint32_t)B, 0, BSI_STORAGE_F64);
         bsi_writer w{&b};
+        forgetIdentity();
         int st = engine_.vt->world_declare(inst_, blocks.data(), (uint32_t)B, attrs.empty() ? nullptr : attrs.data(), (uint32_t)A, &w);
         if (st != BSI_OK) { errorFromBuilder(out, rq, st, b); return; }
         std::string why;
@@ -321,6 +368,7 @@ private:
         if (st != BSI_OK) { errorFromBuilder(out, rq, st, b); return; }
         std::string why;
         if (!b.finalizeDeclare(why) || !b.haveEdit()) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", why.empty() ? "engine wrote no edit class" : why); return; }
+        forgetIdentity();
         // apply to the host's world copy (persistent world semantics)
         for (const bsi_edit& e : edits) {
             auto it = std::find_if(world_.begin(), world_.end(), [&](const bsi_block& q) { return q.x == e.block.x && q.y == e.block.y && q.z == e.block.z; });
@@ -350,6 +398,8 @@ private:
         o.bucklingMode = BSI_BUCK_NONE; o.bucklingK = 1.0; o.bucklingBudgetDof = 0;
         o.tier = BSI_TIER_COMMIT; o.targetRel = 1e-9; o.storage = BSI_STORAGE_F64; o.warmStart = 0; o.maxTimeMs = 0; o.numThreads = 0; o.includeMask = 0;
         if (const json::Value* v = body.find("selfWeight")) o.selfWeight = v->b ? 1 : 0;
+        const json::Value* mass = body.find("massModel");
+        const bool physicalMass = mass && mass->str == "physical";
         if (const json::Value* v = body.find("gravity")) for (int k = 0; k < 3; ++k) o.gravity[k] = v->arr[k].num;
         if (const json::Value* bk = body.find("buckling")) {
             if (const json::Value* m = bk->find("mode")) { int i = sch.enumIndex("bucklingMode", m->str); o.bucklingMode = (uint8_t)i; }
@@ -376,6 +426,12 @@ private:
             else if (e.str == "memberGeometry") o.includeMask |= kIncMemberGeometry;
         }
         // capability gate BEFORE the engine (P6)
+#ifndef BSI_TEST_PGN_CAP
+        if (physicalMass && !has("bsi.mass.physical")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "massModel=physical needs bsi.mass.physical"); return; }
+#endif
+#ifndef BSI_TEST_PGN_ABI
+        if (physicalMass && (engine_.vt->abi_version < 2 || !engine_.vt->solve_v2)) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "massModel=physical needs the ABI2 solve slot"); return; }
+#endif
         if (o.bucklingMode == BSI_BUCK_EIGEN && !has("bsi.buckling.eigen")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "buckling.mode=eigen needs bsi.buckling.eigen"); return; }
         if (o.bucklingMode == BSI_BUCK_SCREEN && !has("bsi.buckling.screen")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "buckling.mode=screen needs bsi.buckling.screen"); return; }
         if (o.tier == BSI_TIER_DISPLAY && !has("bsi.precision.display")) { errorReply(out, rq.id, rq.method, rq.revision, "UNSUPPORTED", "precision.tier=display needs bsi.precision.display"); return; }
@@ -409,7 +465,19 @@ private:
         if (o.includeMask & kIncAttrsEcho) b.attrsEcho(attrs_.data(), (uint32_t)attrs_.size());
         bsi_writer w{&b};
         services_.cancelled = 0;
-        int st = engine_.vt->solve(inst_, &o, loads.empty() ? nullptr : loads.data(), (uint32_t)N, &w);
+        int st;
+        if (physicalMass) {
+            bsi_solve_options_v2 extended{};
+            extended.struct_size = sizeof(extended);
+            extended.common = o;
+            extended.massModel = BSI_MASS_PHYSICAL;
+#ifdef BSI_TEST_PGN_ABI
+            if (engine_.vt->abi_version < 2 || !engine_.vt->solve_v2)
+                st = engine_.vt->solve(inst_, &o, loads.empty() ? nullptr : loads.data(), (uint32_t)N, &w);
+            else
+#endif
+                st = engine_.vt->solve_v2(inst_, &extended, loads.empty() ? nullptr : loads.data(), (uint32_t)N, &w);
+        } else st = engine_.vt->solve(inst_, &o, loads.empty() ? nullptr : loads.data(), (uint32_t)N, &w);
         if (st != BSI_OK) { errorFromBuilder(out, rq, st, b); return; }
         std::string why;
         if (!b.finalizeSolve(why, o.bucklingMode)) { errorReply(out, rq.id, rq.method, rq.revision, "INTERNAL", why); return; }

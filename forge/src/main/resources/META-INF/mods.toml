@@ -16,19 +16,20 @@ displayName = "Block Reality"
 displayURL = "https://github.com/rocky59487/block-reality"
 authors = "rocky59487"
 description = '''
-Structural analysis for Minecraft, solved by a real finite element engine.
+Structural analysis for Minecraft, powered by Tectonic2.
 
-Blocks placed in the world are extracted into beam members and solved by FrameCore in a
-separate process. The stress glasses show the result: tension and compression across the
-section depth, the neutral axis, and demand over capacity per member.
+Declare structural materials and placement directions, then use the stress glasses to
+read engine-provided section stresses, demand over capacity and buckling warnings.
+Incomplete or refused models are identified explicitly.
 
-The analysis engine travels inside this jar and unpacks itself the first time it is
-needed — there is nothing else to download or install. It runs as a separate process, so a
-fault in the C++ costs one analysis rather than your server or your world. Nothing here
-reaches the network.
+Engine-equipped builds include native libraries for Windows and Linux x86_64. The mod
+verifies and extracts the matching library when analysis first needs it. Tectonic2 runs
+inside the game process; a native crash can terminate the game or dedicated server.
+Java displays the engine's results rather than calculating structural physics.
 
-No engine ships for macOS or for ARM yet. There the mod loads and plays normally with
-analysis disabled, and says so.
+The current candidate has no bundled engine for macOS or ARM. Building remains available
+when an engine is unavailable, with analysis reported as unavailable. This development
+version does not yet provide engine-driven fracture, crushing or rigid-body motion.
 '''
 
 [[dependencies.blockreality]]

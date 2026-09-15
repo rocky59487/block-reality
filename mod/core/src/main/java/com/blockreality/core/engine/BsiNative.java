@@ -1,6 +1,9 @@
 package com.blockreality.core.engine;
 
 import com.blockreality.core.bsi.BsiContract;
+import com.blockreality.core.diagnostics.PipelineProfile;
+import static com.blockreality.core.diagnostics.PipelineProfile.Stage.*;
+import static com.blockreality.core.diagnostics.PipelineProfile.Counter.*;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.LongByReference;
@@ -42,13 +45,15 @@ public final class BsiNative implements AutoCloseable {
     private final Lib lib;
     private final Pointer handle;
     private final String libraryPath;
+    private final PipelineProfile profile;
     private ByteBuffer buffer = ByteBuffer.allocateDirect(64 * 1024).order(ByteOrder.LITTLE_ENDIAN);
     private volatile boolean closed;
 
-    private BsiNative(Lib lib, Pointer handle, String libraryPath) {
+    private BsiNative(Lib lib, Pointer handle, String libraryPath, PipelineProfile profile) {
         this.lib = lib;
         this.handle = handle;
         this.libraryPath = libraryPath;
+        this.profile = java.util.Objects.requireNonNull(profile);
     }
 
     /**
@@ -59,6 +64,10 @@ public final class BsiNative implements AutoCloseable {
      *                       a refusal with a reason, never a half-working engine.
      */
     public static BsiNative open(Path library, String optionsJson) {
+        return open(library, optionsJson, PipelineProfile.disabled());
+    }
+
+    public static BsiNative open(Path library, String optionsJson, PipelineProfile profile) {
         String path = library.toAbsolutePath().toString();
         Lib lib;
         try {
@@ -78,7 +87,7 @@ public final class BsiNative implements AutoCloseable {
         }
         Pointer h = lib.bsi_capi_open(optionsJson == null ? "{}" : optionsJson);
         if (h == null) throw new EngineRefused("bsi_capi_open refused a session (" + path + ")");
-        return new BsiNative(lib, h, path);
+        return new BsiNative(lib, h, path, profile);
     }
 
     public String libraryPath() { return libraryPath; }
@@ -98,12 +107,20 @@ public final class BsiNative implements AutoCloseable {
         for (int attempt = 0; attempt < 2; attempt++) {
             LongByReference len = new LongByReference(), need = new LongByReference();
             buffer.clear();
-            int rc = lib.bsi_capi_call(handle, requestFrame, requestFrame.length, buffer, buffer.capacity(), len, need);
+            int rc;
+            try (var span = profile.begin(NATIVE_CALL)) {
+                span.add(REQUEST_BYTES, requestFrame.length);
+                rc = lib.bsi_capi_call(handle, requestFrame, requestFrame.length, buffer, buffer.capacity(), len, need);
+                if (rc == OK) span.add(REPLY_BYTES, len.getValue());
+                if (rc == NEED_BIGGER) span.add(BUFFER_GROWTH, 1);
+            }
             if (rc == OK) {
-                byte[] out = new byte[(int) len.getValue()];
-                buffer.position(0);
-                buffer.get(out);
-                return out;
+                try (var ignored = profile.begin(REPLY_COPY)) {
+                    byte[] out = new byte[(int) len.getValue()];
+                    buffer.position(0);
+                    buffer.get(out);
+                    return out;
+                }
             }
             if (rc == NEED_BIGGER) {
                 long required = need.getValue();

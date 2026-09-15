@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.net.StressResultPacketTest" tests="24" skipped="0" failures="0" errors="0" timestamp="2026-09-10T00:04:53" hostname="ROCKYLAPTOP" time="0.226">
+  <properties/>
+  <testcase name="aHostileMemberCountRejectsThePacket()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.001"/>
+  <testcase name="roundTripPreservesTheDrawableResult()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.002"/>
+  <testcase name="theWithheldFlagFollowsItsMemberThroughOverlayTruncation()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.007"/>
+  <testcase name="withholdingWithoutATruncatedBlockIsRejected()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.002"/>
+  <testcase name="anUnknownBucklingStateOrdinalIsRejectedNotClamped()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.001"/>
+  <testcase name="everyBucklingStateSurvivesTheTrip()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.003"/>
+  <testcase name="unassignedCountsTravelPerReason()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.01"/>
+  <testcase name="anOverLongTokenIsTruncatedRatherThanThrownDuringTheBroadcast()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.001"/>
+  <testcase name="theSmallestDoubleFactorIsPreservedExactly()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.001"/>
+  <testcase name="anOverlongDimensionIsClippedNotThrown()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.001"/>
+  <testcase name="theHostSubstitutesDisabledByScaleAndNobodyElseCan()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.0"/>
+  <testcase name="everyNumberTheClientDrawsIsWithinTheDisplayBudgetOfTheServersOwn()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.041"/>
+  <testcase name="aWholeModelSendsNoWithholdingAtAll()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.001"/>
+  <testcase name="aMemberWithoutAGoverningStationDecodesAsNone()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.001"/>
+  <testcase name="withheldElementsAndTheirReasonSurviveTheWire()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.002"/>
+  <testcase name="aStateThatContradictsItsFactorIsRejected()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.003"/>
+  <testcase name="theMaterialTokenSurvivesTheWire()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.001"/>
+  <testcase name="theSafetyClassificationIsTheServersNotAFloatComparison()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.001"/>
+  <testcase name="truncationKeepsTheGoverningMemberAndSaysSo()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.011"/>
+  <testcase name="bucklingSkippedRoundTripsAndAContradictionIsRejected()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.001"/>
+  <testcase name="aTruncatedBufferNeverThrowsItRejects()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.113"/>
+  <testcase name="nanIsCorruptionNotZero()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.002"/>
+  <testcase name="anEmptyResultRoundTripsAsMechanismData()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.0"/>
+  <testcase name="governingStationSurvivesTheTripAsAPosition()" classname="com.blockreality.impl.net.StressResultPacketTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

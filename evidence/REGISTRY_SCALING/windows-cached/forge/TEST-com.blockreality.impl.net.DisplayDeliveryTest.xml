@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.net.DisplayDeliveryTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-09-09T22:36:04" hostname="ROCKYLAPTOP" time="0.14">
+  <properties/>
+  <testcase name="countIdentityAndOmissionContradictionsAreRejected()" classname="com.blockreality.impl.net.DisplayDeliveryTest" time="0.006"/>
+  <testcase name="receivingChargesAggregateStationsBeforeAllocation()" classname="com.blockreality.impl.net.DisplayDeliveryTest" time="0.011"/>
+  <testcase name="selectedRecordsAreCompleteAndThreeEncodesAreIdentical()" classname="com.blockreality.impl.net.DisplayDeliveryTest" time="0.105"/>
+  <testcase name="controllingElementReservesBudgetBeforeBothFamilies()" classname="com.blockreality.impl.net.DisplayDeliveryTest" time="0.01"/>
+  <testcase name="oversizedControllerIsExplicitAndNeverChangesSummary()" classname="com.blockreality.impl.net.DisplayDeliveryTest" time="0.003"/>
+  <testcase name="oversizedFrameIsRejectedBeforeParsing()" classname="com.blockreality.impl.net.DisplayDeliveryTest" time="0.0"/>
+  <testcase name="receivingChargesAggregateBlocksBeforeAllocation()" classname="com.blockreality.impl.net.DisplayDeliveryTest" time="0.002"/>
+  <testcase name="wholeElementsFitExactBytesAndOneLessOmitsThem()" classname="com.blockreality.impl.net.DisplayDeliveryTest" time="0.001"/>
+  <testcase name="countsAreSharedAcrossElementsAndFamilies()" classname="com.blockreality.impl.net.DisplayDeliveryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

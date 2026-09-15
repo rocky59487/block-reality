@@ -1,0 +1,196 @@
+{
+  "windows": {
+    "com.blockreality.core.NativeOnlyResultsTest": {
+      "registered": 3,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiAnalysisResultTest": {
+      "registered": 14,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiBeamDisplayTest": {
+      "registered": 9,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiBucklingTest": {
+      "registered": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiFrameAndResponseTest": {
+      "registered": 7,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiMemberGeometryTest": {
+      "registered": 6,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiRecordsTest": {
+      "registered": 6,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiRecoveryTest": {
+      "registered": 11,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiShellDisplayTest": {
+      "registered": 8,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiStationIdentityTest": {
+      "registered": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiVocabularyTest": {
+      "registered": 3,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.engine.BsiAnalysisNativeTest": {
+      "registered": 1,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.engine.BundledNativesTest": {
+      "registered": 15,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.engine.GameInputNativeTest": {
+      "registered": 4,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.engine.NativeCacheTest": {
+      "registered": 11,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.engine.NativeGameRuntimeTest": {
+      "registered": 7,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.sidecar.SidecarEngineTest": {
+      "registered": 28,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.sidecar.SidecarLifecycleTest": {
+      "registered": 14,
+      "skipped": 11,
+      "failed": 0
+    },
+    "com.blockreality.core.sidecar.SidecarPathsTest": {
+      "registered": 4,
+      "skipped": 0,
+      "failed": 0
+    }
+  },
+  "linux": {
+    "com.blockreality.core.NativeOnlyResultsTest": {
+      "registered": 3,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiAnalysisResultTest": {
+      "registered": 14,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiBeamDisplayTest": {
+      "registered": 9,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiBucklingTest": {
+      "registered": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiFrameAndResponseTest": {
+      "registered": 7,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiMemberGeometryTest": {
+      "registered": 6,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiRecordsTest": {
+      "registered": 6,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiRecoveryTest": {
+      "registered": 11,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiShellDisplayTest": {
+      "registered": 8,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiStationIdentityTest": {
+      "registered": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.bsi.BsiVocabularyTest": {
+      "registered": 3,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.engine.BsiAnalysisNativeTest": {
+      "registered": 1,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.engine.BundledNativesTest": {
+      "registered": 15,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.engine.GameInputNativeTest": {
+      "registered": 4,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.engine.NativeCacheTest": {
+      "registered": 11,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.engine.NativeGameRuntimeTest": {
+      "registered": 7,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.sidecar.SidecarEngineTest": {
+      "registered": 28,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.sidecar.SidecarLifecycleTest": {
+      "registered": 14,
+      "skipped": 0,
+      "failed": 0
+    },
+    "com.blockreality.core.sidecar.SidecarPathsTest": {
+      "registered": 4,
+      "skipped": 1,
+      "failed": 0
+    }
+  }
+}

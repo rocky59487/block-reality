@@ -1,0 +1,12 @@
+> Task :downloadMcpConfig
+> Task :extractSrg
+> Task :createSrgToMcp
+> Task :downloadMCMeta
+> Task :downloadAssets
+> Task :extractNatives
+> Task :makeSrcDirs
+> Task :prepareRuns
+> Task :prepareRunClient
+
+BUILD SUCCESSFUL in 8s
+7 actionable tasks: 7 executed

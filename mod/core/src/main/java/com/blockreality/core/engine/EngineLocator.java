@@ -1,10 +1,11 @@
 package com.blockreality.core.engine;
 
+import com.blockreality.core.sidecar.BundledEngine;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -30,22 +31,16 @@ public final class EngineLocator {
 
     /** {@code linux-x86_64}, {@code windows-x86_64}, {@code macos-aarch64} … as the manifest spells it. */
     public static String platform() {
-        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
-        String arch = System.getProperty("os.arch", "").toLowerCase(Locale.ROOT);
-        String o = os.contains("win") ? "windows" : os.contains("mac") || os.contains("darwin") ? "macos" : os.contains("linux") ? "linux" : "unknown";
-        String a = switch (arch) {
-            case "amd64", "x86_64" -> "x86_64";
-            case "aarch64", "arm64" -> "aarch64";
-            default -> arch.isEmpty() ? "unknown" : arch;
-        };
-        return o + "-" + a;
+        String os = BundledEngine.normaliseOs(System.getProperty("os.name"));
+        String arch = BundledEngine.normaliseArch(System.getProperty("os.arch"));
+        return (os == null ? "unknown" : os) + "-" + (arch == null ? "unknown" : arch);
     }
 
     /** The file name a native library takes on this platform. */
     public static String libraryFileName(String base) {
-        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
-        if (os.contains("win")) return base + ".dll";
-        if (os.contains("mac") || os.contains("darwin")) return "lib" + base + ".dylib";
+        String os = BundledEngine.normaliseOs(System.getProperty("os.name"));
+        if ("windows".equals(os)) return base + ".dll";
+        if ("macos".equals(os)) return "lib" + base + ".dylib";
         return "lib" + base + ".so";
     }
 
@@ -63,9 +58,9 @@ public final class EngineLocator {
      */
     public static Located locate(String configured, String property, String environment, Path overrideDir, Path bundled) {
         List<Located> candidates = new ArrayList<>();
-        if (configured != null && !configured.isBlank()) candidates.add(new Located(Path.of(configured.trim()), Source.CONFIG));
-        if (property != null && !property.isBlank()) candidates.add(new Located(Path.of(property.trim()), Source.SYSTEM_PROPERTY));
-        if (environment != null && !environment.isBlank()) candidates.add(new Located(Path.of(environment.trim()), Source.ENVIRONMENT));
+        if (configured != null && !configured.isBlank()) return explicit(configured, Source.CONFIG);
+        if (property != null && !property.isBlank()) return explicit(property, Source.SYSTEM_PROPERTY);
+        if (environment != null && !environment.isBlank()) return explicit(environment, Source.ENVIRONMENT);
         if (overrideDir != null) {
             findInDirectory(overrideDir.resolve(platform())).ifPresent(p -> candidates.add(new Located(p, Source.OVERRIDE_DIRECTORY)));
         }
@@ -75,6 +70,13 @@ public final class EngineLocator {
             if (Files.isRegularFile(c.path()) && Files.isReadable(c.path())) return c;
         }
         return new Located(null, Source.NONE);
+    }
+
+    private static Located explicit(String text, Source source) {
+        Path path = Path.of(text.trim());
+        if (!Files.isRegularFile(path) || !Files.isReadable(path))
+            throw new IllegalArgumentException(source + " native library is not readable: " + path);
+        return new Located(path, source);
     }
 
     /** The same ordering with the property and environment read from this JVM. */

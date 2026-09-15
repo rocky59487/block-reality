@@ -24,15 +24,19 @@ int edit(bsi_engine* e, const bsi_edit* edits, uint32_t n, bsi_writer* w) {
 int solve(bsi_engine* e, const bsi_solve_options* o, const bsi_load* l, uint32_t n, bsi_writer* w) {
     ++counts[3]; return original->solve(e, o, l, n, w);
 }
+int solve_v2(bsi_engine* e, const bsi_solve_options_v2* o, const bsi_load* l, uint32_t n, bsi_writer* w) {
+    ++counts[3]; return original->solve_v2(e, o, l, n, w);
+}
 }
 extern "C" BSI_EXPORT const bsi_engine_vtable* bsi_engine_entry(uint32_t abi) {
     static std::once_flag once;
     std::call_once(once, [] {
         original = bsi_counted_engine_entry(BSI_ENGINE_ABI);
-        if (!original) return;
+        if (!original || original->abi_version != BSI_ENGINE_ABI) { original = nullptr; return; }
         counted = *original;
         counted.vocab = vocab; counted.world_declare = world;
         counted.world_edit = original->world_edit ? edit : nullptr; counted.solve = solve;
+        counted.solve_v2 = original->solve_v2 ? solve_v2 : nullptr;
     });
     return original && abi == BSI_ENGINE_ABI ? &counted : nullptr;
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.bsi.BsiBucklingTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:49:13" hostname="rockylaptop" time="0.046">
+  <properties/>
+  <testcase name="localCriticalSurvivesWorldRefusalWithoutReclassification()" classname="com.blockreality.core.bsi.BsiBucklingTest" time="0.002"/>
+  <testcase name="worldMinimumOnlyExistsForComputedSummary()" classname="com.blockreality.core.bsi.BsiBucklingTest" time="0.001"/>
+  <testcase name="frozen125WorldRowsPreserveEveryIsland()" classname="com.blockreality.core.bsi.BsiBucklingTest" time="0.034"/>
+  <testcase name="malformedIdentityKindStateAndFactorsAreRefused()" classname="com.blockreality.core.bsi.BsiBucklingTest" time="0.003"/>
+  <testcase name="eigenIsAdditiveAndBudgetIsBounded()" classname="com.blockreality.core.bsi.BsiBucklingTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

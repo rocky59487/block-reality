@@ -1,0 +1,51 @@
+Starting a Gradle Daemon, 1 busy Daemon could not be reused, use --status for details
+
+> Task :compileJava
+/home/rocky/br-native-only/forge/src/main/java/com/blockreality/impl/BlockRealityMod.java:28: warning: [removal] get() in FMLJavaModLoadingContext has been deprecated and marked for removal
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+                                                ^
+/home/rocky/br-native-only/forge/src/main/java/com/blockreality/impl/BlockRealityMod.java:32: warning: [removal] get() in ModLoadingContext has been deprecated and marked for removal
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                                                ^
+/home/rocky/br-native-only/forge/src/main/java/com/blockreality/impl/net/BRNetwork.java:54: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation(BlockRealityMod.MOD_ID, "main"),
+            ^
+Note: /home/rocky/br-native-only/forge/src/main/java/com/blockreality/impl/block/StructuralBlock.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+3 warnings
+
+> Task :bundleEngines
+bundleEngines: no native library requested (development build)
+
+> Task :processResources
+> Task :classes
+> Task :compileTestJava
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+
+> Task :test
+
+AnalysisUpdatePacketTest > diagnosticClippingPreservesUnicodeAndFitsTheReserve() PASSED
+
+AnalysisUpdatePacketTest > maximumIdentityAndSummaryShareTheExistingByteReserve() PASSED
+
+AnalysisUpdatePacketTest > everyKindRoundTripsWithSourceAndRevision() PASSED
+
+AnalysisUpdatePacketTest > malformedIdentityEnumsAndTrailingPayloadAreRejected() PASSED
+
+AnalysisUpdatePacketTest > decodedNoticesCannotRollBackAnAcceptedResult() PASSED
+
+AnalysisUpdatePacketTest > everyByteTruncationFailsClosedForEveryKind() PASSED
+
+AnalysisUpdatePacketTest > senderRefusesContradictoryResultsBeforeWriting() PASSED
+
+NativeOnlyPacketGoldenTest > fixedPacketsRemainByteIdenticalAcrossLegacyRemoval() PASSED
+
+NativeResultPacketTest > sharedContractResourcesDescribeThisBuild() PASSED
+
+NativeResultPacketTest > realNativeAnalysisReachesThePacketWithTheSameFlagsAndDoubles() PASSED
+
+NativeResultPacketTest > failedAnalysisCannotBeEncodedAsAHealthyEmptyResult() PASSED
+
+BUILD SUCCESSFUL in 33s
+5 actionable tasks: 5 executed

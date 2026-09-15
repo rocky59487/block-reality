@@ -1,0 +1,52 @@
+{
+  "connected": true,
+  "screen": "none",
+  "worldRevision": 116,
+  "resultRevision": -1,
+  "kind": "MODEL_REFUSED",
+  "notice": "MODEL_REFUSED",
+  "hasData": false,
+  "stale": false,
+  "members": 0,
+  "shells": 0,
+  "maxDc": 0.0,
+  "width": 1280,
+  "height": 720,
+  "guiWidth": 640,
+  "guiHeight": 360,
+  "guiScale": 2.0,
+  "language": "en_us",
+  "mode": "MATERIAL",
+  "interaction": {
+    "shift": false,
+    "mainHand": "blockreality:stress_glasses",
+    "hitType": "MISS",
+    "position": [
+      16.0,
+      214.0,
+      16.0
+    ],
+    "hitLocation": [
+      16.5,
+      214.3701245933771,
+      16.397186130285263
+    ],
+    "face": "north",
+    "block": "minecraft:air"
+  },
+  "glRenderer": "llvmpipe (LLVM 15.0.7, 256 bits)",
+  "glVersion": "4.5 (Core Profile) Mesa 23.2.1-1ubuntu3.1~22.04.4",
+  "request": {
+    "action": "capture",
+    "name": "catalogue-en_us-1280",
+    "width": 1280,
+    "height": 720,
+    "scale": 2,
+    "language": "en_us",
+    "mode": "MATERIAL",
+    "worldRevision": 116,
+    "kind": "MODEL_REFUSED",
+    "id": 14
+  },
+  "png_bytes": 94650
+}

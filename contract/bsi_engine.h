@@ -17,7 +17,16 @@ extern "C" {
 #endif
 
 #define BSI_MAJOR 1
-#define BSI_ENGINE_ABI 1u
+#define BSI_ENGINE_ABI 10u
+#define BSI_ENGINE_ABI_ARC 9u
+#define BSI_ENGINE_ABI_CHECKPOINT 8u
+#define BSI_ENGINE_ABI_COROT 7u
+#define BSI_ENGINE_ABI_PDELTA_FRACTURE 6u
+#define BSI_ENGINE_ABI_PDELTA 5u
+#define BSI_ENGINE_ABI_MOTION 4u
+#define BSI_ENGINE_ABI_FRACTURE 3u
+#define BSI_ENGINE_ABI_PHYSICAL 2u
+#define BSI_ENGINE_ABI_LEGACY 1u
 
 #if defined(_WIN32) && !defined(BSI_STATIC)
 #  ifdef BSI_ENGINE_BUILD
@@ -210,6 +219,15 @@ typedef struct bsi_solve_options {
   uint32_t includeMask;                   /* bit0 members, bit1 stations, bit2 shells, bit3 attrsEcho, bit4 memberGeometry (requires members), bit5 stationIdentity (requires members+stations) */
 } bsi_solve_options;
 
+enum bsi_mass_model { BSI_MASS_ANALYSIS = 0, BSI_MASS_PHYSICAL = 1 };
+/* ABI2 only. The ABI1 options above retain their original size and semantics.
+ * Check struct_size through massModel BEFORE reading common or massModel. */
+typedef struct bsi_solve_options_v2 {
+  uint32_t struct_size;
+  bsi_solve_options common;
+  uint8_t massModel;                     /* bsi_mass_model */
+} bsi_solve_options_v2;
+
 /* ---- host services & result writer ---------------------------------------- */
 typedef struct bsi_host   bsi_host;      /* opaque; logging, alloc, cancellation flag */
 typedef struct bsi_engine bsi_engine;    /* opaque; engine-owned */
@@ -240,6 +258,16 @@ BSI_EXPORT int bsi_writer_diag(bsi_writer*, uint32_t nodes, uint32_t members, ui
 BSI_EXPORT int bsi_writer_error(bsi_writer*, const char* code, const char* message, const int32_t* atXyzOrNull);
 
 /* ---- the engine vtable (append-only; host reads up to abi_version) -------- */
+#include "bsi_fracture.h"
+#include "bsi_motion.h"
+#include "bsi_pdelta.h"
+#include "bsi_pdelta_fracture.h"
+#include "bsi_pdelta_wire.h"
+#include "bsi_corot.h"
+#include "bsi_corot_wire.h"
+#include "bsi_corot_checkpoint.h"
+#include "bsi_corot_arc.h"
+#include "bsi_corot_shell.h"
 typedef struct bsi_engine_vtable {
   uint32_t abi_version;                                        /* = BSI_ENGINE_ABI */
   const char* (*name)(void);
@@ -254,6 +282,38 @@ typedef struct bsi_engine_vtable {
   int (*world_edit)(bsi_engine*, const bsi_edit* edits, uint32_t n, bsi_writer* w);   /* may be NULL */
   int (*solve)(bsi_engine*, const bsi_solve_options* o, const bsi_load* loads, uint32_t n, bsi_writer* w);
   int (*cancel)(bsi_engine*);                                                          /* may be NULL */
+  /* Read only when abi_version >= 2. Physical mode also requires its capability. */
+  int (*solve_v2)(bsi_engine*, const bsi_solve_options_v2* o, const bsi_load* loads, uint32_t n, bsi_writer* w); /* may be NULL */
+  /* ABI3 only; optional until bsi.world.identity / bsi.fracture are declared. */
+  int (*world_declare_identified)(bsi_engine*, const bsi_block*, uint32_t,
+                                  const bsi_world_identity*, bsi_writer*);
+  int (*world_edit_identified)(bsi_engine*, const bsi_edit*, uint32_t,
+                               const bsi_identified_edit*, bsi_writer*);
+  int (*fracture_prepare)(bsi_engine*, const bsi_fracture_options*,
+                         const bsi_fracture_view**, bsi_writer*);
+  int (*fracture_finish)(bsi_engine*, const bsi_fracture_finish*, uint8_t*, bsi_writer*);
+  /* ABI4 only. No wire capability until the shared host supports motion. */
+  int (*motion_declare)(bsi_engine*, const bsi_motion_declare*, const bsi_motion_geometry_view**, bsi_writer*);
+  int (*motion_step)(bsi_engine*, const bsi_motion_step*, const bsi_motion_step_view**, bsi_writer*);
+  /* ABI5 typed only. Check the negotiated ABI before reading these slots. */
+  int (*pdelta_solve)(bsi_engine*, const bsi_pdelta_options*, const bsi_load*, uint32_t,
+                      const bsi_pdelta_view**, bsi_writer*);
+  int (*pdelta_station)(bsi_engine*, const bsi_pdelta_query*, bsi_pdelta_station*, bsi_writer*);
+  /* ABI6 only; finish uses the original shared fracture_finish slot. */
+  int (*pdelta_fracture_prepare)(bsi_engine*, const bsi_pdelta_fracture_options*,
+                                 const bsi_load*, uint32_t, const bsi_pdelta_fracture_view**, bsi_writer*);
+  /* ABI7 finite mechanics and material history; original fracture/motion finish slots remain authoritative. */
+  int (*corot_solve)(bsi_engine*, const bsi_corot_request*, const bsi_corot_view**, bsi_writer*);
+  int (*corot_fracture_prepare)(bsi_engine*, const bsi_corot_fracture_options*, const bsi_corot_fracture_view**, bsi_writer*);
+  int (*corot_motion_declare)(bsi_engine*, const bsi_corot_motion_declare*, const bsi_corot_motion_view**, bsi_writer*);
+  /* ABI8 opaque persistent finite state. Import returns a fresh analysis token. */
+  int (*corot_checkpoint_export)(bsi_engine*, const bsi_corot_checkpoint_options*, const bsi_corot_checkpoint_view**, bsi_writer*);
+  int (*corot_checkpoint_import)(bsi_engine*, const bsi_corot_checkpoint_options*, const uint8_t*, uint32_t, const bsi_corot_view**, bsi_writer*);
+  /* ABI9 only: one shared continuation factor across the current world. */
+  int (*corot_arc_advance)(bsi_engine*, const bsi_corot_arc_request*, const bsi_corot_arc_view**, bsi_writer*);
+  /* ABI10: additive wrappers around the same analysis/fracture authority. */
+  int (*corot_shell_solve)(bsi_engine*, const bsi_corot_shell_request*, const bsi_corot_view**, bsi_writer*);
+  int (*corot_shell_fracture_prepare)(bsi_engine*, const bsi_corot_shell_fracture_options*, const bsi_corot_fracture_view**, bsi_writer*);
 } bsi_engine_vtable;
 
 /* The single exported symbol an engine must provide. Returns NULL when

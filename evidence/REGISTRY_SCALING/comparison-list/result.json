@@ -1,0 +1,7 @@
+{
+  "measured_pairs": 480,
+  "warmup_and_measured_digest_pairs": 600,
+  "digest_mismatches": [],
+  "budget_failures": [],
+  "pass": true
+}

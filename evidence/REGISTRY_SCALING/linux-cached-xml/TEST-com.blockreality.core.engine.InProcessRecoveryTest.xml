@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.engine.InProcessRecoveryTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-09T22:43:18" hostname="rockylaptop" time="0.092">
+  <properties/>
+  <testcase name="nativeOptInSidesAndGoverningIdentityReachDisplay()" classname="com.blockreality.core.engine.InProcessRecoveryTest" time="0.015"/>
+  <testcase name="nativeShellFramesAndSurfaceStorageAreCoherent()" classname="com.blockreality.core.engine.InProcessRecoveryTest" time="0.01"/>
+  <testcase name="nativeBeamSamplesAndPointLoadSidesReachTheSharedDisplay()" classname="com.blockreality.core.engine.InProcessRecoveryTest" time="0.006"/>
+  <testcase name="cantileverFaceSignsAndStorageMatchClosedForm()" classname="com.blockreality.core.engine.InProcessRecoveryTest" time="0.003"/>
+  <testcase name="nativeShellRecoveryFeedsTheSameDisplayAndPickingPath()" classname="com.blockreality.core.engine.InProcessRecoveryTest" time="0.013"/>
+  <testcase name="coupledSlabWeightAndTransformsAreInvariant()" classname="com.blockreality.core.engine.InProcessRecoveryTest" time="0.007"/>
+  <testcase name="unifiedAnalysisKeepsTheNativeShellFlagsAndSamples()" classname="com.blockreality.core.engine.InProcessRecoveryTest" time="0.01"/>
+  <testcase name="memberGeometryUsesActualAxesRotatedSectionAndF64WorldPositions()" classname="com.blockreality.core.engine.InProcessRecoveryTest" time="0.022"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

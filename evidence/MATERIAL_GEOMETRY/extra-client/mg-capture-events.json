@@ -1,0 +1,114 @@
+[
+  {
+    "command": "gamemode spectator BRRenderProbe",
+    "response": "Set BRRenderProbe's game mode to Spectator Mode\n"
+  },
+  {
+    "command": "item replace entity BRRenderProbe weapon.mainhand with minecraft:air",
+    "response": "Replaced a slot on BRRenderProbe with [Air]\n"
+  },
+  {
+    "command": "tp BRRenderProbe 6 206 19 0 32",
+    "response": "Teleported BRRenderProbe to 6.500000, 206.000000, 19.500000\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":134,\"resultRevision\":134,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":61,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "mg-unscanned-frames actual screenshot and revision",
+    "pass": true
+  },
+  {
+    "command": "tp BRRenderProbe 24 206 19 0 32",
+    "response": "Teleported BRRenderProbe to 24.500000, 206.000000, 19.500000\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":134,\"resultRevision\":134,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":61,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "mg-unscanned-cells actual screenshot and revision",
+    "pass": true
+  },
+  {
+    "command": "tp BRRenderProbe 6 204 31 0 20",
+    "response": "Teleported BRRenderProbe to 6.500000, 204.000000, 31.500000\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":134,\"resultRevision\":134,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":61,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "mg-unscanned-undeclared actual screenshot and revision",
+    "pass": true
+  },
+  {
+    "command": "gamemode creative BRRenderProbe",
+    "response": "Set BRRenderProbe's game mode to Creative Mode\n"
+  },
+  {
+    "command": "item replace entity BRRenderProbe hotbar.0 with blockreality:steel_beam",
+    "response": "Replaced a slot on BRRenderProbe with [Structural Steel]\n"
+  },
+  {
+    "command": "item replace entity BRRenderProbe hotbar.1 with blockreality:steel_beam_150x300",
+    "response": "Replaced a slot on BRRenderProbe with [Structural Steel 150x300]\n"
+  },
+  {
+    "command": "item replace entity BRRenderProbe hotbar.2 with blockreality:steel_beam_100x200",
+    "response": "Replaced a slot on BRRenderProbe with [Structural Steel 100x200]\n"
+  },
+  {
+    "command": "item replace entity BRRenderProbe hotbar.3 with blockreality:timber_beam",
+    "response": "Replaced a slot on BRRenderProbe with [Timber Beam]\n"
+  },
+  {
+    "command": "item replace entity BRRenderProbe hotbar.4 with blockreality:concrete_beam",
+    "response": "Replaced a slot on BRRenderProbe with [Solid Concrete]\n"
+  },
+  {
+    "command": "item replace entity BRRenderProbe hotbar.5 with blockreality:brick_pier",
+    "response": "Replaced a slot on BRRenderProbe with [Solid Brick]\n"
+  },
+  {
+    "command": "item replace entity BRRenderProbe hotbar.6 with blockreality:concrete_slab",
+    "response": "Replaced a slot on BRRenderProbe with [Concrete Slab]\n"
+  },
+  {
+    "command": "item replace entity BRRenderProbe hotbar.7 with blockreality:concrete_slab_150",
+    "response": "Replaced a slot on BRRenderProbe with [Concrete Slab 150]\n"
+  },
+  {
+    "command": "item replace entity BRRenderProbe hotbar.8 with blockreality:steel_plate",
+    "response": "Replaced a slot on BRRenderProbe with [Steel Plate 20]\n"
+  },
+  {
+    "command": "tp BRRenderProbe 47.5 199 44.5 90 0",
+    "response": "Teleported BRRenderProbe to 47.500000, 199.000000, 44.500000\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":134,\"resultRevision\":134,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":61,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "mg-items-hotbar-en_us actual screenshot and revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":134,\"resultRevision\":134,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":61,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "mg-items-hotbar-zh_tw actual screenshot and revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":134,\"resultRevision\":134,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":61,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "mg-items-inventory actual screenshot and revision",
+    "pass": true
+  }
+]

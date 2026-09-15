@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.server.InputCoverageTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-09T23:11:25" hostname="rockylaptop" time="0.003">
+  <properties/>
+  <testcase name="fullyObservedDomainDispatchesOnce()" classname="com.blockreality.impl.server.InputCoverageTest" time="0.0"/>
+  <testcase name="unreadableStructureAndGroundNeverDispatch()" classname="com.blockreality.impl.server.InputCoverageTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

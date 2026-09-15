@@ -10,38 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-/**
- * N24-a2: the shipping code starts no child processes, except where this file says it does.
- *
- * <p>This is a source scan, not a behaviour test, and that is deliberate. The rule it enforces
- * is about what a reviewer finds when they open the jar, and no runtime assertion can say
- * "nothing anywhere in this artefact spawns a process". A grep can.
- *
- * <p>The allowance below is the honest part. The mod TODAY still starts the sidecar: the game
- * flow has not moved to the in-process engine yet (that is SWAP_PROGRAM phase 3), so one class
- * spawns and the gate would be a lie if it claimed otherwise. What the gate does enforce is that
- * the list does not grow, and that when the sidecar retires the entry disappears with it rather
- * than quietly covering something new. An allowance nobody can add to is worth more than a rule
- * that had to be switched off.
- */
+/** Source-level packaging guard: production Java must contain no process launcher (N24-a2/GR-6). */
 class NoSubprocessTest {
 
-    /**
-     * Classes permitted to start a process, and why. Every entry is a debt with a payoff date,
-     * not a permanent carve-out; docs/GATES.md N24-a2 carries the same list.
-     */
-    private static final Map<String, String> ALLOWED = new TreeMap<>(Map.of(
-            "mod/core/src/main/java/com/blockreality/core/sidecar/SidecarProcess.java",
-            "the sidecar shipping shape (D-013/D-027), which D-044 retires. When the game flow "
-                    + "moves to InProcessEngine this entry and this file go together."
-    ));
+    /** Empty after GAME_RUNTIME; historical launchers remain only under test sources. */
+    private static final Map<String, String> ALLOWED = Map.of();
 
     /** What counts as starting a process. */
     private static final List<String> SPAWNERS = List.of(
@@ -102,8 +81,7 @@ class NoSubprocessTest {
             fail("N24-a2: these shipped classes start a child process, and the packaging rule "
                     + "(D-044) is that the distribution contains no programs to start:\n  "
                     + String.join("\n  ", unexpected)
-                    + "\nIf one of them genuinely must, add it to ALLOWED here AND to "
-                    + "docs/GATES.md N24-a2, with the reason and what retires it.");
+                    + "\nProduction process launchers violate GAME_RUNTIME GR-6.");
         }
 
         // ...and the reverse. An allowance for a class that no longer spawns is a comment

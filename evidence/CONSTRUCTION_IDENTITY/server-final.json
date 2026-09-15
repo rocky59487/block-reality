@@ -1,0 +1,571 @@
+{
+  "commands": [
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          DISABLED\n  native engine not loaded yet\n  revision        0   (rejected as stale: 0)\n  blocks          0   test loads: 0\n  analysis        OFF\n  last result     none yet\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "forceload add 4096 0",
+      "response": "No chunks were marked for force loading\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "forceload add 4144 0",
+      "response": "No chunks were marked for force loading\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "setblock 4103 200 8 minecraft:stone",
+      "response": "Could not set the block\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "fill 4104 200 8 4108 200 8 blockreality:steel_beam[axis=x]",
+      "response": "Successfully filled 5 block(s)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 200 8",
+      "response": "No published object at 4104, 200, 8 — registry PENDING\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/11  CURRENT\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 5  graph epoch 157  observation epoch 157\n  parents []\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "fill 4104 200 9 4106 200 9 blockreality:steel_beam[axis=x]",
+      "response": "Successfully filled 3 block(s)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 200 9",
+      "response": "No published object at 4104, 200, 9 — registry PENDING\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 200 9",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/12  CURRENT\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 3  graph epoch 160  observation epoch 160\n  parents []\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "fill 4104 200 9 4106 200 9 minecraft:air",
+      "response": "Successfully filled 3 block(s)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "setblock 4106 200 8 minecraft:air",
+      "response": "Changed the block at 4106, 200, 8\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/11  PENDING\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 5  graph epoch 160  observation epoch 164\n  parents []\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/13  CURRENT\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 2  graph epoch 164  observation epoch 164\n  parents [11]\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4108 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/14  CURRENT\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 2  graph epoch 164  observation epoch 164\n  parents [11]\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "setblock 4106 200 8 blockreality:steel_beam[axis=x]",
+      "response": "Changed the block at 4106, 200, 8\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/13  PENDING\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 2  graph epoch 164  observation epoch 165\n  parents [11]\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/15  CURRENT\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 5  graph epoch 165  observation epoch 165\n  parents [13, 14]\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br_identity_replace",
+      "response": "CI replaced all five original cells in one server command\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/15  PENDING\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 5  graph epoch 165  observation epoch 175\n  parents [13, 14]\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/16  CURRENT\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 5  graph epoch 175  observation epoch 175\n  parents [15]\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "fill 4104 205 8 4105 206 8 blockreality:concrete_beam[axis=x]",
+      "response": "Successfully filled 4 block(s)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 205 8",
+      "response": "No published object at 4104, 205, 8 — registry PENDING\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 205 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/17  CURRENT\n  declaration MONOLITH concrete/concrete_rect_400x600 axis=not applicable/undeclared\n  cells 4  graph epoch 179  observation epoch 179\n  parents []\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "fill 4104 205 8 4105 206 8 minecraft:air",
+      "response": "Successfully filled 4 block(s)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "fill 4104 210 8 4105 210 9 blockreality:concrete_slab[axis=y]",
+      "response": "Successfully filled 4 block(s)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 210 8",
+      "response": "No published object at 4104, 210, 8 — registry PENDING\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 210 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/18  CURRENT\n  declaration PANEL concrete/concrete_slab_200 axis=not applicable/undeclared\n  cells 4  graph epoch 187  observation epoch 187\n  parents []\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "fill 4104 210 8 4105 210 9 minecraft:air",
+      "response": "Successfully filled 4 block(s)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "fill 4109 200 8 4152 200 8 blockreality:steel_beam[axis=x]",
+      "response": "Successfully filled 44 block(s)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/16  PENDING\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 5  graph epoch 187  observation epoch 235\n  parents [15]\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/16  CURRENT\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 49  graph epoch 235  observation epoch 235\n  parents [15]\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          DISABLED\n  native engine not loaded yet\n  revision        157   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        PENDING\n  last result     none yet\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        158   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 158  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/16  CURRENT\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 49  graph epoch 235  observation epoch 235\n  parents [15]\n  native preview minecraft:overworld source=91eae423-e1f3-4441-8c9c-54fc04c45d86 revision=158\n  members [0]  shells []\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br section 0",
+      "response": "  result revision 158  CURRENT\nmember #0  steel steel_rect_200x400  L=48000mm  D/C=3.8020\n  tension is positive; a cantilever hogs (top tension), a beam on two supports sags (top compression) — both are correct\n     x(m)      top        bottom     neutral axis\n    0.00  +1330.707 TEN  -1330.707 COM   +0.0mm\n    0.49  +1303.688 TEN  -1303.688 COM   +0.0mm\n    0.98  +1276.947 TEN  -1276.947 COM   +0.0mm\n    1.47  +1250.482 TEN  -1250.482 COM   +0.0mm\n    1.96  +1224.295 TEN  -1224.295 COM   +0.0mm\n    2.45  +1198.384 TEN  -1198.384 COM   +0.0mm\n    2.94  +1172.751 TEN  -1172.751 COM   +0.0mm\n    3.43  +1147.395 TEN  -1147.395 COM   +0.0mm\n    3.92  +1122.316 TEN  -1122.316 COM   +0.0mm\n    4.41  +1097.514 TEN  -1097.514 COM   +0.0mm\n    4.90  +1072.990 TEN  -1072.990 COM   +0.0mm\n    5.39  +1048.742 TEN  -1048.742 COM   +0.0mm\n    5.88  +1024.772 TEN  -1024.772 COM   +0.0mm\n    6.37  +1001.078 TEN  -1001.078 COM   +0.0mm\n    6.86  +977.662 TEN  -977.662 COM   +0.0mm\n    7.35  +954.523 TEN  -954.523 COM   +0.0mm\n    7.84  +931.661 TEN  -931.661 COM   +0.0mm\n    8.33  +909.076 TEN  -909.076 COM   +0.0mm\n    8.82  +886.768 TEN  -886.768 COM   +0.0mm\n    9.31  +864.738 TEN  -864.738 COM   +0.0mm\n    9.80  +842.984 TEN  -842.984 COM   +0.0mm\n   10.29  +821.508 TEN  -821.508 COM   +0.0mm\n   10.78  +800.309 TEN  -800.309 COM   +0.0mm\n   11.27  +779.386 TEN  -779.386 COM   +0.0mm\n   11.76  +758.741 TEN  -758.741 COM   +0.0mm\n   12.00  +748.523 TEN  -748.523 COM   +0.0mm\n   12.24  +738.373 TEN  -738.373 COM   +0.0mm\n   12.73  +718.282 TEN  -718.282 COM   +0.0mm\n   13.22  +698.469 TEN  -698.469 COM   +0.0mm\n   13.71  +678.932 TEN  -678.932 COM   +0.0mm\n   14.20  +659.673 TEN  -659.673 COM   +0.0mm\n   14.69  +640.690 TEN  -640.690 COM   +0.0mm\n   15.18  +621.985 TEN  -621.985 COM   +0.0mm\n   15.67  +603.557 TEN  -603.557 COM   +0.0mm\n   16.16  +585.406 TEN  -585.406 COM   +0.0mm\n   16.65  +567.532 TEN  -567.532 COM   +0.0mm\n   17.14  +549.935 TEN  -549.935 COM   +0.0mm\n   17.63  +532.615 TEN  -532.615 COM   +0.0mm\n   18.12  +515.573 TEN  -515.573 COM   +0.0mm\n   18.61  +498.807 TEN  -498.807 COM   +0.0mm\n   19.10  +482.319 TEN  -482.319 COM   +0.0mm\n   19.59  +466.108 TEN  -466.108 COM   +0.0mm\n   20.08  +450.174 TEN  -450.174 COM   +0.0mm\n   20.57  +434.517 TEN  -434.517 COM   +0.0mm\n   21.06  +419.137 TEN  -419.137 COM   +0.0mm\n   21.55  +404.034 TEN  -404.034 COM   +0.0mm\n   22.04  +389.208 TEN  -389.208 COM   +0.0mm\n   22.53  +374.660 TEN  -374.660 COM   +0.0mm\n   23.02  +360.388 TEN  -360.388 COM   +0.0mm\n   23.51  +346.394 TEN  -346.394 COM   +0.0mm\n   24.00  +332.677 TEN  -332.677 COM   +0.0mm\n   24.49  +319.237 TEN  -319.237 COM   -0.0mm\n   24.98  +306.074 TEN  -306.074 COM   -0.0mm\n   25.47  +293.188 TEN  -293.188 COM   -0.0mm\n   25.96  +280.579 TEN  -280.579 COM   -0.0mm\n   26.45  +268.247 TEN  -268.247 COM   -0.0mm\n   26.94  +256.193 TEN  -256.193 COM   -0.0mm\n   27.43  +244.416 TEN  -244.416 COM   -0.0mm\n   27.92  +232.915 TEN  -232.915 COM   -0.0mm\n   28.41  +221.692 TEN  -221.692 COM   -0.0mm\n   28.90  +210.746 TEN  -210.746 COM   -0.0mm\n   29.39  +200.077 TEN  -200.077 COM   -0.0mm\n   29.88  +189.685 TEN  -189.685 COM   -0.0mm\n   30.37  +179.571 TEN  -179.571 COM   -0.0mm\n   30.86  +169.733 TEN  -169.733 COM   -0.0mm\n   31.35  +160.173 TEN  -160.173 COM   -0.0mm\n   31.84  +150.889 TEN  -150.889 COM   -0.0mm\n   32.33  +141.883 TEN  -141.883 COM   -0.0mm\n   32.82  +133.154 TEN  -133.154 COM   -0.0mm\n   33.31  +124.702 TEN  -124.702 COM   -0.0mm\n   33.80  +116.527 TEN  -116.527 COM   -0.0mm\n   34.29  +108.629 TEN  -108.629 COM   -0.0mm\n   34.78  +101.008 TEN  -101.008 COM   -0.0mm\n   35.27   +93.665 TEN   -93.665 COM   -0.0mm\n   35.76   +86.598 TEN   -86.598 COM   -0.0mm\n   36.00   +83.169 TEN   -83.169 COM   -0.0mm\n   36.24   +79.809 TEN   -79.809 COM   -0.0mm\n   36.73   +73.297 TEN   -73.297 COM   -0.0mm\n   37.22   +67.062 TEN   -67.062 COM   -0.0mm\n   37.71   +61.104 TEN   -61.104 COM   -0.0mm\n   38.20   +55.423 TEN   -55.423 COM   -0.0mm\n   38.69   +50.019 TEN   -50.019 COM   -0.0mm\n   39.18   +44.893 TEN   -44.893 COM   -0.0mm\n   39.67   +40.043 TEN   -40.043 COM   -0.0mm\n   40.16   +35.471 TEN   -35.471 COM   -0.0mm\n   40.65   +31.175 TEN   -31.175 COM   -0.0mm\n   41.14   +27.157 TEN   -27.157 COM   -0.0mm\n   41.63   +23.416 TEN   -23.416 COM   -0.0mm\n   42.12   +19.952 TEN   -19.952 COM   -0.0mm\n   42.61   +16.765 TEN   -16.765 COM   -0.0mm\n   43.10   +13.856 TEN   -13.856 COM   -0.0mm\n   43.59   +11.223 TEN   -11.223 COM   -0.0mm\n   44.08    +8.868 TEN    -8.868 COM   -0.0mm\n   44.57    +6.789 TEN    -6.789 COM   -0.0mm\n   45.06    +4.988 TEN    -4.988 COM   -0.0mm\n   45.55    +3.464 TEN    -3.464 COM   -0.0mm\n   46.04    +2.217 TEN    -2.217 COM   -0.0mm\n   46.53    +1.247 TEN    -1.247 COM   -0.0mm\n   47.02    +0.554 TEN    -0.554 COM   -0.0mm\n   47.51    +0.139 TEN    -0.139 COM   -0.0mm\n   48.00    +0.000 TEN    -0.000 COM   -0.0mm\n   48.00    +0.000 TEN    -0.000 COM   -0.0mm\n   48.00    +0.000 TEN    -0.000 COM   -0.0mm\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br section 0",
+      "response": "  result revision 158  CURRENT\nmember #0  steel steel_rect_200x400  L=48000mm  D/C=3.8020\n  tension is positive; a cantilever hogs (top tension), a beam on two supports sags (top compression) — both are correct\n     x(m)      top        bottom     neutral axis\n    0.00  +1330.707 TEN  -1330.707 COM   +0.0mm\n    0.49  +1303.688 TEN  -1303.688 COM   +0.0mm\n    0.98  +1276.947 TEN  -1276.947 COM   +0.0mm\n    1.47  +1250.482 TEN  -1250.482 COM   +0.0mm\n    1.96  +1224.295 TEN  -1224.295 COM   +0.0mm\n    2.45  +1198.384 TEN  -1198.384 COM   +0.0mm\n    2.94  +1172.751 TEN  -1172.751 COM   +0.0mm\n    3.43  +1147.395 TEN  -1147.395 COM   +0.0mm\n    3.92  +1122.316 TEN  -1122.316 COM   +0.0mm\n    4.41  +1097.514 TEN  -1097.514 COM   +0.0mm\n    4.90  +1072.990 TEN  -1072.990 COM   +0.0mm\n    5.39  +1048.742 TEN  -1048.742 COM   +0.0mm\n    5.88  +1024.772 TEN  -1024.772 COM   +0.0mm\n    6.37  +1001.078 TEN  -1001.078 COM   +0.0mm\n    6.86  +977.662 TEN  -977.662 COM   +0.0mm\n    7.35  +954.523 TEN  -954.523 COM   +0.0mm\n    7.84  +931.661 TEN  -931.661 COM   +0.0mm\n    8.33  +909.076 TEN  -909.076 COM   +0.0mm\n    8.82  +886.768 TEN  -886.768 COM   +0.0mm\n    9.31  +864.738 TEN  -864.738 COM   +0.0mm\n    9.80  +842.984 TEN  -842.984 COM   +0.0mm\n   10.29  +821.508 TEN  -821.508 COM   +0.0mm\n   10.78  +800.309 TEN  -800.309 COM   +0.0mm\n   11.27  +779.386 TEN  -779.386 COM   +0.0mm\n   11.76  +758.741 TEN  -758.741 COM   +0.0mm\n   12.00  +748.523 TEN  -748.523 COM   +0.0mm\n   12.24  +738.373 TEN  -738.373 COM   +0.0mm\n   12.73  +718.282 TEN  -718.282 COM   +0.0mm\n   13.22  +698.469 TEN  -698.469 COM   +0.0mm\n   13.71  +678.932 TEN  -678.932 COM   +0.0mm\n   14.20  +659.673 TEN  -659.673 COM   +0.0mm\n   14.69  +640.690 TEN  -640.690 COM   +0.0mm\n   15.18  +621.985 TEN  -621.985 COM   +0.0mm\n   15.67  +603.557 TEN  -603.557 COM   +0.0mm\n   16.16  +585.406 TEN  -585.406 COM   +0.0mm\n   16.65  +567.532 TEN  -567.532 COM   +0.0mm\n   17.14  +549.935 TEN  -549.935 COM   +0.0mm\n   17.63  +532.615 TEN  -532.615 COM   +0.0mm\n   18.12  +515.573 TEN  -515.573 COM   +0.0mm\n   18.61  +498.807 TEN  -498.807 COM   +0.0mm\n   19.10  +482.319 TEN  -482.319 COM   +0.0mm\n   19.59  +466.108 TEN  -466.108 COM   +0.0mm\n   20.08  +450.174 TEN  -450.174 COM   +0.0mm\n   20.57  +434.517 TEN  -434.517 COM   +0.0mm\n   21.06  +419.137 TEN  -419.137 COM   +0.0mm\n   21.55  +404.034 TEN  -404.034 COM   +0.0mm\n   22.04  +389.208 TEN  -389.208 COM   +0.0mm\n   22.53  +374.660 TEN  -374.660 COM   +0.0mm\n   23.02  +360.388 TEN  -360.388 COM   +0.0mm\n   23.51  +346.394 TEN  -346.394 COM   +0.0mm\n   24.00  +332.677 TEN  -332.677 COM   +0.0mm\n   24.49  +319.237 TEN  -319.237 COM   -0.0mm\n   24.98  +306.074 TEN  -306.074 COM   -0.0mm\n   25.47  +293.188 TEN  -293.188 COM   -0.0mm\n   25.96  +280.579 TEN  -280.579 COM   -0.0mm\n   26.45  +268.247 TEN  -268.247 COM   -0.0mm\n   26.94  +256.193 TEN  -256.193 COM   -0.0mm\n   27.43  +244.416 TEN  -244.416 COM   -0.0mm\n   27.92  +232.915 TEN  -232.915 COM   -0.0mm\n   28.41  +221.692 TEN  -221.692 COM   -0.0mm\n   28.90  +210.746 TEN  -210.746 COM   -0.0mm\n   29.39  +200.077 TEN  -200.077 COM   -0.0mm\n   29.88  +189.685 TEN  -189.685 COM   -0.0mm\n   30.37  +179.571 TEN  -179.571 COM   -0.0mm\n   30.86  +169.733 TEN  -169.733 COM   -0.0mm\n   31.35  +160.173 TEN  -160.173 COM   -0.0mm\n   31.84  +150.889 TEN  -150.889 COM   -0.0mm\n   32.33  +141.883 TEN  -141.883 COM   -0.0mm\n   32.82  +133.154 TEN  -133.154 COM   -0.0mm\n   33.31  +124.702 TEN  -124.702 COM   -0.0mm\n   33.80  +116.527 TEN  -116.527 COM   -0.0mm\n   34.29  +108.629 TEN  -108.629 COM   -0.0mm\n   34.78  +101.008 TEN  -101.008 COM   -0.0mm\n   35.27   +93.665 TEN   -93.665 COM   -0.0mm\n   35.76   +86.598 TEN   -86.598 COM   -0.0mm\n   36.00   +83.169 TEN   -83.169 COM   -0.0mm\n   36.24   +79.809 TEN   -79.809 COM   -0.0mm\n   36.73   +73.297 TEN   -73.297 COM   -0.0mm\n   37.22   +67.062 TEN   -67.062 COM   -0.0mm\n   37.71   +61.104 TEN   -61.104 COM   -0.0mm\n   38.20   +55.423 TEN   -55.423 COM   -0.0mm\n   38.69   +50.019 TEN   -50.019 COM   -0.0mm\n   39.18   +44.893 TEN   -44.893 COM   -0.0mm\n   39.67   +40.043 TEN   -40.043 COM   -0.0mm\n   40.16   +35.471 TEN   -35.471 COM   -0.0mm\n   40.65   +31.175 TEN   -31.175 COM   -0.0mm\n   41.14   +27.157 TEN   -27.157 COM   -0.0mm\n   41.63   +23.416 TEN   -23.416 COM   -0.0mm\n   42.12   +19.952 TEN   -19.952 COM   -0.0mm\n   42.61   +16.765 TEN   -16.765 COM   -0.0mm\n   43.10   +13.856 TEN   -13.856 COM   -0.0mm\n   43.59   +11.223 TEN   -11.223 COM   -0.0mm\n   44.08    +8.868 TEN    -8.868 COM   -0.0mm\n   44.57    +6.789 TEN    -6.789 COM   -0.0mm\n   45.06    +4.988 TEN    -4.988 COM   -0.0mm\n   45.55    +3.464 TEN    -3.464 COM   -0.0mm\n   46.04    +2.217 TEN    -2.217 COM   -0.0mm\n   46.53    +1.247 TEN    -1.247 COM   -0.0mm\n   47.02    +0.554 TEN    -0.554 COM   -0.0mm\n   47.51    +0.139 TEN    -0.139 COM   -0.0mm\n   48.00    +0.000 TEN    -0.000 COM   -0.0mm\n   48.00    +0.000 TEN    -0.000 COM   -0.0mm\n   48.00    +0.000 TEN    -0.000 COM   -0.0mm\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "setblock 4160 199 8 minecraft:stone",
+      "response": "Could not set the block\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "fill 4160 200 8 4160 204 8 blockreality:steel_beam[axis=y]",
+      "response": "Successfully filled 5 block(s)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "fill 4161 202 8 4165 202 8 blockreality:steel_beam[axis=x]",
+      "response": "Successfully filled 5 block(s)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        178   (rejected as stale: 0)\n  blocks          59   test loads: 0\n  analysis        PENDING\n  result revision 158  STALE — world changed; values below describe the previous model\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        178   (rejected as stale: 0)\n  blocks          59   test loads: 0\n  analysis        RESULT\n  result revision 178  CURRENT\n  last result     4 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      2 solved, 0 unrestrained\n  equilibrium     residual 1.658e-16\nWorld buckling λ_cr 557.391 (linear onset)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4160 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/19  CURRENT\n  declaration FRAME steel/steel_rect_200x400 axis=Y\n  cells 5  graph epoch 245  observation epoch 245\n  parents []\n  native preview minecraft:overworld source=91eae423-e1f3-4441-8c9c-54fc04c45d86 revision=178\n  members [2, 3]  shells []\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "fill 4160 200 8 4160 204 8 minecraft:air",
+      "response": "Successfully filled 5 block(s)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "fill 4161 202 8 4165 202 8 minecraft:air",
+      "response": "Successfully filled 5 block(s)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        189   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        PENDING\n  result revision 178  STALE — world changed; values below describe the previous model\n  last result     4 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      2 solved, 0 unrestrained\n  equilibrium     residual 1.658e-16\nWorld buckling λ_cr 557.391 (linear onset)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        189   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        PENDING\n  result revision 178  STALE — world changed; values below describe the previous model\n  last result     4 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      2 solved, 0 unrestrained\n  equilibrium     residual 1.658e-16\nWorld buckling λ_cr 557.391 (linear onset)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        189   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 189  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4104 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/16  CURRENT\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 49  graph epoch 255  observation epoch 255\n  parents [15]\n  native preview minecraft:overworld source=91eae423-e1f3-4441-8c9c-54fc04c45d86 revision=189\n  members [0]  shells []\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br_identity_snapshot",
+      "response": "CI CURRENT namespace=4391b9c6-8bf5-447a-98e3-5bb15f37cccc active=1 records=20 cells=49 next=21 sha=8cacb7f4e3c80442456f89c2f83312a6b85c0b113e47d1709df41f63d8179682\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br resolve",
+      "response": "Re-analysis requested.\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        190   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        PENDING\n  result revision 189  STALE — world changed; values below describe the previous model\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        190   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 190  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br_identity_snapshot",
+      "response": "CI CURRENT namespace=4391b9c6-8bf5-447a-98e3-5bb15f37cccc active=1 records=20 cells=49 next=21 sha=8cacb7f4e3c80442456f89c2f83312a6b85c0b113e47d1709df41f63d8179682\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "forceload remove 4144 0",
+      "response": "Unmarked chunk [259, 0] in minecraft:overworld for force loading\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        190   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 190  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        191   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        PENDING — Waiting for unloaded input: 9 cell(s)\n  result revision 190  STALE — world changed; values below describe the previous model\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br object 4152 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/16  CURRENT\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 49  graph epoch 255  observation epoch 255\n  parents [15]\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br_identity_snapshot",
+      "response": "CI CURRENT namespace=4391b9c6-8bf5-447a-98e3-5bb15f37cccc active=1 records=20 cells=49 next=21 sha=8cacb7f4e3c80442456f89c2f83312a6b85c0b113e47d1709df41f63d8179682\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "save-all flush",
+      "response": "Saving the game (this may take a moment!)\nSaved the game\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "stop",
+      "response": "Stopping the server\n"
+    },
+    {
+      "phase": "restart",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          IDLE\n  native engine not loaded yet\n  revision        4   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        PENDING — Waiting for unloaded input: 9 cell(s)\n  last result     none yet\n"
+    },
+    {
+      "phase": "restart",
+      "command": "br object 4152 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/16  CURRENT\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 49  graph epoch 255  observation epoch 255\n  parents [15]\n  native links unavailable/stale\n"
+    },
+    {
+      "phase": "restart",
+      "command": "br_identity_snapshot",
+      "response": "CI CURRENT namespace=4391b9c6-8bf5-447a-98e3-5bb15f37cccc active=1 records=20 cells=49 next=21 sha=8cacb7f4e3c80442456f89c2f83312a6b85c0b113e47d1709df41f63d8179682\n"
+    },
+    {
+      "phase": "recover",
+      "command": "forceload add 4144 0",
+      "response": "Marked chunk [259, 0] in minecraft:overworld to be force loaded\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          IDLE\n  native engine not loaded yet\n  revision        5   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        PENDING\n  last result     none yet\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        6   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 6  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br object 4104 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/16  CURRENT\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 49  graph epoch 255  observation epoch 255\n  parents [15]\n  native preview minecraft:overworld source=7279ae2f-78fc-45fe-b78c-03713ead540b revision=6\n  members [0]  shells []\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br_identity_snapshot",
+      "response": "CI CURRENT namespace=4391b9c6-8bf5-447a-98e3-5bb15f37cccc active=1 records=20 cells=49 next=21 sha=8cacb7f4e3c80442456f89c2f83312a6b85c0b113e47d1709df41f63d8179682\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br object 4104 200 8",
+      "response": "object 4391b9c6-8bf5-447a-98e3-5bb15f37cccc/16  CURRENT\n  declaration FRAME steel/steel_rect_200x400 axis=X\n  cells 49  graph epoch 255  observation epoch 255\n  parents [15]\n  native preview minecraft:overworld source=7279ae2f-78fc-45fe-b78c-03713ead540b revision=6\n  members [0]  shells []\n"
+    },
+    {
+      "phase": "recover",
+      "command": "fill 4104 200 8 4152 200 8 minecraft:air",
+      "response": "Successfully filled 49 block(s)\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br_identity_snapshot",
+      "response": "CI PENDING namespace=4391b9c6-8bf5-447a-98e3-5bb15f37cccc active=1 records=20 cells=0 next=21 sha=9bd9d5ac09b0a75d33dbe807af95af2b3323bf93f8afdf330a8528116ffaf356\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br_identity_snapshot",
+      "response": "CI CURRENT namespace=4391b9c6-8bf5-447a-98e3-5bb15f37cccc active=0 records=20 cells=0 next=21 sha=e3e7accac649ba8ad34c5768ecb6de75a8f3d8c080e47c2cc6bb8a3512a5ef76\n"
+    },
+    {
+      "phase": "recover",
+      "command": "save-all flush",
+      "response": "Saving the game (this may take a moment!)\nSaved the game\n"
+    },
+    {
+      "phase": "recover",
+      "command": "stop",
+      "response": "Stopping the server\n"
+    }
+  ],
+  "gates": [
+    {
+      "name": "CI-4 starts OFF before native load",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "CI-4 OFF still publishes identity",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "CI-1 parallel frame runs stay separate",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "CI-2 split retires root and records both children",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "CI-2 merge records both parents",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "CI-2 complete same-command replacement cannot resurrect old ID",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "CI-1 monolith face fusion",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "CI-1 panel presentation region",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "CI-2 extension preserves identity",
+      "pass": true
+    },
+    {
+      "name": "CI-7 native complete baseline",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "CI-6 native zero ID is a preview link",
+      "pass": true
+    },
+    {
+      "name": "CI-6 section zero is inspectable",
+      "pass": true
+    },
+    {
+      "name": "CI-7 native crossing fixture",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "CI-6 one object links to multiple native elements",
+      "pass": true
+    },
+    {
+      "name": "CI-7 return to baseline",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "registry current",
+      "pass": true
+    },
+    {
+      "name": "CI-6 resolve completes",
+      "pass": true
+    },
+    {
+      "name": "registry current",
+      "pass": true
+    },
+    {
+      "name": "CI-6 solve never renumbers construction graph",
+      "pass": true
+    },
+    {
+      "name": "CI-3 partial unload waits",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "CI-3 unloaded object still inspectable with stale native links",
+      "pass": true
+    },
+    {
+      "name": "registry current",
+      "pass": true
+    },
+    {
+      "name": "CI-3 unloading leaves canonical graph unchanged",
+      "pass": true
+    },
+    {
+      "name": "CI-3 restarted world remains incomplete",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "registry current",
+      "pass": true
+    },
+    {
+      "name": "CI-3 persistent unloaded identity survives restart",
+      "pass": true
+    },
+    {
+      "name": "CI-3 complete native recovery",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "registry current",
+      "pass": true
+    },
+    {
+      "name": "object current",
+      "pass": true
+    },
+    {
+      "name": "CI-3 reload preserves graph and native preview mapping",
+      "pass": true
+    },
+    {
+      "name": "CI-4 empty world completes retirement",
+      "pass": true
+    },
+    {
+      "name": "CI-2 retired lineage remains in empty world",
+      "pass": true
+    }
+  ],
+  "object": "4391b9c6-8bf5-447a-98e3-5bb15f37cccc/16",
+  "graph": "8cacb7f4e3c80442456f89c2f83312a6b85c0b113e47d1709df41f63d8179682"
+}

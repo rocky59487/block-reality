@@ -1,0 +1,78 @@
+> Task :api:compileJava
+> Task :api:processResources NO-SOURCE
+> Task :api:classes
+> Task :api:jar
+
+> Task :core:compileJava
+/home/rocky/br-module-pipeline/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:136: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+        try (var ignored = profile.begin(WORLD_ENCODE)) { payload = BsiRecords.encodeBlocks(blocks); }
+                 ^
+/home/rocky/br-module-pipeline/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:149: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(WORLD_MAP)) { blocks = snapshot.blocks(vocabulary); }
+                     ^
+/home/rocky/br-module-pipeline/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:175: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+        try (var ignored = profile.begin(RESULT_DECODE)) {
+                 ^
+/home/rocky/br-module-pipeline/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:210: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(FRAME_ENCODE)) { request = BsiFrame.encode(header, payload); }
+                     ^
+/home/rocky/br-module-pipeline/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:213: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(FRAME_DECODE)) {
+                     ^
+/home/rocky/br-module-pipeline/mod/core/src/main/java/com/blockreality/core/engine/BsiNative.java:118: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+                try (var ignored = profile.begin(REPLY_COPY)) {
+                         ^
+6 warnings
+
+> Task :core:processResources
+> Task :core:classes
+
+> Task :core:compileTestJava
+/home/rocky/br-module-pipeline/mod/core/src/test/java/com/blockreality/core/diagnostics/PipelineProfileTest.java:60: warning: [try] auto-closeable resource s is never referenced in body of corresponding try statement
+        p.run(first,()->{try(var s=p.begin(RESULT_DECODE)){
+                                 ^
+1 warning
+
+> Task :core:processTestResources
+> Task :core:testClasses
+
+> Task :core:test
+
+GameInputNativeTest > refusedVocabularyRedeclarationInvalidatesOldWorldAndNames() PASSED
+
+GameInputNativeTest > profilingObservesTheRealBridgeWithoutChangingNativeResults() PASSED
+
+GameInputNativeTest > fullGameVocabularyAndSnapshotReachTheRealEngine() PASSED
+
+InProcessRecoveryTest > nativeOptInSidesAndGoverningIdentityReachDisplay() PASSED
+
+InProcessRecoveryTest > nativeShellFramesAndSurfaceStorageAreCoherent() PASSED
+
+InProcessRecoveryTest > nativeBeamSamplesAndPointLoadSidesReachTheSharedDisplay() PASSED
+
+InProcessRecoveryTest > cantileverFaceSignsAndStorageMatchClosedForm() PASSED
+
+InProcessRecoveryTest > nativeShellRecoveryFeedsTheSameDisplayAndPickingPath() PASSED
+
+InProcessRecoveryTest > coupledSlabWeightAndTransformsAreInvariant() PASSED
+
+InProcessRecoveryTest > unifiedAnalysisKeepsTheNativeShellFlagsAndSamples() PASSED
+
+InProcessRecoveryTest > memberGeometryUsesActualAxesRotatedSectionAndF64WorldPositions() PASSED
+
+NativeGameRuntimeTest > loadsLazilyReusesTheSessionAndKeepsDimensionsSeparate() PASSED
+
+NativeGameRuntimeTest > offNeverCallsTheLoader() PASSED
+
+NativeGameRuntimeTest > concurrentSubmissionsNeverEnterTheSameSessionTogether() PASSED
+
+NativeGameRuntimeTest > aLoadFailureStaysDisabledUntilExplicitReset() PASSED
+
+NativeGameRuntimeTest > closeRevokesBlockedResultsWithoutClosingAnActiveNativeCall() PASSED
+
+NativeGameRuntimeTest > timeoutRevokesAuthorityButDoesNotPretendToKillNativeWork() PASSED
+
+NativeGameRuntimeTest > resetWaitsForTheOldCallAndOpensAFreshSession() PASSED
+
+BUILD SUCCESSFUL in 4s
+7 actionable tasks: 7 executed

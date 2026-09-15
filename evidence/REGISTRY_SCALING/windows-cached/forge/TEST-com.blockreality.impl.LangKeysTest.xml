@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.LangKeysTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-09T22:36:03" hostname="ROCKYLAPTOP" time="0.063">
+  <properties/>
+  <testcase name="the two languages carry the same keys, so neither is half translated" classname="com.blockreality.impl.LangKeysTest" time="0.008"/>
+  <testcase name="a format string with a placeholder has one in both languages" classname="com.blockreality.impl.LangKeysTest" time="0.002"/>
+  <testcase name="every key the game can ask for has an English string" classname="com.blockreality.impl.LangKeysTest" time="0.038"/>
+  <testcase name="no br.* string is carried that nothing can ask for" classname="com.blockreality.impl.LangKeysTest" time="0.013"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

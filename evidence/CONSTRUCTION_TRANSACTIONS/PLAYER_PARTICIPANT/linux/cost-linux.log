@@ -1,0 +1,19 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :compileJava UP-TO-DATE
+
+> Task :bundleEngines
+bundleEngines: no native library requested (development build)
+
+> Task :processResources
+> Task :classes
+> Task :compileTestJava
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+
+> Task :constructionPlayerCost
+2026-09-10 12:37:28,435 main WARN Advanced terminal features are not available in this environment
+Recorded288 player writes;240 measured; all exact NBT comparisons passed
+
+BUILD SUCCESSFUL in 16s
+5 actionable tasks: 4 executed, 1 up-to-date

@@ -1,0 +1,27 @@
+# Excerpt; full local source, hash and byte count are in receipts.json.
+> Task :api:checkApiPurity
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :api:compileTestJava NO-SOURCE
+> Task :api:processTestResources NO-SOURCE
+> Task :api:testClasses UP-TO-DATE
+> Task :api:test NO-SOURCE
+> Task :api:check
+> Task :core:checkContract
+contract hash OK: 4b11cc738790... (52 files)
+> Task :core:compileJava UP-TO-DATE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:compileTestJava UP-TO-DATE
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses UP-TO-DATE
+> Task :core:test
+ProductGeometryTest > anExplicitBindingWinsOverTheMaterialDefaultButAbsentBindingUsesTheDeclaredDefault() PASSED
+ProductGeometryTest > legacyMonolithSectionNamesNeverBecomeDimensionsAndPanelAliasesUseThickness() PASSED
+ProductGeometryTest > damagedOrAmbiguousDeclarationsRefuseWithoutFallbackDimensions() PASSED
+ProductGeometryTest > dimensionsComeFromTheDeclarationEvenWhenTheTokenSaysSomethingElse() PASSED
+ProductGeometryTest > catalogueExposesAllTenProductsIncludingTheUnplacedRebarDeclaration() PASSED
+> Task :core:check
+BUILD SUCCESSFUL in 5s

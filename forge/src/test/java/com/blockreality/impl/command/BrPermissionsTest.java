@@ -36,7 +36,7 @@ class BrPermissionsTest {
     void theWhitelistIsExactlyTheReadOnlyDiagnostics() {
         // Locked by name: growing this set is a security decision, and the diff that
         // does it should have to touch a test spelling out what the set means.
-        assertEquals(java.util.Set.of("status", "members", "section", "loads"),
+        assertEquals(java.util.Set.of("status", "members", "section", "loads", "object"),
                 BrPermissions.READ_ONLY_WHITELIST);
         assertTrue(BrPermissions.literals().containsAll(BrPermissions.READ_ONLY_WHITELIST),
                 "every whitelisted name must be a real subcommand");
@@ -46,7 +46,7 @@ class BrPermissionsTest {
     void privilegedSubcommandsAreAllPresent() {
         // The commands the audit called out by name (#45): scan, load, unload, resolve
         // — plus reset, which was already gated. Each must be in the table AND above 0.
-        for (String cmd : new String[] { "scan", "load", "unload", "resolve", "reset" }) {
+        for (String cmd : new String[] { "scan", "load", "unload", "resolve", "reset", "profile" }) {
             assertTrue(BrPermissions.literals().contains(cmd), cmd + " missing from table");
             assertTrue(BrPermissions.required(cmd) >= BrPermissions.LEVEL_OP,
                     cmd + " must require op");

@@ -1,0 +1,1 @@
+{"command": ["java", "-jar", "/home/rocky/br-installed-native-server/forge-1.20.1-47.4.13-installer.jar", "--installServer", "/home/rocky/br-installed-native-server/server"], "exit": 0}

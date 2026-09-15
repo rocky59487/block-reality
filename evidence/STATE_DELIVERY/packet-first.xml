@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.net.AnalysisUpdatePacketTest" tests="7" skipped="0" failures="1" errors="0" timestamp="2026-09-09T17:50:02" hostname="ROCKYLAPTOP" time="2.354">
+  <properties/>
+  <testcase name="diagnosticClippingPreservesUnicodeAndFitsTheReserve()" classname="com.blockreality.impl.net.AnalysisUpdatePacketTest" time="0.904"/>
+  <testcase name="maximumIdentityAndSummaryShareTheExistingByteReserve()" classname="com.blockreality.impl.net.AnalysisUpdatePacketTest" time="0.202"/>
+  <testcase name="everyKindRoundTripsWithSourceAndRevision()" classname="com.blockreality.impl.net.AnalysisUpdatePacketTest" time="0.03">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;Optional[com.blockreality.api.ShellDisplayField@28348c6]&gt; but was: &lt;Optional[com.blockreality.api.ShellDisplayField@6de0f580]&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;Optional[com.blockreality.api.ShellDisplayField@28348c6]&gt; but was: &lt;Optional[com.blockreality.api.ShellDisplayField@6de0f580]&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at app//com.blockreality.impl.net.AnalysisUpdatePacketTest.everyKindRoundTripsWithSourceAndRevision(AnalysisUpdatePacketTest.java:48)
+	at java.base@17.0.18/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base@17.0.18/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.18/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="malformedIdentityEnumsAndTrailingPayloadAreRejected()" classname="com.blockreality.impl.net.AnalysisUpdatePacketTest" time="0.002"/>
+  <testcase name="decodedNoticesCannotRollBackAnAcceptedResult()" classname="com.blockreality.impl.net.AnalysisUpdatePacketTest" time="0.003"/>
+  <testcase name="everyByteTruncationFailsClosedForEveryKind()" classname="com.blockreality.impl.net.AnalysisUpdatePacketTest" time="1.097"/>
+  <testcase name="senderRefusesContradictoryResultsBeforeWriting()" classname="com.blockreality.impl.net.AnalysisUpdatePacketTest" time="0.111"/>
+  <system-out><![CDATA[2026-09-10 01:50:03,042 Test worker WARN Advanced terminal features are not available in this environment
+notice bytes=1065
+notice bytes=554
+small bytes=6573 header=593 scalarAllowance=128
+dense bytes=260507 header=594 scalarAllowance=128
+oversize bytes=6574 header=594 scalarAllowance=128
+shell-heavy bytes=193876 header=595 scalarAllowance=128
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

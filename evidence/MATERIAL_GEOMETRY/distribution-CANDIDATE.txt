@@ -1,0 +1,14 @@
+Block Reality 0.4.0-dev material geometry native candidate
+
+Shipping module source b10884b; Tectonic2 source 42e10f5f7af166788588afcd2fb2fd97101d16dc.
+Windows/Linux x86_64 libraries included. Minecraft 1.20.1 / Forge 47.4.13 / Java 17.
+This is a development candidate, not v1 or a replacement of the formal engine release.
+MG verifies declared rectangular shapes, atlas end faces, target/collision bounds, native sample mapping,
+real isolated Linux client placement and sneak axis cycling, and inventory rendering.
+528 tests registered: Windows 516 pass / 12 platform skips; Linux 527 pass / 1 platform skip.
+All native-dependent cases executed. The original 16 scenes/45 checks, 127 model checks,
+14 interaction checks and 6 supplemental captures passed. Rendering used software llvmpipe.
+Panels still represent material cells: their placement axis is not a physical panel normal.
+Original installed Windows CM/N25, FPS and engine-driven fracture/crushing/rigid-body lifecycle remain unqualified.
+The prior INS installed-server evidence applies to its earlier jar, not this changed artifact.
+Results: evidence/MATERIAL_GEOMETRY in the source repository.

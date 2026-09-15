@@ -1,0 +1,72 @@
+{
+  "windows": {
+    "core": {
+      "registered": 446,
+      "failed": 0,
+      "skipped": 12,
+      "passed": 434
+    },
+    "forge": {
+      "registered": 109,
+      "failed": 0,
+      "skipped": 0,
+      "passed": 109
+    }
+  },
+  "linux": {
+    "core": {
+      "registered": 446,
+      "failed": 0,
+      "skipped": 1,
+      "passed": 445
+    },
+    "forge": {
+      "registered": 109,
+      "failed": 0,
+      "skipped": 0,
+      "passed": 109
+    }
+  },
+  "status": "CORE_STEP_VERIFIED_CT_STILL_OPEN",
+  "source": "341359021430fad5fb6e89b8ea2a4829d3af6b0f",
+  "criteria": [
+    "a180ae2",
+    "1dafb52"
+  ],
+  "allocation_criteria": "ff03863",
+  "jar": {
+    "source": "341359021430fad5fb6e89b8ea2a4829d3af6b0f",
+    "sha256": "c760f844a376add4252158cb3a5e581f173903c9889e0ed7e2b47dc444cafd5f",
+    "bytes": 15253895,
+    "unchanged_existing_entries": 356,
+    "added": [
+      "com/blockreality/core/transaction/",
+      "com/blockreality/core/transaction/AtomicConstructionCoordinator$Host.class",
+      "com/blockreality/core/transaction/AtomicConstructionCoordinator$Preparer.class",
+      "com/blockreality/core/transaction/AtomicConstructionCoordinator$RecoveryRequired.class",
+      "com/blockreality/core/transaction/AtomicConstructionCoordinator$ReplayConflict.class",
+      "com/blockreality/core/transaction/AtomicConstructionCoordinator$ValidationRefused.class",
+      "com/blockreality/core/transaction/AtomicConstructionCoordinator.class",
+      "com/blockreality/core/transaction/ConstructionTransaction$Change.class",
+      "com/blockreality/core/transaction/ConstructionTransaction$Entry.class",
+      "com/blockreality/core/transaction/ConstructionTransaction$Intent.class",
+      "com/blockreality/core/transaction/ConstructionTransaction$Phase.class",
+      "com/blockreality/core/transaction/ConstructionTransaction$Reason.class",
+      "com/blockreality/core/transaction/ConstructionTransaction$Receipt.class",
+      "com/blockreality/core/transaction/ConstructionTransaction$Request.class",
+      "com/blockreality/core/transaction/ConstructionTransaction$Value.class",
+      "com/blockreality/core/transaction/ConstructionTransaction.class",
+      "com/blockreality/core/transaction/FileTransactionJournal$Faults.class",
+      "com/blockreality/core/transaction/FileTransactionJournal$Stage.class",
+      "com/blockreality/core/transaction/FileTransactionJournal.class",
+      "com/blockreality/core/transaction/TransactionCodec.class",
+      "com/blockreality/core/transaction/TransactionJournal.class"
+    ],
+    "native": {
+      "blockreality-engine/linux-x86_64/libbsi_tectonic.so": "53aae7156b94c0a761ef5abb2322ad47a708362f417a50ca3f04105d9c50abf1",
+      "blockreality-engine/windows-x86_64/bsi_tectonic.dll": "9761d73586277614a56132ec3492d324ae83c8489068c00c266c3d56f530acea"
+    }
+  },
+  "complete_CT_gates": [],
+  "remaining": "Forge participant durability/restart, canonical NBT, authoritative pieces, undo, network entry, client UI, gameplay/performance; engine changes remain out of scope"
+}

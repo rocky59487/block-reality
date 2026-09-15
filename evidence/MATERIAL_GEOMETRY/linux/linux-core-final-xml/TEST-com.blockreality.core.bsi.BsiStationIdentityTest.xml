@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.bsi.BsiStationIdentityTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:49:13" hostname="rockylaptop" time="0.036">
+  <properties/>
+  <testcase name="exactIdentityAndSourceGoverningReachTheSharedSamples()" classname="com.blockreality.core.bsi.BsiStationIdentityTest" time="0.002"/>
+  <testcase name="invalidNumbersSidesFlagsAndReservedAreRejected()" classname="com.blockreality.core.bsi.BsiStationIdentityTest" time="0.002"/>
+  <testcase name="missingGoverningAndRequestedZeroAreExplicit()" classname="com.blockreality.core.bsi.BsiStationIdentityTest" time="0.001"/>
+  <testcase name="immutableIdentityAndAllTruncations()" classname="com.blockreality.core.bsi.BsiStationIdentityTest" time="0.028"/>
+  <testcase name="pairingOrderAndGoverningMustBeConsistent()" classname="com.blockreality.core.bsi.BsiStationIdentityTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,21 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes
+> Task :core:compileTestJava
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses
+
+> Task :core:test
+
+BucklingReadoutTest > refusedWorldKeepsTheSuppliedLocalCriticalWarning() PASSED
+
+BucklingReadoutTest > neverDerivesCriticalFromTheDisplayedFactor() PASSED
+
+BucklingReadoutTest > everyWorldStateHasAnExplicitReadout() PASSED
+
+BUILD SUCCESSFUL in 2s
+7 actionable tasks: 3 executed, 4 up-to-date

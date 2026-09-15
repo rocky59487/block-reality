@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.world.ConstructionSnapshotTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-10T00:22:10" hostname="ROCKYLAPTOP" time="0.027">
+  <properties/>
+  <testcase name="workAndGraphViewsRejectEveryMutableEntryPoint()" classname="com.blockreality.core.world.ConstructionSnapshotTest" time="0.009"/>
+  <testcase name="backgroundSnapshotRemainsStableDuringEditsAndStaleResultCannotPublish()" classname="com.blockreality.core.world.ConstructionSnapshotTest" time="0.006"/>
+  <testcase name="snapshotNullRejectionSurvivesHashBackedStorage()" classname="com.blockreality.core.world.ConstructionSnapshotTest" time="0.006"/>
+  <testcase name="workSnapshotDoesNotAliasCallerCollections()" classname="com.blockreality.core.world.ConstructionSnapshotTest" time="0.0"/>
+  <testcase name="graphRecordsAndRangeViewsNeverExposeMutableEntries()" classname="com.blockreality.core.world.ConstructionSnapshotTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

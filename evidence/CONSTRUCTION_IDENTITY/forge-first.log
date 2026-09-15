@@ -1,0 +1,73 @@
+Starting a Gradle Daemon, 2 busy and 4 incompatible and 1 stopped Daemons could not be reused, use --status for details
+
+> Task :compileJava
+C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\BlockRealityMod.java:28: warning: [removal] get() in FMLJavaModLoadingContext has been deprecated and marked for removal
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+                                                ^
+C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\BlockRealityMod.java:32: warning: [removal] get() in ModLoadingContext has been deprecated and marked for removal
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                                                ^
+Note: C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\block\StructuralBlock.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+2 warnings
+
+> Task :bundleEngines UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes
+> Task :compileTestJava
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+
+> Task :test
+
+BrPermissionsTest > privilegedSubcommandsAreAllPresent() PASSED
+
+BrPermissionsTest > anUnknownLiteralIsARegistrationError() PASSED
+
+BrPermissionsTest > theWhitelistIsExactlyTheReadOnlyDiagnostics() PASSED
+
+BrPermissionsTest > everythingOutsideTheReadOnlyWhitelistRequiresOp() PASSED
+
+SolveDispatchTest > aSuccessfulRunHandsTheResultToDeliveryAndDoesNotReleaseItself() PASSED
+
+SolveDispatchTest > aThrowingSolveReleasesTheFlagAndLogs() PASSED
+
+SolveDispatchTest > anErrorInTheSolveDoesNotDoubleRelease() PASSED
+
+SolveDispatchTest > aThrowingDeliveryReleasesTheFlagAndLogs() PASSED
+
+WorldIndexDataTest > corruptExistingFileIsNeverReplacedByEmptyData() PASSED
+
+WorldIndexDataTest > actualSavedDataSurvivesReloadWithDimensionSeparation() PASSED
+
+WorldIndexDataTest > legacyCoverageMigratesWithoutForgettingUnloadedUnknownDeclarations() PASSED
+
+WorldIndexDataTest > savedPendingReplacementRetiresOriginalIdentityAfterReload() FAILED
+    org.opentest4j.AssertionFailedError: expected: <true> but was: <false>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:31)
+        at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:183)
+        at app//com.blockreality.impl.server.WorldIndexDataTest.savedPendingReplacementRetiresOriginalIdentityAfterReload(WorldIndexDataTest.java:48)
+
+WorldIndexDataTest > failedAtomicReplacementPreservesOldFileAndDirtyRetry() PASSED
+
+WorldIndexDataTest > unknownObjectSchemaCannotFallBackToCoverageOrOverwriteFile() PASSED
+
+14 tests completed, 1 failed
+
+> Task :test FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///C:/Users/wmc02/Desktop/block-reality/forge/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 19s
+5 actionable tasks: 3 executed, 2 up-to-date

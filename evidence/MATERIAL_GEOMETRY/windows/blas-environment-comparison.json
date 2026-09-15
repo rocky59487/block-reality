@@ -1,0 +1,18 @@
+{
+  "uncontrolled_direct_vs_jar_equal": false,
+  "controlled_direct_vs_jar_equal": true,
+  "first_jar_vs_controlled_direct_equal": true,
+  "uncontrolled_process_env": {},
+  "controlled_process_env": {
+    "OPENBLAS_CORETYPE": "Haswell",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "differing_first_frames": [
+    "C10_buckling_closed_forms_euler-tip_f32/3.frame",
+    "C10_buckling_closed_forms_euler-tip_f64/3.frame",
+    "C10_buckling_closed_forms_greenhill_f32/3.frame",
+    "C10_buckling_closed_forms_greenhill_f64/3.frame",
+    "C10_buckling_closed_forms_probe-invariance_f32/3.frame",
+    "C10_buckling_closed_forms_probe-invariance_f64/3.frame"
+  ]
+}

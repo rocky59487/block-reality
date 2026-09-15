@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.net.ShellPacketCodecTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-09T23:03:41" hostname="ROCKYLAPTOP" time="0.012">
+  <properties/>
+  <testcase name="missingDisplayAndOptionalRawRemainDistinct()" classname="com.blockreality.impl.net.ShellPacketCodecTest" time="0.001"/>
+  <testcase name="nonFiniteSurfaceAndInvalidFrameRejectTheWholePacket()" classname="com.blockreality.impl.net.ShellPacketCodecTest" time="0.001"/>
+  <testcase name="everyTruncationOfASampledShellPacketIsRejected()" classname="com.blockreality.impl.net.ShellPacketCodecTest" time="0.005"/>
+  <testcase name="completePacketPreservesVerdictBlocksAndSamplesThroughPicking()" classname="com.blockreality.impl.net.ShellPacketCodecTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,29 @@
+{
+  "command": [
+    "/usr/bin/python3",
+    "-X",
+    "utf8",
+    "/home/rocky/br-native-v15-consumer/scripts/check_native_jar.py",
+    "--jar",
+    "/home/rocky/br-native-v15-consumer/qualification/blockreality-0.4.0-dev-v1.5.jar",
+    "--java",
+    "/usr/bin/java",
+    "--classes",
+    "/home/rocky/br-native-v15-consumer/mod/core/build/classes/java/test",
+    "--jna",
+    "/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+    "--library",
+    "/home/rocky/br-native-v15-consumer/staged/linux-x86_64/libbsi_tectonic.so",
+    "--out",
+    "/home/rocky/br-native-v15-consumer/qualification/replay-first",
+    "--version",
+    "1.5.0",
+    "--build-sha",
+    "42ba7eb",
+    "--eigen",
+    "--shell-eigen"
+  ],
+  "cwd": "/home/rocky/br-native-v15-consumer",
+  "BR_ENGINE": "/home/rocky/br-native-v15-consumer/staged/linux-x86_64/libbsi_tectonic.so",
+  "source": "fc5424fc2b7a6376047ded560201d1eb0f0e69bc"
+}

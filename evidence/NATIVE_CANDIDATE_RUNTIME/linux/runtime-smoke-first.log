@@ -1,0 +1,17 @@
+OFF startup has no result: PASS
+Traceback (most recent call last):
+  File "/home/rocky/br-native-candidate-runtime/scripts/game_runtime_smoke.py", line 160, in <module>
+    main()
+  File "/home/rocky/br-native-candidate-runtime/scripts/game_runtime_smoke.py", line 78, in main
+    wait_for("config enable recovers native analysis", lambda s:
+  File "/home/rocky/br-native-candidate-runtime/scripts/game_runtime_smoke.py", line 43, in wait_for
+    raise AssertionError(name + ": " + reply)
+AssertionError: config enable recovers native analysis: Block Reality
+  dimension       minecraft:overworld
+  engine          IDLE
+  native engine not loaded yet
+  revision        1   (rejected as stale: 0)
+  blocks          0   test loads: 0
+  analysis        EMPTY
+  last result     none yet
+

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.engine.GameInputNativeTest" tests="2" skipped="0" failures="1" errors="0" timestamp="2026-09-09T16:23:37" hostname="rockylaptop" time="0.069">
+  <properties/>
+  <testcase name="refusedVocabularyRedeclarationInvalidatesOldWorldAndNames()" classname="com.blockreality.core.engine.GameInputNativeTest" time="0.023"/>
+  <testcase name="fullGameVocabularyAndSnapshotReachTheRealEngine()" classname="com.blockreality.core.engine.GameInputNativeTest" time="0.045">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;Optional[com.blockreality.api.BeamDisplayField@265adfad]&gt; but was: &lt;Optional[com.blockreality.api.BeamDisplayField@a3d9978]&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;Optional[com.blockreality.api.BeamDisplayField@265adfad]&gt; but was: &lt;Optional[com.blockreality.api.BeamDisplayField@a3d9978]&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at app//com.blockreality.core.engine.GameInputNativeTest.fullGameVocabularyAndSnapshotReachTheRealEngine(GameInputNativeTest.java:45)
+	at java.base@17.0.20/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base@17.0.20/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.20/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

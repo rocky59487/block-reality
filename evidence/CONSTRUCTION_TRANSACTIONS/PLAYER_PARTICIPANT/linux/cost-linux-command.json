@@ -1,0 +1,11 @@
+[
+  "bash",
+  "gradlew",
+  "--no-daemon",
+  "--console=plain",
+  "-I",
+  "/mnt/c/Users/wmc02/Desktop/block-reality/build/construction-transactions/player-participant/measure.gradle",
+  "-Dbr.playerCostSource=/mnt/c/Users/wmc02/Desktop/block-reality/build/construction-transactions/player-participant/cost-src",
+  "-Dbr.playerCostOutput=/home/rocky/br-construction-transactions/qualification/player-participant/cost",
+  "constructionPlayerCost"
+]

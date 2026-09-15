@@ -1,0 +1,69 @@
+{
+  "connected": true,
+  "screen": "none",
+  "worldRevision": 134,
+  "resultRevision": -1,
+  "kind": "MODEL_REFUSED",
+  "notice": "MODEL_REFUSED",
+  "hasData": false,
+  "stale": false,
+  "members": 0,
+  "shells": 0,
+  "maxDc": 0.0,
+  "width": 1280,
+  "height": 720,
+  "guiWidth": 640,
+  "guiHeight": 360,
+  "guiScale": 2.0,
+  "language": "zh_tw",
+  "mode": "MATERIAL",
+  "interaction": {
+    "shift": false,
+    "mainHand": "blockreality:steel_beam",
+    "hitType": "BLOCK",
+    "position": [
+      45.0,
+      200.0,
+      44.0
+    ],
+    "hitLocation": [
+      46.0,
+      200.62000000476837,
+      44.5
+    ],
+    "face": "east",
+    "block": "blockreality:steel_beam",
+    "axis": "x",
+    "shape": [
+      0.0,
+      0.3,
+      0.4,
+      1.0,
+      0.7,
+      0.6
+    ],
+    "collision": [
+      0.0,
+      0.3,
+      0.4,
+      1.0,
+      0.7,
+      0.6
+    ]
+  },
+  "glRenderer": "llvmpipe (LLVM 15.0.7, 256 bits)",
+  "glVersion": "4.5 (Core Profile) Mesa 23.2.1-1ubuntu3.1~22.04.4",
+  "request": {
+    "id": 15,
+    "action": "capture",
+    "name": "mg-items-hotbar-zh_tw",
+    "width": 1280,
+    "height": 720,
+    "scale": 2,
+    "language": "zh_tw",
+    "mode": "MATERIAL",
+    "worldRevision": 134,
+    "kind": "MODEL_REFUSED"
+  },
+  "png_bytes": 135640
+}

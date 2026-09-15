@@ -1,0 +1,299 @@
+# The engine's first CI. Until now nothing built this repository outside a
+# developer's MSVC box, which is why "the consumer's CI never builds the engine"
+# was a standing gap in both repositories.
+#
+# What is GATED here is what LINUX_BUILD.md froze: the build itself, mc_exit
+# against its pinned count, the static-link criterion (mc62_static), the contract
+# hash and corpus selfcheck, the host's own suite, and the shipping library's
+# self-containment. What is RECORDED, never gated, is the eight Windows-bound
+# suites through gate/linux_shim. BSI_CORE now gates its two declared families;
+# optional families and Windows static packaging remain separate requirements.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash        # -eo pipefail: a piped step must not report the tail's status
+
+jobs:
+  linux:
+    name: CMake arm, gates, contract, BSI host and shipping library
+    runs-on: ubuntu-latest
+    env:
+      OPENBLAS_CORETYPE: Haswell
+      OPENBLAS_NUM_THREADS: '4'
+    steps:
+      # fetch-depth 0 because the N23-e step needs the merge base with the target branch,
+      # and a shallow clone has no such commit — the step would fail on a missing ref
+      # rather than on the rule it exists to enforce.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libopenblas-dev liblapacke-dev libmetis-dev gfortran cmake g++
+
+      # Ubuntu ships no libmetis.a, so the shipping library builds one from the
+      # Apache-2.0 source with IDXTYPEWIDTH 32 -- the width this tree compiles
+      # against. A 64-bit idx_t would silently change every ordering.
+      - name: static METIS (IDXTYPEWIDTH 32)
+        run: |
+          pip3 download pymetis --no-binary :all: --no-deps -d /tmp/metis_src
+          tar xzf /tmp/metis_src/pymetis-*.tar.gz -C /tmp
+          cp -r /tmp/pymetis-*/src/metis /tmp/metis
+          sed -i 's/#define IDXTYPEWIDTH 64/#define IDXTYPEWIDTH 32/' /tmp/metis/include/metis.h
+          mkdir -p /tmp/metis_out
+          for f in /tmp/metis/GKlib/*.c /tmp/metis/libmetis/*.c; do
+            gcc -O2 -fPIC -DNDEBUG -DLINUX -D_FILE_OFFSET_BITS=64 -DUSE_GKREGEX \
+                -I/tmp/metis/include -I/tmp/metis/GKlib -I/tmp/metis/libmetis \
+                -c "$f" -o "/tmp/metis_out/$(basename ${f%.c}).o"
+          done
+          ar rcs /tmp/metis_out/libmetis.a /tmp/metis_out/*.o
+
+      - name: contract hash and corpus selfcheck (N23-a / N23-c)
+        run: |
+          python3 contract/check_contract.py
+          python3 contract/conformance/run.py --selfcheck
+          python3 contract/conformance/run.py --list
+
+      # A contract change without its re-pinned hash in the SAME commit range is
+      # the one way the two repositories can drift apart unnoticed.
+      - name: a contract change carries its hash (N23-e)
+        if: github.event_name == 'pull_request'
+        run: |
+          base=$(git merge-base origin/${{ github.base_ref }} HEAD)
+          bash gate/check_contract_repin.sh "$base"
+          python3 gate/test_contract_repin.py
+
+      # Cross-repository drift (N23-b, this repository's half). The consumer pins the
+      # tectonic2 commit it mirrors and compares hashes; nothing on this side looked at
+      # the consumer at all, so this repository could move the contract alone and stay
+      # green. block-reality is public, so its Main hash is one unauthenticated fetch --
+      # no token, no clone, nothing to skip for want of a secret.
+      #
+      # Severity follows what the mismatch MEANS. Between two default branches it is
+      # real drift: a shipped engine and a shipped mod that disagree about the
+      # interface, so it is red. On a pull request it is a contract change in flight,
+      # which is exactly how a coordinated change is supposed to look while its paired
+      # PR is open -- red there would mean every legitimate contract change starts red
+      # and teaches everyone to ignore the check. It warns and names both hashes.
+      #
+      # A fetch that FAILS is never green: same severity rule, because "could not
+      # measure" and "measured and agreed" are the two things this repository's own
+      # registry keeps catching people conflating.
+      - name: contract agrees with the consumer's default branch (N23-b)
+        run: |
+          mine=$(cat contract/CONTRACT_SHA256)
+          url=https://raw.githubusercontent.com/rocky59487/block-reality/Main/contract/CONTRACT_SHA256
+          if theirs=$(curl -fsS --retry 3 --retry-delay 2 "$url"); then
+            note="block-reality Main $theirs vs this tree $mine"
+            if [ "$mine" = "$theirs" ]; then echo "contract agrees across both repositories: $mine"; exit 0; fi
+            verdict="the two repositories' contracts DISAGREE -- $note"
+          else
+            verdict="could not read the consumer's contract hash ($url)"
+          fi
+          echo "$verdict" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "::warning::$verdict (in flight: land the paired block-reality PR)"
+          else
+            echo "::error::$verdict"; exit 1
+          fi
+
+      - name: build (LINUX_BUILD L1)
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DTEC_METIS_STATIC=/tmp/metis_out/libmetis.a && cmake --build build -j
+
+      - name: geometry preflight count, DET and mutation legs
+        run: bash gate/build_geometry_mut.sh build
+
+      - name: BSI exactly-once native gates and mutation legs
+        run: bash gate/build_bsi_retry.sh build_bsi_retry
+
+      - name: BSI exactly-once ASan and UBSan
+        run: bash gate/build_bsi_retry.sh build_bsi_retry_sanitize sanitize
+
+      - name: host suite (contract/host/test)
+        run: ./build/contract/host/host_tests
+
+      - name: stub engine through all three transports and the C ABI (C-1/C-2/C-3/C-9)
+        run: |
+          python3 contract/conformance/run.py --adapter engine --lib build/contract/host/libbsi_stub_engine.so \
+              --hostd build/contract/host/bsi-hostd --stub --repeat 3
+          python3 contract/conformance/run.py --adapter capi --lib build/contract/host/libbsi_stub_capi.so --stub --repeat 3
+          # A foreign engine ABI must be refused, not tolerated. The file is asserted to
+          # EXIST first: without that line a wrong path also makes the runner exit
+          # non-zero, and the step goes green having proved nothing -- a measurement that
+          # mistakes its own failure for the result it was looking for, which is the same
+          # defect as the 2026-08-30 mutation legs that never ran and were scored as
+          # having run (CLAUDE.md).
+          # Use one past the current ABI; a newly supported version is not foreign.
+          abi=$(awk '$1=="#define" && $2=="BSI_ENGINE_ABI" {sub(/u$/, "", $3); print $3}' contract/bsi_engine.h)
+          test -n "$abi"
+          g++ -std=c++17 -shared -fPIC '-DBSI_STUB_ABI=(BSI_ENGINE_ABI+1u)' contract/host/test/stub_engine.cpp \
+              -o build/contract/host/libbsi_stub_engine_unknown.so
+          test -f build/contract/host/libbsi_stub_engine_unknown.so
+          if build/contract/host/bsi-hostd --engine build/contract/host/libbsi_stub_engine_unknown.so \
+              </dev/null >build/contract/host/unknown-abi.log 2>&1; then echo "unknown engine ABI was NOT refused"; exit 1; fi
+          cat build/contract/host/unknown-abi.log
+          grep -F "bsi_engine_entry returned NULL (host ABI $abi not supported)" build/contract/host/unknown-abi.log
+
+      - name: LINUX_BUILD L1-L8
+        run: TEC_METIS_STATIC=/tmp/metis_out/libmetis.a ./gate/run_linux.sh build
+
+      - name: BSI core real capabilities, artifacts, transports and six mutation legs
+        run: |
+          python3 gate/check_bsi_core_artifact.py --lib build/libbsi_tectonic.so --out build_bsi_core_results/artifact
+          python3 gate/build_bsi_core_mut.py --build build --source .
+          python3 gate/run_bsi_core_suite.py --build build --contract contract \
+              --hostd build/contract/host/bsi-hostd --out build_bsi_core_results
+
+      - name: native package acceptance receipts and six corruption controls
+        run: python3 gate/check_package_acceptance.py --acceptance build_bsi_core_results --out build_package_acceptance
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bsi-core
+          path: build_bsi_core_results/
+
+      # MC61 (docs/specs/MC61_FACENODE.md section 7): the face-node family's three
+      # escapes, added at the merge -- the side branch shipped it with none.
+      - name: MC61 mutation legs must bite
+        run: TEC_METIS_STATIC=/tmp/metis_out/libmetis.a ./gate/build_mc61_mut.sh build
+
+      # MC62 section 1.1 (docs/specs/MC62_GUARDS.md section 7 rows 1-2): the axis
+      # guard's two escapes -- gone, and moved to the wire.
+      - name: MC62 mutation legs must bite
+        run: TEC_METIS_STATIC=/tmp/metis_out/libmetis.a ./gate/build_mc62_mut.sh build
+
+      - name: mutation registry equals the tree (V2_PIN PIN-06)
+        run: python3 gate/check_mut_registry.py
+
+      # V2_STATE (docs/specs/V2_STATE.md): the twelfth suite, its count, DET x3 and
+      # the two mutation legs that must bite; plus V2S-13, zero warnings from the
+      # new core/state/ headers in the build log.
+      - name: v2_exit count, DET x3 and mutation legs (V2_STATE V2S-11/12 + section 7)
+        run: TEC_METIS_STATIC=/tmp/metis_out/libmetis.a ./gate/build_v2_mut.sh build
+
+      # Its own build directory: `--clean-first` on build/ would delete every other
+      # suite binary and libbsi_tectonic.so, and the pin check and the harvest below
+      # read those from build/ (the pins would MISS, the harvest would record nothing).
+      - name: core/state/ compiles warning-free (V2_STATE V2S-13)
+        run: |
+          cmake -S . -B build_state -DCMAKE_BUILD_TYPE=Release -DTEC_BUILD_BSI=OFF -DTEC_METIS_STATIC=/tmp/metis_out/libmetis.a
+          cmake --build build_state --target v2_exit pin_probe -j 2>&1 | tee /tmp/state_build.log
+          n=$(grep -c "core/state/.*warning:" /tmp/state_build.log || true)
+          echo "core/state warnings: $n"; [ "$n" = 0 ]
+
+      - name: integrated program references and MC64 load gates
+        run: |
+          python3 gate/check_program.py
+          python3 gate/run_mc64_load.py --build-dir build_mc64_load
+          python3 gate/run_mc64_load.py --sanitize --build-dir build_mc64_load_sanitize
+          python3 gate/run_mc64_verdict.py --build-dir build_mc64_verdict
+          python3 gate/run_mc64_verdict.py --sanitize --build-dir build_mc64_verdict_sanitize
+          python3 gate/run_mc65a.py --build-dir build_mc65a
+          python3 gate/run_mc65a.py --sanitize --build-dir build_mc65a_sanitize
+          python3 gate/run_mc65b_foundation.py --out build_mc65b_foundation
+          python3 gate/run_mc65b_foundation.py --sanitize --out build_mc65b_foundation_sanitize
+          python3 gate/run_mc65b_p3.py --out build_mc65b_p3
+          python3 gate/run_mc65b_p3.py --sanitize --out build_mc65b_p3_sanitize
+          python3 gate/run_mc65b_shell.py --out build_mc65b_shell
+          python3 gate/run_mc65b_shell.py --sanitize --out build_mc65b_shell_sanitize
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mc65b-foundation
+          path: |
+            build_mc65b_foundation/verification.json
+            build_mc65b_foundation_sanitize/verification.json
+            build_mc65b_p3/verification.json
+            build_mc65b_p3_sanitize/verification.json
+            build_mc65b_shell/verification.json
+            build_mc65b_shell_sanitize/verification.json
+
+      # PIN-08: mc_exit and engine_exit under ASan+UBSan. The suites' own verdicts are
+      # RECORDED here (engine_exit carries LB-F1's T28 red); what is gated is that the
+      # sanitizers report nothing. detect_leaks=0 by criteria: one-shot processes, and
+      # OpenBLAS's thread pool would otherwise be scored as a leak.
+      - name: ASan/UBSan leg (V2_PIN PIN-08)
+        run: |
+          cmake -S . -B build_san -DCMAKE_BUILD_TYPE=RelWithDebInfo -DTEC_BUILD_BSI=OFF \
+                -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=undefined" \
+                -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,undefined"
+          cmake --build build_san --target mc_exit engine_exit tectonic_capi -j
+          export ASAN_OPTIONS=detect_leaks=0
+          # The suites' own exit codes are RECORDED, never gated here -- and under this
+          # shell's `set -e` a bare failing subshell ends the step, which is exactly how the
+          # first CI run died on engine_exit's known T28 red (rc=1) before the sanitizer
+          # count below ever ran. `|| rc=$?` keeps the code and keeps going.
+          rc=0; (cd build_san && ./mc_exit > mc_exit.san.log 2>&1) || rc=$?; echo "mc_exit rc=$rc (RECORDED): $(tail -1 build_san/mc_exit.san.log)"
+          rc=0; (cd build_san && ./engine_exit > engine_exit.san.log 2>&1) || rc=$?; echo "engine_exit rc=$rc (RECORDED): $(tail -1 build_san/engine_exit.san.log)"
+          # Two independent verdicts (V2_PIN section 10, 2026-09-04m, review A2):
+          # (1) both suites RAN TO THEIR VERDICT LINE -- a log that ends anywhere else is
+          #     "did not finish", never "clean";
+          # (2) zero sanitizer lines, with the signature wide enough to catch a DEADLYSIGNAL
+          #     or a UBSan summary, not only the ERROR: prefix.
+          # `grep -c` exits 1 when it counts ZERO lines, and under `set -e -o pipefail` that
+          # made a CLEAN sanitizer run kill the step (the third CI run died exactly here,
+          # right after printing both suites' verdicts). `|| true` keeps the count honest
+          # and the step alive; the gate is the number, checked on the next line.
+          test -s build_san/mc_exit.san.log && test -s build_san/engine_exit.san.log
+          tail -1 build_san/mc_exit.san.log | grep -q "^MC-SUITE" || { echo "mc_exit did not reach its verdict line"; exit 1; }
+          tail -1 build_san/engine_exit.san.log | grep -q "^EXIT-SUITE" || { echo "engine_exit did not reach its verdict line"; exit 1; }
+          SIG='ERROR: AddressSanitizer\|ERROR: LeakSanitizer\|runtime error:\|AddressSanitizer:DEADLYSIGNAL\|UndefinedBehaviorSanitizer\|SUMMARY: .*Sanitizer'
+          n=$(cat build_san/mc_exit.san.log build_san/engine_exit.san.log | grep -c "$SIG" || true)
+          echo "sanitizer lines: $n"
+          if [ "$n" != 0 ]; then grep -n -A8 "$SIG" build_san/*.san.log | head -80; exit 1; fi
+
+      # V2_PIN (docs/specs/V2_PIN.md). The pins are the normalised transcripts of every
+      # suite on this arm AT THIS THREAD COUNT (gate/pins/<arm>/t<N>/, section 1.3 as
+      # revised 2026-09-04e); a "zero behaviour change" step is one that leaves them
+      # equal. Exit 1 is a moved pin, exit 2 is MISS (no pins for this arm and thread
+      # count / missing binary / no verdict) -- both red, because "could not compare"
+      # is not "compared equal". This step runs after the other v2 gates so that a
+      # MISS here (a runner of a new size) still lets those report in the same run.
+      - name: pins equal (V2_PIN PIN-01/02)
+        id: pins
+        run: python3 gate/check_pins.py --build-dir build --check
+
+      # PIN-11 (V2_PIN section 10, 2026-09-04m, review A1/C3): the zero-behaviour-
+      # change VERDICT is a same-box differential, not a comparison with pins some
+      # other box wrote. The merge base (the PR's target, or origin/main on a
+      # dispatch) is checked out into a worktree, its gates are built here, and
+      # every check line the base prints must appear in the head's output in the
+      # same order -- the head may only ADD lines. A suite the base does not have
+      # is RECORDED, never green. A missing base ref is red, not skipped.
+      - name: base-vs-head differential (V2_PIN PIN-11)
+        run: |
+          base_ref="origin/${{ github.base_ref || 'main' }}"
+          git rev-parse --verify "$base_ref" >/dev/null
+          base=$(git merge-base "$base_ref" HEAD)
+          echo "base = $base ($base_ref)"
+          git worktree add --detach /tmp/base "$base"
+          cmake -S /tmp/base -B /tmp/base/build -DCMAKE_BUILD_TYPE=Release -DTEC_BUILD_BSI=OFF -DTEC_METIS_STATIC=/tmp/metis_out/libmetis.a
+          cmake --build /tmp/base/build -j
+          python3 gate/check_pins.py --build-dir build --differential /tmp/base/build
+
+      # When the pins did not compare equal, the box writes its OWN pins and hands them
+      # out as an artifact. CI never commits them: a pin enters the repository through a
+      # dated addendum in V2_PIN.md section 10 that says which box wrote it and why, and
+      # a DIFF (exit 1) is a behaviour change to root-cause, not a pin to refresh. The
+      # artifact exists so that a runner of a new size can be pinned at all -- the first
+      # CI run was MISS because ubuntu-latest has 2 vCPU and the pins were written at 4.
+      - name: this box's own pins (artifact on a red pin step; never committed by CI)
+        if: always() && steps.pins.outcome != 'success'
+        run: |
+          python3 gate/check_pins.py --build-dir build --write || true
+          echo "arm/threads: $(ls -d gate/pins/*/t* | tr '\n' ' ')"
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.pins.outcome != 'success'
+        with:
+          name: pins-this-box
+          path: gate/pins/

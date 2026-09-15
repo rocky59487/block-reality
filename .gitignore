@@ -74,3 +74,5 @@ __pycache__/
 .pytest_cache/
 
 
+# Isolated development-client settings and generated captures are never source.
+forge/run-client-probe/

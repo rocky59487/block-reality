@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.AnalysisDeliveryClockTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-10T00:22:04" hostname="ROCKYLAPTOP" time="0.035">
+  <properties/>
+  <testcase name="travelRequiresFreshBootstrapAndKeepsTheConnectionWatermark()" classname="com.blockreality.core.AnalysisDeliveryClockTest" time="0.026"/>
+  <testcase name="rejectsOtherDimensionsWithoutChangingState()" classname="com.blockreality.core.AnalysisDeliveryClockTest" time="0.004"/>
+  <testcase name="rejectsAnotherSourceUntilBootstrap()" classname="com.blockreality.core.AnalysisDeliveryClockTest" time="0.0"/>
+  <testcase name="aNewSequenceCanRecoverARefusalAtTheSameRevision()" classname="com.blockreality.core.AnalysisDeliveryClockTest" time="0.0"/>
+  <testcase name="aNewConnectionStartsANewOrderingDomain()" classname="com.blockreality.core.AnalysisDeliveryClockTest" time="0.0"/>
+  <testcase name="rejectsLateAndDuplicateUpdates()" classname="com.blockreality.core.AnalysisDeliveryClockTest" time="0.0"/>
+  <testcase name="rejectsImpossibleRevisionsBeforeBinding()" classname="com.blockreality.core.AnalysisDeliveryClockTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,20 @@
+/home/rocky/br-game-runtime-server/forge/src/main/java/com/blockreality/impl/BlockRealityMod.java:28: warning: [removal] get() in FMLJavaModLoadingContext has been deprecated and marked for removal
+/home/rocky/br-game-runtime-server/forge/src/main/java/com/blockreality/impl/BlockRealityMod.java:32: warning: [removal] get() in ModLoadingContext has been deprecated and marked for removal
+            new ResourceLocation(BlockRealityMod.MOD_ID, "main"),
+java.lang.UnsupportedOperationException: Reflective setAccessible(true) disabled
+java.lang.IllegalAccessException: class io.netty.util.internal.PlatformDependent0$7 (in module io.netty.common) cannot access class jdk.internal.misc.Unsafe (in module java.base) because module java.base does not export jdk.internal.misc to module io.netty.common
+[01:54:42] [main/DEBUG] [ne.mi.fm.ja.FMLModContainer/LOADING]: Creating FMLModContainer instance for com.blockreality.impl.BlockRealityMod
+[01:54:42] [modloading-worker-0/DEBUG] [ne.mi.fm.co.ConfigTracker/CONFIG]: Config file blockreality-server.toml for blockreality tracking
+[01:54:42] [modloading-worker-0/DEBUG] [ne.mi.fm.ja.AutomaticEventSubscriber/LOADING]: Auto-subscribing com.blockreality.impl.net.StateDeliveryProbe to FORGE
+[01:54:47] [Thread-2/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file blockreality-server.toml changed, sending notifies
+[01:54:47] [Thread-2/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file blockreality-server.toml changed, sending notifies
+[01:54:53] [Server thread/INFO] [minecraft/DedicatedServer]: Done (5.766s)! For help, type "help"
+		2: ASM: class com.blockreality.impl.server.StructureManager onLogin(Lnet/minecraftforge/event/entity/player/PlayerEvent$PlayerLoggedInEvent;)V
+java.lang.NullPointerException: Cannot invoke "io.netty.channel.Channel.attr(io.netty.util.AttributeKey)" because the return value of "net.minecraft.network.Connection.channel()" is null
+	at TRANSFORMER/forge@47.4.13/net.minecraftforge.common.TierSortingRegistry.syncToPlayer(TierSortingRegistry.java:354)
+	at TRANSFORMER/forge@47.4.13/net.minecraftforge.common.TierSortingRegistry.playerLoggedIn(TierSortingRegistry.java:348)
+	at TRANSFORMER/blockreality@0.4.0-dev/com.blockreality.impl.net.StateDeliveryProbe.deliver(StateDeliveryProbe.java:75)
+	at TRANSFORMER/blockreality@0.4.0-dev/com.blockreality.impl.net.StateDeliveryProbe.lambda$register$2(StateDeliveryProbe.java:42)
+[01:56:39] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Stopping the server]
+[01:56:39] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+BUILD SUCCESSFUL in 2m 17s

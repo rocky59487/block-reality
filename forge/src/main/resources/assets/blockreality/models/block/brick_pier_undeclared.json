@@ -1,0 +1,5 @@
+{
+  "parent": "blockreality:block/brick_pier",
+  "loader": "blockreality:product",
+  "undeclared": true
+}

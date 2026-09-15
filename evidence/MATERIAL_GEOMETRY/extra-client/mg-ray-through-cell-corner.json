@@ -1,0 +1,41 @@
+{
+  "request": {
+    "id": 9,
+    "action": "inspect",
+    "name": "mg-ray-through-cell-corner"
+  },
+  "scope": "opt-in real client; observations or programmatic vanilla interaction; no result injection",
+  "observed": {
+    "shift": false,
+    "mainHand": "minecraft:air",
+    "hitType": "BLOCK",
+    "position": [
+      44.0,
+      200.0,
+      44.0
+    ],
+    "hitLocation": [
+      45.0,
+      200.62000000476837,
+      44.1
+    ],
+    "face": "east",
+    "block": "minecraft:stone",
+    "shape": [
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "collision": [
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      1.0,
+      1.0
+    ]
+  }
+}

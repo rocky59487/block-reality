@@ -1,0 +1,8 @@
+{
+  "module_source": "b10884b5802c24121263fb779319860c7f95ec9c",
+  "criteria": "7e0b70f",
+  "native_source": "42e10f5f7af166788588afcd2fb2fd97101d16dc",
+  "native_sha256": "53aae7156b94c0a761ef5abb2322ad47a708362f417a50ca3f04105d9c50abf1",
+  "scope": "owned Linux development source sets; real client/server; same delivered library",
+  "probe_change": "vanilla creative inventory redirection accepted; shipping source unchanged"
+}

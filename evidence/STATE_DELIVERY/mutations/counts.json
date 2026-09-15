@@ -1,0 +1,17 @@
+{
+  "SOURCE_IGNORED": {
+    "registered": 1,
+    "failed": "rejectsAnotherSourceUntilBootstrap()",
+    "type": "org.opentest4j.AssertionFailedError"
+  },
+  "SEQUENCE_IGNORED": {
+    "registered": 1,
+    "failed": "rejectsLateAndDuplicateUpdates()",
+    "type": "org.opentest4j.AssertionFailedError"
+  },
+  "DIMENSION_IGNORED": {
+    "registered": 1,
+    "failed": "rejectsOtherDimensionsWithoutChangingState()",
+    "type": "org.opentest4j.AssertionFailedError"
+  }
+}

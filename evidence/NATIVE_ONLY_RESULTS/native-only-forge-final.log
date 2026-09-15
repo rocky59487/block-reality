@@ -1,0 +1,22 @@
+# Excerpt; complete local source and raw hash are in receipts.json.
+> Task :compileJava
+> Task :bundleEngines UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes
+> Task :jar
+> Task :downloadMcpConfig
+> Task :extractSrg UP-TO-DATE
+> Task :createMcpToSrg UP-TO-DATE
+> Task :reobfJar
+> Task :jarJar SKIPPED
+> Task :reobfJarJar SKIPPED
+> Task :assemble
+> Task :checkNativeOnlyJar
+> Task :compileTestJava
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+> Task :test
+NativeOnlyPacketGoldenTest > fixedPacketsRemainByteIdenticalAcrossLegacyRemoval() PASSED
+> Task :check
+> Task :build
+BUILD SUCCESSFUL in 41s

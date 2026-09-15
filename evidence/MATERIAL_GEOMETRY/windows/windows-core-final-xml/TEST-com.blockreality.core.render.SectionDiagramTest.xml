@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.render.SectionDiagramTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:49:09" hostname="ROCKYLAPTOP" time="0.002">
+  <properties/>
+  <testcase name="aStationWithoutTheYFibresProducesNothing()" classname="com.blockreality.core.render.SectionDiagramTest" time="0.0"/>
+  <testcase name="axialForceMovesTheNeutralAxisOffCentre()" classname="com.blockreality.core.render.SectionDiagramTest" time="0.0"/>
+  <testcase name="aSaggingSectionHasCompressionOnTopAndThatIsAlsoCorrect()" classname="com.blockreality.core.render.SectionDiagramTest" time="0.0"/>
+  <testcase name="theProfileIsLinearAcrossTheDepth()" classname="com.blockreality.core.render.SectionDiagramTest" time="0.0"/>
+  <testcase name="outOfRangeDepthsAreClampedRatherThanExtrapolated()" classname="com.blockreality.core.render.SectionDiagramTest" time="0.0"/>
+  <testcase name="aSectionEntirelyInTensionHasNoNeutralAxis()" classname="com.blockreality.core.render.SectionDiagramTest" time="0.001"/>
+  <testcase name="aHoggingSectionHasTensionOnTop()" classname="com.blockreality.core.render.SectionDiagramTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

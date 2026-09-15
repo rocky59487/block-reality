@@ -1,0 +1,273 @@
+#!/usr/bin/env python3
+"""Real NATIVE_CONSUMER jar gate. Requires compiled NativeJarProbe, JNA and local release library.
+
+Runs Python CAPI and jar-only production Java classes on identical C5/C6/C8 frames,
+optionally including all C10 eigen variants with --eigen,
+three fresh sessions each; two additional JVMs rendezvous inside resource extraction.
+No production child process is introduced: every subprocess here is a test driver.
+"""
+import argparse
+import base64
+import ctypes
+import copy
+from contextlib import closing
+import hashlib
+import importlib.util
+import json
+import math
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def load_corpus():
+    path = ROOT / "contract/conformance/run.py"
+    spec = importlib.util.spec_from_file_location("native_jar_corpus", path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def frames(corpus, directory, eigen=False, shell_eigen=False):
+    raw = dict(corpus.load_cases())
+    for name, data in raw.items():
+        if not name.startswith(("C5-", "C6-", "C8-") + (("C10-",) if eigen else ())
+                               + (("C14-",) if shell_eigen else ())):
+            continue
+        case = corpus.Case(name, data, raw)
+        mats, secs = case.vocab_ids()
+        worlds = list(case.worlds.items())
+        is_shell = name.startswith("C14-")
+        is_buckling = name.startswith(("C10-", "C14-"))
+        for world_name, world in (worlds if is_buckling else worlds[:1]):
+            for storage in ["f64", "f32"]:
+                for variant in (["thin", "thick"] if is_shell else [""]):
+                    suffix = "_" + world_name if is_buckling else ""
+                    if variant: suffix += "_" + variant
+                    dest = directory / (case.case_id.replace("-", "_") + suffix + "_" + storage)
+                    dest.mkdir(parents=True, exist_ok=False)
+                    vocab = copy.deepcopy(case.vocab)
+                    if variant == "thick":
+                        wall = next(m for m in vocab["materials"] if m["name"] == "wall")
+                        wall["shellThickness"] = 0.3
+                    hello = {"bsi": 1, "client": "native-jar/1", "contractSha256": corpus.contract_sha(), "arena": {"supported": False, "maxBytes": 0}}
+                    solve = dict(world.solve, numThreads=1, include=["members", "stations", "shells", "memberGeometry", "stationIdentity"],
+                                 precision={"tier": "commit", "storage": storage})
+                    loads = corpus.encode_loads(world.loads)
+                    if loads:
+                        solve["loads"] = len(loads) // 64
+                    requests = [("bsi.hello", hello, b""), ("bsi.vocab.declare", vocab, b""),
+                                ("bsi.world.declare", {"blocks": len(world.blocks)}, corpus.encode_blocks(world.blocks, mats, secs)),
+                                ("bsi.solve", solve, loads)]
+                    for index, (method, body, payload) in enumerate(requests):
+                        (dest / f"{index}.frame").write_bytes(corpus.encode_frame(corpus.header(method, body, str(index)), payload))
+
+
+def gravity_frames(corpus, receipt, directory):
+    """Replay the PGN gate's complete requests; preserve session and invalid-mode cases."""
+    rows = json.loads(receipt.read_text(encoding="utf-8"))
+    assert len(rows) == 198 and rows[:66] == rows[66:132] == rows[132:], "PGN requires 66 frames, DET3"
+    expected_errors = set()
+    session, index = -1, 0
+    for row in rows[:66]:
+        if row["method"] == "bsi.hello":
+            session += 1
+            index = 0
+        assert session >= 0, "PGN session must begin with hello"
+        target = directory / f"PGN_{session}" / f"{index:03}.frame"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(corpus.encode_frame(corpus.header(row["method"], row["body"], "pgn", 1),
+                                              base64.b64decode(row["request_payload_base64"], validate=True)))
+        if json.loads(row["header"])["kind"] == "error":
+            expected_errors.add(target.relative_to(directory).as_posix())
+        index += 1
+    assert session == 4 and len(expected_errors) == 6, "PGN session/schema coverage"
+    return expected_errors
+
+
+def direct(corpus, library, inputs, dest, version, build_sha, expected_errors=()):
+    for session in sorted(inputs.iterdir()):
+        with closing(corpus.CapiClient(str(library))) as engine:
+            # Replace the default-options session with an explicitly single-thread session.
+            engine.lib.bsi_capi_close(engine.h)
+            engine.h = engine.lib.bsi_capi_open(b'{"numThreads":1}')
+            assert engine.h, "single-thread session refused"
+            for path in sorted(session.glob("*.frame")):
+                frame = path.read_bytes()
+                buffer = ctypes.create_string_buffer(1 << 20)
+                length, needed = ctypes.c_size_t(0), ctypes.c_size_t(0)
+                rc = engine.lib.bsi_capi_call(engine.h, frame, len(frame), buffer, len(buffer), ctypes.byref(length), ctypes.byref(needed))
+                assert rc == 0, (path, rc, needed.value)
+                reply = buffer.raw[:length.value]
+                decoded = corpus.decode_frame(reply)
+                assert decoded.error == (path.relative_to(inputs).as_posix() in expected_errors), (path, decoded.h)
+                if corpus.decode_frame(frame).h["method"] == "bsi.hello":
+                    assert decoded.h["version"] == version and decoded.h["contractSha256"] == corpus.contract_sha(), decoded.h
+                    assert decoded.h["buildSha"] == build_sha, decoded.h
+                target = dest / session.name / path.name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(reply)
+
+
+def snapshot(directory):
+    return {p.relative_to(directory).as_posix(): sha(p.read_bytes()) for p in sorted(directory.rglob("*.frame"))}
+
+
+def shell_verdicts(corpus, directory):
+    """Read native C14 records/flags verbatim; these are consumer oracles, not gameplay physics."""
+    schema = json.loads((ROOT / "contract/bsi.schema.json").read_text(encoding="utf-8"))
+    records = {}
+    for session in sorted(directory.glob("C14_*")):
+        hello = corpus.decode_frame((session / "0.frame").read_bytes())
+        assert "bsi.buckling.eigen.shells" in hello.h["capabilities"], hello.h
+        reply = corpus.decode_frame((session / "3.frame").read_bytes())
+        assert not reply.error and reply.h["buckling"] == {"kind": "eigen", "state": "computed"}, reply.h
+        sections = {s["name"].split(":")[0]: corpus.decode_records(schema, s["name"], reply.payload[s["offset"]:s["offset"]+s["bytes"]])
+                    for s in reply.h["sections"] if s["name"].split(":")[0] in {"blocks", "buckling"}}
+        buckling = sections["buckling"]
+        assert len(buckling) == 1 and buckling[0]["state"] == schema["x-enums"]["bucklingState"].index("computed"), buckling
+        factor = buckling[0]["factor"]; assert math.isfinite(factor) and factor > 0, buckling
+        thick = "_thick_" in session.name
+        warning = [w for w in reply.h["diag"]["warnings"] if w["code"] == "SHELL_BUCKLING_INDICATIVE"]
+        assert (len(warning) == 1 and warning[0]["count"] == 1) if thick else not warning, warning
+        owned = [b for b in sections["blocks"] if b["island"] == 0]
+        assert owned and all(bool(b["flags"] & 2) == thick for b in owned), owned
+        records[session.name] = {"factor": factor, "indicative": thick, "island_blocks": len(owned), "warnings": warning}
+    assert len(records) == 12, len(records)
+    for variant in ["thin", "thick"]:
+        selected = [r["factor"] for name, r in records.items() if "_" + variant + "_" in name]
+        assert len(selected) == 6 and all(math.isclose(v, selected[0], rel_tol=1e-12, abs_tol=0) for v in selected), selected
+    return records
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    for name in ["jar", "java", "classes", "jna", "library", "out"]:
+        ap.add_argument("--" + name, type=Path, required=True)
+    ap.add_argument("--version", default="1.3.0")
+    ap.add_argument("--build-sha", default="c90b448")
+    ap.add_argument("--eigen", action="store_true", help="also replay all C10 buckling variants")
+    ap.add_argument("--shell-eigen", action="store_true", help="also replay C14 wall/rotation/mirror with thin and indicative thick panels")
+    ap.add_argument("--gravity-frames", type=Path, help="PGN run_pgn_library.py frames.json; adds all 66 requests")
+    args = ap.parse_args()
+    blas_environment = {"OPENBLAS_CORETYPE": "Haswell", "OPENBLAS_NUM_THREADS": "1"}
+    env = dict(os.environ, **blas_environment)
+    if any(os.environ.get(key) != value for key, value in blas_environment.items()):
+        # MG observed that changing Python's os.environ after interpreter startup did
+        # not make Windows direct replies match the controlled child JVMs. Start the
+        # test driver itself with the same environment, before any native runtime loads.
+        print("Restarting replay test driver with identical BLAS process settings", flush=True)
+        raise SystemExit(subprocess.run([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]], env=env).returncode)
+    args.out.mkdir(parents=True, exist_ok=False)
+    log = {}
+    def record(name, cmd, p):
+        row = {"command": list(map(str, cmd)), "exit": p.returncode}
+        for key, data in [("stdout", p.stdout), ("stderr", p.stderr)]:
+            row[key + "_base64"] = base64.b64encode(data).decode()
+            row[key + "_sha256"] = sha(data)
+        log[name] = row
+        (args.out / "commands.json").write_text(json.dumps(log, indent=2) + "\n", encoding="utf-8")
+        assert p.returncode == 0, (name, p.returncode, (p.stdout+p.stderr).decode(errors="replace"))
+    def run(name, cmd):
+        p = subprocess.run(list(map(str, cmd)), capture_output=True, env=env)
+        record(name, cmd, p)
+    def command(mode, cache, dest, jar=None, extra=()):
+        use_jar = jar or args.jar
+        cp = os.pathsep.join(map(str, [use_jar, args.classes, args.jna]))
+        return list(map(str, [args.java, "-cp", cp, "com.blockreality.core.engine.NativeJarProbe",
+                              mode, use_jar, cache, args.out / "inputs", dest, *extra]))
+    corpus = load_corpus()
+    frames(corpus, args.out / "inputs", args.eigen, args.shell_eigen)
+    expected_errors = gravity_frames(corpus, args.gravity_frames, args.out / "inputs") if args.gravity_frames else set()
+    platform = "windows-x86_64" if os.name == "nt" else "linux-x86_64"
+    with zipfile.ZipFile(args.jar) as archive:
+        manifest = archive.read("blockreality-engine/natives.manifest").decode()
+        entries = [line.split() for line in manifest.splitlines() if line and not line.startswith("#")]
+        entry = next(e for e in entries if e[0]+"-"+e[1] == platform)
+        assert sha(args.library.read_bytes()) == entry[3]
+        assert archive.read(f"blockreality-engine/{platform}/{entry[2]}") == args.library.read_bytes()
+    for repetition in range(3):
+        direct(corpus, args.library, args.out / "inputs", args.out / f"direct-{repetition}", args.version, args.build_sha, expected_errors)
+        run(f"jar-{repetition}", command("replay", args.out / "cache", args.out / f"jar-{repetition}"))
+    reference = snapshot(args.out / "direct-0")
+    assert len(reference) == (48 if args.eigen else 24) + (48 if args.shell_eigen else 0) + (66 if args.gravity_frames else 0), ("corpus request count", len(reference))
+    for arm in [f"{kind}-{i}" for kind in ["direct", "jar"] for i in range(3)]:
+        assert snapshot(args.out / arm) == reference, ("direct/jar DET mismatch", arm)
+    if args.shell_eigen:
+        verdicts = shell_verdicts(corpus, args.out / "direct-0")
+        assert shell_verdicts(corpus, args.out / "jar-0") == verdicts
+        (args.out / "shell-verdicts.json").write_text(json.dumps(verdicts, indent=2), encoding="utf-8")
+    run("faults", command("faults", args.out / "fault-cache", args.out / "faults"))
+    # Permission denial must be the filesystem's answer, not a fake loader exception.
+    denied = args.out / "denied-cache"
+    denied.mkdir()
+    if os.name == "nt":
+        account = os.environ["USERDOMAIN"] + "\\" + os.environ["USERNAME"]
+        run("deny-acl", ["icacls", denied, "/deny", account + ":(OI)(CI)(W)"])
+        try:
+            run("denied", command("denied", denied, args.out / "denied"))
+        finally:
+            run("restore-acl", ["icacls", denied, "/remove:d", account])
+    else:
+        denied.chmod(0o500)
+        try:
+            run("denied", command("denied", denied, args.out / "denied"))
+        finally:
+            denied.chmod(0o700)
+    race = args.out / "race"
+    race.mkdir()
+    jobs = []
+    try:
+        for i in range(2):
+            cmd = command("race", race / "cache", race / str(i), extra=[str(i)])
+            jobs.append((cmd, subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)))
+        deadline = time.monotonic() + 25
+        while not all((race / f"ready-{i}").is_file() for i in range(2)):
+            assert time.monotonic() < deadline, "two-JVM extraction rendezvous failed"
+            time.sleep(0.02)
+        (race / "go").write_text("go", encoding="utf-8")
+        for i, (cmd, process) in enumerate(jobs):
+            stdout, stderr = process.communicate(timeout=30)
+            record(f"race-{i}", cmd, subprocess.CompletedProcess(cmd, process.returncode, stdout, stderr))
+            assert snapshot(race / str(i)) == reference, "race changed native replies"
+    finally:
+        for cmd, process in jobs:
+            if process.poll() is None:
+                process.kill()
+                stdout, stderr = process.communicate()
+                log["race-aborted"] = {"stdout_base64":base64.b64encode(stdout).decode(),"stderr_base64":base64.b64encode(stderr).decode(),"exit":process.returncode}
+                (args.out / "race-aborted.json").write_text(json.dumps(log["race-aborted"]),encoding="utf-8")
+    # No static BsiContract cache from another classpath may rescue a broken jar resource.
+    for mode in ["missing", "invalid", "overlong"]:
+        bad_jar = args.out / (mode + ".jar")
+        with zipfile.ZipFile(args.jar) as source, zipfile.ZipFile(bad_jar, "w", zipfile.ZIP_DEFLATED) as target:
+            for info in source.infolist():
+                if info.filename == "blockreality/contract/CONTRACT_SHA256":
+                    if mode != "missing":
+                        target.writestr(info, b"z"*64 if mode=="invalid" else corpus.contract_sha().encode()+b" "*4)
+                else:
+                    target.writestr(info, source.read(info.filename))
+        run(mode+"-pin", command("missing-pin",args.out/(mode+"-cache"),args.out/(mode+"-pin"),jar=bad_jar))
+    summary = dict(platform=platform, jar_sha256=sha(args.jar.read_bytes()), native_sha256=entry[3],
+                   requests=snapshot(args.out/"inputs"), replies=reference, det_repeats=3,
+                   concurrent_jvms=2, numThreads=1, blas_environment=blas_environment, version=args.version, buildSha=args.build_sha,
+                   eigen=args.eigen, shellEigen=args.shell_eigen, scope="jar extraction + BSI replay; not a Minecraft game run")
+    if args.gravity_frames:
+        summary.update(gravityFramesSha256=sha(args.gravity_frames.read_bytes()), gravityRequests=66,
+                       gravitySolveNumThreads=4, expectedProtocolErrors=sorted(expected_errors))
+    (args.out / "verification.json").write_text(json.dumps(summary, indent=2)+"\n",encoding="utf-8")
+    print(json.dumps(summary,indent=2))
+
+
+if __name__ == "__main__":
+    main()

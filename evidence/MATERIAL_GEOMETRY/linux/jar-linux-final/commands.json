@@ -1,0 +1,184 @@
+{
+  "jar-0": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/material-geometry/blockreality-0.4.0-dev.jar:/home/rocky/br-material-geometry/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/material-geometry/blockreality-0.4.0-dev.jar",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/cache",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/inputs",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/jar-0"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYnItbWF0ZXJpYWwtZ2VvbWV0cnkvcXVhbGlmaWNhdGlvbi9qYXItbGludXgtZmluYWwvY2FjaGUvbGliL2xpbnV4LXg4Nl82NC81M2FhZTcxNTZiOTRjMGE3NjFlZjVhYmIyMzIyYWQ0N2E3MDgzNjJmNDE3YTUwY2EzZjA0MTA1ZDljNTBhYmYxL2xpYmJzaV90ZWN0b25pYy5zbyAoMjg1MDAzNjggYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0xLjMuMCs0MmUxMGY1LCBjb250cmFjdCA0YjExY2M3Mzg3OTDigKYpClBBU1MgamFyIHJlcGxheSA0OCBmcmFtZXM7IC9ob21lL3JvY2t5L2JyLW1hdGVyaWFsLWdlb21ldHJ5L3F1YWxpZmljYXRpb24vamFyLWxpbnV4LWZpbmFsL2NhY2hlL2xpYi9saW51eC14ODZfNjQvNTNhYWU3MTU2Yjk0YzBhNzYxZWY1YWJiMjMyMmFkNDdhNzA4MzYyZjQxN2E1MGNhM2YwNDEwNWQ5YzUwYWJmMS9saWJic2lfdGVjdG9uaWMuc28gc2hhMjU2PTUzYWFlNzE1NmI5NGMwYTc2MWVmNWFiYjIzMjJhZDQ3YTcwODM2MmY0MTdhNTBjYTNmMDQxMDVkOWM1MGFiZjEK",
+    "stdout_sha256": "51ae1cc7e947314fe4bfc97b96eaf474bbf86d6d4d27cb938c293ccdd6e4f9e8",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "jar-1": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/material-geometry/blockreality-0.4.0-dev.jar:/home/rocky/br-material-geometry/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/material-geometry/blockreality-0.4.0-dev.jar",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/cache",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/inputs",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/jar-1"
+    ],
+    "exit": 0,
+    "stdout_base64": "UEFTUyBqYXIgcmVwbGF5IDQ4IGZyYW1lczsgL2hvbWUvcm9ja3kvYnItbWF0ZXJpYWwtZ2VvbWV0cnkvcXVhbGlmaWNhdGlvbi9qYXItbGludXgtZmluYWwvY2FjaGUvbGliL2xpbnV4LXg4Nl82NC81M2FhZTcxNTZiOTRjMGE3NjFlZjVhYmIyMzIyYWQ0N2E3MDgzNjJmNDE3YTUwY2EzZjA0MTA1ZDljNTBhYmYxL2xpYmJzaV90ZWN0b25pYy5zbyBzaGEyNTY9NTNhYWU3MTU2Yjk0YzBhNzYxZWY1YWJiMjMyMmFkNDdhNzA4MzYyZjQxN2E1MGNhM2YwNDEwNWQ5YzUwYWJmMQo=",
+    "stdout_sha256": "3b96511fe074bfe01275ce62bcd33529130d5cbe895ecdee1d2f6e955e335eec",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "jar-2": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/material-geometry/blockreality-0.4.0-dev.jar:/home/rocky/br-material-geometry/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/material-geometry/blockreality-0.4.0-dev.jar",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/cache",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/inputs",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/jar-2"
+    ],
+    "exit": 0,
+    "stdout_base64": "UEFTUyBqYXIgcmVwbGF5IDQ4IGZyYW1lczsgL2hvbWUvcm9ja3kvYnItbWF0ZXJpYWwtZ2VvbWV0cnkvcXVhbGlmaWNhdGlvbi9qYXItbGludXgtZmluYWwvY2FjaGUvbGliL2xpbnV4LXg4Nl82NC81M2FhZTcxNTZiOTRjMGE3NjFlZjVhYmIyMzIyYWQ0N2E3MDgzNjJmNDE3YTUwY2EzZjA0MTA1ZDljNTBhYmYxL2xpYmJzaV90ZWN0b25pYy5zbyBzaGEyNTY9NTNhYWU3MTU2Yjk0YzBhNzYxZWY1YWJiMjMyMmFkNDdhNzA4MzYyZjQxN2E1MGNhM2YwNDEwNWQ5YzUwYWJmMQo=",
+    "stdout_sha256": "3b96511fe074bfe01275ce62bcd33529130d5cbe895ecdee1d2f6e955e335eec",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "faults": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/material-geometry/blockreality-0.4.0-dev.jar:/home/rocky/br-material-geometry/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "faults",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/material-geometry/blockreality-0.4.0-dev.jar",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/fault-cache",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/inputs",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/faults"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYnItbWF0ZXJpYWwtZ2VvbWV0cnkvcXVhbGlmaWNhdGlvbi9qYXItbGludXgtZmluYWwvZmF1bHQtY2FjaGUvbGliL2xpbnV4LXg4Nl82NC81M2FhZTcxNTZiOTRjMGE3NjFlZjVhYmIyMzIyYWQ0N2E3MDgzNjJmNDE3YTUwY2EzZjA0MTA1ZDljNTBhYmYxL2xpYmJzaV90ZWN0b25pYy5zbyAoMjg1MDAzNjggYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0xLjMuMCs0MmUxMGY1LCBjb250cmFjdCA0YjExY2M3Mzg3OTDigKYpCmJ1bmRsZWQgZW5naW5lIGNvbnRyYWN0IGZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmYgIT0gbW9kIGNvbnRyYWN0IDRiMTFjYzczODc5MGQzMmQ1NzZhYzcxZWNkMWNiNTdmMDRkM2VkOTE4NmE5ZTQzZjg5NDkyYWUxM2MyNTg4MDEKYnVuZGxlZCBlbmdpbmUgY29udHJhY3QgZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZiAhPSBtb2QgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMQp1bnBhY2tlZCB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeSB0byAvaG9tZS9yb2NreS9ici1tYXRlcmlhbC1nZW9tZXRyeS9xdWFsaWZpY2F0aW9uL2phci1saW51eC1maW5hbC9mYXVsdC1jYWNoZS9saWIvbGludXgteDg2XzY0L2UyZmQ2ZTFmZmNmOWE0ZGNkMmRkZmM5OWMzOWQxNjk5ZDkxYWU1MTVjMmNmMzZiMGM4ZGM1N2UwOTk0YTg5MjYvbGliYnNpX3RlY3RvbmljLnNvICgyODUwMDM2OCBieXRlcywgZW5naW5lIHRlY3RvbmljLTEuMy4wKzQyZTEwZjUsIGNvbnRyYWN0IDRiMTFjYzczODc5MOKApikKdW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYnItbWF0ZXJpYWwtZ2VvbWV0cnkvcXVhbGlmaWNhdGlvbi9qYXItbGludXgtZmluYWwvZmF1bHQtY2FjaGUvbGliL2xpbnV4LXg4Nl82NC81M2FhZTcxNTZiOTRjMGE3NjFlZjVhYmIyMzIyYWQ0N2E3MDgzNjJmNDE3YTUwY2EzZjA0MTA1ZDljNTBhYmYxL2xpYmJzaV90ZWN0b25pYy5zbyAoMjg1MDAzNjggYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0xLjMuMCs0MmUxMGY1LCBjb250cmFjdCA0YjExY2M3Mzg3OTDigKYpCmNvdWxkIG5vdCB1bnBhY2sgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnk6IGphdmEuaW8uSU9FeGNlcHRpb246IGJ1bmRsZWQgbGliYnNpX3RlY3RvbmljLnNvIGlzIDI4NTAwMzY4IGJ5dGVzIC8gZTJmZDZlMWZmY2Y5YTRkY2QyZGRmYzk5YzM5ZDE2OTlkOTFhZTUxNWMyY2YzNmIwYzhkYzU3ZTA5OTRhODkyNiwgbWFuaWZlc3Qgc2F5cyAyODUwMDM2OCAvIDUzYWFlNzE1NmI5NGMwYTc2MWVmNWFiYjIzMjJhZDQ3YTcwODM2MmY0MTdhNTBjYTNmMDQxMDVkOWM1MGFiZjEKY291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5pby5JT0V4Y2VwdGlvbjogYnVuZGxlZCBsaWJic2lfdGVjdG9uaWMuc28gaXMgMjg1MDAzNjcgYnl0ZXMgLyA2ZDg4NjgxYmViNjAzYWFlZTFjMmIwNDc1ZWRhYzJlZGE0MzUxODZjOTQ4NjFmNjVlNTFmOTEzYmUwZjk5MmZlLCBtYW5pZmVzdCBzYXlzIDI4NTAwMzY4IC8gNTNhYWU3MTU2Yjk0YzBhNzYxZWY1YWJiMjMyMmFkNDdhNzA4MzYyZjQxN2E1MGNhM2YwNDEwNWQ5YzUwYWJmMQpjb3VsZCBub3QgdW5wYWNrIHRoZSBidW5kbGVkIGVuZ2luZSBsaWJyYXJ5OiBqYXZhLmlvLklPRXhjZXB0aW9uOiBidW5kbGVkIGxpYmJzaV90ZWN0b25pYy5zbyBleGNlZWRzIG1hbmlmZXN0IHNpemUgMjg1MDAzNjgKY291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5pby5JbnRlcnJ1cHRlZElPRXhjZXB0aW9uOiBpbmplY3RlZCByZWFsLXJlc291cmNlIGludGVycnVwdGlvbgpQQVNTIHJlYWwgYnl0ZXM6IGNhY2hlIGFkb3B0aW9uLCBjb250cmFjdCBwcmVjaGVjaywgdmVyc2lvbiByZXRlbnRpb24sIGNvcnJ1cHRpb24gcmVwYWlyLCBoYXNoL3Nob3J0L292ZXJsb25nL2ludGVycnVwdGlvbiwgdGVtcG9yYXJ5IGNsZWFudXAK",
+    "stdout_sha256": "fb9926ba958f14ae6e4d819c3930c3b2a238fbb72fa171618e04af1a51613192",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "denied": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/material-geometry/blockreality-0.4.0-dev.jar:/home/rocky/br-material-geometry/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "denied",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/material-geometry/blockreality-0.4.0-dev.jar",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/denied-cache",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/inputs",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/denied"
+    ],
+    "exit": 0,
+    "stdout_base64": "Y291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5uaW8uZmlsZS5BY2Nlc3NEZW5pZWRFeGNlcHRpb246IC9ob21lL3JvY2t5L2JyLW1hdGVyaWFsLWdlb21ldHJ5L3F1YWxpZmljYXRpb24vamFyLWxpbnV4LWZpbmFsL2RlbmllZC1jYWNoZS9saWIKUEFTUyBkZW5pZWQgY2FjaGUK",
+    "stdout_sha256": "2579f9f0a90300b6410d9363d0d38d192e5b05db261c5ef2c02fe161bbb0b0de",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "race-0": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/material-geometry/blockreality-0.4.0-dev.jar:/home/rocky/br-material-geometry/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "race",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/material-geometry/blockreality-0.4.0-dev.jar",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/race/cache",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/inputs",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/race/0",
+      "0"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYnItbWF0ZXJpYWwtZ2VvbWV0cnkvcXVhbGlmaWNhdGlvbi9qYXItbGludXgtZmluYWwvcmFjZS9jYWNoZS9saWIvbGludXgteDg2XzY0LzUzYWFlNzE1NmI5NGMwYTc2MWVmNWFiYjIzMjJhZDQ3YTcwODM2MmY0MTdhNTBjYTNmMDQxMDVkOWM1MGFiZjEvbGliYnNpX3RlY3RvbmljLnNvICgyODUwMDM2OCBieXRlcywgZW5naW5lIHRlY3RvbmljLTEuMy4wKzQyZTEwZjUsIGNvbnRyYWN0IDRiMTFjYzczODc5MOKApikKUEFTUyBqYXIgcmVwbGF5IDQ4IGZyYW1lczsgL2hvbWUvcm9ja3kvYnItbWF0ZXJpYWwtZ2VvbWV0cnkvcXVhbGlmaWNhdGlvbi9qYXItbGludXgtZmluYWwvcmFjZS9jYWNoZS9saWIvbGludXgteDg2XzY0LzUzYWFlNzE1NmI5NGMwYTc2MWVmNWFiYjIzMjJhZDQ3YTcwODM2MmY0MTdhNTBjYTNmMDQxMDVkOWM1MGFiZjEvbGliYnNpX3RlY3RvbmljLnNvIHNoYTI1Nj01M2FhZTcxNTZiOTRjMGE3NjFlZjVhYmIyMzIyYWQ0N2E3MDgzNjJmNDE3YTUwY2EzZjA0MTA1ZDljNTBhYmYxCg==",
+    "stdout_sha256": "81b97b23022de56e41acf526ddc94da0341a97fd4a7ee88001ce2c76478b49f3",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "race-1": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/material-geometry/blockreality-0.4.0-dev.jar:/home/rocky/br-material-geometry/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "race",
+      "/mnt/c/Users/wmc02/Desktop/block-reality/build/material-geometry/blockreality-0.4.0-dev.jar",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/race/cache",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/inputs",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/race/1",
+      "1"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYnItbWF0ZXJpYWwtZ2VvbWV0cnkvcXVhbGlmaWNhdGlvbi9qYXItbGludXgtZmluYWwvcmFjZS9jYWNoZS9saWIvbGludXgteDg2XzY0LzUzYWFlNzE1NmI5NGMwYTc2MWVmNWFiYjIzMjJhZDQ3YTcwODM2MmY0MTdhNTBjYTNmMDQxMDVkOWM1MGFiZjEvbGliYnNpX3RlY3RvbmljLnNvICgyODUwMDM2OCBieXRlcywgZW5naW5lIHRlY3RvbmljLTEuMy4wKzQyZTEwZjUsIGNvbnRyYWN0IDRiMTFjYzczODc5MOKApikKUEFTUyBqYXIgcmVwbGF5IDQ4IGZyYW1lczsgL2hvbWUvcm9ja3kvYnItbWF0ZXJpYWwtZ2VvbWV0cnkvcXVhbGlmaWNhdGlvbi9qYXItbGludXgtZmluYWwvcmFjZS9jYWNoZS9saWIvbGludXgteDg2XzY0LzUzYWFlNzE1NmI5NGMwYTc2MWVmNWFiYjIzMjJhZDQ3YTcwODM2MmY0MTdhNTBjYTNmMDQxMDVkOWM1MGFiZjEvbGliYnNpX3RlY3RvbmljLnNvIHNoYTI1Nj01M2FhZTcxNTZiOTRjMGE3NjFlZjVhYmIyMzIyYWQ0N2E3MDgzNjJmNDE3YTUwY2EzZjA0MTA1ZDljNTBhYmYxCg==",
+    "stdout_sha256": "81b97b23022de56e41acf526ddc94da0341a97fd4a7ee88001ce2c76478b49f3",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "missing-pin": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/missing.jar:/home/rocky/br-material-geometry/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/missing.jar",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/missing-cache",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/inputs",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/missing-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMSAhPSBtb2QgY29udHJhY3QgbnVsbApQQVNTIG1pc3NpbmcvYmFkIHBpbgo=",
+    "stdout_sha256": "b7526f229729f1745beb967bd7468aede24198989042672725b602aaec8e6f47",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "invalid-pin": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/invalid.jar:/home/rocky/br-material-geometry/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/invalid.jar",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/invalid-cache",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/inputs",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/invalid-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMSAhPSBtb2QgY29udHJhY3QgbnVsbApQQVNTIG1pc3NpbmcvYmFkIHBpbgo=",
+    "stdout_sha256": "b7526f229729f1745beb967bd7468aede24198989042672725b602aaec8e6f47",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "overlong-pin": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/overlong.jar:/home/rocky/br-material-geometry/mod/core/build/classes/java/test:/home/rocky/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/overlong.jar",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/overlong-cache",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/inputs",
+      "/home/rocky/br-material-geometry/qualification/jar-linux-final/overlong-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNGIxMWNjNzM4NzkwZDMyZDU3NmFjNzFlY2QxY2I1N2YwNGQzZWQ5MTg2YTllNDNmODk0OTJhZTEzYzI1ODgwMSAhPSBtb2QgY29udHJhY3QgbnVsbApQQVNTIG1pc3NpbmcvYmFkIHBpbgo=",
+    "stdout_sha256": "b7526f229729f1745beb967bd7468aede24198989042672725b602aaec8e6f47",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

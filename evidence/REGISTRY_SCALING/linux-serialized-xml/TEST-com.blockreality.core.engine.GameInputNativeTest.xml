@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.engine.GameInputNativeTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-09T22:29:16" hostname="rockylaptop" time="0.236">
+  <properties/>
+  <testcase name="refusedVocabularyRedeclarationInvalidatesOldWorldAndNames()" classname="com.blockreality.core.engine.GameInputNativeTest" time="0.135"/>
+  <testcase name="profilingObservesTheRealBridgeWithoutChangingNativeResults()" classname="com.blockreality.core.engine.GameInputNativeTest" time="0.093"/>
+  <testcase name="fullGameVocabularyAndSnapshotReachTheRealEngine()" classname="com.blockreality.core.engine.GameInputNativeTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
