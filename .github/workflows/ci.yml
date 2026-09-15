@@ -25,6 +25,10 @@ defaults:
   run:
     shell: bash
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   engine-gates:
     name: engine acceptance suite vs shipped binary
