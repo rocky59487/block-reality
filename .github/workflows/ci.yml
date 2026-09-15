@@ -159,7 +159,7 @@ jobs:
         run: |
           base=$(git merge-base origin/${{ github.base_ref }} HEAD)
           changed=$(git diff --name-only "$base"...HEAD -- contract/ | grep -v '^contract/CONTRACT_SHA256$' || true)
-          if [ -n "$changed" ] && ! git diff --name-only "$base"...HEAD | grep -q '^contract/CONTRACT_SHA256$'; then
+          if [ -n "$changed" ] && ! git diff --name-only "$base"...HEAD | grep '^contract/CONTRACT_SHA256$' > /dev/null; then
             echo "contract/ changed without re-pinning CONTRACT_SHA256:"; echo "$changed"; exit 1
           fi
 
