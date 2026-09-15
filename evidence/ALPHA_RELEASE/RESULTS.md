@@ -24,3 +24,5 @@ SDK profile、gzip 隨機讀取反覆解壓，以及 ABI10 schema 超過舊 64 K
 這些測試不代表實际 Minecraft 遊玩或完整 v2 完成。引擎 i9 本次 SSH 逾時、引擎
 Actions 帳務阻擋另記於引擎 ALPHA_RELEASE 證據；module 的必要 CI 不得因此跳過。
 最終資產 SHA、各平台回應 hash、命令／輸出及未完成邊界見 verification.json。
+
+另核對 Git 儲存的 dist bytes 與每項 SHA：修正 Windows 產生 metadata 的換行，固定 LF 後跨平台 checkout 的雜湊一致。

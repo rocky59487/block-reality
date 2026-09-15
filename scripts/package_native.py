@@ -72,17 +72,17 @@ def main():
         shutil.copy2(jar, dist / jar.name)
         for name in ['LICENSE', 'NOTICE', 'native-release.json']:
             shutil.copy2(ROOT / name, dist / name)
-        (dist / 'engine-provenance.json').write_text(json.dumps(provenance, indent=2) + '\n', encoding='utf-8')
+        (dist / 'engine-provenance.json').write_text(json.dumps(provenance, indent=2) + '\n', encoding='utf-8', newline='\n')
         (dist / 'START-HERE.txt').write_text(
             f'Block Reality {version} / Tectonic {lock["tag"]}\n\n'
             'Minecraft Java 1.20.1 + Forge 47.x, Java 17.\n'
             'Copy the single blockreality-*.jar into mods/ on the client and server.\n'
             'The jar contains Windows x86_64 and Linux x86_64 native engines.\n'
             'Linux requires glibc 2.35 or newer. No sidecar or FrameCore installation.\n'
-            'Alpha: full v2 roadmap and in-game qualification are not complete.\n', encoding='utf-8')
+            'Alpha: full v2 roadmap and in-game qualification are not complete.\n', encoding='utf-8', newline='\n')
         (dist / 'SHA256SUMS.txt').write_text(''.join(
             hashlib.sha256(p.read_bytes()).hexdigest() + '  ' + p.name + '\n'
-            for p in sorted(dist.iterdir())), encoding='ascii')
+            for p in sorted(dist.iterdir())), encoding='ascii', newline='\n')
         run(sys.executable, ROOT / 'scripts/check_bundle.py', dist)
         run(sys.executable, ROOT / 'scripts/check_native_only_jar.py', dist / jar.name)
         dist.rename(out)
