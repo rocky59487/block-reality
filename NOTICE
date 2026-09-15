@@ -21,10 +21,10 @@ It does not download an engine. `META-INF/native-release/provenance.json` record
 the exact upstream source commit, source-archive checksum and native asset checksums;
 the per-platform provenance and licence texts are retained alongside it.
 
-For the published v1.5 SDK, the source is commit
-42ba7eb912bd7d763435ce48a945df6954b680ea at
+For the v2.0.0-alpha.1 SDK, the source is commit
+ddaaa92c930393051b67e75f7ccfbd5224580b16 at
 <https://github.com/rocky59487/tectonic2>. The corresponding source archive is
-<https://github.com/rocky59487/tectonic2/releases/download/v1.5/tectonic2-1.5.0-source.tar.gz>.
+<https://github.com/rocky59487/tectonic2/releases/download/v2.0.0-alpha.1/tectonic2-2.0.0-source.tar.gz>.
 Use the provenance inside a particular jar to identify the bytes that jar carries.
 
 

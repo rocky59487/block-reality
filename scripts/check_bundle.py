@@ -223,6 +223,21 @@ def check_natives_shape(z, infos, names, dist, problems):
                         "contract the mod speaks, so it cannot check the engine against it")
 
     expected = {NATIVES_MANIFEST}
+    # The ABI10 schema now exceeds the stray-payload size limit. Authorize only
+    # the canonical contract resources, and verify their exact bytes even when
+    # they are small. An arbitrary JSON file still cannot bypass that limit.
+    for resource in ["bsi.schema.json", "CONTRACT_SHA256"]:
+        name = "blockreality/contract/" + resource
+        path = os.path.join(ROOT, "contract", resource)
+        if name not in names or not os.path.isfile(path):
+            problems.append(f"canonical contract resource missing: {name}")
+        else:
+            with open(path, "rb") as f:
+                canonical = f.read()
+            if z.read(name) != canonical:
+                problems.append(f"canonical contract resource differs: {name}")
+            else:
+                expected.add(name)
     for name, (size, digest) in RELEASE_LICENSES.items():
         if name in names:
             data = z.read(name)

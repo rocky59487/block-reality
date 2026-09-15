@@ -1,0 +1,184 @@
+{
+  "jar-0": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/dist/blockreality-0.4.0-alpha.1.jar:/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/build/classes/java/test:/mnt/c/Users/wmc02/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/dist/blockreality-0.4.0-alpha.1.jar",
+      "/home/rocky/alpha-jar-linux-final/cache",
+      "/home/rocky/alpha-jar-linux-final/inputs",
+      "/home/rocky/alpha-jar-linux-final/jar-0"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYWxwaGEtamFyLWxpbnV4LWZpbmFsL2NhY2hlL2xpYi9saW51eC14ODZfNjQvZTBiMmI4NWE4NmFkOTk4NGIwMzQ3NTU1NTA0ZThjOWJlYzE5Yzc3ZTMxMzI3NDlhZDg4MzE5NWJkYmZlNmIyYS9saWJic2lfdGVjdG9uaWMuc28gKDMxMzM0OTIwIGJ5dGVzLCBlbmdpbmUgdGVjdG9uaWMtMi4wLjArZGRhYWE5MiwgY29udHJhY3QgNzdkNzhkZjdhNTMw4oCmKQpQQVNTIGphciByZXBsYXkgOTYgZnJhbWVzOyAvaG9tZS9yb2NreS9hbHBoYS1qYXItbGludXgtZmluYWwvY2FjaGUvbGliL2xpbnV4LXg4Nl82NC9lMGIyYjg1YTg2YWQ5OTg0YjAzNDc1NTU1MDRlOGM5YmVjMTljNzdlMzEzMjc0OWFkODgzMTk1YmRiZmU2YjJhL2xpYmJzaV90ZWN0b25pYy5zbyBzaGEyNTY9ZTBiMmI4NWE4NmFkOTk4NGIwMzQ3NTU1NTA0ZThjOWJlYzE5Yzc3ZTMxMzI3NDlhZDg4MzE5NWJkYmZlNmIyYQo=",
+    "stdout_sha256": "7f2f4de599bcf341958eace273e6fd600cd3580df65b7b9b79b64f413392e78c",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "jar-1": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/dist/blockreality-0.4.0-alpha.1.jar:/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/build/classes/java/test:/mnt/c/Users/wmc02/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/dist/blockreality-0.4.0-alpha.1.jar",
+      "/home/rocky/alpha-jar-linux-final/cache",
+      "/home/rocky/alpha-jar-linux-final/inputs",
+      "/home/rocky/alpha-jar-linux-final/jar-1"
+    ],
+    "exit": 0,
+    "stdout_base64": "UEFTUyBqYXIgcmVwbGF5IDk2IGZyYW1lczsgL2hvbWUvcm9ja3kvYWxwaGEtamFyLWxpbnV4LWZpbmFsL2NhY2hlL2xpYi9saW51eC14ODZfNjQvZTBiMmI4NWE4NmFkOTk4NGIwMzQ3NTU1NTA0ZThjOWJlYzE5Yzc3ZTMxMzI3NDlhZDg4MzE5NWJkYmZlNmIyYS9saWJic2lfdGVjdG9uaWMuc28gc2hhMjU2PWUwYjJiODVhODZhZDk5ODRiMDM0NzU1NTUwNGU4YzliZWMxOWM3N2UzMTMyNzQ5YWQ4ODMxOTViZGJmZTZiMmEK",
+    "stdout_sha256": "e3d2328b64045ebf50eb3aa6a637c22df617db44ac0306d9ee515b131f23125e",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "jar-2": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/dist/blockreality-0.4.0-alpha.1.jar:/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/build/classes/java/test:/mnt/c/Users/wmc02/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/dist/blockreality-0.4.0-alpha.1.jar",
+      "/home/rocky/alpha-jar-linux-final/cache",
+      "/home/rocky/alpha-jar-linux-final/inputs",
+      "/home/rocky/alpha-jar-linux-final/jar-2"
+    ],
+    "exit": 0,
+    "stdout_base64": "UEFTUyBqYXIgcmVwbGF5IDk2IGZyYW1lczsgL2hvbWUvcm9ja3kvYWxwaGEtamFyLWxpbnV4LWZpbmFsL2NhY2hlL2xpYi9saW51eC14ODZfNjQvZTBiMmI4NWE4NmFkOTk4NGIwMzQ3NTU1NTA0ZThjOWJlYzE5Yzc3ZTMxMzI3NDlhZDg4MzE5NWJkYmZlNmIyYS9saWJic2lfdGVjdG9uaWMuc28gc2hhMjU2PWUwYjJiODVhODZhZDk5ODRiMDM0NzU1NTUwNGU4YzliZWMxOWM3N2UzMTMyNzQ5YWQ4ODMxOTViZGJmZTZiMmEK",
+    "stdout_sha256": "e3d2328b64045ebf50eb3aa6a637c22df617db44ac0306d9ee515b131f23125e",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "faults": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/dist/blockreality-0.4.0-alpha.1.jar:/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/build/classes/java/test:/mnt/c/Users/wmc02/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "faults",
+      "/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/dist/blockreality-0.4.0-alpha.1.jar",
+      "/home/rocky/alpha-jar-linux-final/fault-cache",
+      "/home/rocky/alpha-jar-linux-final/inputs",
+      "/home/rocky/alpha-jar-linux-final/faults"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYWxwaGEtamFyLWxpbnV4LWZpbmFsL2ZhdWx0LWNhY2hlL2xpYi9saW51eC14ODZfNjQvZTBiMmI4NWE4NmFkOTk4NGIwMzQ3NTU1NTA0ZThjOWJlYzE5Yzc3ZTMxMzI3NDlhZDg4MzE5NWJkYmZlNmIyYS9saWJic2lfdGVjdG9uaWMuc28gKDMxMzM0OTIwIGJ5dGVzLCBlbmdpbmUgdGVjdG9uaWMtMi4wLjArZGRhYWE5MiwgY29udHJhY3QgNzdkNzhkZjdhNTMw4oCmKQpidW5kbGVkIGVuZ2luZSBjb250cmFjdCBmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmICE9IG1vZCBjb250cmFjdCA3N2Q3OGRmN2E1MzBhOGRiMTJlOGVhZmQ0ZGI4M2JhYWYzYzEyMDgyZjA5ODU2NjhiODM1NjMyMTc4MjQ2ZTk0CmJ1bmRsZWQgZW5naW5lIGNvbnRyYWN0IGZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmYgIT0gbW9kIGNvbnRyYWN0IDc3ZDc4ZGY3YTUzMGE4ZGIxMmU4ZWFmZDRkYjgzYmFhZjNjMTIwODJmMDk4NTY2OGI4MzU2MzIxNzgyNDZlOTQKdW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYWxwaGEtamFyLWxpbnV4LWZpbmFsL2ZhdWx0LWNhY2hlL2xpYi9saW51eC14ODZfNjQvOGI5MTA2M2Y4N2E4NjIyZTI1YWQ4ZThjODliNjhjMDYzMzE3ZWViNjA3ODg3NDNhZWEzMGVmMzZhM2NhN2NkMy9saWJic2lfdGVjdG9uaWMuc28gKDMxMzM0OTIwIGJ5dGVzLCBlbmdpbmUgdGVjdG9uaWMtMi4wLjArZGRhYWE5MiwgY29udHJhY3QgNzdkNzhkZjdhNTMw4oCmKQp1bnBhY2tlZCB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeSB0byAvaG9tZS9yb2NreS9hbHBoYS1qYXItbGludXgtZmluYWwvZmF1bHQtY2FjaGUvbGliL2xpbnV4LXg4Nl82NC9lMGIyYjg1YTg2YWQ5OTg0YjAzNDc1NTU1MDRlOGM5YmVjMTljNzdlMzEzMjc0OWFkODgzMTk1YmRiZmU2YjJhL2xpYmJzaV90ZWN0b25pYy5zbyAoMzEzMzQ5MjAgYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0yLjAuMCtkZGFhYTkyLCBjb250cmFjdCA3N2Q3OGRmN2E1MzDigKYpCmNvdWxkIG5vdCB1bnBhY2sgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnk6IGphdmEuaW8uSU9FeGNlcHRpb246IGJ1bmRsZWQgbGliYnNpX3RlY3RvbmljLnNvIGlzIDMxMzM0OTIwIGJ5dGVzIC8gOGI5MTA2M2Y4N2E4NjIyZTI1YWQ4ZThjODliNjhjMDYzMzE3ZWViNjA3ODg3NDNhZWEzMGVmMzZhM2NhN2NkMywgbWFuaWZlc3Qgc2F5cyAzMTMzNDkyMCAvIGUwYjJiODVhODZhZDk5ODRiMDM0NzU1NTUwNGU4YzliZWMxOWM3N2UzMTMyNzQ5YWQ4ODMxOTViZGJmZTZiMmEKY291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5pby5JT0V4Y2VwdGlvbjogYnVuZGxlZCBsaWJic2lfdGVjdG9uaWMuc28gaXMgMzEzMzQ5MTkgYnl0ZXMgLyA0YzgyNmVmNzExZjMzYTBiMDkzY2EyYWE5MzczZDMzZTJjOWE3MTk1ODFhYzZiYWZkMjVkZWNmMWVjNmY0YWY1LCBtYW5pZmVzdCBzYXlzIDMxMzM0OTIwIC8gZTBiMmI4NWE4NmFkOTk4NGIwMzQ3NTU1NTA0ZThjOWJlYzE5Yzc3ZTMxMzI3NDlhZDg4MzE5NWJkYmZlNmIyYQpjb3VsZCBub3QgdW5wYWNrIHRoZSBidW5kbGVkIGVuZ2luZSBsaWJyYXJ5OiBqYXZhLmlvLklPRXhjZXB0aW9uOiBidW5kbGVkIGxpYmJzaV90ZWN0b25pYy5zbyBleGNlZWRzIG1hbmlmZXN0IHNpemUgMzEzMzQ5MjAKY291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5pby5JbnRlcnJ1cHRlZElPRXhjZXB0aW9uOiBpbmplY3RlZCByZWFsLXJlc291cmNlIGludGVycnVwdGlvbgpQQVNTIHJlYWwgYnl0ZXM6IGNhY2hlIGFkb3B0aW9uLCBjb250cmFjdCBwcmVjaGVjaywgdmVyc2lvbiByZXRlbnRpb24sIGNvcnJ1cHRpb24gcmVwYWlyLCBoYXNoL3Nob3J0L292ZXJsb25nL2ludGVycnVwdGlvbiwgdGVtcG9yYXJ5IGNsZWFudXAK",
+    "stdout_sha256": "ac6d56f404b96639e5a8257e8038bee3416ebd8551f60e6d8decf1e6d4d8b588",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "denied": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/dist/blockreality-0.4.0-alpha.1.jar:/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/build/classes/java/test:/mnt/c/Users/wmc02/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "denied",
+      "/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/dist/blockreality-0.4.0-alpha.1.jar",
+      "/home/rocky/alpha-jar-linux-final/denied-cache",
+      "/home/rocky/alpha-jar-linux-final/inputs",
+      "/home/rocky/alpha-jar-linux-final/denied"
+    ],
+    "exit": 0,
+    "stdout_base64": "Y291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5uaW8uZmlsZS5BY2Nlc3NEZW5pZWRFeGNlcHRpb246IC9ob21lL3JvY2t5L2FscGhhLWphci1saW51eC1maW5hbC9kZW5pZWQtY2FjaGUvbGliClBBU1MgZGVuaWVkIGNhY2hlCg==",
+    "stdout_sha256": "6f2ff6fd99a0f23fcab5820f988bf84de1182769da983fb5eef4ec38413d23bc",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "race-0": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/dist/blockreality-0.4.0-alpha.1.jar:/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/build/classes/java/test:/mnt/c/Users/wmc02/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "race",
+      "/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/dist/blockreality-0.4.0-alpha.1.jar",
+      "/home/rocky/alpha-jar-linux-final/race/cache",
+      "/home/rocky/alpha-jar-linux-final/inputs",
+      "/home/rocky/alpha-jar-linux-final/race/0",
+      "0"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYWxwaGEtamFyLWxpbnV4LWZpbmFsL3JhY2UvY2FjaGUvbGliL2xpbnV4LXg4Nl82NC9lMGIyYjg1YTg2YWQ5OTg0YjAzNDc1NTU1MDRlOGM5YmVjMTljNzdlMzEzMjc0OWFkODgzMTk1YmRiZmU2YjJhL2xpYmJzaV90ZWN0b25pYy5zbyAoMzEzMzQ5MjAgYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0yLjAuMCtkZGFhYTkyLCBjb250cmFjdCA3N2Q3OGRmN2E1MzDigKYpClBBU1MgamFyIHJlcGxheSA5NiBmcmFtZXM7IC9ob21lL3JvY2t5L2FscGhhLWphci1saW51eC1maW5hbC9yYWNlL2NhY2hlL2xpYi9saW51eC14ODZfNjQvZTBiMmI4NWE4NmFkOTk4NGIwMzQ3NTU1NTA0ZThjOWJlYzE5Yzc3ZTMxMzI3NDlhZDg4MzE5NWJkYmZlNmIyYS9saWJic2lfdGVjdG9uaWMuc28gc2hhMjU2PWUwYjJiODVhODZhZDk5ODRiMDM0NzU1NTUwNGU4YzliZWMxOWM3N2UzMTMyNzQ5YWQ4ODMxOTViZGJmZTZiMmEK",
+    "stdout_sha256": "3227607a0e75b6e184996886b77935c6b7e8569637ba4ef6a3aa1792149cdf42",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "race-1": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/dist/blockreality-0.4.0-alpha.1.jar:/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/build/classes/java/test:/mnt/c/Users/wmc02/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "race",
+      "/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/dist/blockreality-0.4.0-alpha.1.jar",
+      "/home/rocky/alpha-jar-linux-final/race/cache",
+      "/home/rocky/alpha-jar-linux-final/inputs",
+      "/home/rocky/alpha-jar-linux-final/race/1",
+      "1"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gL2hvbWUvcm9ja3kvYWxwaGEtamFyLWxpbnV4LWZpbmFsL3JhY2UvY2FjaGUvbGliL2xpbnV4LXg4Nl82NC9lMGIyYjg1YTg2YWQ5OTg0YjAzNDc1NTU1MDRlOGM5YmVjMTljNzdlMzEzMjc0OWFkODgzMTk1YmRiZmU2YjJhL2xpYmJzaV90ZWN0b25pYy5zbyAoMzEzMzQ5MjAgYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0yLjAuMCtkZGFhYTkyLCBjb250cmFjdCA3N2Q3OGRmN2E1MzDigKYpClBBU1MgamFyIHJlcGxheSA5NiBmcmFtZXM7IC9ob21lL3JvY2t5L2FscGhhLWphci1saW51eC1maW5hbC9yYWNlL2NhY2hlL2xpYi9saW51eC14ODZfNjQvZTBiMmI4NWE4NmFkOTk4NGIwMzQ3NTU1NTA0ZThjOWJlYzE5Yzc3ZTMxMzI3NDlhZDg4MzE5NWJkYmZlNmIyYS9saWJic2lfdGVjdG9uaWMuc28gc2hhMjU2PWUwYjJiODVhODZhZDk5ODRiMDM0NzU1NTUwNGU4YzliZWMxOWM3N2UzMTMyNzQ5YWQ4ODMxOTViZGJmZTZiMmEK",
+    "stdout_sha256": "3227607a0e75b6e184996886b77935c6b7e8569637ba4ef6a3aa1792149cdf42",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "missing-pin": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/alpha-jar-linux-final/missing.jar:/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/build/classes/java/test:/mnt/c/Users/wmc02/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "/home/rocky/alpha-jar-linux-final/missing.jar",
+      "/home/rocky/alpha-jar-linux-final/missing-cache",
+      "/home/rocky/alpha-jar-linux-final/inputs",
+      "/home/rocky/alpha-jar-linux-final/missing-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNzdkNzhkZjdhNTMwYThkYjEyZThlYWZkNGRiODNiYWFmM2MxMjA4MmYwOTg1NjY4YjgzNTYzMjE3ODI0NmU5NCAhPSBtb2QgY29udHJhY3QgbnVsbApQQVNTIG1pc3NpbmcvYmFkIHBpbgo=",
+    "stdout_sha256": "2c34f26515d08a36a17fb19205343db296dc34c3acd8b97f4f9c4148b692d82f",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "invalid-pin": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/alpha-jar-linux-final/invalid.jar:/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/build/classes/java/test:/mnt/c/Users/wmc02/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "/home/rocky/alpha-jar-linux-final/invalid.jar",
+      "/home/rocky/alpha-jar-linux-final/invalid-cache",
+      "/home/rocky/alpha-jar-linux-final/inputs",
+      "/home/rocky/alpha-jar-linux-final/invalid-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNzdkNzhkZjdhNTMwYThkYjEyZThlYWZkNGRiODNiYWFmM2MxMjA4MmYwOTg1NjY4YjgzNTYzMjE3ODI0NmU5NCAhPSBtb2QgY29udHJhY3QgbnVsbApQQVNTIG1pc3NpbmcvYmFkIHBpbgo=",
+    "stdout_sha256": "2c34f26515d08a36a17fb19205343db296dc34c3acd8b97f4f9c4148b692d82f",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "overlong-pin": {
+    "command": [
+      "/usr/bin/java",
+      "-cp",
+      "/home/rocky/alpha-jar-linux-final/overlong.jar:/mnt/c/Users/wmc02/Documents/ChatGPT/tectonic2/.agent-work/alpha-mod/mod/core/build/classes/java/test:/mnt/c/Users/wmc02/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "/home/rocky/alpha-jar-linux-final/overlong.jar",
+      "/home/rocky/alpha-jar-linux-final/overlong-cache",
+      "/home/rocky/alpha-jar-linux-final/inputs",
+      "/home/rocky/alpha-jar-linux-final/overlong-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNzdkNzhkZjdhNTMwYThkYjEyZThlYWZkNGRiODNiYWFmM2MxMjA4MmYwOTg1NjY4YjgzNTYzMjE3ODI0NmU5NCAhPSBtb2QgY29udHJhY3QgbnVsbApQQVNTIG1pc3NpbmcvYmFkIHBpbgo=",
+    "stdout_sha256": "2c34f26515d08a36a17fb19205343db296dc34c3acd8b97f4f9c4148b692d82f",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

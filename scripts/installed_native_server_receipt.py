@@ -68,7 +68,8 @@ def main():
         receipt['cache'] = {'path':str(library.relative_to(root)), 'sha256':digest,
                             'bytes':library.stat().st_size, 'mtime_ns':library.stat().st_mtime_ns}
         jars = sorted((root/'mods').glob('*.jar'))
-        assert len(jars) == 1 and jars[0].name == 'blockreality-0.4.0-dev.jar'
+        assert len(jars) == 1 and jars[0].name == 'blockreality-' + json.loads(
+            (Path(__file__).resolve().parents[1] / 'native-release.json').read_text())['modVersion'] + '.jar'
         receipt['jar_sha256'] = hashlib.sha256(jars[0].read_bytes()).hexdigest()
         if args.expected_jar_sha256:
             assert receipt['jar_sha256'] == args.expected_jar_sha256

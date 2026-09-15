@@ -63,19 +63,37 @@ def verify_release(directory, version, revision, sums_sha256, basis="published",
     for name, digest in assets.items():
         require(sha((directory / name).read_bytes()) == digest, f"release asset hash mismatch: {name}")
     # Verify the root source manifest, not historical manifests embedded in evidence.
-    with tarfile.open(directory / source_name, "r:gz") as archive:
-        members = archive.getmembers()
-        names = [m.name for m in members]
-        require(len(names) == len(set(names)), "duplicate source archive entry")
-        require(all(m.isfile() or m.isdir() for m in members), "non-regular source archive entry")
-        require(archive.extractfile("SOURCE_REVISION").read().decode().strip() == revision, "source revision mismatch")
-        manifest = json.load(archive.extractfile("SOURCE_MANIFEST.json"))
+    # A gzip stream cannot seek cheaply. Manifest order is not archive order (and
+    # Windows sorts Paths differently), so named reads repeatedly decompressed the
+    # full source archive. Hash every regular member once, in archive order, then
+    # compare the complete inventory. No source file is extracted to disk.
+    names, actual, metadata = set(), {}, {}
+    with tarfile.open(directory / source_name, "r|gz") as archive:
+        for member in archive:
+            require(member.name not in names, "duplicate source archive entry")
+            names.add(member.name)
+            require(member.isfile() or member.isdir(), "non-regular source archive entry")
+            if not member.isfile():
+                continue
+            stream = archive.extractfile(member)
+            if member.name in {"SOURCE_REVISION", "SOURCE_MANIFEST.json"}:
+                data = stream.read()
+                metadata[member.name] = data
+                if member.name == "SOURCE_REVISION":
+                    actual[member.name] = sha(data)
+            else:
+                digest = hashlib.sha256()
+                for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                    digest.update(chunk)
+                actual[member.name] = digest.hexdigest()
+        require(set(metadata) == {"SOURCE_REVISION", "SOURCE_MANIFEST.json"}, "source metadata missing")
+        require(metadata["SOURCE_REVISION"].decode().strip() == revision, "source revision mismatch")
+        manifest = json.loads(metadata["SOURCE_MANIFEST.json"])
         require(manifest["revision"] == revision and manifest["contract_sha256"] == pin, "source manifest identity mismatch")
-        files = {m.name for m in members if m.isfile()} - {"SOURCE_MANIFEST.json"}
+        files = set(actual)
         require(files == set(manifest["files"]), "source manifest inventory mismatch")
         for name, digest in manifest["files"].items():
-            # This archive is inspected in memory; no tar path is extracted to disk.
-            require(sha(archive.extractfile(name).read()) == digest, f"source file hash mismatch: {name}")
+            require(actual[name] == digest, f"source file hash mismatch: {name}")
     entries, payloads = [], {}
     for platform, filename in PLATFORMS.items():
         asset = f"tectonic2-{version}-{platform}.zip"

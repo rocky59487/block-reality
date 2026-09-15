@@ -1,3 +1,9 @@
+> 2026-09-15 alpha 主線：模組 0.4.0-alpha.1，配套引擎 v2.0.0-alpha.1。
+> native runtime 與 transactional placement 已整合；後續從 Main 建短功能分支。
+> 正常封裝入口 scripts/package_native.py，版本／來源固定於 native-release.json。
+> dist 是 native JAR；sidecar/legacy-dist 僅為歷史相容測試，不再發布。
+> 完整 v2 與遊戲內實測的邊界見 docs/ALPHA_RELEASE.md。
+
 # CLAUDE.md
 
 Block Reality 開發指引。**寫的是現況**，不是歷史。

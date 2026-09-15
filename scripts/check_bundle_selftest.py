@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Does check_bundle.py still bite? Seven injections against a known-good staging directory.
+"""Does check_bundle.py still bite? Corruption injections against a known-good staging directory.
 
     python3 scripts/check_bundle_selftest.py <stage-dir>
 
@@ -14,7 +14,7 @@ Every case below MUST turn the gate red. A case that goes green is not a passing
 is the gate having lost a tooth, and the run fails naming which one.
 
 The subject is a staging directory that check_bundle.py already accepts — the one
-scripts/package_natives.sh built. Nothing here modifies it; each case is applied to a copy.
+scripts/package_native.py built. Nothing here modifies it; each case is applied to a copy.
 """
 import os
 import hashlib
@@ -102,6 +102,15 @@ def unregistered_large_licence(items, lib):
     return items
 
 
+def changed_contract_schema(items, lib):
+    return [(i, d + b" " if i.filename == "blockreality/contract/bsi.schema.json" else d)
+            for i, d in items]
+
+
+def missing_contract_schema(items, lib):
+    return [(i, d) for i, d in items if i.filename != "blockreality/contract/bsi.schema.json"]
+
+
 CASES = [
     ("N24-a1  the library renamed to .exe", rename_to_exe),
     ("N24-a1  an ELF binary under an innocent name", elf_under_an_innocent_name),
@@ -112,6 +121,8 @@ CASES = [
     ("        one jar carrying two engine shapes", two_engine_shapes),
     ("NATIVE  published licence changed", registered_licence_changed),
     ("NATIVE  unregistered large licence", unregistered_large_licence),
+    ("NATIVE  canonical contract schema changed", changed_contract_schema),
+    ("NATIVE  canonical contract schema missing", missing_contract_schema),
 ]
 
 
@@ -139,8 +150,8 @@ def run_case(stage, jar_name, lib, mutate, work):
                     rows.append((relative, digest.hexdigest()))
     with open(os.path.join(work, "SHA256SUMS.txt"), "w", encoding="utf-8", newline="\n") as sums:
         sums.writelines(digest + "  " + name + "\n" for name, digest in sorted(rows))
-    r = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "check_bundle.py"), work],
-                       capture_output=True, text=True)
+    r = subprocess.run([sys.executable, "-X", "utf8", os.path.join(ROOT, "scripts", "check_bundle.py"), work],
+                       capture_output=True, text=True, encoding="utf-8")
     return r.returncode, (r.stdout + r.stderr)
 
 
@@ -157,8 +168,8 @@ def main():
 
     # The subject must be GREEN before anything is injected. A staging directory that is
     # already failing would make every case below "catch" something and say nothing.
-    base = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "check_bundle.py"), stage],
-                          capture_output=True, text=True)
+    base = subprocess.run([sys.executable, "-X", "utf8", os.path.join(ROOT, "scripts", "check_bundle.py"), stage],
+                          capture_output=True, text=True, encoding="utf-8")
     if base.returncode != 0:
         print(f"FAIL {stage} does not pass check_bundle.py before any injection:")
         print(base.stdout + base.stderr)

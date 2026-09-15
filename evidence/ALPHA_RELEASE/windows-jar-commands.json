@@ -1,0 +1,210 @@
+{
+  "jar-0": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot\\bin\\java.exe",
+      "-cp",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\dist\\blockreality-0.4.0-alpha.1.jar;C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\dist\\blockreality-0.4.0-alpha.1.jar",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\cache",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\inputs",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\jar-0"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gQzpcVXNlcnNcd21jMDJcRG9jdW1lbnRzXENoYXRHUFRcdGVjdG9uaWMyXC5hZ2VudC13b3JrXGFscGhhLWphci13aW5kb3dzLWZpbmFsXGNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFwzMjg0OTZiM2ZhMzkwMWQwZDFkOTBiZDAzYzM5Y2E5YjEwZTA5MDBmYTE1MDZkNjgwZGZiMWVkN2RlYjE4ZmEzXGJzaV90ZWN0b25pYy5kbGwgKDM0ODk1MzYwIGJ5dGVzLCBlbmdpbmUgdGVjdG9uaWMtMi4wLjArZGRhYWE5MiwgY29udHJhY3QgNzdkNzhkZjdhNTMwoUspDQpQQVNTIGphciByZXBsYXkgOTYgZnJhbWVzOyBDOlxVc2Vyc1x3bWMwMlxEb2N1bWVudHNcQ2hhdEdQVFx0ZWN0b25pYzJcLmFnZW50LXdvcmtcYWxwaGEtamFyLXdpbmRvd3MtZmluYWxcY2FjaGVcbGliXHdpbmRvd3MteDg2XzY0XDMyODQ5NmIzZmEzOTAxZDBkMWQ5MGJkMDNjMzljYTliMTBlMDkwMGZhMTUwNmQ2ODBkZmIxZWQ3ZGViMThmYTNcYnNpX3RlY3RvbmljLmRsbCBzaGEyNTY9MzI4NDk2YjNmYTM5MDFkMGQxZDkwYmQwM2MzOWNhOWIxMGUwOTAwZmExNTA2ZDY4MGRmYjFlZDdkZWIxOGZhMw0K",
+    "stdout_sha256": "a457b712e29b49927e3b193b06016367a245bf45d4005208874c878c387ef447",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "jar-1": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot\\bin\\java.exe",
+      "-cp",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\dist\\blockreality-0.4.0-alpha.1.jar;C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\dist\\blockreality-0.4.0-alpha.1.jar",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\cache",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\inputs",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\jar-1"
+    ],
+    "exit": 0,
+    "stdout_base64": "UEFTUyBqYXIgcmVwbGF5IDk2IGZyYW1lczsgQzpcVXNlcnNcd21jMDJcRG9jdW1lbnRzXENoYXRHUFRcdGVjdG9uaWMyXC5hZ2VudC13b3JrXGFscGhhLWphci13aW5kb3dzLWZpbmFsXGNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFwzMjg0OTZiM2ZhMzkwMWQwZDFkOTBiZDAzYzM5Y2E5YjEwZTA5MDBmYTE1MDZkNjgwZGZiMWVkN2RlYjE4ZmEzXGJzaV90ZWN0b25pYy5kbGwgc2hhMjU2PTMyODQ5NmIzZmEzOTAxZDBkMWQ5MGJkMDNjMzljYTliMTBlMDkwMGZhMTUwNmQ2ODBkZmIxZWQ3ZGViMThmYTMNCg==",
+    "stdout_sha256": "b96eb70a634365c7b8f7cc619f1cacfa98819ddb99a5f0f8b677ca889ea25a29",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "jar-2": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot\\bin\\java.exe",
+      "-cp",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\dist\\blockreality-0.4.0-alpha.1.jar;C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "replay",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\dist\\blockreality-0.4.0-alpha.1.jar",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\cache",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\inputs",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\jar-2"
+    ],
+    "exit": 0,
+    "stdout_base64": "UEFTUyBqYXIgcmVwbGF5IDk2IGZyYW1lczsgQzpcVXNlcnNcd21jMDJcRG9jdW1lbnRzXENoYXRHUFRcdGVjdG9uaWMyXC5hZ2VudC13b3JrXGFscGhhLWphci13aW5kb3dzLWZpbmFsXGNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFwzMjg0OTZiM2ZhMzkwMWQwZDFkOTBiZDAzYzM5Y2E5YjEwZTA5MDBmYTE1MDZkNjgwZGZiMWVkN2RlYjE4ZmEzXGJzaV90ZWN0b25pYy5kbGwgc2hhMjU2PTMyODQ5NmIzZmEzOTAxZDBkMWQ5MGJkMDNjMzljYTliMTBlMDkwMGZhMTUwNmQ2ODBkZmIxZWQ3ZGViMThmYTMNCg==",
+    "stdout_sha256": "b96eb70a634365c7b8f7cc619f1cacfa98819ddb99a5f0f8b677ca889ea25a29",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "faults": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot\\bin\\java.exe",
+      "-cp",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\dist\\blockreality-0.4.0-alpha.1.jar;C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "faults",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\dist\\blockreality-0.4.0-alpha.1.jar",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\fault-cache",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\inputs",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\faults"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gQzpcVXNlcnNcd21jMDJcRG9jdW1lbnRzXENoYXRHUFRcdGVjdG9uaWMyXC5hZ2VudC13b3JrXGFscGhhLWphci13aW5kb3dzLWZpbmFsXGZhdWx0LWNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFwzMjg0OTZiM2ZhMzkwMWQwZDFkOTBiZDAzYzM5Y2E5YjEwZTA5MDBmYTE1MDZkNjgwZGZiMWVkN2RlYjE4ZmEzXGJzaV90ZWN0b25pYy5kbGwgKDM0ODk1MzYwIGJ5dGVzLCBlbmdpbmUgdGVjdG9uaWMtMi4wLjArZGRhYWE5MiwgY29udHJhY3QgNzdkNzhkZjdhNTMwoUspDQpidW5kbGVkIGVuZ2luZSBjb250cmFjdCBmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmICE9IG1vZCBjb250cmFjdCA3N2Q3OGRmN2E1MzBhOGRiMTJlOGVhZmQ0ZGI4M2JhYWYzYzEyMDgyZjA5ODU2NjhiODM1NjMyMTc4MjQ2ZTk0DQpidW5kbGVkIGVuZ2luZSBjb250cmFjdCBmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmICE9IG1vZCBjb250cmFjdCA3N2Q3OGRmN2E1MzBhOGRiMTJlOGVhZmQ0ZGI4M2JhYWYzYzEyMDgyZjA5ODU2NjhiODM1NjMyMTc4MjQ2ZTk0DQp1bnBhY2tlZCB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeSB0byBDOlxVc2Vyc1x3bWMwMlxEb2N1bWVudHNcQ2hhdEdQVFx0ZWN0b25pYzJcLmFnZW50LXdvcmtcYWxwaGEtamFyLXdpbmRvd3MtZmluYWxcZmF1bHQtY2FjaGVcbGliXHdpbmRvd3MteDg2XzY0XGM1MDFhNzZhZjI5YmYxNGZhMWUxZmE0ZDg3MmMzNDlkNGJkYTM5OWI2ZTg5YTE3ZjgzYTA1MTI4MWFlNjYzMDhcYnNpX3RlY3RvbmljLmRsbCAoMzQ4OTUzNjAgYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0yLjAuMCtkZGFhYTkyLCBjb250cmFjdCA3N2Q3OGRmN2E1MzChSykNCnVucGFja2VkIHRoZSBidW5kbGVkIGVuZ2luZSBsaWJyYXJ5IHRvIEM6XFVzZXJzXHdtYzAyXERvY3VtZW50c1xDaGF0R1BUXHRlY3RvbmljMlwuYWdlbnQtd29ya1xhbHBoYS1qYXItd2luZG93cy1maW5hbFxmYXVsdC1jYWNoZVxsaWJcd2luZG93cy14ODZfNjRcMzI4NDk2YjNmYTM5MDFkMGQxZDkwYmQwM2MzOWNhOWIxMGUwOTAwZmExNTA2ZDY4MGRmYjFlZDdkZWIxOGZhM1xic2lfdGVjdG9uaWMuZGxsICgzNDg5NTM2MCBieXRlcywgZW5naW5lIHRlY3RvbmljLTIuMC4wK2RkYWFhOTIsIGNvbnRyYWN0IDc3ZDc4ZGY3YTUzMKFLKQ0KY291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5pby5JT0V4Y2VwdGlvbjogYnVuZGxlZCBic2lfdGVjdG9uaWMuZGxsIGlzIDM0ODk1MzYwIGJ5dGVzIC8gYzUwMWE3NmFmMjliZjE0ZmExZTFmYTRkODcyYzM0OWQ0YmRhMzk5YjZlODlhMTdmODNhMDUxMjgxYWU2NjMwOCwgbWFuaWZlc3Qgc2F5cyAzNDg5NTM2MCAvIDMyODQ5NmIzZmEzOTAxZDBkMWQ5MGJkMDNjMzljYTliMTBlMDkwMGZhMTUwNmQ2ODBkZmIxZWQ3ZGViMThmYTMNCmNvdWxkIG5vdCB1bnBhY2sgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnk6IGphdmEuaW8uSU9FeGNlcHRpb246IGJ1bmRsZWQgYnNpX3RlY3RvbmljLmRsbCBpcyAzNDg5NTM1OSBieXRlcyAvIDhhZDJhNWViOWE0NzA3NTQ4OGQ5ZDgyY2U0MjBmY2Y5YWIwNDc1Y2JkNzU4MzQ5ODI1ZDk3MzQxYTcyM2NkNTEsIG1hbmlmZXN0IHNheXMgMzQ4OTUzNjAgLyAzMjg0OTZiM2ZhMzkwMWQwZDFkOTBiZDAzYzM5Y2E5YjEwZTA5MDBmYTE1MDZkNjgwZGZiMWVkN2RlYjE4ZmEzDQpjb3VsZCBub3QgdW5wYWNrIHRoZSBidW5kbGVkIGVuZ2luZSBsaWJyYXJ5OiBqYXZhLmlvLklPRXhjZXB0aW9uOiBidW5kbGVkIGJzaV90ZWN0b25pYy5kbGwgZXhjZWVkcyBtYW5pZmVzdCBzaXplIDM0ODk1MzYwDQpjb3VsZCBub3QgdW5wYWNrIHRoZSBidW5kbGVkIGVuZ2luZSBsaWJyYXJ5OiBqYXZhLmlvLkludGVycnVwdGVkSU9FeGNlcHRpb246IGluamVjdGVkIHJlYWwtcmVzb3VyY2UgaW50ZXJydXB0aW9uDQpQQVNTIHJlYWwgYnl0ZXM6IGNhY2hlIGFkb3B0aW9uLCBjb250cmFjdCBwcmVjaGVjaywgdmVyc2lvbiByZXRlbnRpb24sIGNvcnJ1cHRpb24gcmVwYWlyLCBoYXNoL3Nob3J0L292ZXJsb25nL2ludGVycnVwdGlvbiwgdGVtcG9yYXJ5IGNsZWFudXANCg==",
+    "stdout_sha256": "55657575bca31b13064658df97fd21b97e118a5bea49fa9d4a31d2ccca610fac",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deny-acl": {
+    "command": [
+      "icacls",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\denied-cache",
+      "/deny",
+      "ROCKYLAPTOP\\wmc02:(OI)(CI)(W)"
+    ],
+    "exit": 0,
+    "stdout_base64": "cHJvY2Vzc2VkIGZpbGU6IEM6XFVzZXJzXHdtYzAyXERvY3VtZW50c1xDaGF0R1BUXHRlY3RvbmljMlwuYWdlbnQtd29ya1xhbHBoYS1qYXItd2luZG93cy1maW5hbFxkZW5pZWQtY2FjaGUNClN1Y2Nlc3NmdWxseSBwcm9jZXNzZWQgMSBmaWxlczsgRmFpbGVkIHByb2Nlc3NpbmcgMCBmaWxlcw0K",
+    "stdout_sha256": "f819f9d13d58e1edc5045e0ed961ccb728dab824ded2f3d6bdfc3f2fcbb66994",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "denied": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot\\bin\\java.exe",
+      "-cp",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\dist\\blockreality-0.4.0-alpha.1.jar;C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "denied",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\dist\\blockreality-0.4.0-alpha.1.jar",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\denied-cache",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\inputs",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\denied"
+    ],
+    "exit": 0,
+    "stdout_base64": "Y291bGQgbm90IHVucGFjayB0aGUgYnVuZGxlZCBlbmdpbmUgbGlicmFyeTogamF2YS5uaW8uZmlsZS5BY2Nlc3NEZW5pZWRFeGNlcHRpb246IEM6XFVzZXJzXHdtYzAyXERvY3VtZW50c1xDaGF0R1BUXHRlY3RvbmljMlwuYWdlbnQtd29ya1xhbHBoYS1qYXItd2luZG93cy1maW5hbFxkZW5pZWQtY2FjaGVcbGliDQpQQVNTIGRlbmllZCBjYWNoZQ0K",
+    "stdout_sha256": "b3d01da4e971ca2acd31e572b9134b01d03b6a3e5c529287d6945dfa96ac2531",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "restore-acl": {
+    "command": [
+      "icacls",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\denied-cache",
+      "/remove:d",
+      "ROCKYLAPTOP\\wmc02"
+    ],
+    "exit": 0,
+    "stdout_base64": "cHJvY2Vzc2VkIGZpbGU6IEM6XFVzZXJzXHdtYzAyXERvY3VtZW50c1xDaGF0R1BUXHRlY3RvbmljMlwuYWdlbnQtd29ya1xhbHBoYS1qYXItd2luZG93cy1maW5hbFxkZW5pZWQtY2FjaGUNClN1Y2Nlc3NmdWxseSBwcm9jZXNzZWQgMSBmaWxlczsgRmFpbGVkIHByb2Nlc3NpbmcgMCBmaWxlcw0K",
+    "stdout_sha256": "f819f9d13d58e1edc5045e0ed961ccb728dab824ded2f3d6bdfc3f2fcbb66994",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "race-0": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot\\bin\\java.exe",
+      "-cp",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\dist\\blockreality-0.4.0-alpha.1.jar;C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "race",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\dist\\blockreality-0.4.0-alpha.1.jar",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\race\\cache",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\inputs",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\race\\0",
+      "0"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gQzpcVXNlcnNcd21jMDJcRG9jdW1lbnRzXENoYXRHUFRcdGVjdG9uaWMyXC5hZ2VudC13b3JrXGFscGhhLWphci13aW5kb3dzLWZpbmFsXHJhY2VcY2FjaGVcbGliXHdpbmRvd3MteDg2XzY0XDMyODQ5NmIzZmEzOTAxZDBkMWQ5MGJkMDNjMzljYTliMTBlMDkwMGZhMTUwNmQ2ODBkZmIxZWQ3ZGViMThmYTNcYnNpX3RlY3RvbmljLmRsbCAoMzQ4OTUzNjAgYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0yLjAuMCtkZGFhYTkyLCBjb250cmFjdCA3N2Q3OGRmN2E1MzChSykNClBBU1MgamFyIHJlcGxheSA5NiBmcmFtZXM7IEM6XFVzZXJzXHdtYzAyXERvY3VtZW50c1xDaGF0R1BUXHRlY3RvbmljMlwuYWdlbnQtd29ya1xhbHBoYS1qYXItd2luZG93cy1maW5hbFxyYWNlXGNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFwzMjg0OTZiM2ZhMzkwMWQwZDFkOTBiZDAzYzM5Y2E5YjEwZTA5MDBmYTE1MDZkNjgwZGZiMWVkN2RlYjE4ZmEzXGJzaV90ZWN0b25pYy5kbGwgc2hhMjU2PTMyODQ5NmIzZmEzOTAxZDBkMWQ5MGJkMDNjMzljYTliMTBlMDkwMGZhMTUwNmQ2ODBkZmIxZWQ3ZGViMThmYTMNCg==",
+    "stdout_sha256": "8151a3815e45b26806994dca527b895f1283ee104286ade1d687eca7882a57a7",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "race-1": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot\\bin\\java.exe",
+      "-cp",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\dist\\blockreality-0.4.0-alpha.1.jar;C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "race",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\dist\\blockreality-0.4.0-alpha.1.jar",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\race\\cache",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\inputs",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\race\\1",
+      "1"
+    ],
+    "exit": 0,
+    "stdout_base64": "dW5wYWNrZWQgdGhlIGJ1bmRsZWQgZW5naW5lIGxpYnJhcnkgdG8gQzpcVXNlcnNcd21jMDJcRG9jdW1lbnRzXENoYXRHUFRcdGVjdG9uaWMyXC5hZ2VudC13b3JrXGFscGhhLWphci13aW5kb3dzLWZpbmFsXHJhY2VcY2FjaGVcbGliXHdpbmRvd3MteDg2XzY0XDMyODQ5NmIzZmEzOTAxZDBkMWQ5MGJkMDNjMzljYTliMTBlMDkwMGZhMTUwNmQ2ODBkZmIxZWQ3ZGViMThmYTNcYnNpX3RlY3RvbmljLmRsbCAoMzQ4OTUzNjAgYnl0ZXMsIGVuZ2luZSB0ZWN0b25pYy0yLjAuMCtkZGFhYTkyLCBjb250cmFjdCA3N2Q3OGRmN2E1MzChSykNClBBU1MgamFyIHJlcGxheSA5NiBmcmFtZXM7IEM6XFVzZXJzXHdtYzAyXERvY3VtZW50c1xDaGF0R1BUXHRlY3RvbmljMlwuYWdlbnQtd29ya1xhbHBoYS1qYXItd2luZG93cy1maW5hbFxyYWNlXGNhY2hlXGxpYlx3aW5kb3dzLXg4Nl82NFwzMjg0OTZiM2ZhMzkwMWQwZDFkOTBiZDAzYzM5Y2E5YjEwZTA5MDBmYTE1MDZkNjgwZGZiMWVkN2RlYjE4ZmEzXGJzaV90ZWN0b25pYy5kbGwgc2hhMjU2PTMyODQ5NmIzZmEzOTAxZDBkMWQ5MGJkMDNjMzljYTliMTBlMDkwMGZhMTUwNmQ2ODBkZmIxZWQ3ZGViMThmYTMNCg==",
+    "stdout_sha256": "8151a3815e45b26806994dca527b895f1283ee104286ade1d687eca7882a57a7",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "missing-pin": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot\\bin\\java.exe",
+      "-cp",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\missing.jar;C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\missing.jar",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\missing-cache",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\inputs",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\missing-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNzdkNzhkZjdhNTMwYThkYjEyZThlYWZkNGRiODNiYWFmM2MxMjA4MmYwOTg1NjY4YjgzNTYzMjE3ODI0NmU5NCAhPSBtb2QgY29udHJhY3QgbnVsbA0KUEFTUyBtaXNzaW5nL2JhZCBwaW4NCg==",
+    "stdout_sha256": "b49e1d29ddd3776f176e693d8fa24df6fa042ac3a27b2a6a528e120ac5e61f55",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "invalid-pin": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot\\bin\\java.exe",
+      "-cp",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\invalid.jar;C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\invalid.jar",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\invalid-cache",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\inputs",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\invalid-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNzdkNzhkZjdhNTMwYThkYjEyZThlYWZkNGRiODNiYWFmM2MxMjA4MmYwOTg1NjY4YjgzNTYzMjE3ODI0NmU5NCAhPSBtb2QgY29udHJhY3QgbnVsbA0KUEFTUyBtaXNzaW5nL2JhZCBwaW4NCg==",
+    "stdout_sha256": "b49e1d29ddd3776f176e693d8fa24df6fa042ac3a27b2a6a528e120ac5e61f55",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "overlong-pin": {
+    "command": [
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot\\bin\\java.exe",
+      "-cp",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\overlong.jar;C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-mod\\mod\\core\\build\\classes\\java\\test;C:\\Users\\wmc02\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.12.1\\b1e93a735caea94f503e95e6fe79bf9cdc1e985d\\jna-5.12.1.jar",
+      "com.blockreality.core.engine.NativeJarProbe",
+      "missing-pin",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\overlong.jar",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\overlong-cache",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\inputs",
+      "C:\\Users\\wmc02\\Documents\\ChatGPT\\tectonic2\\.agent-work\\alpha-jar-windows-final\\overlong-pin"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnVuZGxlZCBlbmdpbmUgY29udHJhY3QgNzdkNzhkZjdhNTMwYThkYjEyZThlYWZkNGRiODNiYWFmM2MxMjA4MmYwOTg1NjY4YjgzNTYzMjE3ODI0NmU5NCAhPSBtb2QgY29udHJhY3QgbnVsbA0KUEFTUyBtaXNzaW5nL2JhZCBwaW4NCg==",
+    "stdout_sha256": "b49e1d29ddd3776f176e693d8fa24df6fa042ac3a27b2a6a528e120ac5e61f55",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

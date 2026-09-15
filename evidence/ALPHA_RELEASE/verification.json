@@ -1,0 +1,68 @@
+{
+  "engine": {
+    "schema": 1,
+    "repository": "rocky59487/tectonic2",
+    "tag": "v2.0.0-alpha.1",
+    "version": "2.0.0",
+    "sourceCommit": "ddaaa92c930393051b67e75f7ccfbd5224580b16",
+    "sumsSha256": "1fabe312e70478359c8afdb8514f205a046339690abfc638313f632895f8d6a3",
+    "inventoryProfile": "sdk",
+    "modVersion": "0.4.0-alpha.1"
+  },
+  "jar_sha256": "e50615244b5f33dfcf0e3a414fb482ed074218daa00a65f7d93db2f75d20abf7",
+  "jar_bytes": 18075580,
+  "junit": {
+    "core": {
+      "tests": 561,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 40
+    },
+    "forge": {
+      "tests": 152,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "construction_recovery": {
+    "crashed_jvms": 37,
+    "fresh_recovery_jvms": 37,
+    "concurrent_owner_checks": 1,
+    "status": "PASS"
+  },
+  "native_jar": {
+    "platforms": [
+      "windows-x86_64",
+      "linux-x86_64"
+    ],
+    "requests": 96,
+    "direct_and_jar_det_repeats": 3,
+    "concurrent_jvms": 2,
+    "faults": "PASS"
+  },
+  "release_corruptions": 15,
+  "bundle_corruptions": 11,
+  "guard_removals_detected": 4,
+  "downloaded_engine_assets": "all four byte-identical to published release",
+  "limits": [
+    "not a Minecraft game run",
+    "full v2/Perfect Engine roadmap incomplete",
+    "40 Windows skips are legacy sidecar tests",
+    "new engine i9 run unavailable: SSH timeout",
+    "engine Actions blocked by billing; module CI recorded separately"
+  ],
+  "raw_files": {
+    "package.log": "d6a5ddbf4129e235d630269129af22c124c8da8cd49de7dd5feb6f6377d8453f",
+    "package-first-failure.log": "b4f64b8b1ab9eba526a2c663559e38d53650f903b9a9bcb20098e161218a0187",
+    "bundle-corruptions.log": "3f6ec95c91a6582367c0e14293778b27727d2f438c11e681d1bc097c21abdbc2",
+    "bundle-first-failure.log": "cae224414edea8ade4d115b675162354566fb503496609d8dec2056e892b0fd2",
+    "source-corruptions.json": "bd6e5e7ee52fc71b08d8294e284d6efda7aae092365ed70b8cb3dabff002e8ef",
+    "source-corruptions.log": "7e23df546e1f04d1ed385fd51b9b11fa6ff399f003ecc319ffc1aa6874787312",
+    "windows-jar.json": "2b4a2ee843e44d7fb26787b292ea4c682c57b0fd34e57bb4352af82203558482",
+    "windows-jar-commands.json": "2392ddc905e5b0e6fc9ebbbb9b12eaaa93eed92d02f144bd745638ee0ba790a3",
+    "linux-jar.json": "919152c35b8e13a4db79443ce41d75e3e6b8462703ceb44e56f400fd4fcb8fd2",
+    "linux-jar-commands.json": "0a8fb6d4a6f882eb2bc82cc2283fe97a055f9dfe2c6f701e7f0f9bd994a70758",
+    "linux-mount-first-failure.log": "deb94f7715bca7fee1327ca69d21801470d8351d0bbd25fc0ab34320b9f506ba"
+  }
+}

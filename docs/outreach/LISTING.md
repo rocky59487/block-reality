@@ -1,3 +1,5 @@
+> 2026-09-15：以下保留 alpha 整合前的流程與相容回歸背景；目前安裝、發布能力及邊界以根目錄 README 與 docs/ALPHA_RELEASE.md 為準。
+
 # 上架：CurseForge 與 Modrinth
 
 貼上就能用的欄位與文案。每一句宣稱都對得上倉庫裡可查的東西——那是這個專案唯一的
@@ -282,7 +284,7 @@ Modrinth 對「內含原生執行檔」同樣要透明；第 1 節那段照貼�
 > longer drop a player's test load; and an over-long dimension id can no longer throw
 > while a result is being broadcast.
 >
-> Verification: 330 engine checks, 647 Java tests (523 core, 124 Forge-side; Windows: 606 pass, 41 skips including 28 legacy sidecar cases without br.sidecar), worst
+> Verification: 330 engine checks, 713 Java tests (561 core, 152 Forge-side; Windows: 673 pass, 40 legacy skips including 28 legacy sidecar cases without br.sidecar), worst
 > closed-form relative error 1.216e-14, cross-platform determinism 8/8.
 
 ---

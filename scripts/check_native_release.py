@@ -6,9 +6,11 @@ cannot mask the guard being exercised. Copies are in a fresh output directory.
 """
 import argparse
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
+import tarfile
 import zipfile
 
 
@@ -97,6 +99,44 @@ def main():
                     records[name]['guard_removal']={'failure_type':type(ex).__name__,'message':str(ex)}
                 else:raise AssertionError(f'{name} guard removal survived the rejection oracle')
             finally:stage.require=original_require
+        print(name,'REJECTED',flush=True)
+        (args.out/'verification.json').write_text(json.dumps(records,indent=2)+'\n',encoding='utf-8')
+    # Source members are now read sequentially. Exercise the complete downloaded
+    # archive (including historical nested manifests), with trusted outer hashes
+    # recomputed so only the intended source guard can reject each corruption.
+    source_name=f'tectonic2-{version}-source.tar.gz'
+    for name,want in {
+        'SOURCE_CONTENT':'source file hash mismatch: LICENSE',
+        'SOURCE_MISSING':'source metadata missing',
+        'SOURCE_DUPLICATE':'duplicate source archive entry',
+        'SOURCE_LINK':'non-regular source archive entry',
+    }.items():
+        directory=args.out/name;directory.mkdir()
+        for n in original:
+            if n != source_name:os.link(args.release_dir/n,directory/n)
+        with tarfile.open(args.release_dir/source_name,'r|gz') as src, \
+                tarfile.open(directory/source_name,'w:gz',compresslevel=1) as dst:
+            for member in src:
+                if name=='SOURCE_MISSING' and member.name=='SOURCE_MANIFEST.json':continue
+                stream=src.extractfile(member) if member.isfile() else None
+                if name=='SOURCE_CONTENT' and member.name=='LICENSE':
+                    data=stream.read();data=bytes([data[0]^1])+data[1:]
+                    stream=io.BytesIO(data)
+                dst.addfile(member,stream)
+            if name=='SOURCE_DUPLICATE':
+                data=(revision+'\n').encode();extra=tarfile.TarInfo('SOURCE_REVISION');extra.size=len(data)
+                dst.addfile(extra,io.BytesIO(data))
+            if name=='SOURCE_LINK':
+                extra=tarfile.TarInfo('source-link');extra.type=tarfile.SYMTYPE;extra.linkname='LICENSE'
+                dst.addfile(extra)
+        hashes=dict(original);hashes[source_name]=stage.sha((directory/source_name).read_bytes())
+        inventory=''.join(h+'  '+n+'\n' for n,h in hashes.items()).encode()
+        (directory/'SHA256SUMS').write_bytes(inventory)
+        try:stage.verify_release(directory,version,revision,stage.sha(inventory),inventory_profile=args.inventory_profile)
+        except ValueError as ex:
+            assert want in str(ex),(name,str(ex))
+            records[name]={'rejected':str(ex),'source_sha256':hashes[source_name]}
+        else:raise AssertionError(f'{name} corruption accepted')
         print(name,'REJECTED',flush=True)
         (args.out/'verification.json').write_text(json.dumps(records,indent=2)+'\n',encoding='utf-8')
     print(f'PASS {len(records)} real-archive corruption cases; 4 independent guard removals exposed')

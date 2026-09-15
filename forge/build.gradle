@@ -3,7 +3,7 @@ plugins {
     id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
 }
 
-version = '0.4.0-dev'
+version = '0.4.0-alpha.1'
 group = 'com.blockreality'
 base { archivesName = 'blockreality' }
 
@@ -111,8 +111,8 @@ tasks.register('bundleEngines') {
         dest.mkdirs()
         // ---------------------------------------------------------------- the library shape
         //
-        // Everything here is filled in from provenance.json, which scripts/stage_natives.py
-        // wrote by LOADING each library and asking it `bsi.hello`. Nothing in this block
+        // Everything here is filled in from verified staging provenance.json. Production
+        // packaging authenticates the pinned SDK archives before staging. Nothing in this block
         // asserts a version or a contract hash on the engine's behalf; if the staging step
         // did not run, there is no provenance and the build stops rather than writing
         // "unknown" into a manifest a player's log will later quote back.
@@ -121,8 +121,8 @@ tasks.register('bundleEngines') {
             def prov = new File(natSrc, 'provenance.json')
             if (!prov.isFile()) {
                 throw new GradleException("-PbrNativesDir=${brNativesDir} has no provenance.json. " +
-                        'Stage the libraries with scripts/stage_natives.py, which asks each one ' +
-                        'for its version and contract instead of guessing them.')
+                        'Use scripts/package_native.py for the pinned SDK release, or stage_natives.py ' +
+                        'for a local development library.')
             }
             def doc = new groovy.json.JsonSlurper().parse(prov)
             def pin = new File(project.projectDir, '../contract/CONTRACT_SHA256').text.trim().split()[0].toLowerCase()
@@ -171,10 +171,9 @@ tasks.register('bundleEngines') {
 
         // Apache-2.0 4(a) and 4(d) are about the ARTEFACT, not the repository: a
         // recipient of the jar must get the licence and the NOTICE with it. Both files
-        // existed at the repo root and neither was in the jar or the archive. The engine
-        // statically links FrameCore (MIT) and Eigen (MPL-2.0), whose terms travel with
-        // every copy of that binary, so their texts go too — MPL-2.0 3.2 also wants the
-        // recipient told where the source is, which NOTICE now says.
+        // existed at the repo root and neither was in the jar or the archive. Native SDK licences and source provenance
+        // travel with every copy. Legacy third-party notices remain attributable to
+        // historical code; the staged SDK records its actual static dependencies.
         def meta = new File(brEngineOut, 'META-INF')
         meta.mkdirs()
         ['LICENSE', 'NOTICE'].each { n -> new File(meta, n).bytes = file("../${n}").bytes }
