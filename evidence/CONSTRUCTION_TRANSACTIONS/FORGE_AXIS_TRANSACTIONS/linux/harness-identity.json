@@ -1,0 +1,15 @@
+{
+  "sha256": "88997cc6a005533752e058bf2b0a6b1fb2941ddaf9f9ab5f03a8f8d2edf79f44",
+  "bytes": 16251,
+  "entries": [
+    "META-INF/",
+    "META-INF/MANIFEST.MF",
+    "META-INF/mods.toml",
+    "com/",
+    "com/blockreality/",
+    "com/blockreality/testaxisprobe/",
+    "com/blockreality/testaxisprobe/AxisProbe$Checked.class",
+    "com/blockreality/testaxisprobe/AxisProbe.class"
+  ],
+  "no_production_classes_or_access_transformer": true
+}

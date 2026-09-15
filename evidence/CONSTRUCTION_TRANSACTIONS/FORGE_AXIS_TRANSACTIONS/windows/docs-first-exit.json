@@ -1,0 +1,1 @@
+{"command": ["C:\\Users\\wmc02\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\python.exe", "-X", "utf8", "scripts/check_docs.py", "dist/br-sidecar.exe"], "exit": 0, "legacy_existing_executable_only": true, "engine_built": false}

@@ -64,10 +64,25 @@ class StressPaletteTest {
     }
 
     @Test
-    void hatchGivesANonColourChannel() {
+    void hatchAndUtilizationKeepNativeVerdictAuthority() {
         assertEquals(Hatch.DIAGONAL_UP, P.hatchFor(+10, 20));
         assertEquals(Hatch.DIAGONAL_DOWN, P.hatchFor(-10, 20));
-        assertEquals(Hatch.CROSS, StressPalette.utilizationHatch(1.4));
+        var legend = StressPalette.utilizationLegend();
+        assertEquals(java.util.List.of(Hatch.NONE, Hatch.DIAGONAL_DOWN, Hatch.CROSS),
+                legend.stream().map(StressPalette.LegendStop::hatch).toList());
+        var overloadColour = legend.get(2).colour();
+        // Rounded or nonfinite display values cannot override the supplied native flag.
+        for (double dc : new double[]{0, .1, .6, Math.nextDown(1.0), 1, Math.nextUp(1.0), 3,
+                Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY}) {
+            assertEquals(overloadColour, StressPalette.utilization(dc, true), "native overload at " + dc);
+            assertNotEquals(overloadColour, StressPalette.utilization(dc, false), "native non-overload at " + dc);
+        }
+        for (var method : StressPalette.class.getMethods()) {
+            assertTrue(!method.getName().equals("utilizationHatch"), "unused numeric hatch must not be public");
+            if (method.getName().equals("utilization"))
+                assertEquals(java.util.List.of(double.class, boolean.class), java.util.List.of(method.getParameterTypes()),
+                        "result colour callers must supply the native verdict");
+        }
     }
 
     @Test
@@ -80,24 +95,23 @@ class StressPaletteTest {
 
     @Test
     void utilisationRampIsColdThenAmberThenFlatVermilion() {
-        Rgb safe = StressPalette.utilization(0.1);
-        Rgb near = StressPalette.utilization(0.95);
-        Rgb over = StressPalette.utilization(1.2);
+        Rgb safe = StressPalette.utilization(0.1, false);
+        Rgb near = StressPalette.utilization(0.95, false);
+        Rgb over = StressPalette.utilization(1.2, true);
 
         assertTrue(safe.b() > safe.r(), "safe should read cold, got " + safe);
         assertTrue(near.r() > near.b(), "near-limit should read warm, got " + near);
         assertTrue(over.r() > over.g(), "over-limit should read red, got " + over);
 
-        // Beyond the limit the member has simply failed; 3.0 is not more interesting
-        // than 1.5 and must not be a brighter red.
-        assertEquals(over, StressPalette.utilization(3.0));
+        // The same native overload verdict uses the same swatch at any displayed ratio.
+        assertEquals(over, StressPalette.utilization(3.0, true));
     }
 
     @Test
     void failureRedIsNotTheSameAsCompressionRed() {
         // Red means "compressed" in STRESS mode and "spent" in UTILIZATION mode. If the
         // two were the same swatch, a screenshot would not say which lens it came from.
-        assertNotEquals(StressPalette.utilization(1.5), P.compressionColour());
+        assertNotEquals(StressPalette.utilization(1.5, true), P.compressionColour());
     }
 
     @Test

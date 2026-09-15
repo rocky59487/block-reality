@@ -17,6 +17,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RevisionGateTest {
 
+    @Test void restoredJournalFloorIsMonotonicAndInvalidatesEarlierAcceptedResults() {
+        RevisionGate gate = new RevisionGate(); gate.bump();
+        AnalysisResult earlier = solved(1); assertTrue(gate.acceptForCommit(earlier));
+        assertEquals(19,gate.restoreMinimum(19).value());
+        assertTrue(gate.isStale(earlier)); assertEquals(null,gate.lastAccepted());
+        assertEquals(19,gate.restoreMinimum(0).value());
+        assertEquals(19,gate.restoreMinimum(19).value()); assertEquals(20,gate.bump().value());
+    }
+    @Test void revisionFloorRejectsNegativeAndDoesNotLoopThroughLargeGaps() {
+        RevisionGate gate = new RevisionGate();
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,()->gate.restoreMinimum(-1));
+        assertEquals(0,gate.current().value());
+        assertEquals(Long.MAX_VALUE-1,gate.restoreMinimum(Long.MAX_VALUE-1).value());
+        assertEquals(Long.MAX_VALUE,gate.bump().value());
+        assertEquals(Long.MAX_VALUE,gate.restoreMinimum(1).value());
+    }
+
     /** A solved result must actually carry an element, or it is not usable by definition. */
     private static AnalysisResult solved(long rev) {
         return new AnalysisResult(

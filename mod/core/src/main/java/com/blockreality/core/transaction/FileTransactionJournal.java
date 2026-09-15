@@ -42,6 +42,11 @@ public final class FileTransactionJournal implements TransactionJournal {
     enum Stage { TEMP_FORCED, REPLACED, TARGET_FORCED, DIRECTORY_FORCED }
     @FunctionalInterface interface Faults { void at(Stage stage, Entry entry) throws IOException; }
 
+    /** Reopen the manifest's domain, or create one only in an otherwise empty owned directory. */
+    public static FileTransactionJournal open(Path directory) throws IOException {
+        return new FileTransactionJournal(directory, null, (stage, entry) -> { }, MAX_KEYS, MAX_JOURNAL_BYTES, true);
+    }
+
     public FileTransactionJournal(Path directory, UUID domain) throws IOException {
         this(directory, domain, (stage, entry) -> { });
     }
@@ -52,10 +57,15 @@ public final class FileTransactionJournal implements TransactionJournal {
 
     // Reduced quotas exercise admission with real files; production callers cannot raise the frozen caps.
     FileTransactionJournal(Path directory, UUID domain, Faults faults, int keyLimit, long byteLimit) throws IOException {
+        this(directory, Objects.requireNonNull(domain), faults, keyLimit, byteLimit, false);
+    }
+
+    private FileTransactionJournal(Path directory, UUID requestedDomain, Faults faults,
+                                   int keyLimit, long byteLimit, boolean discoverDomain) throws IOException {
         if (keyLimit < 1 || keyLimit > MAX_KEYS || byteLimit < 1 || byteLimit > MAX_JOURNAL_BYTES)
             throw new IllegalArgumentException("Invalid journal quota");
         this.keyLimit = keyLimit; this.byteLimit = byteLimit;
-        this.directory = directory.toAbsolutePath().normalize(); this.domain = Objects.requireNonNull(domain);
+        this.directory = directory.toAbsolutePath().normalize();
         this.faults = Objects.requireNonNull(faults);
         Files.createDirectories(this.directory);
         if (!Files.isDirectory(this.directory, NOFOLLOW_LINKS)) throw new IOException("Invalid journal directory");
@@ -70,12 +80,25 @@ public final class FileTransactionJournal implements TransactionJournal {
             directoryChannel = dir; ownerLock = lock;
             Path manifest = this.directory.resolve(MANIFEST);
             boolean exists = Files.exists(manifest, NOFOLLOW_LINKS);
+            byte[] existingManifest = exists ? readBounded(manifest, 56) : null;
+            if (discoverDomain && existingManifest == null) {
+                // Even a failed initial manifest write is evidence; never mint a replacement domain over it.
+                try (var files = Files.newDirectoryStream(this.directory)) {
+                    for (Path file : files)
+                        if (!file.getFileName().toString().equals(OWNER))
+                            throw new IOException("Cannot discover construction domain: nonempty journal has no marker");
+                }
+                this.domain = UUID.randomUUID();
+            } else if (discoverDomain) {
+                if (existingManifest.length != 56) throw new IOException("Journal domain marker size invalid");
+                var buffer = ByteBuffer.wrap(existingManifest);
+                this.domain = new UUID(buffer.getLong(8), buffer.getLong(16));
+            } else this.domain = requestedDomain;
+            if (exists && !Arrays.equals(manifestBytes(), existingManifest))
+                throw new IOException("Journal domain/schema/checksum mismatch");
             // Do not create a fresh domain marker over records whose original marker was lost.
             scan();
-            if (exists) {
-                if (!Arrays.equals(manifestBytes(), readBounded(manifest, 56)))
-                    throw new IOException("Journal domain/schema/checksum mismatch");
-            } else {
+            if (!exists) {
                 if (!sizes.isEmpty()) throw new IOException("Journal domain marker missing");
                 writeAtomic(manifest, manifestBytes(), null);
             }
@@ -93,6 +116,16 @@ public final class FileTransactionJournal implements TransactionJournal {
     /** Retained incomplete temporary files are diagnostics, never accepted decisions. */
     public synchronized List<Path> orphanFiles() { return List.copyOf(orphans.keySet()); }
     @Override public UUID domain() { return domain; }
+
+    /**
+     * Immutable sorted key inventory; not commit order. Records remain lazy and must be read/validated.
+     * The caller owns external access to this directory; this does not rescan externally added files.
+     */
+    public synchronized List<UUID> entryIds() throws IOException {
+        checkOpen();
+        if (unverified != null) verify(unverified);
+        return List.copyOf(new TreeSet<>(sizes.keySet()));
+    }
 
     @Override public synchronized Optional<Entry> read(UUID id) throws IOException {
         checkOpen(); Objects.requireNonNull(id); Path file = path(id);

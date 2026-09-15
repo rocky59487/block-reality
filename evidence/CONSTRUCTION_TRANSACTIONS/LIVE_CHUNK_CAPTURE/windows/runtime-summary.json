@@ -1,0 +1,19 @@
+{
+  "checks": 44,
+  "exit": 0,
+  "capture_ms": [
+    7.450644,
+    31.374801,
+    4.088763,
+    3.038562,
+    3.551773,
+    5.049833,
+    4.234683,
+    4.079072,
+    3.174243,
+    3.380907
+  ],
+  "median_ms": 4.0839175,
+  "max_ms": 31.374801,
+  "claim": "10 recorded samples after 2 warmups; no performance acceptance"
+}

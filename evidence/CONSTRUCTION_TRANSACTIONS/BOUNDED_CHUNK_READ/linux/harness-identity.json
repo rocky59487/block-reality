@@ -1,0 +1,15 @@
+{
+  "sha256": "39cdead4677f2c9b08cb116ed0ff04e2b01ec47d4d841a63437b6c0ea1e14ca5",
+  "bytes": 10016,
+  "entries": [
+    "META-INF/",
+    "META-INF/MANIFEST.MF",
+    "META-INF/mods.toml",
+    "com/",
+    "com/blockreality/",
+    "com/blockreality/testchunkprobe/",
+    "com/blockreality/testchunkprobe/ChunkProbe$FixtureWorker.class",
+    "com/blockreality/testchunkprobe/ChunkProbe.class"
+  ],
+  "no_production_classes_or_access_transformer": true
+}

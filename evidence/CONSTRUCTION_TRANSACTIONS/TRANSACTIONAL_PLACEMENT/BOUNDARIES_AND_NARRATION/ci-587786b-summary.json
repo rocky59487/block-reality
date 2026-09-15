@@ -1,0 +1,68 @@
+{
+  "head": "587786b96ba522fb4b6f54f6d125039b7ab5f2de",
+  "run_id": "34476235037",
+  "successful_jobs": 4,
+  "skipped_steps": [
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "which tectonic2 commit this repository mirrors"
+    },
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "clone tectonic2 at that commit"
+    },
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "contract/ is byte-for-byte identical (N23-b, the direct form)"
+    },
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "tectonic2's default branch has not moved the contract alone (N23-b)"
+    },
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "dependencies"
+    },
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "static METIS (IDXTYPEWIDTH 32)"
+    },
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "build libbsi_tectonic.so"
+    },
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "the library is self-contained and exports only the contract"
+    },
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "Java suites against the freshly built engine"
+    },
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "BsiNative large reply executes the real solver once"
+    },
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "stage the library, asking it what it is"
+    },
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "build the jar that carries the library"
+    },
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "assemble a staging directory and gate it (N24-a)"
+    },
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "the packaging gate still bites"
+    },
+    {
+      "job": "build the engine library, then the jar that carries it",
+      "step": "Run actions/upload-artifact@v4"
+    }
+  ],
+  "url": "https://github.com/rocky59487/block-reality/actions/runs/34476235037"
+}

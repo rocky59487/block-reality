@@ -1,0 +1,9 @@
+{
+  "jar_sha256": "828d24b47b237c2ded256633a10c3e0d42795eeaa0c51c88514eb7773889fa32",
+  "harness_sha256": "88997cc6a005533752e058bf2b0a6b1fb2941ddaf9f9ab5f03a8f8d2edf79f44",
+  "server": "/home/rocky/br-forge-axis-transactions/installed-flushed",
+  "fresh_world": true,
+  "loopback_port": 25600,
+  "library_source": "/home/rocky/br-native-v15-consumer/installed-server/libraries",
+  "no_old_world_player_or_cache_copied": true
+}

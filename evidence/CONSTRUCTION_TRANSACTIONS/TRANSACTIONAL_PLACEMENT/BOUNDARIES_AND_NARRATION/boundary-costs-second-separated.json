@@ -1,0 +1,242 @@
+{
+  "qualification": "Recorded only; correctness fixture with no warmup, isolation, threshold, FPS or soak claim. Includes test EntityPlace observer work and ordinary background analysis. Allocations are only the calling server thread. Three new successful commits are separated from exact terminal replays.",
+  "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-transactional-placement\\qualification\\runtime-boundaries-second-boundaries\\result.json",
+  "checks": 455,
+  "calls": 127,
+  "groups": [
+    {
+      "operation": "preview",
+      "status": "READY",
+      "kind": "preview",
+      "samples": 79,
+      "elapsedNanoseconds": {
+        "minimum": 220054,
+        "median": 405613,
+        "p95_nearest_rank": 814917,
+        "maximum": 7055791
+      },
+      "callingThreadAllocatedBytes": {
+        "minimum": 46384,
+        "median": 54776,
+        "p95_nearest_rank": 55632,
+        "maximum": 756504
+      }
+    },
+    {
+      "operation": "confirm",
+      "status": "CONFLICT",
+      "kind": "new confirmation binding",
+      "samples": 8,
+      "elapsedNanoseconds": {
+        "minimum": 21866,
+        "median": 11569164,
+        "p95_nearest_rank": 66142280,
+        "maximum": 66142280
+      },
+      "callingThreadAllocatedBytes": {
+        "minimum": 3896,
+        "median": 17536,
+        "p95_nearest_rank": 17536,
+        "maximum": 17536
+      }
+    },
+    {
+      "operation": "confirm",
+      "status": "CONFLICT",
+      "kind": "existing terminal binding",
+      "samples": 1,
+      "elapsedNanoseconds": {
+        "minimum": 10631473,
+        "median": 10631473,
+        "p95_nearest_rank": 10631473,
+        "maximum": 10631473
+      },
+      "callingThreadAllocatedBytes": {
+        "minimum": 17536,
+        "median": 17536,
+        "p95_nearest_rank": 17536,
+        "maximum": 17536
+      }
+    },
+    {
+      "operation": "confirm",
+      "status": "EXPIRED",
+      "kind": "new confirmation binding",
+      "samples": 6,
+      "elapsedNanoseconds": {
+        "minimum": 144197,
+        "median": 8188390,
+        "p95_nearest_rank": 9987282,
+        "maximum": 9987282
+      },
+      "callingThreadAllocatedBytes": {
+        "minimum": 6528,
+        "median": 6776,
+        "p95_nearest_rank": 6800,
+        "maximum": 6800
+      }
+    },
+    {
+      "operation": "confirm",
+      "status": "COMMITTED",
+      "kind": "existing terminal binding",
+      "samples": 9,
+      "elapsedNanoseconds": {
+        "minimum": 691186,
+        "median": 850878,
+        "p95_nearest_rank": 11139029,
+        "maximum": 11139029
+      },
+      "callingThreadAllocatedBytes": {
+        "minimum": 17144,
+        "median": 17144,
+        "p95_nearest_rank": 17688,
+        "maximum": 17688
+      }
+    },
+    {
+      "operation": "confirm",
+      "status": "REJECTED",
+      "kind": "new confirmation binding",
+      "samples": 6,
+      "elapsedNanoseconds": {
+        "minimum": 22444164,
+        "median": 24067342,
+        "p95_nearest_rank": 24649410,
+        "maximum": 24649410
+      },
+      "callingThreadAllocatedBytes": {
+        "minimum": 23864,
+        "median": 24640,
+        "p95_nearest_rank": 67144,
+        "maximum": 67144
+      }
+    },
+    {
+      "operation": "preview",
+      "status": "PERMISSION",
+      "kind": "preview",
+      "samples": 2,
+      "elapsedNanoseconds": {
+        "minimum": 58719,
+        "median": 69960,
+        "p95_nearest_rank": 69960,
+        "maximum": 69960
+      },
+      "callingThreadAllocatedBytes": {
+        "minimum": 4624,
+        "median": 4664,
+        "p95_nearest_rank": 4664,
+        "maximum": 4664
+      }
+    },
+    {
+      "operation": "preview",
+      "status": "OUT_OF_REACH",
+      "kind": "preview",
+      "samples": 1,
+      "elapsedNanoseconds": {
+        "minimum": 125451,
+        "median": 125451,
+        "p95_nearest_rank": 125451,
+        "maximum": 125451
+      },
+      "callingThreadAllocatedBytes": {
+        "minimum": 5184,
+        "median": 5184,
+        "p95_nearest_rank": 5184,
+        "maximum": 5184
+      }
+    },
+    {
+      "operation": "preview",
+      "status": "CONFLICT",
+      "kind": "preview",
+      "samples": 9,
+      "elapsedNanoseconds": {
+        "minimum": 23960,
+        "median": 31112,
+        "p95_nearest_rank": 202366,
+        "maximum": 202366
+      },
+      "callingThreadAllocatedBytes": {
+        "minimum": 4688,
+        "median": 4728,
+        "p95_nearest_rank": 15344,
+        "maximum": 15344
+      }
+    },
+    {
+      "operation": "confirm",
+      "status": "COMMITTED",
+      "kind": "new confirmation binding",
+      "samples": 3,
+      "elapsedNanoseconds": {
+        "minimum": 160969754,
+        "median": 172388896,
+        "p95_nearest_rank": 198736410,
+        "maximum": 198736410
+      },
+      "callingThreadAllocatedBytes": {
+        "minimum": 7076200,
+        "median": 7076256,
+        "p95_nearest_rank": 7219160,
+        "maximum": 7219160
+      }
+    },
+    {
+      "operation": "preview",
+      "status": "RATE_LIMITED",
+      "kind": "preview",
+      "samples": 1,
+      "elapsedNanoseconds": {
+        "minimum": 8872,
+        "median": 8872,
+        "p95_nearest_rank": 8872,
+        "maximum": 8872
+      },
+      "callingThreadAllocatedBytes": {
+        "minimum": 3768,
+        "median": 3768,
+        "p95_nearest_rank": 3768,
+        "maximum": 3768
+      }
+    },
+    {
+      "operation": "confirm",
+      "status": "RATE_LIMITED",
+      "kind": "existing terminal binding",
+      "samples": 1,
+      "elapsedNanoseconds": {
+        "minimum": 9566,
+        "median": 9566,
+        "p95_nearest_rank": 9566,
+        "maximum": 9566
+      },
+      "callingThreadAllocatedBytes": {
+        "minimum": 3872,
+        "median": 3872,
+        "p95_nearest_rank": 3872,
+        "maximum": 3872
+      }
+    },
+    {
+      "operation": "preview",
+      "status": "CAPACITY",
+      "kind": "preview",
+      "samples": 1,
+      "elapsedNanoseconds": {
+        "minimum": 222908,
+        "median": 222908,
+        "p95_nearest_rank": 222908,
+        "maximum": 222908
+      },
+      "callingThreadAllocatedBytes": {
+        "minimum": 44376,
+        "median": 44376,
+        "p95_nearest_rank": 44376,
+        "maximum": 44376
+      }
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"command": ["bash", "gradlew", "--no-daemon", "--console=plain", "check"], "exit": 0}

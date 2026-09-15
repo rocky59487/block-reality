@@ -1616,3 +1616,79 @@ records. Gate6 geometry/HUD passes; actual-game shell-indicative warning remains
 unobserved/open. No native C14 result is relabeled as a client observation. CI
 f7f9533/run34441250786 passes4 jobs with15 native step SKIPs. See
 evidence/NATIVE_V15_CONSUMER/client/RESULTS.md. No original gate is lowered.
+
+### 2026-09-10 NATIVE_VERDICT_API
+
+Criteria d386ced precede9558351. Public result colours now require the supplied
+native overload flag; unused numeric hatch is removed. Windows561 PASS/12 platform
+SKIP, Forge packet/jar checks and37 ordinary-jar display readouts pass unchanged.
+Linux15-test control/restored pass; the compiled ignored-flag mutant fails the
+boundary assertion. The first single-changed-class expectation FAILS because
+LegendStop.class also has8 line-number bytes changed180→169. Its complete code,
+descriptors and remaining bytes are identical. This follows the frozen criterion's
+extra-entry investigation, not a hidden replacement of the original assertion.
+Qualified artifact scope explicitly includes that debug delta. See
+evidence/NATIVE_VERDICT_API/RESULTS.md; no native, UI scene or v1 gate is lowered.
+
+### 2026-09-10 CT_JOURNAL_BOOTSTRAP
+
+019ca33 froze domain discovery and bounded key inventory before471fad9. New5
+file tests pass on both platforms; malformed-manifest integrity bypass compiles
+and is caught, with5-test control/restored passing. Full578 registered:
+Windows566 PASS/12 platform SKIP; Linux577 PASS/1 platform SKIP. Both existing37
+interrupted/recovery JVM runs and owner checks pass; those remain synthetic file
+participants. Ordinary jar changes only FileTransactionJournal.class;386 entries
+including both native libraries/resources remain identical. No game transaction,
+metadata replay, FPS or CT-1..9 completion claim. See
+evidence/CONSTRUCTION_TRANSACTIONS/JOURNAL_BOOTSTRAP/RESULTS.md.
+
+### 2026-09-10 CT_MANUFACTURED_METADATA
+
+Criteria a409ada/aba5aac precede4737e3c; c1d8ebb fixes the cost protocol before its
+profile driver. Permanent manufactured IDs, committed-journal reconstruction,
+strict ownership and irreversible whole-build undo metadata pass18 new tests on
+both platforms. Full596 registered:Windows584 PASS/12 platform SKIP, Linux595
+PASS/1 platform SKIP. Both37 interrupted/recovery JVM runs and owner checks pass.
+Two compiled planner/committed-validator removals fail ownership and undo assertions;
+control/restored18 pass. The first14-test source/XML remains pre-extension evidence.
+Jar1315dce1e785 adds14 classes; all387 old entries/236 classes remain byte-identical.
+Both native libraries/resources remain unchanged. The864 profile operations retain
+all samples, matching fingerprints and2400 identical copied files per platform.
+Times are Recorded only, with concurrent same-host execution and the Linux1024
+reopen313ms p95 tail retained. No Forge construction caller, world/player atomicity,
+refund authorization, CT-1..9, FPS or v1 completion follows from metadata alone.
+See evidence/CONSTRUCTION_TRANSACTIONS/MANUFACTURED_METADATA/RESULTS.md.
+
+### 2026-09-10 CT_CHUNK_PARTICIPANT
+
+f693306 freezes chunk storage criteria before70d1112. Whole-batch canonical-image
+admission, complete store-future draining, force-before-readback, error latching and
+new-adapter synchronization pass7 tests, including actual region-file reopen.
+Windows/Linux full Forge131 PASS/0 SKIP; unchanged472-test core evidence is reused
+from4737e3c, not described as a fresh run. Current603 registration has Windows591
+PASS/12 platform SKIP and Linux602 PASS/1 platform SKIP coverage. Both compiled
+force/lost-capability mutants fail behavior;7-test control/restored pass. All401
+old jar entries/250 classes remain identical;4 adapter classes are added.
+The live level binding/capture is not exercised and no production construction
+caller exists. Review finds vanilla chunk reads allocate NBT with an unlimited
+accounter before canonical admission, while ChunkSerializer can swallow capability
+errors. These remain open live-integration limitations, not relaxed corrupt-disk
+bounds or accepted capture guarantees. No CT-1..9/FPS/v1 gate is lowered. See
+evidence/CONSTRUCTION_TRANSACTIONS/CHUNK_PARTICIPANT/RESULTS.md.
+
+### 2026-09-10 CT_BOUNDED_CHUNK_READ
+
+b8b3f7a precedes production0c95eea and source snapshot bca242a. The same-worker
+reader caps decoded bytes before NBT tag allocation, preserves strict parsing and
+refuses pending images. Both Forge137-test suites and13-test chunk controls pass;
+unchanged472-test core evidence is reused. Current609 registration has Windows597
+PASS/12 platform SKIP and Linux608 PASS/1 platform SKIP coverage. The compiled
+stream-cap and vanilla-parser mutants each fail their selected behavioral assertion;
+control/restored13 pass, and all raw region fixtures are retained.
+Ordinary jar4bf732d83a1e contains the exact four AT directives, changes only the
+storage delegate and adds one reader class. The separate installed harness has no
+AT or production classes;12 checks exercise actual mods/ classes, a real level's
+complete NBT checkpoint/after/restore, unchanged chest items and corrupt-file refusal.
+Normal server exit0/port release are verified. No Minecraft crash recovery, throwing
+capability/custom-hook capture, full construction, socket/UI, FPS or v1 gate is
+substituted or lowered. See evidence/CONSTRUCTION_TRANSACTIONS/BOUNDED_CHUNK_READ/RESULTS.md.

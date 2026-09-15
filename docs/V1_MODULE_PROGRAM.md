@@ -56,7 +56,26 @@ Main 契約變更需與引擎團隊的交付狀態對位，避免讓兩倉預設
 
 最新交付已更新為v1.5，模組Main #126的契約同步已整合。本工作只消費來源42ba7eb9、
 契約5d4367f40de8的發布SDK；引擎倉未修改/建置/合併/發布。
-目前開發jar15,286,415B、SHA9d8cb6795e9c…；來源/授權/封裝/JNA及真安裝專服門檻1–5通過。
+目前模組候選FIFTH為15,440,153B、SHA87bb2ed0d34c…，保留同一v1.5雙平台庫。
+核心487項、Forge152項：639登錄，Windows627PASS/12平台SKIP，Linux638PASS/1平台SKIP。
+`codex/transactional-placement`接續PR134，已實作單格BUILD與材料消耗、伺服器預覽/C2S確認、
+送出前持久保存的client重試、完整玩家/區塊barrier、提交後單次metadata/revision。
+普通jar隔離實裝277項與重啟209項通過，各含100次admitted精確重送；8個Minecraft SIGKILL
+中斷點、16次重啟，以及原始region與完整玩家檔解析通過。5個編譯行為反例都被預定断言抓到。
+真Linux開發client對普通jar專服首輪48項/修正版52項，每輪2個client JVM與8張原始圖；
+驗證三軸、取消、鍵盤、材料同步、箱子優先、保護取消和丟失回覆後跨client重啟的精確重送。
+面板高度依內容收合，終態隱藏重試並移交完成焦點。來源、首敗與原始證據見
+`../evidence/CONSTRUCTION_TRANSACTIONS/TRANSACTIONAL_PLACEMENT/RESULTS.md`。
+後續普通jar邊界首輪328項、逐actor容量守門加強版455項通過，領域/actor/slot/NBT/target/
+expiry/rate/capacity與Count1/offhand都有直接實裝證據。真client第三輪46項/5圖通過，含
+server EXPIRED後明確新預覽與另次確認、320×240GUI實際溢出捲動和原生朗讀文字/焦點。
+新提交六次143–199ms與約7.1MB配置僅Recorded，尚待優化；額外capability/巢狀玩家資料/
+reentrant副作用仍待驗。新版來源56541f4雙平台Forge完整測試通過，core逐位相同沿用。
+詳 `../evidence/CONSTRUCTION_TRANSACTIONS/TRANSACTIONAL_PLACEMENT/BOUNDARIES_AND_NARRATION/RESULTS.md`。
+587786b的四項CI成功/15原生SKIP照存，新head發布後核實。完整CT-1..9/#12/#17、blueprint/undo/一般拆除所有權整理、高性能、
+Windows CM/N25、引擎權威動態消費與正式v1都保持開放。
+
+原v1.5換裝單元jar15,286,415B、SHA9d8cb6795e9c…的來源/授權/封裝/JNA及真安裝專服門檻1–5通過。
 完整573登錄：Windows561PASS/12平台SKIP、Linux572PASS/1平台SKIP；兩平台96frame×3直連
 與3次jar/JNA回覆一致，涵蓋C14原生殼indicative警示。真專服10項與重啟讀數/快取通過。
 詳 `../evidence/NATIVE_V15_CONSUMER/RESULTS.md`；本版client127模型/14互動/45守門及22圖通過，厚殼警示遊戲輸入仍未觀測；CI f7f9533四項通過/15原生步驟SKIP。
@@ -111,11 +130,27 @@ CONSTRUCTION_IDENTITY 已接永久 namespace/單調 ID、產品/宣告軸分組�
 
 CONSTRUCTION_TRANSACTIONS 已先凍完整 CT-1..9 與 D-048：每次確認的新 piece 都用新 UUID，
 不默默延長舊身分。第一步實作模組核心日誌、原子決策與復原協調器；尚未接入 Forge 生產入口。
-已有30項核心與15項Forge玩家持久化測試；精確NBT/欄位、完整基線checkpoint、原子替換、
+已有35項核心與15項Forge玩家持久化測試；精確NBT/欄位、完整基線checkpoint、原子替換、
 保留孤兒檔配額及故障路徑已驗。兩平台37個中斷/恢復JVM與3個新可編譯反例通過；
 玩家存檔成本仍是Recorded，Windows小fixture p95尾延遲照登。詳 `CT_PLAYER_PARTICIPANT.md`。
 尚無正式Forge施工呼叫者；檔案/JVM故障測試不等於遊戲庫存/區塊交易或undo/UI完成。
 接合限制見 `CONSTRUCTION_TRANSACTION_ADAPTER.md`；CT-1..9完整門檻仍全部保持開放。
+
+CT_JOURNAL_BOOTSTRAP 補上鎖內領域ID發現、損壞/遺失marker拒絕新身分及有界不可變交易key清單。
+578登錄：Windows566PASS/12平台SKIP、Linux577PASS/1平台SKIP；兩平台37個中斷/復原JVM及
+原生適用測試通過。最新開發jar73a491fba10e…只比前版改FileTransactionJournal.class，
+雙v1.5庫/契約/資源不變。詳 `../evidence/CONSTRUCTION_TRANSACTIONS/JOURNAL_BOOTSTRAP/RESULTS.md`。
+這仍不重播已提交world/player歷史；製造物件metadata後續進度如下，Forge施工入口仍開放。
+前置#128已使公開利用率顯示API必須收原生旗標；37組實際jar讀數不變，反例被抓到，
+6d1a0c2 CI四項通過/15原生步驟SKIP；#124須在實際Main整合後才關閉。
+
+CT_MANUFACTURED_METADATA 已使明確piece計畫取得永久UUID、COMMITTED日誌唯一權威與精確格所有權。
+切割/依賴編輯使舊piece不可逆失去整批undo資格，退役ID不復用；損壞history/即時核實失敗拒絕使用。
+18項新測試及兩個可編譯反例通過，完整596登錄：Windows584PASS/12平台SKIP、Linux595PASS/1平台SKIP。
+最新jar1315dce1e785…只新增14類別，原236類別、v1.5雙庫/契約/資源不變。
+雙平台同種子864次成本操作內容一致；同步提交p95約13–46ms，僅Recorded，未接受FPS。
+詳 `../evidence/CONSTRUCTION_TRANSACTIONS/MANUFACTURED_METADATA/RESULTS.md`；尚無Forge施工呼叫者。
+metadata只提供整批undo資格，不代替原world/item影像、權限/依賴或退款校驗；CT-1..9仍全開放。
 
 MODULE_PIPELINE_PROFILE 已將 metadata/gather/queue/BSI/解碼/封包/apply 分別量測，預設不收資料。
 A49/F576/M832 三場景各 40 次實跑，數字只作 Recorded 基線；M832 原生呼叫占主要成本，
@@ -159,3 +194,21 @@ control與最終各10項原生守門及重啟/原生快取恢復通過；修正�
 最終jar15,203,634B、SHA7bdfce5d1581…；比NCR只有mods.toml不同，204類別與兩原生庫逐位相同。
 其完整程式測試明示沿用NCR，未冒充重跑；新安裝與封裝證據見 `../evidence/INSTALLED_NATIVE_SERVER/RESULTS.md`。
 這只補Linux安裝專服，不取代Windows安裝客戶端、CM/N25、材質方向/互動、FPS與引擎動態依賴。
+
+CT_CHUNK_PARTICIPANT 補上同一IOWorker整批保存、future排空、force與完整NBT讀回比較。
+7項新測試含真region檔案重開；双平台完整Forge131PASS，core沿用4737e3c相同來源測試。
+目前603登錄：Windows591PASS/12平台SKIP、Linux602PASS/1平台SKIP；4類別新增，原250類別/
+v1.5庫及資源逐位不變。省略force與遺失capability的可編譯反例被抓到，詳
+`../evidence/CONSTRUCTION_TRANSACTIONS/CHUNK_PARTICIPANT/RESULTS.md`。
+下一步正式host仍須解決ChunkSerializer吞掉capability例外、custom save資料擷取及原版
+NbtIo無上限讀取配置；canonical上限不等於解析前上限。尚無Forge施工呼叫者，CT-1..9不關閉。
+
+CT_BOUNDED_CHUNK_READ 已在原IOWorker/region cache讀取解壓16MiB+1上限後才建NBT tags，
+並拒絕pending影像、重複鍵/深度/不可能長度與trailing資料。雙平台Forge137PASS，13項
+區塊測試通過；stream cap/vanilla parser兩個可編譯反例被抓到。最新jar4bf732d83a1e…
+已在隔離安裝Forge的真Level上通過12項checkpoint/after/恢復/箱子原物品/損壞檔拒絕檢查，
+harness不含AT或正式類別，測試確實使用mods/內jar。專服正常exit0，原檔/完整收據保留。
+609登錄覆蓋：Windows597PASS/12平台SKIP、Linux608PASS/1平台SKIP；core來源不變沿用前次。
+詳 `../evidence/CONSTRUCTION_TRANSACTIONS/BOUNDED_CHUNK_READ/RESULTS.md`。這解決上一段的
+模組讀取配置邊界；下一步仍需完整live capture、吞錯capability/custom hooks、施工host、
+普通放置/藍圖/undo與UI。CT-1..9和v1仍開放，沒有Java物理或原生引擎改動。

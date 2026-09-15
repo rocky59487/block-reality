@@ -1,9 +1,11 @@
-# CT adapter integration notes — active, not qualified gameplay
+# CT adapter integration notes — axis caller qualified, full CT open
 
 The criteria in `CONSTRUCTION_TRANSACTIONS.md` were committed at a180ae2/1dafb52.
-The first implementation step adds the module transaction data model, bounded binary
-journal and serial coordinator. There is **no Forge production caller yet**. None of
-CT-1 through CT-9 is marked complete by the core fixtures alone.
+The module transaction data model, bounded binary journal and serial coordinator now
+have an axis-only Forge production caller. Its installed gameplay, pause and Minecraft
+restart evidence is in `../evidence/CONSTRUCTION_TRANSACTIONS/FORGE_AXIS_TRANSACTIONS/RESULTS.md`.
+Ordinary placement, inventory consumption, blueprint/undo and actual socket/UI remain
+open. None of CT-1 through CT-9 is completed by the core fixtures or axis subunit alone.
 
 ## Implemented boundary
 
@@ -36,6 +38,9 @@ inventory/world/piece/revision changes inaccessible until publication, flush all
 participants, and block construction/analysis when recovery is required. Undo eligibility,
 piece lifetime enforcement and product/blueprint validation still belong to the adapter
 and authoritative piece registry; the journal cannot infer them from opaque images.
+`ConstructionService` implements this host for a single existing block's axis edit;
+it currently rejects other operation schemas. The following ordinary-placement and
+player-participant integration requirements still apply to the next callers.
 
 ## Verified local Forge source findings
 

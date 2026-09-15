@@ -114,6 +114,10 @@ jobs:
         working-directory: forge
         run: ./gradlew --no-daemon -I ../scripts/registry-save-profile.gradle compileRegistrySaveProfileJava
 
+      - name: compile manufactured metadata cost recorder
+        working-directory: mod
+        run: ./gradlew --no-daemon -I ../scripts/manufactured-metadata-profile.gradle :core:compileManufacturedMetadataProfileJava
+
       # Runs LAST because it reads gradle's JUnit XML, which only exists once both
       # suites have run. Every check count quoted in a document is compared against
       # what the suites actually printed — the defect this closes reached the public

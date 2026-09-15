@@ -45,3 +45,16 @@ Scans fit these presentation bounds and interpolate native samples with separate
 and depth extents. Changing product/axis suppresses incompatible old surfaces.
 Actual baked quads, target/collision boxes, item models and vanilla interaction receipts
 are in evidence/MATERIAL_GEOMETRY. Original installed Windows acceptance remains open.
+
+## Placement confirmation
+
+The builder needs to confirm one declared product while seeing its real target. Keep
+the product name and world ghost prominent; place material cost, position and the
+receipt status directly above native axis/confirm/cancel buttons. Use the same flat
+dark steel backplate, white Minecraft pixel text, bold product name and cyan ghost,
+with6px insets,12px text rows and4px control gaps. No extra depth or decoration.
+Width occupies at most44% of the GUI, capped at240px. Height follows the measured
+content and controls; only small viewports constrain it and scroll the text. Keep
+buttons visible and preserve keyboard focus when a receipt changes the panel height.
+The first actual1920x1080/scale1 baseline exposed excessive blank height; retain that
+baseline and recheck native screenshots after making the panel fit its content.

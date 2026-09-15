@@ -1,0 +1,22 @@
+{
+  "sources": {
+    "source-first": {
+      "sha256": "eab1dcd6747b026d3e8a62ecd6fb247dc77bf4e9af13e48d103b01c400190077",
+      "bytes": 3020800
+    },
+    "source-second": {
+      "sha256": "201a97bae6deebf4af1a1d937572edac7da68b8ec3974e3bb8e4bf97fe3604d3",
+      "bytes": 3020800
+    },
+    "source-third": {
+      "sha256": "ad3d0b35c7fb8d69f2b612a5be2da0aec7b0d229d39d0514a5ed8d363f5920c0",
+      "bytes": 3020800
+    }
+  },
+  "core_full_suite_source": "d720995a67575c88630f8a024da9e91007d30f32",
+  "forge_installed_source": "338c490d39e106c8b673f83cf3e52dbd0b93ecfc",
+  "engine_modified": false,
+  "formal_forge_caller": "empty-hand sneak axis edit only",
+  "ordinary_placement_inventory_blueprint_undo": "OPEN",
+  "synthetic_players_only": true
+}

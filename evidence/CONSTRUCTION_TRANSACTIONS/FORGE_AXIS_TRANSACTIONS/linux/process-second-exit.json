@@ -1,0 +1,1 @@
+{"command": ["bash", "gradlew", "--no-daemon", "--console=plain", ":core:constructionRecoveryGate", "-Dbr.transactionEvidence=/home/rocky/br-forge-axis-transactions/qualification/process-second"], "exit": 0}

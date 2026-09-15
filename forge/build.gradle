@@ -26,6 +26,7 @@ sourceSets.main.java.srcDirs += [
 sourceSets.main.resources.srcDir '../mod/core/src/main/resources'
 
 minecraft {
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
     // Official Mojang mappings, matching the previous project's convention.
     mappings channel: 'official', version: '1.20.1'
     copyIdeResources = true

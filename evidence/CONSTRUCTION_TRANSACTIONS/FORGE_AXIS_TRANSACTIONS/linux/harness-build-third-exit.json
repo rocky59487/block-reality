@@ -1,0 +1,1 @@
+{"exit": 0, "command": ["bash", "gradlew", "--no-daemon", "--console=plain", "jar", "reobfJar"], "reason": "Strengthen partial inventory assertion to exact full saved inventory, selected slot and carried bytes; preserve prior 53-check control."}
