@@ -1,0 +1,98 @@
+{
+  ".gitattributes": {
+    "bytes": 10,
+    "sha256": "4ce4b6e6b8435f8c3a8387387732964a2ebf0183e8d77b8247ae8061b033e462"
+  },
+  "after-legend-code.txt": {
+    "bytes": 3124,
+    "sha256": "a88a32526b92ca34176e7ba543d0365a2a2b8887935762bef97193f8ec4cf243"
+  },
+  "after-legend-verbose.txt": {
+    "bytes": 14540,
+    "sha256": "5ab70a6310ae4063d62116b69d85e154e91bfeac98b42b4cbf5e5e9dcf7c611b"
+  },
+  "archive.py": {
+    "bytes": 2603,
+    "sha256": "0abd141d0493fd94d5fa08d4415b8d74b1defd488f81831e9eb8796b05fc5b90"
+  },
+  "artifact-reviewed.json": {
+    "bytes": 1331,
+    "sha256": "e35d23507146cbb7d56c6bcd27be0a716c060774938ecb184ff80730c3827121"
+  },
+  "baseline-readouts.txt": {
+    "bytes": 1297,
+    "sha256": "b029bce9dd441ad843f8ed39e9ebf7f75b043591c3873e93e9d2fe84bd4fea95"
+  },
+  "before-legend-code.txt": {
+    "bytes": 3124,
+    "sha256": "a88a32526b92ca34176e7ba543d0365a2a2b8887935762bef97193f8ec4cf243"
+  },
+  "before-legend-verbose.txt": {
+    "bytes": 14528,
+    "sha256": "0356edfd8dc3c4d2e39d466bdd8f7c7f6759ae640147076d5a027c700affc5e3"
+  },
+  "candidate-readouts.txt": {
+    "bytes": 1297,
+    "sha256": "b029bce9dd441ad843f8ed39e9ebf7f75b043591c3873e93e9d2fe84bd4fea95"
+  },
+  "compiled-mutation.zip": {
+    "bytes": 7069,
+    "sha256": "02d2103316a536175f1e4118077037898a5477a7ca9cacbadf7c9cbdc70f0f9e"
+  },
+  "core-exit.json": {
+    "bytes": 95,
+    "sha256": "e26602447a2ab9c2a3cd774faf38a82d1155938c2829960ca0d4331c7fa82a26"
+  },
+  "core-first.log": {
+    "bytes": 38033,
+    "sha256": "9ddff31a1e59096655d7edd0cc0cb5cedbfba094ba621444b78a29a978019654"
+  },
+  "core-xml.zip": {
+    "bytes": 42553,
+    "sha256": "4368e4a2c7d0b155551ac365f56ee730bffe4bc9ef6af1976e89e5d76d4c9138"
+  },
+  "counts.json": {
+    "bytes": 193,
+    "sha256": "248f5d10ebee4203cc2c664a274b093eb24668e10c5d8302ac6a5d42997ded22"
+  },
+  "forge-exit.json": {
+    "bytes": 191,
+    "sha256": "44ee0eff5f46071cc284c97a33588fc5f97d9734c32945e243c905e94a3fc075"
+  },
+  "forge-first.log": {
+    "bytes": 12324,
+    "sha256": "75c2e1b4599134f64673046ba05182661af41ea5665dfbd1bac5f8bdac7c28b0"
+  },
+  "forge-xml.zip": {
+    "bytes": 18986,
+    "sha256": "5ec37aa510a98e62eddb84fa8c8f7b10556cfb336bc21197c89228cb7b2b3e56"
+  },
+  "inspect-artifact.py": {
+    "bytes": 1549,
+    "sha256": "c408214803ebd040a3d3bd1dd0df3bc26935cd15c1873e5ee2446ed45527e228"
+  },
+  "jar-identity.json": {
+    "bytes": 381,
+    "sha256": "b47f379c1f09e0c0ed7cf99372c03567cd4c065e9499e127ad9adc2ec8e23ef3"
+  },
+  "legend-verbose.diff": {
+    "bytes": 4011,
+    "sha256": "cd269a99a5b0b18db512f8108ca1a6410c1511f1d6808d860fce548612083464"
+  },
+  "mutation.py": {
+    "bytes": 2335,
+    "sha256": "cfe541e0c87d8575161df2e61a08a35b06435eaae462590fcdd0310fdc5af0b6"
+  },
+  "native-parent-ci-1f5c7b3.json": {
+    "bytes": 13467,
+    "sha256": "f8ae6552beecb29f288326420cd18e85334b6f8854ff7ade33e2d0de684b7c39"
+  },
+  "PaletteReadout.java": {
+    "bytes": 796,
+    "sha256": "a75e3ab567f6c308a429b7fd26c66b1ec24656a97a327995c686a25f3e4f8e2d"
+  },
+  "run-checks.py": {
+    "bytes": 1201,
+    "sha256": "76f21f01c37d1e11b0bd82aa0e00aafc30feda36ace733df40c77ebf8d7dfe97"
+  }
+}

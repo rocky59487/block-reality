@@ -1,0 +1,11 @@
+// Deliberate fixture capture only; CREATE_NEW refuses accidental golden replacement.
+allprojects { afterEvaluate { p ->
+    if (p.name == 'core') {
+        p.tasks.register('registryCodecGolden', JavaExec) {
+            dependsOn p.tasks.named('testClasses')
+            classpath = p.sourceSets.test.runtimeClasspath
+            mainClass = 'com.blockreality.core.world.ConstructionCodecGolden'
+            args System.getProperty('br.codecGolden')
+        }
+    }
+} }

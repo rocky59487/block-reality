@@ -1,0 +1,25 @@
+{
+  "core": {
+    "registered": 367,
+    "pass": 340,
+    "skip": 27,
+    "fail": 0
+  },
+  "forge": {
+    "registered": 92,
+    "pass": 91,
+    "skip": 1,
+    "fail": 0
+  },
+  "linuxPacket": {
+    "registered": 10,
+    "pass": 10,
+    "skip": 0,
+    "fail": 0
+  },
+  "server": {
+    "statusGates": 16,
+    "syntheticProbeRuns": 6,
+    "syntheticEvents": 24
+  }
+}

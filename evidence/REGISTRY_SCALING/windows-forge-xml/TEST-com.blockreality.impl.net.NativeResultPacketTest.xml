@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.net.NativeResultPacketTest" tests="3" skipped="1" failures="0" errors="0" timestamp="2026-09-09T21:39:31" hostname="ROCKYLAPTOP" time="0.021">
+  <properties/>
+  <testcase name="sharedContractResourcesDescribeThisBuild()" classname="com.blockreality.impl.net.NativeResultPacketTest" time="0.005"/>
+  <testcase name="realNativeAnalysisReachesThePacketWithTheSameFlagsAndDoubles()" classname="com.blockreality.impl.net.NativeResultPacketTest" time="0.014">
+    <skipped/>
+  </testcase>
+  <testcase name="failedAnalysisCannotBeEncodedAsAHealthyEmptyResult()" classname="com.blockreality.impl.net.NativeResultPacketTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

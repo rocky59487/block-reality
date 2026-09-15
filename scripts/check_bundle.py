@@ -57,6 +57,15 @@ def sha256_file(p):
 NATIVES_MANIFEST = PREFIX + "natives.manifest"
 SIDECAR_MANIFEST = PREFIX + "engine.manifest"
 
+# NATIVE_CONSUMER 2026-09-09: the published GCC copyright text is larger than
+# the historical 64 KiB stray-payload limit. Only these exact authenticated
+# release bytes are exempt, never an entire directory or a self-reported hash.
+RELEASE_LICENSES = {
+    f"META-INF/third_party/native-release/{platform}/licenses/Ubuntu-GCC.txt":
+        (70612, "c2ff6bea4ff8eb81e93a10878e3a03db5015051b32272b363a6f23d3b86b11a2")
+    for platform in ("linux-x86_64", "windows-x86_64")
+}
+
 
 # ---------------------------------------------------------------- N24-a1
 #
@@ -214,6 +223,28 @@ def check_natives_shape(z, infos, names, dist, problems):
                         "contract the mod speaks, so it cannot check the engine against it")
 
     expected = {NATIVES_MANIFEST}
+    # The ABI10 schema now exceeds the stray-payload size limit. Authorize only
+    # the canonical contract resources, and verify their exact bytes even when
+    # they are small. An arbitrary JSON file still cannot bypass that limit.
+    for resource in ["bsi.schema.json", "CONTRACT_SHA256"]:
+        name = "blockreality/contract/" + resource
+        path = os.path.join(ROOT, "contract", resource)
+        if name not in names or not os.path.isfile(path):
+            problems.append(f"canonical contract resource missing: {name}")
+        else:
+            with open(path, "rb") as f:
+                canonical = f.read()
+            if z.read(name) != canonical:
+                problems.append(f"canonical contract resource differs: {name}")
+            else:
+                expected.add(name)
+    for name, (size, digest) in RELEASE_LICENSES.items():
+        if name in names:
+            data = z.read(name)
+            if len(data) != size or sha256_bytes(data) != digest:
+                problems.append(f"release licence differs from published bytes: {name}")
+            else:
+                expected.add(name)
     for os_, arch, name, claimed, size, engine_version, contract in rows:
         entry = f"{PREFIX}{os_}-{arch}/{name}"
         expected.add(entry)

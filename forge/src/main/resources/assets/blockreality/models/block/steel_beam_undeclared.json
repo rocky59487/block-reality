@@ -1,0 +1,5 @@
+{
+  "parent": "blockreality:block/steel_beam",
+  "loader": "blockreality:product",
+  "undeclared": true
+}

@@ -1,0 +1,63 @@
+> Task :api:compileJava
+> Task :api:processResources NO-SOURCE
+> Task :api:classes
+> Task :api:jar
+
+> Task :core:compileJava
+C:\Users\wmc02\Desktop\block-reality\build\rs-mutants-3rlb8qm9\mod\core\src\main\java\com\blockreality\core\engine\BsiNative.java:118: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+                try (var ignored = profile.begin(REPLY_COPY)) {
+                         ^
+C:\Users\wmc02\Desktop\block-reality\build\rs-mutants-3rlb8qm9\mod\core\src\main\java\com\blockreality\core\engine\InProcessEngine.java:136: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+        try (var ignored = profile.begin(WORLD_ENCODE)) { payload = BsiRecords.encodeBlocks(blocks); }
+                 ^
+C:\Users\wmc02\Desktop\block-reality\build\rs-mutants-3rlb8qm9\mod\core\src\main\java\com\blockreality\core\engine\InProcessEngine.java:149: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(WORLD_MAP)) { blocks = snapshot.blocks(vocabulary); }
+                     ^
+C:\Users\wmc02\Desktop\block-reality\build\rs-mutants-3rlb8qm9\mod\core\src\main\java\com\blockreality\core\engine\InProcessEngine.java:175: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+        try (var ignored = profile.begin(RESULT_DECODE)) {
+                 ^
+C:\Users\wmc02\Desktop\block-reality\build\rs-mutants-3rlb8qm9\mod\core\src\main\java\com\blockreality\core\engine\InProcessEngine.java:210: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(FRAME_ENCODE)) { request = BsiFrame.encode(header, payload); }
+                     ^
+C:\Users\wmc02\Desktop\block-reality\build\rs-mutants-3rlb8qm9\mod\core\src\main\java\com\blockreality\core\engine\InProcessEngine.java:213: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+            try (var ignored = profile.begin(FRAME_DECODE)) {
+                     ^
+6 warnings
+
+> Task :core:processResources
+> Task :core:classes
+
+> Task :core:compileTestJava
+C:\Users\wmc02\Desktop\block-reality\build\rs-mutants-3rlb8qm9\mod\core\src\test\java\com\blockreality\core\diagnostics\PipelineProfileTest.java:60: warning: [try] auto-closeable resource s is never referenced in body of corresponding try statement
+        p.run(first,()->{try(var s=p.begin(RESULT_DECODE)){
+                                 ^
+1 warning
+
+> Task :core:processTestResources
+> Task :core:testClasses
+
+> Task :core:test FAILED
+
+ConstructionSnapshotTest > workSnapshotDoesNotAliasCallerCollections() FAILED
+    org.opentest4j.AssertionFailedError: expected: <{(4096,128,0)=ConstructionDeclaration[material=steel, section=steel_rect_200x400, axis=0]}> but was: <{(4097,128,0)=ConstructionDeclaration[material=steel, section=steel_rect_200x400, axis=0]}>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+        at app//com.blockreality.core.world.ConstructionSnapshotTest.workSnapshotDoesNotAliasCallerCollections(ConstructionSnapshotTest.java:18)
+
+1 test completed, 1 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:test'.
+> There were failing tests. See the report at: file:///C:/Users/wmc02/Desktop/block-reality/build/rs-mutants-3rlb8qm9/mod/core/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 9s
+7 actionable tasks: 7 executed

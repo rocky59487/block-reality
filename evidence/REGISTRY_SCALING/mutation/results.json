@@ -1,0 +1,13 @@
+[
+  {
+    "arm": "aliased-capture",
+    "exit": 1,
+    "behavioral_oracle": [
+      {
+        "test": "workSnapshotDoesNotAliasCallerCollections()",
+        "failure": "org.opentest4j.AssertionFailedError"
+      }
+    ],
+    "pass": true
+  }
+]

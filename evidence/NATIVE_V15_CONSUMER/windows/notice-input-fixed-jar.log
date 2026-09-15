@@ -1,0 +1,47 @@
+> Task :downloadMcpConfig
+> Task :extractSrg UP-TO-DATE
+> Task :createMcpToSrg UP-TO-DATE
+> Task :compileJava UP-TO-DATE
+
+> Task :bundleEngines
+bundleEngines: 2 engine library/libraries from C:\Users\wmc02\Desktop\block-reality\build\native-v1.5-consumer\staged
+
+> Task :processResources
+> Task :classes
+> Task :jar
+> Task :reobfJar
+
+> Task :checkNativeOnlyJar
+{
+  "classes": 236,
+  "errors": [],
+  "sha256": "9d8cb6795e9c41514697a6eb2492fd00ef9eb484b4b5b30f627371967702de30",
+  "mutations": [
+    {
+      "arm": "bundled-legacy",
+      "compileExit": 0,
+      "refused": [
+        "forbidden entry: com/blockreality/testlegacy/Forbidden.class",
+        "forbidden constant: com/blockreality/testlegacy/Forbidden.class -> com/blockreality/testlegacy/"
+      ]
+    },
+    {
+      "arm": "dormant-reference",
+      "compileExit": 0,
+      "refused": [
+        "forbidden constant: com/blockreality/impl/ResurrectedReference.class -> com/blockreality/testlegacy/"
+      ]
+    },
+    {
+      "arm": "construction-process-driver",
+      "compileExit": 0,
+      "refused": [
+        "forbidden entry: com/blockreality/core/transaction/TransactionProcessLeak.class",
+        "forbidden constant: com/blockreality/core/transaction/TransactionProcessLeak.class -> com/blockreality/core/transaction/TransactionProcess"
+      ]
+    }
+  ]
+}
+
+BUILD SUCCESSFUL in 15s
+9 actionable tasks: 6 executed, 3 up-to-date

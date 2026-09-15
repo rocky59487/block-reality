@@ -1,0 +1,82 @@
+{
+  "status": "RECORDED_ONLY",
+  "canonical_images_equal_across_platforms": 288,
+  "results": {
+    "windows": {
+      "forty-one-slots/checkpoint": {
+        "median_ms": 5.5755,
+        "p95_ms": 6.0446,
+        "median_allocated_bytes": 277928.0,
+        "compressed_bytes": "448"
+      },
+      "forty-one-slots/commit": {
+        "median_ms": 5.53375,
+        "p95_ms": 6.15,
+        "median_allocated_bytes": 277928.0,
+        "compressed_bytes": "449"
+      },
+      "forty-one-with-16k-tags/checkpoint": {
+        "median_ms": 25.15415,
+        "p95_ms": 27.4739,
+        "median_allocated_bytes": 18745408.0,
+        "compressed_bytes": "674440"
+      },
+      "forty-one-with-16k-tags/commit": {
+        "median_ms": 24.73275,
+        "p95_ms": 26.8094,
+        "median_allocated_bytes": 18745368.0,
+        "compressed_bytes": "674445"
+      },
+      "two-slots/checkpoint": {
+        "median_ms": 5.56255,
+        "p95_ms": 93.4689,
+        "median_allocated_bytes": 131928.0,
+        "compressed_bytes": "225"
+      },
+      "two-slots/commit": {
+        "median_ms": 5.50495,
+        "p95_ms": 73.9332,
+        "median_allocated_bytes": 131928.0,
+        "compressed_bytes": "228"
+      }
+    },
+    "linux": {
+      "forty-one-slots/checkpoint": {
+        "median_ms": 7.9812745,
+        "p95_ms": 10.181801,
+        "median_allocated_bytes": 272488.0,
+        "compressed_bytes": "448"
+      },
+      "forty-one-slots/commit": {
+        "median_ms": 7.4546865,
+        "p95_ms": 10.388065,
+        "median_allocated_bytes": 272488.0,
+        "compressed_bytes": "449"
+      },
+      "forty-one-with-16k-tags/checkpoint": {
+        "median_ms": 33.8739355,
+        "p95_ms": 39.051968,
+        "median_allocated_bytes": 18739680.0,
+        "compressed_bytes": "674440"
+      },
+      "forty-one-with-16k-tags/commit": {
+        "median_ms": 34.9234555,
+        "p95_ms": 38.995113,
+        "median_allocated_bytes": 18739672.0,
+        "compressed_bytes": "674445"
+      },
+      "two-slots/checkpoint": {
+        "median_ms": 6.6657245,
+        "p95_ms": 7.766096,
+        "median_allocated_bytes": 126760.0,
+        "compressed_bytes": "225"
+      },
+      "two-slots/commit": {
+        "median_ms": 7.258818,
+        "p95_ms": 8.498334,
+        "median_allocated_bytes": 126760.0,
+        "compressed_bytes": "228"
+      }
+    }
+  }
+}

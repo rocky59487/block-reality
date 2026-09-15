@@ -1,0 +1,52 @@
+{
+  "connected": true,
+  "screen": "none",
+  "worldRevision": 44,
+  "resultRevision": 44,
+  "kind": "RESULT",
+  "notice": "null",
+  "hasData": true,
+  "stale": false,
+  "members": 2,
+  "shells": 12,
+  "maxDc": 0.7597396436387274,
+  "width": 1920,
+  "height": 1080,
+  "guiWidth": 960,
+  "guiHeight": 540,
+  "guiScale": 2.0,
+  "language": "zh_tw",
+  "mode": "MATERIAL",
+  "interaction": {
+    "shift": false,
+    "mainHand": "blockreality:stress_glasses",
+    "hitType": "MISS",
+    "position": [
+      2.0,
+      213.0,
+      9.0
+    ],
+    "hitLocation": [
+      2.5,
+      213.17286172509193,
+      9.392617583274841
+    ],
+    "face": "up",
+    "block": "minecraft:air"
+  },
+  "glRenderer": "llvmpipe (LLVM 15.0.7, 256 bits)",
+  "glVersion": "4.5 (Core Profile) Mesa 23.2.1-1ubuntu3.1~22.04.4",
+  "request": {
+    "action": "capture",
+    "name": "panel-zh_tw-1920",
+    "width": 1920,
+    "height": 1080,
+    "scale": 2,
+    "language": "zh_tw",
+    "mode": "MATERIAL",
+    "worldRevision": 44,
+    "kind": "RESULT",
+    "id": 13
+  },
+  "png_bytes": 149031
+}

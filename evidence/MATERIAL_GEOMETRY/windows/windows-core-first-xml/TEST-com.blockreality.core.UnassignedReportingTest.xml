@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.UnassignedReportingTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:35:41" hostname="ROCKYLAPTOP" time="0.044">
+  <properties/>
+  <testcase name="an unknown group still carries its blocks and can still be named" classname="com.blockreality.core.UnassignedReportingTest" time="0.004"/>
+  <testcase name="N17-e: fully supported and a plate strip do not share a translation" classname="com.blockreality.core.UnassignedReportingTest" time="0.006"/>
+  <testcase name="N18-a: each buckling state has its own wire token and its own sentence" classname="com.blockreality.core.UnassignedReportingTest" time="0.002"/>
+  <testcase name="the extraction failures are the ones a test load can never sit on" classname="com.blockreality.core.UnassignedReportingTest" time="0.0"/>
+  <testcase name="an unknown code does NOT authorise deleting the load" classname="com.blockreality.core.UnassignedReportingTest" time="0.0"/>
+  <testcase name="the result separates every unassigned block from the load-refusing subset" classname="com.blockreality.core.UnassignedReportingTest" time="0.02"/>
+  <testcase name="every code this build knows survives a trip through the wire spelling" classname="com.blockreality.core.UnassignedReportingTest" time="0.001"/>
+  <testcase name="only COMPUTED means there is a number to show" classname="com.blockreality.core.UnassignedReportingTest" time="0.0"/>
+  <testcase name="N17-c: a code from a newer engine is UNKNOWN, not an exception" classname="com.blockreality.core.UnassignedReportingTest" time="0.0"/>
+  <testcase name="the engine never says disabled-by-scale; only the host can know that" classname="com.blockreality.core.UnassignedReportingTest" time="0.0"/>
+  <testcase name="nothing unassigned means both views are empty, not merely small" classname="com.blockreality.core.UnassignedReportingTest" time="0.0"/>
+  <testcase name="a mechanism block and a fully supported block ARE elements; loads stay" classname="com.blockreality.core.UnassignedReportingTest" time="0.0"/>
+  <testcase name="a reply that said nothing about buckling is UNKNOWN, not COMPUTED" classname="com.blockreality.core.UnassignedReportingTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.engine.NativeCacheTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:49:14" hostname="rockylaptop" time="0.067">
+  <properties/>
+  <testcase name="darwinUsesTheSameNormalisationAsManifestSelection()" classname="com.blockreality.core.engine.NativeCacheTest" time="0.004"/>
+  <testcase name="manifestReadIsBounded()" classname="com.blockreality.core.engine.NativeCacheTest" time="0.006"/>
+  <testcase name="otherVersionsAndLegacyCacheArePreserved()" classname="com.blockreality.core.engine.NativeCacheTest" time="0.01"/>
+  <testcase name="duplicatePlatformIsRejected()" classname="com.blockreality.core.engine.NativeCacheTest" time="0.002"/>
+  <testcase name="contractMismatchIsRejectedBeforeOpeningLibraryOrAdoptingCache()" classname="com.blockreality.core.engine.NativeCacheTest" time="0.006"/>
+  <testcase name="corruptCacheIsRepaired()" classname="com.blockreality.core.engine.NativeCacheTest" time="0.008"/>
+  <testcase name="interruptedStreamPublishesNothingAndCleansTemporary()" classname="com.blockreality.core.engine.NativeCacheTest" time="0.007"/>
+  <testcase name="fullHashAndPlatformArePartOfCacheIdentity()" classname="com.blockreality.core.engine.NativeCacheTest" time="0.002"/>
+  <testcase name="deniedDestinationIsRecoverable()" classname="com.blockreality.core.engine.NativeCacheTest" time="0.002"/>
+  <testcase name="overlongResourceStopsAtDeclaredSizePlusOne()" classname="com.blockreality.core.engine.NativeCacheTest" time="0.005"/>
+  <testcase name="simultaneousUnpackConverges()" classname="com.blockreality.core.engine.NativeCacheTest" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

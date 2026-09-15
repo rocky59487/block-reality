@@ -17,31 +17,48 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RevisionGateTest {
 
+    @Test void restoredJournalFloorIsMonotonicAndInvalidatesEarlierAcceptedResults() {
+        RevisionGate gate = new RevisionGate(); gate.bump();
+        AnalysisResult earlier = solved(1); assertTrue(gate.acceptForCommit(earlier));
+        assertEquals(19,gate.restoreMinimum(19).value());
+        assertTrue(gate.isStale(earlier)); assertEquals(null,gate.lastAccepted());
+        assertEquals(19,gate.restoreMinimum(0).value());
+        assertEquals(19,gate.restoreMinimum(19).value()); assertEquals(20,gate.bump().value());
+    }
+    @Test void revisionFloorRejectsNegativeAndDoesNotLoopThroughLargeGaps() {
+        RevisionGate gate = new RevisionGate();
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,()->gate.restoreMinimum(-1));
+        assertEquals(0,gate.current().value());
+        assertEquals(Long.MAX_VALUE-1,gate.restoreMinimum(Long.MAX_VALUE-1).value());
+        assertEquals(Long.MAX_VALUE,gate.bump().value());
+        assertEquals(Long.MAX_VALUE,gate.restoreMinimum(1).value());
+    }
+
     /** A solved result must actually carry an element, or it is not usable by definition. */
     private static AnalysisResult solved(long rev) {
-        return new AnalysisResult(new WorldRevision(rev), true, false, "", 0.5, 1, "member",
-                1, 0, 0, 0, BucklingState.DISABLED_BY_REQUEST,
-                List.of(member()), List.of(), List.of());
+        return new AnalysisResult(
+                new WorldRevision(rev), true, false, "", 0.5, 1, "member", 1, 0, 0, 0,
+                BucklingState.DISABLED_BY_REQUEST, List.of(member()), List.of(), List.of(), false, false);
     }
 
     /** Every structure in the world is a mechanism: nothing at all to draw. */
     private static AnalysisResult mechanism(long rev) {
-        return new AnalysisResult(new WorldRevision(rev), true, true, "unrestrained", 0, -1, "",
-                1, 1, 0, 0, BucklingState.DISABLED_BY_REQUEST,
-                List.of(), List.of(), List.of());
+        return new AnalysisResult(
+                new WorldRevision(rev), true, true, "unrestrained", 0, -1, "", 1, 1, 0, 0,
+                BucklingState.DISABLED_BY_REQUEST, List.of(), List.of(), List.of(), false, false);
     }
 
     /** One structure is a mechanism and one is not — the ordinary case in a built world. */
     private static AnalysisResult partlyMechanism(long rev) {
-        return new AnalysisResult(new WorldRevision(rev), true, true, "unrestrained", 0.5, 1,
-                "member", 2, 1, 0, 0, BucklingState.DISABLED_BY_REQUEST,
-                List.of(member()), List.of(), List.of());
+        return new AnalysisResult(
+                new WorldRevision(rev), true, true, "unrestrained", 0.5, 1, "member", 2, 1, 0, 0,
+                BucklingState.DISABLED_BY_REQUEST, List.of(member()), List.of(), List.of(), false, false);
     }
 
     private static MemberSnapshot member() {
-        return new MemberSnapshot(1, "steel", "steel_rect_200x400", 4000, 0.5,
-                GoverningFibre.NONE, -1, EndForces.ZERO, EndForces.ZERO,
-                List.of(), List.of(), Optional.empty());
+        return new com.blockreality.testlegacy.MemberSnapshot(
+                1, "steel", "steel_rect_200x400", 4000, 0.5, GoverningFibre.NONE, -1, EndForces.ZERO,
+                EndForces.ZERO, List.of(), List.of(), Optional.empty()).snapshot();
     }
 
     @Test

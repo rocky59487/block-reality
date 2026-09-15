@@ -1,13 +1,25 @@
 package com.blockreality.core.engine;
 
+import com.blockreality.core.diagnostics.PipelineProfile;
+import static com.blockreality.core.diagnostics.PipelineProfile.Stage.*;
+
 import com.blockreality.core.bsi.BsiContract;
 import com.blockreality.core.bsi.BsiFrame;
 import com.blockreality.core.bsi.BsiHeaders;
 import com.blockreality.core.bsi.BsiRecords;
 import com.blockreality.core.bsi.BsiResponse;
+import com.blockreality.core.bsi.BsiAnalysisResult;
+import com.blockreality.core.bsi.BsiVocabulary;
+import com.blockreality.core.bsi.BsiFracture;
+import com.blockreality.core.bsi.BsiFractureReceipt;
+import com.blockreality.core.json.JsonValue;
+import com.blockreality.api.AnalysisResult;
+import com.blockreality.api.WorldRevision;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -36,20 +48,30 @@ public final class InProcessEngine implements AutoCloseable {
     private String engineName = "", engineVersion = "";
     private List<String> capabilities = List.of();
     private long revision;
+    private boolean worldDeclared;
+    private BsiVocabulary vocabulary;
+    private BsiFracture.World identifiedWorld;
+    private BsiFractureReceipt fractureCandidate;
+    private BsiFracture.World fractureRemaining;
 
-    private InProcessEngine(BsiNative n) { this.native_ = n; }
+    private final PipelineProfile profile;
+    private InProcessEngine(BsiNative n, PipelineProfile profile) { this.native_ = n; this.profile = profile; }
 
     /** Load the library and complete the handshake. Never throws for a refusal: ask {@link #status()}. */
     public static InProcessEngine open(Path library, int numThreads) {
+        return open(library, numThreads, PipelineProfile.disabled());
+    }
+
+    public static InProcessEngine open(Path library, int numThreads, PipelineProfile profile) {
         BsiNative n;
         try {
-            n = BsiNative.open(library, openOptions(numThreads));
+            n = BsiNative.open(library, openOptions(numThreads), profile);
         } catch (BsiNative.EngineRefused e) {
-            InProcessEngine dead = new InProcessEngine(null);
+            InProcessEngine dead = new InProcessEngine(null, profile);
             dead.disable("ENGINE_LOAD", e.getMessage());
             return dead;
         }
-        InProcessEngine eng = new InProcessEngine(n);
+        InProcessEngine eng = new InProcessEngine(n, profile);
         eng.hello();
         return eng;
     }
@@ -92,17 +114,122 @@ public final class InProcessEngine implements AutoCloseable {
 
     /** The vocabulary body, exactly as {@code bsi.vocab.declare} wants it. */
     public boolean declareVocabulary(String vocabBodyJson) {
+        forgetFracture();
+        worldDeclared = false;
+        vocabulary = null;
         if (status != Status.READY) return false;
-        BsiResponse r = send(BsiHeaders.vocabDeclare(nextId(), revision, vocabBodyJson), null);
-        return ok(r);
+        String id = nextId();
+        BsiResponse r = send(BsiHeaders.vocabDeclare(id, revision, vocabBodyJson), null);
+        if (!ok(r)) return false;
+        try {
+            var body = JsonValue.parse(vocabBodyJson);
+            if (!body.isExactInt("version") || body.exactI64("version") < 1 || body.exactI64("version") > Integer.MAX_VALUE)
+                throw new IllegalArgumentException("invalid declared vocabulary version");
+            vocabulary = BsiVocabulary.decode(r, id, revision, (int) body.exactI64("version"));
+            return true;
+        } catch (IllegalArgumentException e) {
+            disable("PROTOCOL_ERROR", e.getMessage());
+            return false;
+        }
     }
 
+    public BsiVocabulary vocabulary() { return vocabulary; }
+
     public boolean declareWorld(long worldRevision, List<BsiRecords.Block> blocks) {
-        if (status != Status.READY) return false;
+        forgetFracture();
+        worldDeclared = false;
+        if (status != Status.READY || vocabulary == null) return false;
         this.revision = worldRevision;
-        byte[] payload = BsiRecords.encodeBlocks(blocks);
+        byte[] payload;
+        try (var ignored = profile.begin(WORLD_ENCODE)) { payload = BsiRecords.encodeBlocks(blocks); }
         BsiResponse r = send(BsiHeaders.worldDeclare(nextId(), revision, payload.length / BsiRecords.BLOCK_BYTES, 0), payload);
-        return ok(r);
+        worldDeclared = ok(r);
+        return worldDeclared;
+    }
+
+    /** A rejected declaration retains the preceding identified world and candidate. */
+    public boolean declareIdentifiedWorld(BsiFracture.World world) {
+        if (status != Status.READY || vocabulary == null || !has("bsi.world.identity") || !has("bsi.fracture")) return false;
+        String id=nextId(); BsiResponse response=send(BsiFracture.declare(id,world),world.payload());
+        if (!ok(response)) return false;
+        try { BsiFracture.checkWorld(response,id,world); }
+        catch (IllegalArgumentException failure) { disable("PROTOCOL_ERROR",failure.getMessage()); return false; }
+        identifiedWorld=world; fractureCandidate=null; fractureRemaining=null;
+        revision=world.stamp().revision(); worldDeclared=true; return true;
+    }
+
+    /** Read-only native preparation; all physical and ownership fields are validated before return. */
+    public BsiFractureReceipt prepareFracture(UUID request, BsiFracture.Options options) {
+        if (status != Status.READY || !worldDeclared || identifiedWorld == null || !has("bsi.fracture")) return null;
+        String id=nextId(); BsiResponse response=send(BsiFracture.prepare(id,identifiedWorld,request,options),null);
+        if (!ok(response)) return null;
+        try {
+            BsiFractureReceipt next=BsiFractureReceipt.decode(response,identifiedWorld,request,options,id);
+            BsiFracture.World remaining=identifiedWorld.remaining(next); // Allocate before native commit.
+            fractureCandidate=next; fractureRemaining=remaining; return next;
+        } catch (IllegalArgumentException failure) { disable("PROTOCOL_ERROR",failure.getMessage()); return null; }
+    }
+
+    /** Only the exact live candidate may be submitted; a stored receipt is not a restart token. */
+    public BsiFracture.Finish finishFracture(BsiFractureReceipt candidate, boolean commit) {
+        if (status != Status.READY || candidate == null || fractureCandidate != candidate || identifiedWorld == null) return null;
+        String id=nextId(); BsiResponse response=send(BsiFracture.finish(id,candidate,commit),null);
+        if (!ok(response)) return null;
+        try {
+            var expected=commit?candidate.after():identifiedWorld.stamp();
+            var result=BsiFracture.checkFinish(response,id,candidate,expected,commit);
+            if (result == BsiFracture.Finish.COMMITTED) {
+                identifiedWorld=fractureRemaining; revision=identifiedWorld.stamp().revision();
+            } else if (result == BsiFracture.Finish.DISCARDED) { fractureCandidate=null; fractureRemaining=null; }
+            return result;
+        } catch (IllegalArgumentException failure) { disable("PROTOCOL_ERROR",failure.getMessage()); return null; }
+    }
+    public BsiFracture.World identifiedWorld() { return identifiedWorld; }
+    private void forgetFracture() { identifiedWorld=null; fractureCandidate=null; fractureRemaining=null; }
+
+    /** Complete commit analysis for the declared world; never falls back to a previous result. */
+    public AnalysisResult analyze(GameWorldSnapshot snapshot, Integer numThreads,
+            BsiHeaders.Storage storage, BsiHeaders.EigenBuckling buckling) {
+        if (status != Status.READY || vocabulary == null)
+            return AnalysisResult.failed(snapshot.revision(), "BSI analysis: no accepted vocabulary");
+        try {
+            List<BsiRecords.Block> blocks;
+            try (var ignored = profile.begin(WORLD_MAP)) { blocks = snapshot.blocks(vocabulary); }
+            if (!declareWorld(snapshot.revision().value(), blocks))
+                return AnalysisResult.failed(snapshot.revision(), "BSI world declaration refused");
+            return analyze(snapshot.revision(), true, new double[]{0, -9.81, 0}, snapshot.loads(), numThreads,
+                    vocabulary.materials(), vocabulary.sections(), storage, buckling, BsiHeaders.MassModel.PHYSICAL);
+        } catch (IllegalArgumentException e) {
+            worldDeclared = false;
+            return AnalysisResult.failed(snapshot.revision(), "BSI input: " + e.getMessage());
+        }
+    }
+
+    /** Complete commit analysis for the declared world; never falls back to a previous result. */
+    public AnalysisResult analyze(WorldRevision expected, boolean selfWeight, double[] gravity,
+            List<BsiRecords.Load> loads, Integer numThreads, Map<Integer,String> materials,
+            Map<Integer,String> sections, BsiHeaders.Storage storage) {
+        return analyze(expected, selfWeight, gravity, loads, numThreads, materials, sections, storage, null);
+    }
+
+    /** Opt-in same-solve eigen analysis; existing calls keep buckling disabled. */
+    public AnalysisResult analyze(WorldRevision expected, boolean selfWeight, double[] gravity,
+            List<BsiRecords.Load> loads, Integer numThreads, Map<Integer,String> materials,
+            Map<Integer,String> sections, BsiHeaders.Storage storage, BsiHeaders.EigenBuckling buckling) {
+        return analyze(expected, selfWeight, gravity, loads, numThreads, materials, sections, storage, buckling, null);
+    }
+
+    public AnalysisResult analyze(WorldRevision expected, boolean selfWeight, double[] gravity,
+            List<BsiRecords.Load> loads, Integer numThreads, Map<Integer,String> materials,
+            Map<Integer,String> sections, BsiHeaders.Storage storage, BsiHeaders.EigenBuckling buckling,
+            BsiHeaders.MassModel massModel) {
+        if (status != Status.READY || !worldDeclared || expected.value() != revision)
+            return AnalysisResult.failed(expected, "BSI analysis: no matching declared world");
+        var precision = new BsiHeaders.Precision(BsiHeaders.Tier.COMMIT, storage);
+        var response = solve(selfWeight, gravity, loads, numThreads, BsiAnalysisResult.INCLUDE, precision, buckling, massModel);
+        try (var ignored = profile.begin(RESULT_DECODE)) {
+            return BsiAnalysisResult.decode(response, expected, materials, sections, precision);
+        }
     }
 
     /** One solve. Returns the reply (which may be an error frame) or null when the engine is off. */
@@ -114,10 +241,22 @@ public final class InProcessEngine implements AutoCloseable {
     /** Explicit storage/tier request; the engine's capability gate owns any refusal. */
     public BsiResponse solve(boolean selfWeight, double[] gravity, List<BsiRecords.Load> loads,
                              Integer numThreads, List<String> include, BsiHeaders.Precision precision) {
-        if (status != Status.READY) return null;
+        return solve(selfWeight, gravity, loads, numThreads, include, precision, null);
+    }
+
+    public BsiResponse solve(boolean selfWeight, double[] gravity, List<BsiRecords.Load> loads,
+                             Integer numThreads, List<String> include, BsiHeaders.Precision precision,
+                             BsiHeaders.EigenBuckling buckling) {
+        return solve(selfWeight, gravity, loads, numThreads, include, precision, buckling, null);
+    }
+
+    public BsiResponse solve(boolean selfWeight, double[] gravity, List<BsiRecords.Load> loads,
+                             Integer numThreads, List<String> include, BsiHeaders.Precision precision,
+                             BsiHeaders.EigenBuckling buckling, BsiHeaders.MassModel massModel) {
+        if (status != Status.READY || !worldDeclared || vocabulary == null) return null;
         byte[] payload = loads == null || loads.isEmpty() ? null : BsiRecords.encodeLoads(loads);
         int n = payload == null ? 0 : payload.length / BsiRecords.LOAD_BYTES;
-        return send(BsiHeaders.solve(nextId(), revision, selfWeight, gravity, n, numThreads, include, precision), payload);
+        return send(BsiHeaders.solve(nextId(), revision, selfWeight, gravity, n, numThreads, include, precision, buckling, massModel), payload);
     }
 
     private boolean ok(BsiResponse r) {
@@ -128,9 +267,13 @@ public final class InProcessEngine implements AutoCloseable {
 
     private BsiResponse send(String header, byte[] payload) {
         try {
-            byte[] reply = native_.call(BsiFrame.encode(header, payload));
+            byte[] request;
+            try (var ignored = profile.begin(FRAME_ENCODE)) { request = BsiFrame.encode(header, payload); }
+            byte[] reply = native_.call(request);
             if (reply == null) return null;
-            return BsiResponse.of(BsiFrame.decode(reply, reply.length));
+            try (var ignored = profile.begin(FRAME_DECODE)) {
+                return BsiResponse.of(BsiFrame.decode(reply, reply.length));
+            }
         } catch (BsiNative.EngineRefused e) {
             disable("ENGINE_FAILED", e.getMessage());
             return null;

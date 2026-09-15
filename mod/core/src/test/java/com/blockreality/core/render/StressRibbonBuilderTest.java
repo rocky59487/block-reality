@@ -35,8 +35,9 @@ class StressRibbonBuilderTest {
             st.add(new StressStation(t * 4000, centre, f, Math.max(0, sigma), Math.max(0, sigma), 0,
                     sigma != 0 ? Optional.of(0.0) : Optional.empty(), Optional.empty()));
         }
-        return new MemberSnapshot(1, "steel", "steel_rect_200x400", 4000, 0.5, GoverningFibre.CRUSH, 0,
-                EndForces.ZERO, EndForces.ZERO, List.of(new BlockKey(0, 64, 0)), st, java.util.Optional.empty());
+        return new com.blockreality.testlegacy.MemberSnapshot(
+                1, "steel", "steel_rect_200x400", 4000, 0.5, GoverningFibre.CRUSH, 0, EndForces.ZERO,
+                EndForces.ZERO, List.of(new BlockKey(0, 64, 0)), st, java.util.Optional.empty()).snapshot();
     }
 
     @Test

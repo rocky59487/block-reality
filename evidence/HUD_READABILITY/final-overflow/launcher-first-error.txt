@@ -1,0 +1,1 @@
+FileNotFoundError before a child process started: cwd '/home/rocky/br-hud-readability-final-overflow-client/forge'. A setup string replacement also changed the client checkout path. The original launcher and empty first log are retained.

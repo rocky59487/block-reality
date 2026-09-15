@@ -1,0 +1,356 @@
+{
+  "compile-first.log": {
+    "sha256": "617d734462bac8d8835afabb908a4e7de55914553c971a3cc40dbff127ec329c",
+    "bytes": 134,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\compile-first.log"
+  },
+  "core-first.log": {
+    "sha256": "5409773e30675dd3535d8e24d64a2cc6c080ae4e9ce66eaaf9c1204cd6e14672",
+    "bytes": 4442,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\core-first.log"
+  },
+  "process-first.log": {
+    "sha256": "02ba28c98b232ce1651f7aea66d07b3842d1541839c49bff1674ac3e863d0fd5",
+    "bytes": 3663,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\process-first.log"
+  },
+  "process-expanded.log": {
+    "sha256": "8c5a4d043b338f054fcad8c2086c6f84b2eeb3df68531e7e07047ab2e577af88",
+    "bytes": 4405,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\process-expanded.log"
+  },
+  "windows-core-full.log": {
+    "sha256": "2947c78ece6dc4cbc6c5a81a68948c9b4c96a5e97c50e4626a06623e656abe44",
+    "bytes": 38432,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\windows-core-full.log"
+  },
+  "windows-forge-full.log": {
+    "sha256": "76362c33d3df4191b1dc931054fb55ba20f6f50f10a37f5d0f0d85d0dc8a78c2",
+    "bytes": 10274,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\windows-forge-full.log"
+  },
+  "windows-core-cached.log": {
+    "sha256": "75f73fb511ac769bef225a8485f402998a224b020e4aefb92fc333a394de918c",
+    "bytes": 38432,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\windows-core-cached.log"
+  },
+  "windows-forge-cached.log": {
+    "sha256": "9a963a4a7d9e01a741c8ab6a878ca58df04292cf827b611a87908103c338b3f2",
+    "bytes": 10644,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\windows-forge-cached.log"
+  },
+  "linux-launch-first.log": {
+    "sha256": "93f70782da25054d32b6153a28e451765329253aaa97308bd08cc489f1846698",
+    "bytes": 262,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\linux-launch-first.log"
+  },
+  "docs-counts.log": {
+    "sha256": "9623d5e4f342f988e6cc7da5b63793e140b198387f6edeb781b4281ed4053a8c",
+    "bytes": 118,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\docs-counts.log"
+  },
+  "jar-guard.json": {
+    "sha256": "6e8b799d12f355c2c22359bd14b81f3f671de175fafde68e248090ec0a4efd0f",
+    "bytes": 998,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\jar-guard.json"
+  },
+  "jar-guard-cached.json": {
+    "sha256": "fcbad057e883bb0e3527559b847596ee5cfda1a54b772e1d0b54f55e7be13a90",
+    "bytes": 998,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\jar-guard-cached.json"
+  },
+  "jar-identity.json": {
+    "sha256": "a5999fd00c3b07fa7ead33e4277670035418bcad9fea86aad53b3ac709cba4a3",
+    "bytes": 2263,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\jar-identity.json"
+  },
+  "core-working-sources.json": {
+    "sha256": "ec4654424c93db1590967c1cbf5fa563800e4947f774f2ab61387232d15bf34f",
+    "bytes": 53353,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\core-working-sources.json"
+  },
+  "windows-full-tests.json": {
+    "sha256": "05866eaab973ef381d417e43e25e52dd77e2adc73b3c394132f9b4af8a8ab3c0",
+    "bytes": 1559,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\windows-full-tests.json"
+  },
+  "linux-full-tests.json": {
+    "sha256": "6ab7c06850f20c5e17cab68ec3ced557761ed8696bc8aa896fb9c69500c69c7a",
+    "bytes": 349,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\linux-full-tests.json"
+  },
+  "journal-cost-recorded.json": {
+    "sha256": "4c9784b01c04b48c3d4efbd32a16e55b772d3231a5f0259a53c53ff031d75c4f",
+    "bytes": 2666,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\journal-cost-recorded.json"
+  },
+  "journal-cost-cached.json": {
+    "sha256": "e5f04e8702b75d8929624535aa54e223a89f676b91a28d95d8e5060ba092eb66",
+    "bytes": 21810,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\journal-cost-cached.json"
+  },
+  "cost-windows.log": {
+    "sha256": "3ff8f389f95e06d588414574526e0a4d078b30c383b0a585cab685d84eefee5f",
+    "bytes": 278,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\cost-windows.log"
+  },
+  "cost-linux.log": {
+    "sha256": "120d91e86f56b24f6fbc00ded49ec988719b50d8d08ccd876809a279b5b0961c",
+    "bytes": 279,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\cost-linux.log"
+  },
+  "cost-windows-cached.log": {
+    "sha256": "aab88bf77aec45d6589f1685dc8353d57640faebed3f0d05275bf26f3fc478ee",
+    "bytes": 278,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\cost-windows-cached.log"
+  },
+  "cost-linux-cached.log": {
+    "sha256": "b09ed940ae498d192727c3cead436cca63c5f13bbf25ac0e8898e8d8b386bd42",
+    "bytes": 278,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\cost-linux-cached.log"
+  },
+  "helpers/setup-linux.py": {
+    "sha256": "8b1063efe0f1afdd47db778bd2da627acc22e1d959f5c9ea79bc35c4af3c2512",
+    "bytes": 876,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\setup-linux.py"
+  },
+  "helpers/run-linux-first.py": {
+    "sha256": "42226e37ad136645bcc446da0a2f51cf5eaa21ea919fef395c156b04198746c7",
+    "bytes": 1274,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\run-linux-first.py"
+  },
+  "helpers/run-linux.py": {
+    "sha256": "dafd3bc978f3c6b55d16049bc6d6819ac11a906a390be0cd9c623fb2bfcdb370",
+    "bytes": 1295,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\run-linux.py"
+  },
+  "helpers/run-linux-cached.py": {
+    "sha256": "beb336f521f283f079ff5feb77935c833822e51d4605eeec5ab8312b53a0e07c",
+    "bytes": 1305,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\run-linux-cached.py"
+  },
+  "helpers/mutations.py": {
+    "sha256": "5b0ae2676a04d6b7f9042a1f493a924ba306d1fafeae32103f5fcde30ca15381",
+    "bytes": 4005,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\mutations.py"
+  },
+  "helpers/TransactionJournalCost.java": {
+    "sha256": "6bd4c88e2023614f24cf5695c893336b7a38f97d75cfe2c01de33c4a7b26ed6e",
+    "bytes": 2995,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\TransactionJournalCost.java"
+  },
+  "process-first.zip": {
+    "sha256": "2065615ee4a75bd679d1e9ec469b966a57569f5f66d950b5b86da6b240a84ac5",
+    "bytes": 177198,
+    "raw_files": 822,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\process-first",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "process-expanded.zip": {
+    "sha256": "26b3333ccef09d954439f80aaa1b3bcd00d0a67298e5cc01d1526e75421d3c51",
+    "bytes": 317628,
+    "raw_files": 1448,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\process-expanded",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "process-windows-final.zip": {
+    "sha256": "862859c1b933341839b04a8f4ee3a5d0026a63c67c047d490d9cda97ea9e9e44",
+    "bytes": 319240,
+    "raw_files": 1453,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\process-windows-final",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "process-windows-cached.zip": {
+    "sha256": "51f497a03fcbadd7537ed71cd2be99d95a1c3f10f4847d2e13b6b0a56648ad1a",
+    "bytes": 319337,
+    "raw_files": 1453,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\process-windows-cached",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "core-first-xml.zip": {
+    "sha256": "ba52c0273cbde08473c494f582fa28c69d45a33f0700e24736b67c221b8b751a",
+    "bytes": 2945,
+    "raw_files": 3,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\core-first-xml",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "windows-core-full-xml.zip": {
+    "sha256": "68843a79832f301a885e45d1298b8fe5f57571685f0b62751d3525f3f8885789",
+    "bytes": 60012,
+    "raw_files": 58,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\windows-core-full-xml",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "windows-forge-full-xml.zip": {
+    "sha256": "fe727769db7590e6ffea8e45a8b7f279cad79e1fb8d7d79f7adc4a69526b9149",
+    "bytes": 25101,
+    "raw_files": 24,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\windows-forge-full-xml",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "process-linux-final.zip": {
+    "sha256": "5f059d327ec0fd068d05ec90cacbc4bdcd6d447f922363b5f582525a234ac053",
+    "bytes": 314939,
+    "raw_files": 1453,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\process-linux-final",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "process-linux-cached.zip": {
+    "sha256": "f3a9fc916700a06641d24f981d6fa9091ad6d094ca349a0ee86154c3b74402b4",
+    "bytes": 315066,
+    "raw_files": 1453,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\process-linux-cached",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "linux-core-full-xml.zip": {
+    "sha256": "8fa25cc6b8160c5f5002c11b0d0f98a0f82e7744cd1b3b4d21ac5cbd24dd6a0e",
+    "bytes": 59271,
+    "raw_files": 58,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\linux-core-full-xml",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "linux-forge-full-xml.zip": {
+    "sha256": "1ff175101d0accfdd711ac9fa5dfb374fbd66c09a4d9e4cec96212842fcafac5",
+    "bytes": 24874,
+    "raw_files": 24,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\linux-forge-full-xml",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "linux/identity.json": {
+    "sha256": "f73d8f6db7122784e9cac0c9ce57a6ca5b76a7e3becc83610701a0becf84d605",
+    "bytes": 224,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\identity.json"
+  },
+  "linux/linux-core-command.json": {
+    "sha256": "d4b4682bbcd872ca0b74727275fa41d1452b4863c656a158d4a0e0703a1174c3",
+    "bytes": 477,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\linux-core-command.json"
+  },
+  "linux/linux-forge-command.json": {
+    "sha256": "362dd359dd387c2d017271149d4797aab0adee85212f7b0a49b90fb8fab501f0",
+    "bytes": 403,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\linux-forge-command.json"
+  },
+  "linux/linux-core-cached-command.json": {
+    "sha256": "b728dca9730ac15cde08194e6584f096b4ad5cbb8bf49f5c045413ea529748c1",
+    "bytes": 478,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\linux-core-cached-command.json"
+  },
+  "linux/linux-forge-cached-command.json": {
+    "sha256": "362dd359dd387c2d017271149d4797aab0adee85212f7b0a49b90fb8fab501f0",
+    "bytes": 403,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\linux-forge-cached-command.json"
+  },
+  "linux/linux-core-full.log": {
+    "sha256": "607c82a45e534e44f30bc44695ff5732d649a928aca5a84d1a690ed75c297b25",
+    "bytes": 39969,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\linux-core-full.log"
+  },
+  "linux/linux-forge-full.log": {
+    "sha256": "3d8e89b9bfa59b27f63e06bf26a9756bcaf0502c6c3377d6825523d845c6ff14",
+    "bytes": 11264,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\linux-forge-full.log"
+  },
+  "linux/linux-core-cached.log": {
+    "sha256": "ee84c709c0a0a268758129e2c2fbe31a9311fdd2aab42d8660b4e03999ee929f",
+    "bytes": 37740,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\linux-core-cached.log"
+  },
+  "linux/linux-forge-cached.log": {
+    "sha256": "efad3c551d050374dcf514e323d647605ec7db299098ac8e9a8f8331379dc8c4",
+    "bytes": 10180,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\linux-forge-cached.log"
+  },
+  "compiled-mutations.zip": {
+    "sha256": "2121ab36320eedb8f0f1459becabb2209b4b957cde4d3fb511fe7ab121505870",
+    "bytes": 25970,
+    "raw_files": 38,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-ct-core-mutations\\qualification",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "compiled-mutations-summary.json": {
+    "sha256": "414d8d0834085809f4cf426597c2d0e41344c3fdc759f0586ebf6b42b68a7c40",
+    "bytes": 792,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-ct-core-mutations\\qualification\\summary.json"
+  },
+  "windows-core-cached-xml.zip": {
+    "sha256": "1f1419c874620c215e0356fcb8cfa0982630073a54da77b0c2f8761e6bac7745",
+    "bytes": 59871,
+    "raw_files": 58,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\mod\\core\\build\\test-results\\test",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "windows-forge-cached-xml.zip": {
+    "sha256": "c35a2b4ddf07e0c19cc108e4f398ae5a1c2e3a55ab1f375f42c5a5ded7f8ec00",
+    "bytes": 25126,
+    "raw_files": 24,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\forge\\build\\test-results\\test",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "cost/windows-baseline.csv": {
+    "sha256": "3afe116dad9f17188f6ac713dd9d38ff0ef180a63437726d19b43c8d78b79aed",
+    "bytes": 6084,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\cost-windows\\samples.csv"
+  },
+  "cost/windows-baseline-scope.txt": {
+    "sha256": "7520d1a288f100497ec481ff768bf7002387c74d2ee88370a029722d52064677",
+    "bytes": 262,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\cost-windows\\scope.txt"
+  },
+  "cost/windows-cached.csv": {
+    "sha256": "216f3eae91134f15d65ee0e11b8946669d047467909f1fb8b74bda0a11ab9484",
+    "bytes": 6137,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\cost-windows-cached\\samples.csv"
+  },
+  "cost/windows-cached-scope.txt": {
+    "sha256": "7520d1a288f100497ec481ff768bf7002387c74d2ee88370a029722d52064677",
+    "bytes": 262,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\cost-windows-cached\\scope.txt"
+  },
+  "linux-core-cached-xml.zip": {
+    "sha256": "361271092eb5752f47da9c0006c50a7c27568d283e647597fc3a5df2fc719ca5",
+    "bytes": 59313,
+    "raw_files": 58,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\mod\\core\\build\\test-results\\test",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "linux-forge-cached-xml.zip": {
+    "sha256": "43b30413bb010267267c364f1febfe2bc4b2ff606a9caaeade2beb2ba1c07613",
+    "bytes": 24878,
+    "raw_files": 24,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\forge\\build\\test-results\\test",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "cost/linux-baseline.csv": {
+    "sha256": "0303171c1761cea9cb68010b8e39bdc447a6757c68127b8a6c837455439f84e6",
+    "bytes": 6041,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\cost-linux\\samples.csv"
+  },
+  "cost/linux-baseline-scope.txt": {
+    "sha256": "40d201b0e17e99e7c4860255c266c7dc0d4160dc62ca10af9420645aa60ab41b",
+    "bytes": 272,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\cost-linux\\scope.txt"
+  },
+  "cost/linux-cached.csv": {
+    "sha256": "d56c6988ae479956cebe549f9aeaf5d6f1b73b5cea78c859cd07029334f98bb8",
+    "bytes": 6024,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\cost-linux-cached\\samples.csv"
+  },
+  "cost/linux-cached-scope.txt": {
+    "sha256": "40d201b0e17e99e7c4860255c266c7dc0d4160dc62ca10af9420645aa60ab41b",
+    "bytes": 272,
+    "source": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\rocky\\br-construction-transactions\\qualification\\cost-linux-cached\\scope.txt"
+  },
+  "cost/canonical-records-and-baseline.zip": {
+    "sha256": "485ffaa18ac02e5dc95c6efeeb00395dc9c014782e99ebf5b626f20474f28a99",
+    "bytes": 1203439,
+    "raw_files": 152,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\cost-windows",
+    "format": "zip; every original file byte preserved, per-file hashes inside"
+  },
+  "helpers/archive-core-step.py": {
+    "sha256": "750043be068d1fe8c0b9af6cbe4ec15b583dafa6328974fda136fe96027b8d6b",
+    "bytes": 6444,
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\construction-transactions\\archive-core-step.py"
+  }
+}

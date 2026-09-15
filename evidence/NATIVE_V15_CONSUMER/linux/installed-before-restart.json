@@ -1,0 +1,34 @@
+{
+  "commands": [
+    {
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.5.0 contract=5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd\n  revision        216   (rejected as stale: 0)\n  blocks          27   test loads: 0\n  analysis        RESULT\n  result revision 216  CURRENT\n  last result     2 members, 12 plate facets, max D/C 0.7597  (shell #4)\n  structures      3 solved, 1 unrestrained\n  equilibrium     residual 8.861e-14\nWorld buckling incomplete: an ineligible structure\n  unassigned      5 blocks   part of a structure nothing is holding up (not a modelling fault)\n"
+    },
+    {
+      "command": "br members",
+      "response": "  result revision 216  CURRENT\nmembers  2     plate facets  12\n  #0  steel steel_rect_200x400  L=4000mm  D/C=0.0264  CRUSH at x=0mm  peak 9.24 MPa\n  #2  steel steel_rect_200x400  L=4000mm  D/C=0.0009  CRUSH at x=0mm  peak 0.31 MPa\n  P0  concrete_slab_200  t=200mm  D/C=0.5057 (raw NaN)  top face  peak 1.60 MPa\n  P1  concrete_slab_200  t=200mm  D/C=0.5447 (raw NaN)  top face  peak 1.64 MPa\n  P2  concrete_slab_200  t=200mm  D/C=0.5057 (raw NaN)  top face  peak 1.60 MPa\n  P3  concrete_slab_200  t=200mm  D/C=0.7448 (raw NaN)  top face  peak 2.24 MPa\n  P4  concrete_slab_200  t=200mm  D/C=0.7597 (raw NaN)  top face  peak 2.29 MPa\n  P5  concrete_slab_200  t=200mm  D/C=0.7448 (raw NaN)  top face  peak 2.24 MPa\n  P6  concrete_slab_200  t=200mm  D/C=0.2937 (raw NaN)  top face  peak 0.95 MPa\n  P7  concrete_slab_200  t=200mm  D/C=0.2772 (raw NaN)  top face  peak 0.84 MPa\n  P8  concrete_slab_200  t=200mm  D/C=0.2937 (raw NaN)  top face  peak 0.95 MPa\n  P9  concrete_slab_200  t=200mm  D/C=0.0575 (raw NaN)  top face  peak 0.19 MPa\n  P10  concrete_slab_200  t=200mm  D/C=0.0594 (raw NaN)  top face  peak 0.18 MPa\n  P11  concrete_slab_200  t=200mm  D/C=0.0575 (raw NaN)  top face  peak 0.19 MPa\n"
+    },
+    {
+      "command": "save-all flush",
+      "response": "Saving the game (this may take a moment!)\nSaved the game\n"
+    },
+    {
+      "command": "stop",
+      "response": "Stopping the server\n"
+    }
+  ],
+  "native_readouts": {
+    "result": "last result     2 members, 12 plate facets, max D/C 0.7597  (shell #4)",
+    "verdicts": [
+      "World buckling incomplete: an ineligible structure"
+    ]
+  },
+  "cache": {
+    "path": "blockreality/engine/lib/linux-x86_64/2d048b9bfaf971d6b1971b7b0c36cc4942238448652735ba264dfbddf7d440a4/libbsi_tectonic.so",
+    "sha256": "2d048b9bfaf971d6b1971b7b0c36cc4942238448652735ba264dfbddf7d440a4",
+    "bytes": 28500368,
+    "mtime_ns": 1789017042910006038
+  },
+  "jar_sha256": "9d8cb6795e9c41514697a6eb2492fd00ef9eb484b4b5b30f627371967702de30",
+  "result": "PASS"
+}

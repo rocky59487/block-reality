@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.engine.BundledNativesTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:49:13" hostname="rockylaptop" time="0.115">
+  <properties/>
+  <testcase name="theUnpackedLibraryIsNotExecutable(Path)" classname="com.blockreality.core.engine.BundledNativesTest" time="0.028"/>
+  <testcase name="aDevelopmentJarWithNoLibrarySaysSoAndCarriesOn(Path)" classname="com.blockreality.core.engine.BundledNativesTest" time="0.002"/>
+  <testcase name="aFiveFieldManifestIsRefusedRatherThanHalfUnderstood()" classname="com.blockreality.core.engine.BundledNativesTest" time="0.004"/>
+  <testcase name="aReplaceRefusedByAnOpenHandleAdoptsWhatIsAlreadyThere(Path)" classname="com.blockreality.core.engine.BundledNativesTest" time="0.005"/>
+  <testcase name="aLibraryAlreadyInPlaceIsAdoptedWithoutRewriting(Path)" classname="com.blockreality.core.engine.BundledNativesTest" time="0.007"/>
+  <testcase name="theShippedLoaderReadsFromTheJarWhenThereIsOne()" classname="com.blockreality.core.engine.BundledNativesTest" time="0.002"/>
+  <testcase name="sevenFieldsCarryTheEngineVersionAndTheContractItWasBuiltAgainst()" classname="com.blockreality.core.engine.BundledNativesTest" time="0.0"/>
+  <testcase name="unpackingNeverThrowsIntoTheModLoad(Path)" classname="com.blockreality.core.engine.BundledNativesTest" time="0.008"/>
+  <testcase name="firstUseWritesTheLibraryUnderAHashNamedPath(Path)" classname="com.blockreality.core.engine.BundledNativesTest" time="0.007"/>
+  <testcase name="theOverrideDirectoryBeatsTheCopyUnpackedFromTheJar(Path)" classname="com.blockreality.core.engine.BundledNativesTest" time="0.012"/>
+  <testcase name="bytesThatDisagreeWithTheManifestUnpackNothing(Path)" classname="com.blockreality.core.engine.BundledNativesTest" time="0.009"/>
+  <testcase name="anOlderLibraryAndUserFilesArePreserved(Path)" classname="com.blockreality.core.engine.BundledNativesTest" time="0.01"/>
+  <testcase name="anUnsupportedPlatformIsToldWhatDidShipAndWhereToPutItsOwn(Path)" classname="com.blockreality.core.engine.BundledNativesTest" time="0.003"/>
+  <testcase name="aManifestThatTriesToEscapeTheUnpackDirectoryIsRefused()" classname="com.blockreality.core.engine.BundledNativesTest" time="0.009"/>
+  <testcase name="aContractFieldThatIsNotAHashIsRefused()" classname="com.blockreality.core.engine.BundledNativesTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

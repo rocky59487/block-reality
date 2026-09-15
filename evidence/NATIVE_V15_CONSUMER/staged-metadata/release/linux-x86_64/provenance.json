@@ -1,0 +1,91 @@
+{
+  "schema": 1,
+  "engine": "tectonic",
+  "version": "1.5.0",
+  "source_commit": "42ba7eb912bd7d763435ce48a945df6954b680ea",
+  "source_repository": "https://github.com/rocky59487/tectonic2",
+  "contract_sha256": "5d4367f40de8687e3d861340d8aa13bcf2da52e2d63aef467cf2f52f213624cd",
+  "platform": "linux-x86_64",
+  "binary": {
+    "file": "libbsi_tectonic.so",
+    "sha256": "2d048b9bfaf971d6b1971b7b0c36cc4942238448652735ba264dfbddf7d440a4",
+    "bytes": 28500368
+  },
+  "exports": [
+    "bsi_capi_abi_version",
+    "bsi_capi_call",
+    "bsi_capi_close",
+    "bsi_capi_last_error",
+    "bsi_capi_open",
+    "bsi_engine_entry"
+  ],
+  "system_dependencies": [
+    "libm.so.6",
+    "libc.so.6",
+    "ld-linux-x86-64.so.2"
+  ],
+  "compiler": "x86_64-linux-gnu-g++-11 (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0\nCopyright (C) 2021 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+  "dependencies": {
+    "packages": "g++\t4:11.2.0-1ubuntu1\nlibgfortran5:amd64\t12.3.0-1ubuntu1~22.04.3\nliblapacke-dev:amd64\t3.10.0-2ubuntu1\nlibopenblas-dev:amd64\t0.3.20+ds-1\n",
+    "static_fortran": "libgfortran-11-dev extracted from Ubuntu package; system package state unchanged",
+    "METIS": "5.1 (PyMetis 2020.1 source, IDXTYPEWIDTH=32)"
+  },
+  "dependency_inputs": [
+    {
+      "file": "x86_64-linux-gnu-g++-11",
+      "sha256": "2360901d864cf10bfd6296e261cb2c14053552a80377761ab07146ec9ec9a2c0"
+    },
+    {
+      "file": "libopenblasp-r0.3.20.a",
+      "sha256": "757a2dd5c660ae5b1f8804a7f1ec40d20dc71548a926180faa7a6c007682dd4e"
+    },
+    {
+      "file": "libmetis.a",
+      "sha256": "4735a10b35be7c64fb329c23fc09c6c32a1a7f13b24e1923ffd495e0742763c4"
+    },
+    {
+      "file": "libgfortran.a",
+      "sha256": "22b567065aa74462eef00e125b1c5231189914aef1d96c39cc29e5d347166c8d"
+    },
+    {
+      "file": "libquadmath.a",
+      "sha256": "3ae9751e0e5f29dedf9596ecb72ac9ac22684e11cb8d2c4db90fb8eeac609ed3"
+    },
+    {
+      "file": "openblas_config.h",
+      "sha256": "469aa9d2abb9ed4bb4e78a7d1f765db73ab1b7f3bfcee017ba99e9c3a22dadce"
+    },
+    {
+      "file": "cblas.h",
+      "sha256": "c99cdcfb0e86275b1f8fa114e9a8a293296060a019630e45918492fceedc0190"
+    },
+    {
+      "file": "f77blas.h",
+      "sha256": "229fe8e054ff9235c63f1b07a61af5b5f03d921eb9011db248cbc5681e876835"
+    },
+    {
+      "file": "metis.h",
+      "sha256": "20826dae4a5ff3fce9ad5fd0cf28ed0f8899e1cbdab1e318dfb33c8123840616"
+    },
+    {
+      "file": "liblapacke.a",
+      "sha256": "bbc02ad701b2d0341b9240124b2f17e346c0d223f13387c7cd4f717a6b48f671"
+    }
+  ],
+  "dependency_source_archives": {
+    "PyMetis-2020.1.tar.gz": "d13e262e8ee20963e898c2c473b69502661a8727904a49b33689fb4d42248555",
+    "OpenBLAS-0.3.33-x64.zip": "7ad797ef0c9a5c42e28903bf726eaaaade307dafe187ff0e923d90cd4002780c",
+    "winlibs-x86_64-posix-seh-gcc-14.2.0-mingw-w64msvcrt-12.0.0-r3.zip": "ff475e985a98c5f3785129baf7460db14fee27708bce35f2833db5009507f1b9"
+  },
+  "native_acceptance": {
+    "boundary": "334 PASS, DET3",
+    "corpus": "10 PASS, 1 SKIP, DET3"
+  },
+  "limits": [
+    "Minecraft gameplay qualification is managed separately in block-reality",
+    "v2/v4 roadmap incomplete",
+    "historical Linux L6 seven failures retained",
+    "41.7ms target remains FAIL",
+    "GitHub Actions unavailable due to account billing restriction; local qualification used"
+  ]
+}

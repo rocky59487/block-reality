@@ -16,6 +16,24 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /** Actual C6/C8/C12 through JNA; configured native runs require every capability. */
 class InProcessRecoveryTest {
+    @Test void unifiedAnalysisKeepsTheNativeShellFlagsAndSamples() {
+        try (InProcessEngine engine=engine()) {
+            assertTrue(engine.declareWorld(73,world(true,0)));
+            for(var storage:BsiHeaders.Storage.values()) {
+                var raw=solve(engine,storage,com.blockreality.core.bsi.BsiAnalysisResult.INCLUDE);
+                var result=engine.analyze(new com.blockreality.api.WorldRevision(73),true,new double[]{0,-9.81,0},List.of(),1,
+                        java.util.Map.of(0,"steel",1,"slab"),java.util.Map.of(0,"rect"),storage);
+                assertTrue(result.ok(),result.diagnostic());assertEquals(15,result.shells().size());
+                assertEquals(raw.blocks().stream().anyMatch(BsiResponse.BlockResult::overloaded),result.overCapacity());
+                for(int i=0;i<raw.facets().size();i++) {
+                    assertEquals(raw.facets().get(i).dc(),result.shells().get(i).dc());
+                    assertEquals(raw.facets().get(i).overloaded(),result.shells().get(i).overloaded());
+                    assertTrue(result.shells().get(i).display().isPresent());
+                    assertEquals(raw.facetSurfaces().get(i).top().get(0).vm()*1e-6,result.shells().get(i).display().orElseThrow().top().get(0).vm());
+                }
+            }
+        }
+    }
     @Test void nativeBeamSamplesAndPointLoadSidesReachTheSharedDisplay() {
         try (InProcessEngine engine = engine()) {
             assertTrue(engine.has("bsi.readback.memberGeometry"));
@@ -31,7 +49,7 @@ class InProcessRecoveryTest {
                 for(int k=0;k<mapped.size();k++) {
                     var m=mapped.get(k);var b=r.members().get(k);var f=m.display().orElseThrow();var g=r.memberGeometry().get(k);
                     assertEquals(b.stationCount(),m.stations().size());assertEquals(b.blockCount(),m.blocks().size());
-                    assertTrue(m.field().isEmpty());assertEquals(b.overloaded(),m.overloaded());assertEquals(b.maxDC(),m.dc());
+                    assertTrue(com.blockreality.testfixtures.NativeSnapshotChecks.hasNoLegacyField(m));assertEquals(b.overloaded(),m.overloaded());assertEquals(b.maxDC(),m.dc());
                     assertEquals(g.origin().scaled(1000),f.originMm());assertEquals(g.ey(),f.ay());assertEquals(g.faceY().get(0)*1000,f.halfYMm());
                     assertEquals(-b.endI()[0],m.endI().n());assertEquals(b.endJ()[5]*1000,m.endJ().mz());
                     for(int j=0;j<m.stations().size();j++) {
@@ -91,7 +109,7 @@ class InProcessRecoveryTest {
                 for (int k=0; k<display.size(); k++) {
                     var shell = display.get(k); var field = shell.display().orElseThrow();
                     var facet = response.facets().get(k); var surfaces = response.facetSurfaces().get(k);
-                    assertTrue(shell.field().isEmpty()); assertTrue(shell.rawDc().isEmpty());
+                    assertTrue(com.blockreality.testfixtures.NativeSnapshotChecks.hasNoLegacyField(shell)); assertTrue(shell.rawDc().isEmpty());
                     assertEquals(facet.dc(),shell.dc()); assertEquals(facet.overloaded(),shell.overloaded());
                     assertEquals(facet.governingTop(),shell.governingTopFace());
                     assertEquals(facet.blockCount(),shell.blocks().size());

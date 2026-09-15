@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.json.JsonTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-09-10T00:24:35" hostname="rockylaptop" time="0.011">
+  <properties/>
+  <testcase name="malformedInputParsesToNullRatherThanThrowing()" classname="com.blockreality.core.json.JsonTest" time="0.001"/>
+  <testcase name="writerEscapesControlCharactersSoOneMessageStaysOneLine()" classname="com.blockreality.core.json.JsonTest" time="0.0"/>
+  <testcase name="plainIntegersSurviveAbove2Pow53()" classname="com.blockreality.core.json.JsonTest" time="0.001"/>
+  <testcase name="parsesTheProtocolShape()" classname="com.blockreality.core.json.JsonTest" time="0.0"/>
+  <testcase name="invalidEscapesAreAParseErrorNotALiteral()" classname="com.blockreality.core.json.JsonTest" time="0.0"/>
+  <testcase name="malformedNumbersAreAParseError()" classname="com.blockreality.core.json.JsonTest" time="0.001"/>
+  <testcase name="nullInputIsSafe()" classname="com.blockreality.core.json.JsonTest" time="0.0"/>
+  <testcase name="roundTripsNestedStructures()" classname="com.blockreality.core.json.JsonTest" time="0.001"/>
+  <testcase name="trailingGarbageRejectsTheWholeLine()" classname="com.blockreality.core.json.JsonTest" time="0.0"/>
+  <testcase name="deeplyNestedInputDoesNotBlowTheStack()" classname="com.blockreality.core.json.JsonTest" time="0.001"/>
+  <testcase name="missingAndWrongTypedFieldsDegradeToDefaults()" classname="com.blockreality.core.json.JsonTest" time="0.0"/>
+  <testcase name="nonPlainNumbersAreNotExactIntegers()" classname="com.blockreality.core.json.JsonTest" time="0.0"/>
+  <testcase name="writerEmitsNullForNonFiniteDoubles()" classname="com.blockreality.core.json.JsonTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

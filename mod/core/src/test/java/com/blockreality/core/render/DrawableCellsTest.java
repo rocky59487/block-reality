@@ -25,14 +25,14 @@ class DrawableCellsTest {
     private static BlockKey k(int x, int y, int z) { return new BlockKey(x, y, z); }
 
     private static MemberSnapshot member(int id, List<BlockKey> blocks) {
-        return new MemberSnapshot(id, "steel", "steel_rect_200x400", 4000, 0.4,
-                GoverningFibre.CRUSH, -1, EndForces.ZERO, EndForces.ZERO,
-                blocks, List.of(), Optional.empty());
+        return new com.blockreality.testlegacy.MemberSnapshot(
+                id, "steel", "steel_rect_200x400", 4000, 0.4, GoverningFibre.CRUSH, -1, EndForces.ZERO,
+                EndForces.ZERO, blocks, List.of(), Optional.empty()).snapshot();
     }
 
     private static ShellSnapshot shell(int id, List<BlockKey> blocks) {
-        return new ShellSnapshot(id, "concrete", "concrete_slab_200", 200, 0.3, 0.3,
-                true, false, blocks, Optional.empty());
+        return new com.blockreality.testlegacy.ShellSnapshot(
+                id, "concrete", "concrete_slab_200", 200, 0.3, 0.3, true, false, blocks, Optional.empty()).snapshot();
     }
 
     @Test

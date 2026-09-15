@@ -28,9 +28,9 @@ class MemberPickTest {
                     List.of(new Fibre("TOP_Y", new Vec3d(0, 1, 0), 200, 1)),
                     1, 0, 0, Optional.empty(), Optional.empty()));
         }
-        return new MemberSnapshot(id, "steel", "steel_rect_200x400", (x1 - x0) * 1000,
-                0.5, GoverningFibre.CRUSH, 0, EndForces.ZERO, EndForces.ZERO,
-                List.of(new BlockKey(0, (int) y, (int) z)), st, java.util.Optional.empty());
+        return new com.blockreality.testlegacy.MemberSnapshot(
+                id, "steel", "steel_rect_200x400", (x1 - x0) * 1000, 0.5, GoverningFibre.CRUSH, 0, EndForces.ZERO,
+                EndForces.ZERO, List.of(new BlockKey(0, (int) y, (int) z)), st, java.util.Optional.empty()).snapshot();
     }
 
     @Test

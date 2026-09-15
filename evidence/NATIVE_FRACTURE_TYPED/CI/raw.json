@@ -1,0 +1,74 @@
+[
+  {
+    "name": "consumer-before",
+    "command": [
+      "bash",
+      "-euo",
+      "pipefail",
+      "/home/rocky/tectonic-native-fracture-ci/consumer-before.sh"
+    ],
+    "exit": 1,
+    "stdout_base64": "YW4gdW5rbm93biBlbmdpbmUgQUJJIHdhcyBsb2FkZWQ7IHRoZSB2ZXJzaW9uIGdhdGUgZGlkIG5vdGhpbmcK",
+    "stdout_sha256": "e1613f85b2ada512328860e7b341ac037c2e971adecbe5d039b76ce3f74a3f41",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "engine-after",
+    "command": [
+      "bash",
+      "-euo",
+      "pipefail",
+      "/home/rocky/tectonic-native-fracture-ci/engine-after.sh"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnNpLWhvc3RkOiBjYW5ub3QgbG9hZCBlbmdpbmU6IGJzaV9lbmdpbmVfZW50cnkgcmV0dXJuZWQgTlVMTCAoaG9zdCBBQkkgMyBub3Qgc3VwcG9ydGVkKQpic2ktaG9zdGQ6IGNhbm5vdCBsb2FkIGVuZ2luZTogYnNpX2VuZ2luZV9lbnRyeSByZXR1cm5lZCBOVUxMIChob3N0IEFCSSAzIG5vdCBzdXBwb3J0ZWQpCg==",
+    "stdout_sha256": "fb2812ae4beeca9e6624aa05f31b02a7020b939556b78d761aaf699657740963",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "consumer-after",
+    "command": [
+      "bash",
+      "-euo",
+      "pipefail",
+      "/home/rocky/tectonic-native-fracture-ci/consumer-after.sh"
+    ],
+    "exit": 0,
+    "stdout_base64": "YnNpLWhvc3RkOiBjYW5ub3QgbG9hZCBlbmdpbmU6IGJzaV9lbmdpbmVfZW50cnkgcmV0dXJuZWQgTlVMTCAoaG9zdCBBQkkgMyBub3Qgc3VwcG9ydGVkKQpic2ktaG9zdGQ6IGNhbm5vdCBsb2FkIGVuZ2luZTogYnNpX2VuZ2luZV9lbnRyeSByZXR1cm5lZCBOVUxMIChob3N0IEFCSSAzIG5vdCBzdXBwb3J0ZWQpCg==",
+    "stdout_sha256": "fb2812ae4beeca9e6624aa05f31b02a7020b939556b78d761aaf699657740963",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "build-current",
+    "command": [
+      "g++",
+      "-std=c++17",
+      "-shared",
+      "-fPIC",
+      "contract/host/test/stub_engine.cpp",
+      "-o",
+      "build/host/libbsi_stub_engine_current.so"
+    ],
+    "exit": 0,
+    "stdout_base64": "",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "current-accepted",
+    "command": [
+      "bash",
+      "-c",
+      "build/host/bsi-hostd --engine build/host/libbsi_stub_engine_current.so </dev/null"
+    ],
+    "exit": 0,
+    "stdout_base64": "",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_base64": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

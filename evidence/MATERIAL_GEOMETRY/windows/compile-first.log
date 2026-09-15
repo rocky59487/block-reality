@@ -1,0 +1,7 @@
+
+> Task :compileJava
+
+BUILD SUCCESSFUL in 6s
+1 actionable task: 1 executed
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.server.SnapshotLoadsTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:46:17" hostname="ROCKYLAPTOP" time="0.008">
+  <properties/>
+  <testcase name="aLoadOnABlockThatFormsNoElementIsIdentifiedByTheProbe()" classname="com.blockreality.impl.server.SnapshotLoadsTest" time="0.002"/>
+  <testcase name="aLoadInAnUnloadedChunkWaitsWithItsBlock()" classname="com.blockreality.impl.server.SnapshotLoadsTest" time="0.004"/>
+  <testcase name="momentsAreNotInventedForPointLoads()" classname="com.blockreality.impl.server.SnapshotLoadsTest" time="0.0"/>
+  <testcase name="aLoadOnAnIncludedBlockTravels()" classname="com.blockreality.impl.server.SnapshotLoadsTest" time="0.0"/>
+  <testcase name="aBlockThatFormsNoElementButCarriesNoLoadIsLeftAlone()" classname="com.blockreality.impl.server.SnapshotLoadsTest" time="0.0"/>
+  <testcase name="aLoadWhoseBlockIsGoneIsReportedStale()" classname="com.blockreality.impl.server.SnapshotLoadsTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

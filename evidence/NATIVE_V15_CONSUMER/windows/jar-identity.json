@@ -1,0 +1,20 @@
+{
+  "source": "1a60418bc9e747ab93fb79b01549e70e74d76bc8",
+  "bytes": 15286415,
+  "sha256": "9d8cb6795e9c41514697a6eb2492fd00ef9eb484b4b5b30f627371967702de30",
+  "same_notice_license_contract_and_both_native_files": true,
+  "unchanged_classes": 236,
+  "unchanged_assets": 46,
+  "changed_entries": [
+    "META-INF/NOTICE",
+    "META-INF/native-release/linux-x86_64/provenance.json",
+    "META-INF/native-release/provenance.json",
+    "META-INF/native-release/windows-x86_64/provenance.json",
+    "blockreality-engine/linux-x86_64/libbsi_tectonic.so",
+    "blockreality-engine/natives.manifest",
+    "blockreality-engine/windows-x86_64/bsi_tectonic.dll",
+    "blockreality/contract/CONTRACT_SHA256"
+  ],
+  "added_entries": [],
+  "removed_entries": []
+}

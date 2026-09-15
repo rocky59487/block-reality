@@ -1,0 +1,19 @@
+{
+  "core": {
+    "tests": 410,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 28
+  },
+  "forge": {
+    "tests": 107,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1
+  },
+  "jar": {
+    "bytes": 457244,
+    "sha256": "123776aebbdb50e715f0f4d5bdc681140ec9c03c78a424c2828c2a992008c927",
+    "classes": 200
+  }
+}

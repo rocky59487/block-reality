@@ -1,0 +1,14 @@
+
+> Task :compileJava
+C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\BlockRealityMod.java:28: warning: [removal] get() in FMLJavaModLoadingContext has been deprecated and marked for removal
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+                                                ^
+C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\BlockRealityMod.java:32: warning: [removal] get() in ModLoadingContext has been deprecated and marked for removal
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                                                ^
+Note: C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\block\StructuralBlock.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+2 warnings
+
+BUILD SUCCESSFUL in 4s
+1 actionable task: 1 executed

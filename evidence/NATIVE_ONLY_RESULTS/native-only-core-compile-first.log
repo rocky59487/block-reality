@@ -1,0 +1,71 @@
+> Task :api:compileJava
+> Task :core:compileJava
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes
+
+> Task :core:compileTestJava
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\bsi\BsiBeamDisplayTest.java:46: error: cannot find symbol
+        assertTrue(m.field().isEmpty());assertEquals(2000,m.lengthMm());assertEquals("rect",m.section());
+                    ^
+  symbol:   method field()
+  location: variable m of type MemberSnapshot
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\bsi\BsiShellDisplayTest.java:22: error: cannot find symbol
+        assertSame(old,snapshot.field().orElseThrow()); assertTrue(snapshot.display().isEmpty());
+                               ^
+  symbol:   method field()
+  location: variable snapshot of type ShellSnapshot
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\bsi\BsiShellDisplayTest.java:62: error: cannot find symbol
+        assertTrue(s.field().isEmpty()); assertTrue(s.rawDc().isEmpty());
+                    ^
+  symbol:   method field()
+  location: variable s of type ShellSnapshot
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\engine\InProcessRecoveryTest.java:52: error: cannot find symbol
+                    assertTrue(m.field().isEmpty());assertEquals(b.overloaded(),m.overloaded());assertEquals(b.maxDC(),m.dc());
+                                ^
+  symbol:   method field()
+  location: variable m of type MemberSnapshot
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\engine\InProcessRecoveryTest.java:112: error: cannot find symbol
+                    assertTrue(shell.field().isEmpty()); assertTrue(shell.rawDc().isEmpty());
+                                    ^
+  symbol:   method field()
+  location: variable shell of type ShellSnapshot
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\RevisionGateConcurrencyTest.java:102: error: constructor MemberSnapshot in record MemberSnapshot cannot be applied to given types;
+        return new AnalysisResult(rev, true, false, "", 0.5, 1, "member", 1, 0, 0, 0, com.blockreality.api.BucklingState.DISABLED_BY_REQUEST, List.of(new com.blockreality.api.MemberSnapshot(1, "steel", "s", 1000, 0.5,
+                                                                                                                                                      ^
+  required: int,String,String,double,double,GoverningFibre,int,EndForces,EndForces,List<BlockKey>,List<StressStation>,Optional<BeamDisplayField>,boolean,Optional<Double>
+  found:    int,String,String,int,double,GoverningFibre,int,EndForces,EndForces,List<Object>,List<Object>,Optional<Object>
+  reason: actual and formal argument lists differ in length
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\sidecar\SidecarEngineTest.java:176: error: incompatible types: com.blockreality.testlegacy.MemberSnapshot cannot be converted to com.blockreality.api.MemberSnapshot
+                StressRibbonBuilder.memberPeak(m));
+                                               ^
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\sidecar\SidecarEngineTest.java:583: error: incompatible types: List<com.blockreality.testlegacy.ShellSnapshot> cannot be converted to List<com.blockreality.api.ShellSnapshot>
+        Optional<ShellMesh.Hit> hit = ShellMesh.locate(r.shells(), new Vec3d(centre, 64500, centre));
+                                                               ^
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\sidecar\SidecarEngineTest.java:586: error: cannot find symbol
+        double got = hit.get().shell().field().orElseThrow().momentAt(hit.get().xi(), hit.get().eta()).mxx();
+                                      ^
+  symbol:   method field()
+  location: class ShellSnapshot
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\sidecar\SidecarEngineTest.java:626: error: incompatible types: List<com.blockreality.testlegacy.ShellSnapshot> cannot be converted to List<com.blockreality.api.ShellSnapshot>
+                ShellMesh.Hit h = ShellMesh.locate(r.shells(), centre).orElseThrow();
+                                                           ^
+C:\Users\wmc02\Desktop\block-reality\mod\core\src\test\java\com\blockreality\core\sidecar\SidecarEngineTest.java:632: error: incompatible types: List<com.blockreality.testlegacy.ShellSnapshot> cannot be converted to List<com.blockreality.api.ShellSnapshot>
+        ShellMesh.Hit outer = ShellMesh.locate(r.shells(), new Vec3d(0, 64500, 3500)).orElseThrow();
+                                                       ^
+Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+11 errors
+
+> Task :core:compileTestJava FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:compileTestJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 9s
+4 actionable tasks: 3 executed, 1 up-to-date

@@ -1,0 +1,7 @@
+{
+  "run": 34535372691,
+  "job": 103065629514,
+  "head": "fab94c13991bd41a5b0edd1bf6114f19553186e8",
+  "log_sha256": "3c5bf9678d3c813bea9ff3084d15b9bdd7f338142e2941131971ed1890bbca30",
+  "log_gzip": "first-ci.log.gz"
+}

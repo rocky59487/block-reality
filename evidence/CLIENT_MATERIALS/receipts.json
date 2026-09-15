@@ -1,0 +1,97 @@
+{
+  "client-materials-core-first.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\client-materials-core-first.log",
+    "sha256": "0c782999c77cb6d53d8b32cfba21d77114d9361f7ebe23c487b17d90e6ecf3ab",
+    "bytes": 1065
+  },
+  "client-materials-forge-first.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\client-materials-forge-first.log",
+    "sha256": "a7aa2a26204bacb783769dada498cc3f9f83df93ed161c0ffd97359fc561b8fc",
+    "bytes": 1438
+  },
+  "client-materials-core-check.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\client-materials-core-check.log",
+    "sha256": "e411dce2b5775412022c2f17c19c79f62b46b5ee7d7fc78b7b7728d7729171e3",
+    "bytes": 30077,
+    "excerpt": true,
+    "committedSha256": "468153836090e137905fee4eae7539cb3dc22bd3e4ac042c3461c3782b3232a0",
+    "committedBytes": 1288
+  },
+  "client-materials-core-with-sidecar.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\client-materials-core-with-sidecar.log",
+    "sha256": "a251810d7f4763b8bd4023d9e51bc5e08ba4cfb12f00df18cb69171ed778b632",
+    "bytes": 30049,
+    "excerpt": true,
+    "committedSha256": "649018c12de6f7fb381aecb618f39462ecae9eca106975713cff3bc2a922632f",
+    "committedBytes": 1288
+  },
+  "client-materials-forge-build.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\client-materials-forge-build.log",
+    "sha256": "58db89c6cd87d46c5a98d43c5825f2e4ca94ab682a42cba8f963edd295ce5610",
+    "bytes": 8384,
+    "excerpt": true,
+    "committedSha256": "92eb0da6c22412fc4ca4bd36ced6380b5e557c96e11c469055f7b50017c8c7ac",
+    "committedBytes": 873
+  },
+  "client-materials-server-baseline.json": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\client-materials-server-baseline.json",
+    "sha256": "dab019b0943e30d56d3c7a9ef27faadc4e2415de1cf2f0568e930e0c367fdf33",
+    "bytes": 17261
+  },
+  "client-materials-docs-first.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\client-materials-docs-first.log",
+    "sha256": "4f42ec1ef243968abfc9ab025dd6db541f46627910290fd2ddb8b6afa531ba46",
+    "bytes": 590
+  },
+  "client-materials-counts-first.json": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\client-materials-counts-first.json",
+    "sha256": "5bba188b6b9ca4708d2dfac8be1f4a490dfee944ef0de3e227120e9af9887095",
+    "bytes": 352
+  },
+  "newDevelopmentJar": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\forge\\build\\libs\\blockreality-0.4.0-dev.jar",
+    "sha256": "47684b3de007ab96e78a8c45d3172fa15b8008459c24440b3b5032fbadb2fc43",
+    "bytes": 423025
+  },
+  "installedBaselineJar": {
+    "source": "C:\\Users\\wmc02\\AppData\\Roaming\\.minecraft\\mods\\blockreality-0.4.0-dev.jar",
+    "sha256": "ad0b906d31c7fae9f549fd0f5756df22d1084f238ea5eba1f8d2e7befb8d52f9",
+    "bytes": 412925
+  },
+  "client-materials-docs.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\client-materials-docs.log",
+    "sha256": "d7fd0d64a85f63385273fac4e01d0c2a518a2d713de36f549de17d19655aeed1",
+    "bytes": 118
+  },
+  "client-materials-missing-catalogue-first.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\client-materials-missing-catalogue-first.log",
+    "sha256": "61312b244c4a6d73f04ad967fc7d83c8853005ca64c314f58f216b306fd5b4a6",
+    "bytes": 2315
+  },
+  "client-materials-missing-catalogue-first.xml": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\client-materials-missing-catalogue-first.xml",
+    "sha256": "a7c998d86e102b60d2d41ed7baaf55a540e9f0e9daecd3a6ad47a1580d70ef8d",
+    "bytes": 2144
+  },
+  "client-materials-core-final.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\client-materials-core-final.log",
+    "sha256": "704adec756f5704da162ab16222d2fbedc104a8d794a514eb7fece309786a1d7",
+    "bytes": 30124,
+    "excerpt": true,
+    "committedSha256": "d27ef948f7adcd116a12294857a4a0d560b899d9b0ca69aceb55296d63a626b8",
+    "committedBytes": 1361
+  },
+  "client-materials-forge-final.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\client-materials-forge-final.log",
+    "sha256": "a6215bf1284340b9b0d2f248c6c75e80fe17b4afab2474292f3b5986101cb7f8",
+    "bytes": 8241,
+    "excerpt": true,
+    "committedSha256": "fad3eb24dd9b276d7da46357d14ce7ed65ca4aa92a7e4385609e13de324b8578",
+    "committedBytes": 851
+  },
+  "client-materials-docs-final.log": {
+    "source": "C:\\Users\\wmc02\\Desktop\\block-reality\\build\\client-materials-docs-final.log",
+    "sha256": "07a5a2b63b513de7e5137c503bd083359a435868f28493d9ad2c4e74f7eda9a7",
+    "bytes": 118
+  }
+}

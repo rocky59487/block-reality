@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Does check_bundle.py still bite? Seven injections against a known-good staging directory.
+"""Does check_bundle.py still bite? Corruption injections against a known-good staging directory.
 
     python3 scripts/check_bundle_selftest.py <stage-dir>
 
@@ -14,9 +14,10 @@ Every case below MUST turn the gate red. A case that goes green is not a passing
 is the gate having lost a tooth, and the run fails naming which one.
 
 The subject is a staging directory that check_bundle.py already accepts — the one
-scripts/package_natives.sh built. Nothing here modifies it; each case is applied to a copy.
+scripts/package_native.py built. Nothing here modifies it; each case is applied to a copy.
 """
 import os
+import hashlib
 import shutil
 import subprocess
 import sys
@@ -89,6 +90,27 @@ def two_engine_shapes(items, lib):
     return items
 
 
+def registered_licence_changed(items, lib):
+    name = "META-INF/third_party/native-release/linux-x86_64/licenses/Ubuntu-GCC.txt"
+    kept = [(i, d) for i, d in items if i.filename != name]
+    kept.append((zipfile.ZipInfo(name), b"changed copyright text"))
+    return kept
+
+
+def unregistered_large_licence(items, lib):
+    items.append((zipfile.ZipInfo("META-INF/third_party/unregistered-license.txt"), b"a" * 70612))
+    return items
+
+
+def changed_contract_schema(items, lib):
+    return [(i, d + b" " if i.filename == "blockreality/contract/bsi.schema.json" else d)
+            for i, d in items]
+
+
+def missing_contract_schema(items, lib):
+    return [(i, d) for i, d in items if i.filename != "blockreality/contract/bsi.schema.json"]
+
+
 CASES = [
     ("N24-a1  the library renamed to .exe", rename_to_exe),
     ("N24-a1  an ELF binary under an innocent name", elf_under_an_innocent_name),
@@ -97,6 +119,10 @@ CASES = [
     ("N24-a3  the manifest claiming a foreign contract", a_foreign_contract),
     ("N24-a5  the OpenBLAS and METIS licence texts dropped", licences_dropped),
     ("        one jar carrying two engine shapes", two_engine_shapes),
+    ("NATIVE  published licence changed", registered_licence_changed),
+    ("NATIVE  unregistered large licence", unregistered_large_licence),
+    ("NATIVE  canonical contract schema changed", changed_contract_schema),
+    ("NATIVE  canonical contract schema missing", missing_contract_schema),
 ]
 
 
@@ -111,10 +137,21 @@ def run_case(stage, jar_name, lib, mutate, work):
             out.writestr(info, data)
     # SHA256SUMS is regenerated so that ONLY the injected defect is under test — otherwise
     # every case would trip the stray-file rule and prove nothing about the rule it names.
-    subprocess.run("find . -type f ! -name SHA256SUMS.txt -printf '%P\\n' | sort | "
-                   "xargs sha256sum > SHA256SUMS.txt", shell=True, cwd=work, check=True)
-    r = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "check_bundle.py"), work],
-                       capture_output=True, text=True)
+    rows = []
+    for base, _dirs, files in os.walk(work):
+        for name in files:
+            path = os.path.join(base, name)
+            relative = os.path.relpath(path, work).replace(os.sep, "/")
+            if relative != "SHA256SUMS.txt":
+                with open(path, "rb") as stream:
+                    digest = hashlib.sha256()
+                    for chunk in iter(lambda: stream.read(65536), b""):
+                        digest.update(chunk)
+                    rows.append((relative, digest.hexdigest()))
+    with open(os.path.join(work, "SHA256SUMS.txt"), "w", encoding="utf-8", newline="\n") as sums:
+        sums.writelines(digest + "  " + name + "\n" for name, digest in sorted(rows))
+    r = subprocess.run([sys.executable, "-X", "utf8", os.path.join(ROOT, "scripts", "check_bundle.py"), work],
+                       capture_output=True, text=True, encoding="utf-8")
     return r.returncode, (r.stdout + r.stderr)
 
 
@@ -131,8 +168,8 @@ def main():
 
     # The subject must be GREEN before anything is injected. A staging directory that is
     # already failing would make every case below "catch" something and say nothing.
-    base = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "check_bundle.py"), stage],
-                          capture_output=True, text=True)
+    base = subprocess.run([sys.executable, "-X", "utf8", os.path.join(ROOT, "scripts", "check_bundle.py"), stage],
+                          capture_output=True, text=True, encoding="utf-8")
     if base.returncode != 0:
         print(f"FAIL {stage} does not pass check_bundle.py before any injection:")
         print(base.stdout + base.stderr)

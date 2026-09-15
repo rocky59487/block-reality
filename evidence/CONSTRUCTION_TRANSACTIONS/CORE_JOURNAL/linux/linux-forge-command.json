@@ -1,0 +1,13 @@
+{
+  "command": [
+    "bash",
+    "gradlew",
+    "--no-daemon",
+    "build",
+    "-PbrNativesDir=/home/rocky/br-native-candidate-runtime/staged",
+    "--console=plain"
+  ],
+  "cwd": "/home/rocky/br-construction-transactions/forge",
+  "BR_ENGINE": "/home/rocky/br-native-candidate-runtime/staged/linux-x86_64/libbsi_tectonic.so",
+  "BR_SIDECAR": "/home/rocky/br-native-candidate-runtime/dist/br-sidecar"
+}

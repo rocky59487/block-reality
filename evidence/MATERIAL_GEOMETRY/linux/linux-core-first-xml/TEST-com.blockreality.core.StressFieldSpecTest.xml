@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.StressFieldSpecTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:35:53" hostname="rockylaptop" time="0.014">
+  <properties/>
+  <testcase name="axialIsCompressionPositiveOnTheWireAndTensionPositiveOut()" classname="com.blockreality.core.StressFieldSpecTest" time="0.001"/>
+  <testcase name="theTwoBendingTermsCarryOppositeSigns()" classname="com.blockreality.core.StressFieldSpecTest" time="0.0"/>
+  <testcase name="positionsAlongTheMemberAreClampedToItsLength()" classname="com.blockreality.core.StressFieldSpecTest" time="0.0"/>
+  <testcase name="worldPointsMapOntoTheSectionRatherThanOutsideIt()" classname="com.blockreality.core.StressFieldSpecTest" time="0.001"/>
+  <testcase name="aCantileverReproducesTheClosedFormAtEveryPoint()" classname="com.blockreality.core.StressFieldSpecTest" time="0.002"/>
+  <testcase name="theUniformLoadParabolaIsExactNotSampled()" classname="com.blockreality.core.StressFieldSpecTest" time="0.002"/>
+  <testcase name="biaxialBendingSuperposes()" classname="com.blockreality.core.StressFieldSpecTest" time="0.0"/>
+  <testcase name="peakIsFoundEvenWhenItIsInTheMiddle()" classname="com.blockreality.core.StressFieldSpecTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

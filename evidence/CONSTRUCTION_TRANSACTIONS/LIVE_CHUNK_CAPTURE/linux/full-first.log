@@ -1,0 +1,368 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Task :compileJava
+[15:53:51] [main/INFO]: Writing debug log file accesstransform.log
+[15:53:51] [main/INFO]: Access Transformer processor running version 8.2.14
+[15:53:51] [main/INFO]: Command line arguments [--inJar, /home/rocky/br-live-chunk-capture/forge/build/fg_cache/net/minecraftforge/forge/1.20.1-47.4.13/forge-1.20.1-47.4.13-injected.jar, --outJar, /home/rocky/br-live-chunk-capture/forge/build/fg_cache/net/minecraftforge/forge/1.20.1-47.4.13_mapped_official_1.20.1/forge-1.20.1-47.4.13_mapped_official_1.20.1.jar, --logFile, accesstransform.log, --atFile, /home/rocky/br-live-chunk-capture/forge/src/main/resources/META-INF/accesstransformer.cfg, --atFile, /home/rocky/br-live-chunk-capture/forge/build/_atJar_4/parent_at.cfg]
+[15:53:51] [main/INFO]: Reading from /home/rocky/br-live-chunk-capture/forge/build/fg_cache/net/minecraftforge/forge/1.20.1-47.4.13/forge-1.20.1-47.4.13-injected.jar
+[15:53:51] [main/INFO]: Writing to /home/rocky/br-live-chunk-capture/forge/build/fg_cache/net/minecraftforge/forge/1.20.1-47.4.13_mapped_official_1.20.1/forge-1.20.1-47.4.13_mapped_official_1.20.1.jar
+[15:53:51] [main/INFO]: Transformer file /home/rocky/br-live-chunk-capture/forge/src/main/resources/META-INF/accesstransformer.cfg
+[15:53:51] [main/INFO]: Transformer file /home/rocky/br-live-chunk-capture/forge/build/_atJar_4/parent_at.cfg
+[15:53:51] [main/WARN]: Found existing output jar /home/rocky/br-live-chunk-capture/forge/build/fg_cache/net/minecraftforge/forge/1.20.1-47.4.13_mapped_official_1.20.1/forge-1.20.1-47.4.13_mapped_official_1.20.1.jar, overwriting
+[15:53:55] [main/INFO]: JAR transformation complete /home/rocky/br-live-chunk-capture/forge/build/fg_cache/net/minecraftforge/forge/1.20.1-47.4.13_mapped_official_1.20.1/forge-1.20.1-47.4.13_mapped_official_1.20.1.jar
+Creating SRG -> MCP TSRG
+/home/rocky/br-live-chunk-capture/forge/src/main/java/com/blockreality/impl/BlockRealityMod.java:28: warning: [removal] get() in FMLJavaModLoadingContext has been deprecated and marked for removal
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+                                                ^
+/home/rocky/br-live-chunk-capture/forge/src/main/java/com/blockreality/impl/BlockRealityMod.java:32: warning: [removal] get() in ModLoadingContext has been deprecated and marked for removal
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                                                ^
+/home/rocky/br-live-chunk-capture/forge/src/main/java/com/blockreality/impl/net/BRNetwork.java:54: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation(BlockRealityMod.MOD_ID, "main"),
+            ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+3 warnings
+
+> Task :bundleEngines
+bundleEngines: 2 engine library/libraries from /home/rocky/br-native-v15-consumer/staged
+
+> Task :processResources
+> Task :classes
+> Task :jar
+> Task :downloadMcpConfig
+> Task :extractSrg
+> Task :createMcpToSrg
+> Task :reobfJar
+> Task :jarJar SKIPPED
+> Task :reobfJarJar SKIPPED
+> Task :assemble
+
+> Task :checkNativeOnlyJar
+{
+  "classes": 256,
+  "errors": [],
+  "sha256": "34d8fbb8411a05b000927c40fb0320687572bcc4983a3374236a321760bcca5b",
+  "mutations": [
+    {
+      "arm": "bundled-legacy",
+      "compileExit": 0,
+      "refused": [
+        "forbidden entry: com/blockreality/testlegacy/Forbidden.class",
+        "forbidden constant: com/blockreality/testlegacy/Forbidden.class -> com/blockreality/testlegacy/"
+      ]
+    },
+    {
+      "arm": "dormant-reference",
+      "compileExit": 0,
+      "refused": [
+        "forbidden constant: com/blockreality/impl/ResurrectedReference.class -> com/blockreality/testlegacy/"
+      ]
+    },
+    {
+      "arm": "construction-process-driver",
+      "compileExit": 0,
+      "refused": [
+        "forbidden entry: com/blockreality/core/transaction/TransactionProcessLeak.class",
+        "forbidden constant: com/blockreality/core/transaction/TransactionProcessLeak.class -> com/blockreality/core/transaction/TransactionProcess"
+      ]
+    }
+  ]
+}
+
+> Task :compileTestJava
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+
+> Task :test
+
+GameVocabularyResourceTest > forgeCarriesTheSameVocabularyAndEveryRegisteredBlockHasABinding() PASSED
+
+LangKeysTest > the two languages carry the same keys, so neither is half translated PASSED
+
+LangKeysTest > a format string with a placeholder has one in both languages PASSED
+
+LangKeysTest > every key the game can ask for has an English string PASSED
+
+LangKeysTest > no br.* string is carried that nothing can ask for PASSED
+
+PlacementAxisTest > gameSourceUsesNativeSnapshotsAndObservedContactFaces() PASSED
+
+PlacementAxisTest > rotationsAndCyclingKeepExplicitThreeAxisDeclarations() PASSED
+
+PlacementAxisTest > undeclaredLegacyBlocksNeverInventAWorldAxis() PASSED
+
+ProductTooltipTest > solidCellsAndPanelsDescribeDifferentRolesWithoutInventingANormal() PASSED
+
+ProductTooltipTest > millimetresRetainNonSquareOrderWithoutBinaryRoundingOrLocaleDrift() PASSED
+
+ProductTooltipTest > unknownProductsShowInformationUnavailableInsteadOfAnEmptyOrFictionalSize() PASSED
+
+BrPermissionsTest > privilegedSubcommandsAreAllPresent() PASSED
+
+BrPermissionsTest > anUnknownLiteralIsARegistrationError() PASSED
+
+BrPermissionsTest > theWhitelistIsExactlyTheReadOnlyDiagnostics() PASSED
+
+BrPermissionsTest > everythingOutsideTheReadOnlyWhitelistRequiresOp() PASSED
+
+AnalysisUpdatePacketTest > diagnosticClippingPreservesUnicodeAndFitsTheReserve() PASSED
+
+AnalysisUpdatePacketTest > maximumIdentityAndSummaryShareTheExistingByteReserve() PASSED
+
+AnalysisUpdatePacketTest > everyKindRoundTripsWithSourceAndRevision() PASSED
+
+AnalysisUpdatePacketTest > malformedIdentityEnumsAndTrailingPayloadAreRejected() PASSED
+
+AnalysisUpdatePacketTest > decodedNoticesCannotRollBackAnAcceptedResult() PASSED
+
+AnalysisUpdatePacketTest > everyByteTruncationFailsClosedForEveryKind() PASSED
+
+AnalysisUpdatePacketTest > senderRefusesContradictoryResultsBeforeWriting() PASSED
+
+DisplayDeliveryTest > countIdentityAndOmissionContradictionsAreRejected() PASSED
+
+DisplayDeliveryTest > receivingChargesAggregateStationsBeforeAllocation() PASSED
+
+DisplayDeliveryTest > selectedRecordsAreCompleteAndThreeEncodesAreIdentical() PASSED
+
+DisplayDeliveryTest > controllingElementReservesBudgetBeforeBothFamilies() PASSED
+
+DisplayDeliveryTest > oversizedControllerIsExplicitAndNeverChangesSummary() PASSED
+
+DisplayDeliveryTest > oversizedFrameIsRejectedBeforeParsing() PASSED
+
+DisplayDeliveryTest > receivingChargesAggregateBlocksBeforeAllocation() PASSED
+
+DisplayDeliveryTest > wholeElementsFitExactBytesAndOneLessOmitsThem() PASSED
+
+DisplayDeliveryTest > countsAreSharedAcrossElementsAndFamilies() PASSED
+
+GlobalVerdictPacketTest > invalidGlobalValuesRejectTheWholePacket() PASSED
+
+GlobalVerdictPacketTest > globalDecisionDoesNotDependOnDisplayedElements() PASSED
+
+GlobalVerdictPacketTest > explicitFlagsSurviveWithoutChangingTheirNumbers() PASSED
+
+GlobalVerdictPacketTest > incompleteWorldSummaryRetainsComputedIslandCritical() PASSED
+
+GlobalVerdictPacketTest > fullDoubleRangeSurvivesWithoutNarrowingOrRepair() PASSED
+
+MemberPacketCodecTest > allSampledPacketTruncationsAreRejected() PASSED
+
+MemberPacketCodecTest > absentDisplayDoesNotEraseSamplesOrDiagnostics() PASSED
+
+MemberPacketCodecTest > fullPacketPreservesEverySampleCellFlagAndGoverningIndex() PASSED
+
+MemberPacketCodecTest > oversizedCollectionsRejectInsteadOfDroppingTailSamples() PASSED
+
+MemberPacketCodecTest > exactIdentityAndMissingGoverningSurviveTheFullPacket() PASSED
+
+MemberPacketCodecTest > identifiedPacketTruncationsAndInvalidIdentityAreRejected() PASSED
+
+MemberPacketCodecTest > nonFiniteMetadataAndSamplesAreRejected() PASSED
+
+NativeOnlyPacketGoldenTest > fixedPacketsRemainByteIdenticalAcrossLegacyRemoval() PASSED
+
+NativeResultPacketTest > sharedContractResourcesDescribeThisBuild() PASSED
+
+NativeResultPacketTest > realNativeAnalysisReachesThePacketWithTheSameFlagsAndDoubles() PASSED
+
+NativeResultPacketTest > failedAnalysisCannotBeEncodedAsAHealthyEmptyResult() PASSED
+
+ShellPacketCodecTest > missingDisplayAndOptionalRawRemainDistinct() PASSED
+
+ShellPacketCodecTest > nonFiniteSurfaceAndInvalidFrameRejectTheWholePacket() PASSED
+
+ShellPacketCodecTest > everyTruncationOfASampledShellPacketIsRejected() PASSED
+
+ShellPacketCodecTest > completePacketPreservesVerdictBlocksAndSamplesThroughPicking() PASSED
+
+StressResultPacketTest > aHostileMemberCountRejectsThePacket() PASSED
+
+StressResultPacketTest > roundTripPreservesTheDrawableResult() PASSED
+
+StressResultPacketTest > theWithheldFlagFollowsItsMemberThroughOverlayTruncation() PASSED
+
+StressResultPacketTest > withholdingWithoutATruncatedBlockIsRejected() PASSED
+
+StressResultPacketTest > anUnknownBucklingStateOrdinalIsRejectedNotClamped() PASSED
+
+StressResultPacketTest > everyBucklingStateSurvivesTheTrip() PASSED
+
+StressResultPacketTest > unassignedCountsTravelPerReason() PASSED
+
+StressResultPacketTest > anOverLongTokenIsTruncatedRatherThanThrownDuringTheBroadcast() PASSED
+
+StressResultPacketTest > theSmallestDoubleFactorIsPreservedExactly() PASSED
+
+StressResultPacketTest > anOverlongDimensionIsClippedNotThrown() PASSED
+
+StressResultPacketTest > theHostSubstitutesDisabledByScaleAndNobodyElseCan() PASSED
+
+StressResultPacketTest > everyNumberTheClientDrawsIsWithinTheDisplayBudgetOfTheServersOwn() PASSED
+
+StressResultPacketTest > aWholeModelSendsNoWithholdingAtAll() PASSED
+
+StressResultPacketTest > aMemberWithoutAGoverningStationDecodesAsNone() PASSED
+
+StressResultPacketTest > withheldElementsAndTheirReasonSurviveTheWire() PASSED
+
+StressResultPacketTest > aStateThatContradictsItsFactorIsRejected() PASSED
+
+StressResultPacketTest > theMaterialTokenSurvivesTheWire() PASSED
+
+StressResultPacketTest > theSafetyClassificationIsTheServersNotAFloatComparison() PASSED
+
+StressResultPacketTest > truncationKeepsTheGoverningMemberAndSaysSo() PASSED
+
+StressResultPacketTest > bucklingSkippedRoundTripsAndAContradictionIsRejected() PASSED
+
+StressResultPacketTest > aTruncatedBufferNeverThrowsItRejects() PASSED
+
+StressResultPacketTest > nanIsCorruptionNotZero() PASSED
+
+StressResultPacketTest > anEmptyResultRoundTripsAsMechanismData() PASSED
+
+StressResultPacketTest > governingStationSurvivesTheTripAsAPosition() PASSED
+
+AnalysisExecutorTest > shutdownIsIdempotentAndSafeWithoutAPool() PASSED
+
+AnalysisExecutorTest > submitAfterShutdownDoesNotThrowItReportsFalse() PASSED
+
+AnalysisExecutorTest > thePoolIsRebuiltAfterShutdown() PASSED
+
+BucklingPolicyTest > theLimitIsInclusiveAndZeroMeansNever() PASSED
+
+BucklingPolicyTest > aNegativeLimitIsOffRatherThanInverted() PASSED
+
+BucklingPolicyTest > theNativeDefaultUsesEngineDofBudgetInsteadOfBlockCounts() PASSED
+
+ChunkAvailabilityTest > removingCoverageForgetsOldAvailabilityAndEmptyDomainDoesNotReadWorld() PASSED
+
+ChunkAvailabilityTest > pollHasBoundedWorkAndApplyRejectsAnUnvisitedMissingChunk() PASSED
+
+ChunkAvailabilityTest > demotionWithoutUnloadAndPromotionWithoutLoadInvalidate() PASSED
+
+GatherCycleTest > aCycleWithinBudgetCompletesInOneStep() PASSED
+
+GatherCycleTest > aRevisionChangeAbandonsTheParkedCycle() PASSED
+
+GatherCycleTest > anOverBudgetCycleYieldsAndResumesWhereItStopped() PASSED
+
+GatherCycleTest > stepWithNoCycleIsIdle() PASSED
+
+GatherCycleTest > zeroBudgetStillGuaranteesMinimumProgress() PASSED
+
+InputCoverageTest > fullyObservedDomainDispatchesOnce() PASSED
+
+InputCoverageTest > unreadableStructureAndGroundNeverDispatch() PASSED
+
+SnapshotLoadsTest > aLoadOnABlockThatFormsNoElementIsIdentifiedByTheProbe() PASSED
+
+SnapshotLoadsTest > aLoadInAnUnloadedChunkWaitsWithItsBlock() PASSED
+
+SnapshotLoadsTest > momentsAreNotInventedForPointLoads() PASSED
+
+SnapshotLoadsTest > aLoadOnAnIncludedBlockTravels() PASSED
+
+SnapshotLoadsTest > aBlockThatFormsNoElementButCarriesNoLoadIsLeftAlone() PASSED
+
+SnapshotLoadsTest > aLoadWhoseBlockIsGoneIsReportedStale() PASSED
+
+SolveDispatchTest > aSuccessfulRunHandsTheResultToDeliveryAndDoesNotReleaseItself() PASSED
+
+SolveDispatchTest > aThrowingSolveReleasesTheFlagAndLogs() PASSED
+
+SolveDispatchTest > anErrorInTheSolveDoesNotDoubleRelease() PASSED
+
+SolveDispatchTest > aThrowingDeliveryReleasesTheFlagAndLogs() PASSED
+
+WorldIndexDataTest > corruptExistingFileIsNeverReplacedByEmptyData() PASSED
+
+WorldIndexDataTest > actualSavedDataSurvivesReloadWithDimensionSeparation() PASSED
+
+WorldIndexDataTest > gzipWriterReadsLegacyCompressionAndPreservesPendingMetadataForVanilla() PASSED
+
+WorldIndexDataTest > legacyCoverageMigratesWithoutForgettingUnloadedUnknownDeclarations() PASSED
+
+WorldIndexDataTest > savedPendingReplacementRetiresOriginalIdentityAfterReload() PASSED
+
+WorldIndexDataTest > failedAtomicReplacementPreservesOldFileAndDirtyRetry() PASSED
+
+WorldIndexDataTest > unknownObjectSchemaCannotFallBackToCoverageOrOverwriteFile() PASSED
+
+WorldIndexDataTest > failedCompressedWritePreservesOriginalFileAndAllowsExactRetry() PASSED
+
+BoundedChunkReadTest > actualWorkerReopensEveryTagAndUnsortedFullChunkWithoutLoss() PASSED
+
+BoundedChunkReadTest > compressedOversizedDocumentRefusesBeforeNbtConstructionAndPreservesFiles() PASSED
+
+BoundedChunkReadTest > malformedAndDeepRegionDocumentsRefuseWithOriginalBytesRetained() PASSED
+
+BoundedChunkReadTest > decodedByteCapStopsTheStreamBeforeTagAllocation() PASSED
+
+BoundedChunkReadTest > duplicateNamesRefuseWithoutChangingRegionFiles() PASSED
+
+BoundedChunkReadTest > pendingMapNeverSubstitutesForForcedRegionData() PASSED
+
+CanonicalNbtTest > truncationTrailingDuplicateUnknownAndImpossibleLengthsRefuse() PASSED
+
+CanonicalNbtTest > everyTagTypeRoundTripsWithVanillaAndIndependentImages() PASSED
+
+CanonicalNbtTest > byteDepthAndTagBudgetsRefuseBeforeLargeAllocation() PASSED
+
+CanonicalNbtTest > compoundInsertionOrderDoesNotChangeImageAndSmallGoldenIsExact() PASSED
+
+CanonicalNbtTest > numericPayloadBitsSurviveAndUnrepresentableNegativeZeroRefuses() PASSED
+
+ChunkFileParticipantTest > wholeImagesArePrivateAndForcingPrecedesVerifiedReadback() PASSED
+
+ChunkFileParticipantTest > invalidLastImageAndReducedBatchLimitsCannotIssuePartialWrites() PASSED
+
+ChunkFileParticipantTest > headersCoordinatesSectionTypeAndCanonicalBudgetsRefuseBeforeStorage() PASSED
+
+ChunkFileParticipantTest > outstandingStoresDrainBeforeFailureAndBeforeAnyForceOrRead() PASSED
+
+ChunkFileParticipantTest > missingReadDoesNotInventAirAndForeignThreadDoesNotPoisonOwner() PASSED
+
+ChunkFileParticipantTest > everyStorageFailureLatchesAndNewAdapterResolvesActualWrittenImage() PASSED
+
+ChunkFileParticipantTest > actualRegionWorkerPersistsCompleteMultipleChunksAndReopensExactBytes() PASSED
+
+LiveChunkCaptureTest > exactEntitiesAndCapabilitiesAllowDifferentListAndCompoundOrder() PASSED
+
+LiveChunkCaptureTest > entityTypePositionAndPackedFlagsAreStrict() PASSED
+
+LiveChunkCaptureTest > omittedChangedDuplicateAndForeignBlockEntitiesRefuse() PASSED
+
+LiveChunkCaptureTest > hooksCanAddButCannotReplaceDeleteOrMutateExistingFields() PASSED
+
+LiveChunkCaptureTest > droppedOrChangedChunkCapabilitiesNeverBecomeAnEmptySuccess() PASSED
+
+PlayerFileParticipantTest > nonFileTargetAndNonFileDirectoryRefuseWithoutReplacement() PASSED
+
+PlayerFileParticipantTest > corruptionTruncationTrailingGzipAndInflationCapacityPreserveOriginals() PASSED
+
+PlayerFileParticipantTest > exactFullPlayerSurvivesVanillaAndOfflineReloadWithInventoryOnlyChange() PASSED
+
+PlayerFileParticipantTest > staleForeignAndMissingIdentityCannotOverwriteExistingPlayer() PASSED
+
+PlayerFileParticipantTest > retainedTemporaryCountAndByteCapacityRefuseWithoutDeletingEvidence() PASSED
+
+PlayerFileParticipantTest > failuresAtEveryRealStorageBoundaryRemainResolvable() PASSED
+
+PlayerFileParticipantTest > changeDuringStagingIsDetectedBeforeAtomicReplacement() PASSED
+
+PlayerInventoryImageTest > rejectsDuplicateUnknownMistypedAndMalformedInventoryWithoutMutation() PASSED
+
+PlayerInventoryImageTest > mapsAllVanillaSlotsAndPreservesExactItemData() PASSED
+
+PlayerInventoryImageTest > modifiesOnlyRequestedSlotsAndNeverAliasesInput() PASSED
+
+> Task :check
+> Task :build
+
+BUILD SUCCESSFUL in 1m 10s
+11 actionable tasks: 11 executed

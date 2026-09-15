@@ -1,0 +1,15 @@
+{
+  "provenance": "Notes transcribed from the initial tool outputs; these are not raw subprocess log bytes.",
+  "artifact_inspection": {
+    "command": "python -X utf8 build/live-chunk-capture/inspect.py",
+    "exit": 1,
+    "failure": "AssertionError: expected only ChunkFileParticipant.class to differ, but its $1 and $Batch companions also changed.",
+    "retained": ["inspect-first.py", "jar-identity-first.json"],
+    "resolution": "javap -p -c -s is byte-identical for both companions. Their debug line metadata moved; the qualified jar was not modified."
+  },
+  "documentation_verification": {
+    "command": "python -X utf8 scripts/check_docs.py",
+    "failure": "Child output reader UnicodeDecodeError: utf-8 cannot decode byte 0xa4 at position 1080; verify.py did not report ALL PASS.",
+    "context": "The omitted executable argument selected dist/br-sidecar, the Linux binary, on Windows. The corrected run supplies the existing Windows dist/br-sidecar.exe and UTF-8 child environment. No engine build or source change."
+  }
+}

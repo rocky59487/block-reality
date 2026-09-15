@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "C:\Users\wmc02\Desktop\block-reality\scripts\check_native_jar.py", line 246, in <module>
+    main()
+  File "C:\Users\wmc02\Desktop\block-reality\scripts\check_native_jar.py", line 169, in main
+    with zipfile.ZipFile(args.jar) as archive:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\Lib\zipfile\__init__.py", line 1336, in __init__
+    self.fp = io.open(file, filemode)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\wmc02\\Desktop\\block-reality\\build\\native-v1.5-consumer\\blockreality-0.4.0-dev-v1.5.jar'

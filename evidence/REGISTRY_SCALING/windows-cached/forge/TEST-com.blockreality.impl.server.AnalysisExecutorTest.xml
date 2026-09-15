@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.server.AnalysisExecutorTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-09T22:36:05" hostname="ROCKYLAPTOP" time="0.012">
+  <properties/>
+  <testcase name="shutdownIsIdempotentAndSafeWithoutAPool()" classname="com.blockreality.impl.server.AnalysisExecutorTest" time="0.004"/>
+  <testcase name="submitAfterShutdownDoesNotThrowItReportsFalse()" classname="com.blockreality.impl.server.AnalysisExecutorTest" time="0.003"/>
+  <testcase name="thePoolIsRebuiltAfterShutdown()" classname="com.blockreality.impl.server.AnalysisExecutorTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

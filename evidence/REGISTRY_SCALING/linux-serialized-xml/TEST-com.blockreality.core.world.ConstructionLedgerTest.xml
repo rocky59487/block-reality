@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.world.ConstructionLedgerTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-09-09T22:29:16" hostname="rockylaptop" time="0.446">
+  <properties/>
+  <testcase name="cellAndEpochBoundsRefuseWithoutEvictionOrWraparound()" classname="com.blockreality.core.world.ConstructionLedgerTest" time="0.171"/>
+  <testcase name="frameRunsKeepParallelCrossingProductAndUndeclaredAxesSeparate()" classname="com.blockreality.core.world.ConstructionLedgerTest" time="0.002"/>
+  <testcase name="immutableWorkerInputAndStaleCompletionCannotOverwriteNewEdits()" classname="com.blockreality.core.world.ConstructionLedgerTest" time="0.002"/>
+  <testcase name="historyAndLineageBoundsCannotEvictPublishedAncestors()" classname="com.blockreality.core.world.ConstructionLedgerTest" time="0.261"/>
+  <testcase name="restoredRegistryIsIndependentOfLoadedObservationOrderAndEmptyWorldRetires()" classname="com.blockreality.core.world.ConstructionLedgerTest" time="0.002"/>
+  <testcase name="splitRetiresParentEvenWhenOneChildWasCompletelyReplacedInTheBatch()" classname="com.blockreality.core.world.ConstructionLedgerTest" time="0.001"/>
+  <testcase name="monolithAndPanelGroupsUseOnlyDeclaredProductsAndFaceAdjacency()" classname="com.blockreality.core.world.ConstructionLedgerTest" time="0.001"/>
+  <testcase name="splitAndMergeCreateNewIdentitiesWithExactLineage()" classname="com.blockreality.core.world.ConstructionLedgerTest" time="0.001"/>
+  <testcase name="fullDestructionAndSameTickReplacementCannotResurrectIdentityEvenAfterPendingSave()" classname="com.blockreality.core.world.ConstructionLedgerTest" time="0.001"/>
+  <testcase name="noOpExtensionTrimAndUnrelatedObjectsRetainPublishedIdentity()" classname="com.blockreality.core.world.ConstructionLedgerTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

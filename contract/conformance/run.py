@@ -43,6 +43,41 @@ def load_cases():
 
 FIELD_FMT = {"i32": "i", "u32": "I", "u8": "B", "u16": "H", "f64": "d", "f32": "f", "i64": "q", "u64": "Q"}
 
+def record_leaves(schema, section):
+    """Byte offsets and primitive paths; preserves nested arrays and explicit ABI padding."""
+    records = schema['x-records']
+    def walk(name, offset, prefix):
+        record = records[name]
+        cursor = 0
+        leaves = []
+        for field in record['fields']:
+            label, kind = field[:2]
+            match = re.fullmatch(r'([a-zA-Z0-9_]+)((?:\[\d+\])*)', kind)
+            if not match:
+                raise ValueError('unknown record type: ' + kind)
+            base = match[1]
+            dimensions = [int(n) for n in re.findall(r'\[(\d+)\]', match[2])]
+            count = math.prod(dimensions)
+            stride = struct.calcsize('<' + FIELD_FMT[base]) if base in FIELD_FMT else records[base]['bytes']
+            start = record.get('offsets', {}).get(label, cursor)
+            if start < cursor or start + count * stride > record['bytes']:
+                raise ValueError('invalid record layout: ' + name + '.' + label)
+            for i in range(count):
+                path = prefix + label
+                remainder = i
+                for index, length in enumerate(dimensions):
+                    divisor = math.prod(dimensions[index+1:])
+                    path += '[' + str(remainder // divisor) + ']'
+                    remainder %= divisor
+                at = offset + start + i * stride
+                if base in FIELD_FMT:
+                    leaves.append((at, FIELD_FMT[base], path))
+                else:
+                    leaves += walk(base, at, path + '.')
+            cursor = start + count * stride
+        return leaves
+    return walk(section, 0, '')
+
 def record_format(schema, section):
     """struct format + field names for an x-records entry ('stations:f32' -> f32 variant)."""
     base, _, variant = section.partition(":")
@@ -62,6 +97,32 @@ def record_format(schema, section):
     return fmt, names
 
 def decode_records(schema, section, blob):
+    if section.startswith(('corot', 'bsi_corot_')):
+        stride = schema['x-records'][section]['bytes']
+        if len(blob) % stride:
+            raise ValueError('incomplete finite record')
+        fields = record_leaves(schema, section)
+        return [{path: struct.unpack_from('<'+kind, blob, row+offset)[0] for offset, kind, path in fields}
+                for row in range(0, len(blob), stride)]
+    if section in ("fractureCells", "fractureFragments"):
+        # Nested physical/source records keep their public structure in readback.
+        stride = schema["x-records"][section]["bytes"]
+        if len(blob) % stride:
+            raise ValueError("incomplete fracture record")
+        out = []
+        for offset in range(0, len(blob), stride):
+            row = blob[offset:offset + stride]
+            if section == "fractureCells":
+                source = decode_records(schema, "block", row[:40])[0]
+                values = struct.unpack_from("<iIqII", row, 40)
+                record = dict(zip(("panelNormal", "group", "artifact", "flags", "reserved"), values))
+                record["source"] = source
+                record["physical"] = decode_records(schema, "physicalTotals", row[64:])[0]
+            else:
+                record = dict(zip(("parentFirst", "parentCount", "flags", "reserved"), struct.unpack_from("<IIII", row, 80)))
+                record["physical"] = decode_records(schema, "physicalTotals", row[:80])[0]
+            out.append(record)
+        return out
     if section.startswith("facetSurfaces"):
         f = "f" if section.endswith(":f32") else "d"
         sz = struct.calcsize("<" + f * 32)
@@ -360,7 +421,7 @@ class LineClient:
         out = self.p.stdout.readline()
         if not out:
             raise RuntimeError("host process closed its stdout")
-        text = out.decode("utf-8").rstrip("\n")
+        text = out.decode("utf-8").rstrip("\r\n")
         m = re.search(r',"payloadBytes":(\d+),"payloadB64":"([A-Za-z0-9+/=]*)"\}$', text)
         if not m:
             raise RuntimeError("reply line lacks the payloadBytes/payloadB64 suffix")
@@ -435,13 +496,24 @@ class ArenaClient:
         d = json.loads(hdr)
         method = d["method"]
         door = {"bsi.hello": "hello", "bsi.vocab.declare": "vocab", "bsi.vocab.query": "vocab", "bsi.world.declare": "declare",
-                "bsi.world.edit": "edit", "bsi.solve": "solve", "bsi.cancel": "cancel"}[method]
+                "bsi.world.edit": "edit", "bsi.solve": "solve", "bsi.cancel": "cancel",
+                "bsi.fracture.prepare": "fracturePrepare", "bsi.fracture.finish": "fractureFinish",
+                "bsi.rigid.declare": "rigidDeclare", "bsi.rigid.step": "rigidStep",
+                "bsi.pdelta.solve": "pdeltaSolve", "bsi.pdelta.station": "pdeltaStation",
+                "bsi.pdelta.fracture.prepare": "pdeltaFracturePrepare",
+                "bsi.corot.solve": "corotSolve", "bsi.corot.fracture.prepare": "corotFracturePrepare",
+                "bsi.corot.rigid.declare": "corotRigidDeclare",
+                "bsi.corot.checkpoint.export": "corotCheckpointExport", "bsi.corot.checkpoint.import": "corotCheckpointImport", "bsi.corot.arc.advance": "corotArcAdvance"}[method]
         loads = b""
         if door == "declare":
             nb = d.get("body", {}).get("blocks", len(payload) // 40)
             self.world, self.attrs = payload[:nb * 40], payload[nb * 40:]
-        elif door == "solve":
+        elif door in ("solve", "rigidStep", "pdeltaSolve", "pdeltaFracturePrepare", "corotSolve", "corotFracturePrepare", "corotCheckpointImport", "corotCheckpointExport", "corotArcAdvance"):
             loads = payload
+        elif door in ("rigidDeclare", "corotRigidDeclare"):
+            self.world, self.attrs = payload, b""
+        elif door == "edit":
+            self.world, self.attrs = payload, b""
         req = hdr.encode("utf-8")
         for attempt in range(8):
             regions, end = self._layout(loads, req)
@@ -477,6 +549,8 @@ class ArenaClient:
                 m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
                 off = regions["reply"][0]; ln = int(r["replyLen"])
                 buf = bytes(m[off:off + ln]); m.close()
+            if not buf:
+                raise RuntimeError(f"arena returned no framed response: {r}")
             return decode_frame(buf)
         raise RuntimeError("arena never became big enough")
     def close(self):
@@ -583,6 +657,125 @@ def check_reply(schema, validator, method, reply, declared_blocks=None):
     if method == "bsi.hello":
         probs += validator.validate("hello.response", h)
         order = list(schema["$defs"]["hello.response"]["properties"].keys())
+    elif method == "bsi.corot.checkpoint.export":
+        definition = method[4:] + '.response'
+        probs += validator.validate(definition, h)
+        order = list(schema['$defs'][definition]['properties'])
+        if len(reply.payload) != h.get('bytes'):
+            probs.append('checkpoint payload length mismatch')
+    elif method in ("bsi.corot.solve", "bsi.corot.fracture.prepare", "bsi.corot.rigid.declare", "bsi.corot.checkpoint.import", "bsi.corot.arc.advance"):
+        definition = method[4:] + '.response'
+        probs += validator.validate(definition, h)
+        order = list(schema['$defs'][definition]['properties'])
+        if list(h) != [key for key in order if key in h]:
+            probs.append('finite response key order differs from schema')
+        fracture = ['physicalTotals', 'fractureCells', 'fractureFragments', 'fractureParents',
+                    'fractureEvents', 'fractureEventCells', 'fractureMechanism']
+        analysis = ['corotOptions', 'corotPhysical', 'corotIslands', 'corotText', 'corotNodes', 'corotMembers',
+                    'corotShells', 'corotJoints', 'corotSources', 'corotSourceIndices', 'corotArtifacts',
+                    'corotArtifactMembers', 'corotArtifactShells', 'corotProfiles', 'corotFibers', 'corotStations', 'corotPoints']
+        archive = ['corotArchives', 'corotRetiredMembers', 'corotRetiredShells', 'corotRetiredCells', 'corotArchiveOwners',
+                   'corotRetiredProfiles', 'corotRetiredFibers', 'corotRetiredStations', 'corotRetiredPoints']
+        sections = h.get('sections', [])
+        present = {s['name'] for s in sections}
+        tensor = ['corotShellProfiles', 'corotShellLayers', 'corotTensorPoints']
+        retired_tensor = ['corotRetiredShellProfiles', 'corotRetiredShellLayers', 'corotRetiredTensorPoints']
+        if present.intersection(tensor):
+            analysis += tensor
+        if present.intersection(retired_tensor):
+            archive += retired_tensor
+        if method.endswith('prepare'):
+            want = fracture + analysis + ['corotDecisions', 'corotPhases', 'corotFailures', 'corotDecisionCells', 'corotFractureLoads'] + archive
+        elif method.endswith('declare'):
+            want = ['motionBodies', 'motionPieces', 'motionVertices', 'motionTriangles', 'motionStates', 'corotBodyEnergies'] + archive
+        else:
+            want = analysis
+        sections = h.get('sections', [])
+        if [s['name'] for s in sections] != want:
+            probs.append('finite sections not in fixed order')
+        offset = 0
+        fixed = {'physicalTotals': 3, 'corotPhysical': 7, 'corotOptions': 1}
+        for section in sections:
+            record = schema['x-records'].get(section['name'])
+            if not record or section['offset'] != offset or section['bytes'] != section['count'] * record['bytes']:
+                probs.append('invalid finite section range')
+            if section['name'] in fixed and section['count'] != fixed[section['name']]:
+                probs.append('invalid finite fixed section count')
+            offset += section['bytes']
+        if offset != len(reply.payload):
+            probs.append('finite payload length mismatch')
+    elif method in ("bsi.pdelta.solve", "bsi.pdelta.station", "bsi.pdelta.fracture.prepare"):
+        definition = method[4:] + ".response"
+        probs += validator.validate(definition, h)
+        order = list(schema["$defs"][definition]["properties"])
+        if list(h) != [k for k in order if k in h]:
+            probs.append(f"{definition} key order differs from schema")
+        if method.endswith("station"):
+            want = ["pdeltaStation", "pdeltaSample"]
+            fixed = {"pdeltaStation": 1, "pdeltaSample": 1}
+        elif method.endswith("prepare"):
+            want = ["physicalTotals", "fractureCells", "fractureFragments", "fractureParents", "fractureEvents", "fractureEventCells", "fractureMechanism",
+                    "pdeltaOptions", "pdeltaDecisions", "pdeltaDecisionCells", "pdeltaIslands", "pdeltaText", "pdeltaFractureLoads"]
+            fixed = {"physicalTotals": 3, "pdeltaOptions": 1}
+        else:
+            want = ["pdeltaOptions", "pdeltaPhysical", "pdeltaIslands", "pdeltaText", "pdeltaNodes", "pdeltaMembers", "pdeltaShells", "pdeltaSources",
+                    "pdeltaSourceIndices", "pdeltaArtifacts", "pdeltaArtifactMembers", "pdeltaArtifactShells", "pdeltaLoads"]
+            fixed = {"pdeltaOptions": 1, "pdeltaPhysical": 7}
+        sections = h.get("sections", [])
+        if [s["name"] for s in sections] != want:
+            probs.append("P-Delta sections not in fixed order")
+        offset = 0
+        for s in sections:
+            record = schema['x-records'].get(s['name'])
+            if not record or s['offset'] != offset or s['bytes'] != s['count'] * record['bytes']:
+                probs.append('invalid P-Delta section range')
+            if s['name'] in fixed and s['count'] != fixed[s['name']]:
+                probs.append('invalid P-Delta fixed section count')
+            offset += s['bytes']
+        if offset != len(reply.payload):
+            probs.append('P-Delta payload length mismatch')
+    elif method in ("bsi.rigid.declare", "bsi.rigid.step"):
+        definition = method[4:] + ".response"
+        probs += validator.validate(definition, h)
+        order = list(schema["$defs"][definition]["properties"])
+        keys = [k for k in h if not k.startswith("x-")]
+        if keys != [k for k in order if k in h]:
+            probs.append(f"{definition} key order differs from schema")
+        want = (["motionBodies", "motionPieces", "motionVertices", "motionTriangles"] if method.endswith("declare")
+                else ["motionReport", "motionStates", "motionSleeping", "motionWoken"])
+        sections = h.get("sections", [])
+        if [s["name"] for s in sections] != want:
+            probs.append("rigid sections not in fixed order")
+        offset = 0
+        for s in sections:
+            rec = schema["x-records"].get(s["name"])
+            if not rec or s["offset"] != offset or s["bytes"] != s["count"] * rec["bytes"]:
+                probs.append("invalid rigid section range")
+            offset += s["bytes"]
+        if offset != len(reply.payload) or (method.endswith("step") and (not sections or sections[0]["count"] != 1)):
+            probs.append("rigid payload length mismatch")
+    elif method in ("bsi.fracture.prepare", "bsi.fracture.finish"):
+        definition = method[4:] + ".response"
+        probs += validator.validate(definition, h)
+        order = list(schema["$defs"][definition]["properties"])
+        keys = [k for k in h if not k.startswith("x-")]
+        if keys != [k for k in order if k in h]:
+            probs.append(f"{definition} key order differs from schema")
+        if method == "bsi.fracture.prepare":
+            want = ["physicalTotals", "fractureCells", "fractureFragments", "fractureParents", "fractureEvents", "fractureEventCells", "fractureMechanism"]
+            sections = h.get("sections", [])
+            if [s["name"] for s in sections] != want:
+                probs.append("fracture sections not in fixed order")
+            offset = 0
+            for s in sections:
+                rec = schema["x-records"].get(s["name"])
+                if not rec or s["offset"] != offset or s["bytes"] != s["count"] * rec["bytes"]:
+                    probs.append("invalid fracture section range")
+                offset += s["bytes"]
+            if offset != len(reply.payload) or not sections or sections[0]["count"] != 3:
+                probs.append("fracture payload or totals length mismatch")
+        elif reply.payload:
+            probs.append("fracture finish must have empty payload")
     elif method == "bsi.solve":
         probs += validator.validate("solve.response", h)
         order = list(schema["$defs"]["solve.response"]["properties"].keys())

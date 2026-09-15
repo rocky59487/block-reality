@@ -51,7 +51,7 @@ class BundledNativesTest {
         }
     }
 
-    private static final String CONTRACT = "a".repeat(64);
+    private static final String CONTRACT = com.blockreality.core.bsi.BsiContract.sha256();
 
     private static String manifest() {
         return "# os arch file sha256 size engineVersion contractSha256\n"
@@ -152,8 +152,8 @@ class BundledNativesTest {
         Optional<Path> p = BundledNatives.ensure(root, jar(), "Linux", "amd64", log);
         assertTrue(p.isPresent(), log.all());
         assertArrayEqualsBytes(LIB, Files.readAllBytes(p.get()));
-        assertEquals(sha256(LIB).substring(0, 16), p.get().getParent().getFileName().toString());
-        assertEquals("lib", p.get().getParent().getParent().getFileName().toString());
+        assertEquals(sha256(LIB), p.get().getParent().getFileName().toString());
+        assertEquals("linux-x86_64", p.get().getParent().getParent().getFileName().toString());
     }
 
     /**
@@ -219,7 +219,7 @@ class BundledNativesTest {
     }
 
     @Test
-    void anOlderLibraryIsRemovedButNothingElseIs(@TempDir Path root) throws IOException {
+    void anOlderLibraryAndUserFilesArePreserved(@TempDir Path root) throws IOException {
         Path stale = root.resolve("lib").resolve("0123456789abcdef");
         Files.createDirectories(stale);
         Files.writeString(stale.resolve("libbsi_tectonic.so"), "old");
@@ -228,7 +228,8 @@ class BundledNativesTest {
         Files.writeString(keep.resolve("player-put-this-here"), "mine");
 
         BundledNatives.ensure(root, jar(), "Linux", "amd64", new Log());
-        assertFalse(Files.exists(stale), "a superseded library was left behind");
+        // NATIVE_CONSUMER 2026-09-09 replaces launch-time pruning: another JVM may need it.
+        assertTrue(Files.exists(stale.resolve("libbsi_tectonic.so")), "another version's cache was deleted");
         assertTrue(Files.exists(keep.resolve("player-put-this-here")),
                 "pruning touched a directory that is not a content hash");
     }

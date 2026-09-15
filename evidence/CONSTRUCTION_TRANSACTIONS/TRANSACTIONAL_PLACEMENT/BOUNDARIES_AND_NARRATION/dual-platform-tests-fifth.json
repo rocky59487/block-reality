@@ -1,0 +1,67 @@
+{
+  "windows": {
+    "forge": {
+      "counts": {
+        "tests": 152,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "skipped_tests": [],
+      "raw_results": "forge-full-fifth-xml"
+    },
+    "core_reused_unchanged": {
+      "counts": {
+        "tests": 487,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 12
+      },
+      "skipped_tests": [
+        "com.blockreality.core.sidecar.BundledEngineTest.theUnpackedEngineIsExecutable(Path)",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aCrashDuringAnalysisFailsThatRequestAndRecovers()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aStaleReplyLeftInThePipeDoesNotPoisonTheNextRequest()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.resetRevivesADisabledClientOnceTheBinaryIsInstalled()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aWedgedSidecarTimesOutAndIsKilled()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aFloodingSidecarIsKilledNotBuffered()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aProtocolMismatchIsRefusedOutrightAndNotRetried()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aShmDoorbellRevisionMismatchIsADesyncAndEndsTheConversation()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aClosedClientIsTerminalAndNeverRespawns()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.growIsRetriedOnceGrownAndARefusalAfterGrowthIsAnAnswer()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.closingSendsByeAndDoesNotLeaveAProcessBehind()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aRefusedShmMappingDowngradesToJsonAndTheSolveStillAnswers()"
+      ],
+      "raw_results": "core-full-third-xml"
+    },
+    "registered": 639,
+    "passed": 627,
+    "skipped": 12
+  },
+  "linux": {
+    "forge": {
+      "counts": {
+        "tests": 152,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "skipped_tests": [],
+      "raw_results": "linux-forge-full-fifth-xml"
+    },
+    "core_reused_unchanged": {
+      "counts": {
+        "tests": 487,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "skipped_tests": [
+        "com.blockreality.core.sidecar.SidecarPathsTest.aStringThatCannotBeAPathIsReportedAndNotThrown()"
+      ],
+      "raw_results": "linux-core-full-fourth-xml"
+    },
+    "registered": 639,
+    "passed": 638,
+    "skipped": 1
+  }
+}

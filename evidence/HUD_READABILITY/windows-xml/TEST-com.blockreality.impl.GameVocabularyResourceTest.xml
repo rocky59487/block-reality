@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.GameVocabularyResourceTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-09T23:55:50" hostname="ROCKYLAPTOP" time="0.051">
+  <properties/>
+  <testcase name="forgeCarriesTheSameVocabularyAndEveryRegisteredBlockHasABinding()" classname="com.blockreality.impl.GameVocabularyResourceTest" time="0.051"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.sidecar.SidecarLifecycleTest" tests="14" skipped="11" failures="0" errors="0" timestamp="2026-09-09T22:35:44" hostname="ROCKYLAPTOP" time="0.076">
+  <properties/>
+  <testcase name="closeOnANeverStartedClientIsSafeAndTerminal()" classname="com.blockreality.core.sidecar.SidecarLifecycleTest" time="0.002"/>
+  <testcase name="aCrashDuringAnalysisFailsThatRequestAndRecovers()" classname="com.blockreality.core.sidecar.SidecarLifecycleTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="aStaleReplyLeftInThePipeDoesNotPoisonTheNextRequest()" classname="com.blockreality.core.sidecar.SidecarLifecycleTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="resetRevivesADisabledClientOnceTheBinaryIsInstalled()" classname="com.blockreality.core.sidecar.SidecarLifecycleTest" time="0.021">
+    <skipped/>
+  </testcase>
+  <testcase name="aWedgedSidecarTimesOutAndIsKilled()" classname="com.blockreality.core.sidecar.SidecarLifecycleTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="aFloodingSidecarIsKilledNotBuffered()" classname="com.blockreality.core.sidecar.SidecarLifecycleTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="missingBinaryDisablesAnalysisAndLeavesTheGamePlayable()" classname="com.blockreality.core.sidecar.SidecarLifecycleTest" time="0.02"/>
+  <testcase name="aProtocolMismatchIsRefusedOutrightAndNotRetried()" classname="com.blockreality.core.sidecar.SidecarLifecycleTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="aShmDoorbellRevisionMismatchIsADesyncAndEndsTheConversation()" classname="com.blockreality.core.sidecar.SidecarLifecycleTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="aClosedClientIsTerminalAndNeverRespawns()" classname="com.blockreality.core.sidecar.SidecarLifecycleTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="growIsRetriedOnceGrownAndARefusalAfterGrowthIsAnAnswer()" classname="com.blockreality.core.sidecar.SidecarLifecycleTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="closingSendsByeAndDoesNotLeaveAProcessBehind()" classname="com.blockreality.core.sidecar.SidecarLifecycleTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <testcase name="concurrentSolveResetStatusAndCloseNeverThrowAndCloseWins()" classname="com.blockreality.core.sidecar.SidecarLifecycleTest" time="0.01"/>
+  <testcase name="aRefusedShmMappingDowngradesToJsonAndTheSolveStillAnswers()" classname="com.blockreality.core.sidecar.SidecarLifecycleTest" time="0.002">
+    <skipped/>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

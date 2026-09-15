@@ -1,0 +1,82 @@
+[
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":0,\"resultRevision\":-1,\"kind\":\"EMPTY\",\"detail\":\"\",\"objectsReady\":true,\"cells\":0,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "fresh isolated registry",
+    "pass": true
+  },
+  {
+    "command": "gamerule doMobSpawning false",
+    "response": "Gamerule doMobSpawning is now set to: false\n"
+  },
+  {
+    "command": "gamerule doDaylightCycle false",
+    "response": "Gamerule doDaylightCycle is now set to: false\n"
+  },
+  {
+    "command": "gamerule doWeatherCycle false",
+    "response": "Gamerule doWeatherCycle is now set to: false\n"
+  },
+  {
+    "command": "time set day",
+    "response": "Set the time to 1000\n"
+  },
+  {
+    "command": "weather clear",
+    "response": "Set the weather to clear\n"
+  },
+  {
+    "command": "forceload add -16 -16 63 63",
+    "response": "Marked [-1, -1] chunks in minecraft:overworld from [-1, -1] to [3, 3] to be force loaded\n"
+  },
+  {
+    "command": "setworldspawn 2 201 -8",
+    "response": "Set the world spawn point to 2, 201, -8 [0.0]\n"
+  },
+  {
+    "command": "setblock -1 200 0 minecraft:stone",
+    "response": "Changed the block at -1, 200, 0\n"
+  },
+  {
+    "command": "fill 0 200 0 4 200 0 blockreality:steel_beam[axis=x]",
+    "response": "Successfully filled 5 block(s)\n"
+  },
+  {
+    "command": "setblock 10 199 0 minecraft:stone",
+    "response": "Changed the block at 10, 199, 0\n"
+  },
+  {
+    "command": "fill 10 200 0 10 204 0 blockreality:steel_beam[axis=y]",
+    "response": "Successfully filled 5 block(s)\n"
+  },
+  {
+    "command": "fill -1 210 10 -1 210 12 minecraft:stone",
+    "response": "Successfully filled 3 block(s)\n"
+  },
+  {
+    "command": "fill 0 210 10 3 210 12 blockreality:concrete_slab[axis=y]",
+    "response": "Successfully filled 12 block(s)\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":-1,\"kind\":\"PENDING\",\"detail\":\"\",\"objectsReady\":false,\"cells\":22,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":-1,\"kind\":\"PENDING\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":-1,\"kind\":\"PENDING\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":44,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "native beam column panel fixture",
+    "pass": true
+  }
+]

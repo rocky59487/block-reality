@@ -1,0 +1,17 @@
+{
+  "OFF_LOAD": {
+    "registered": 1,
+    "failed": "offNeverCallsTheLoader()",
+    "type": "org.opentest4j.AssertionFailedError"
+  },
+  "CLOSE_IGNORED": {
+    "registered": 1,
+    "failed": "closeRevokesBlockedResultsWithoutClosingAnActiveNativeCall()",
+    "type": "org.opentest4j.AssertionFailedError"
+  },
+  "UNDECLARED_Y": {
+    "registered": 1,
+    "failed": "undeclaredLegacyBlocksNeverInventAWorldAxis()",
+    "type": "org.opentest4j.AssertionFailedError"
+  }
+}

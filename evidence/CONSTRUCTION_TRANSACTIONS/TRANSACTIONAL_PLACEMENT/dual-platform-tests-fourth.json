@@ -1,0 +1,161 @@
+{
+  "windows": {
+    "core": {
+      "counts": {
+        "tests": 487,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 12
+      },
+      "skipped_tests": [
+        "com.blockreality.core.sidecar.BundledEngineTest.theUnpackedEngineIsExecutable(Path)",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aCrashDuringAnalysisFailsThatRequestAndRecovers()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aStaleReplyLeftInThePipeDoesNotPoisonTheNextRequest()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.resetRevivesADisabledClientOnceTheBinaryIsInstalled()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aWedgedSidecarTimesOutAndIsKilled()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aFloodingSidecarIsKilledNotBuffered()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aProtocolMismatchIsRefusedOutrightAndNotRetried()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aShmDoorbellRevisionMismatchIsADesyncAndEndsTheConversation()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aClosedClientIsTerminalAndNeverRespawns()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.growIsRetriedOnceGrownAndARefusalAfterGrowthIsAnAnswer()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.closingSendsByeAndDoesNotLeaveAProcessBehind()",
+        "com.blockreality.core.sidecar.SidecarLifecycleTest.aRefusedShmMappingDowngradesToJsonAndTheSolveStillAnswers()"
+      ],
+      "raw_results": "core-full-third-xml"
+    },
+    "forge": {
+      "counts": {
+        "tests": 152,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "skipped_tests": [],
+      "raw_results": "forge-full-fourth-xml"
+    },
+    "registered": 639,
+    "skipped": 12,
+    "passed": 627,
+    "native_named_tests_all_executed": [
+      "com.blockreality.core.engine.BsiAnalysisNativeTest.realCommitResultsShareNativeFlagsSamplesAndLifecycle()",
+      "com.blockreality.core.engine.BundledNativesTest.theUnpackedLibraryIsNotExecutable(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.aDevelopmentJarWithNoLibrarySaysSoAndCarriesOn(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.aFiveFieldManifestIsRefusedRatherThanHalfUnderstood()",
+      "com.blockreality.core.engine.BundledNativesTest.aReplaceRefusedByAnOpenHandleAdoptsWhatIsAlreadyThere(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.aLibraryAlreadyInPlaceIsAdoptedWithoutRewriting(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.theShippedLoaderReadsFromTheJarWhenThereIsOne()",
+      "com.blockreality.core.engine.BundledNativesTest.sevenFieldsCarryTheEngineVersionAndTheContractItWasBuiltAgainst()",
+      "com.blockreality.core.engine.BundledNativesTest.unpackingNeverThrowsIntoTheModLoad(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.firstUseWritesTheLibraryUnderAHashNamedPath(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.theOverrideDirectoryBeatsTheCopyUnpackedFromTheJar(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.bytesThatDisagreeWithTheManifestUnpackNothing(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.anOlderLibraryAndUserFilesArePreserved(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.anUnsupportedPlatformIsToldWhatDidShipAndWhereToPutItsOwn(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.aManifestThatTriesToEscapeTheUnpackDirectoryIsRefused()",
+      "com.blockreality.core.engine.BundledNativesTest.aContractFieldThatIsNotAHashIsRefused()",
+      "com.blockreality.core.engine.GameInputNativeTest.refusedVocabularyRedeclarationInvalidatesOldWorldAndNames()",
+      "com.blockreality.core.engine.GameInputNativeTest.profilingObservesTheRealBridgeWithoutChangingNativeResults()",
+      "com.blockreality.core.engine.GameInputNativeTest.declaredRectangularPresentationAxesAgreeWithDeliveredNativeFrames()",
+      "com.blockreality.core.engine.GameInputNativeTest.fullGameVocabularyAndSnapshotReachTheRealEngine()",
+      "com.blockreality.core.engine.NativeCacheTest.darwinUsesTheSameNormalisationAsManifestSelection()",
+      "com.blockreality.core.engine.NativeCacheTest.manifestReadIsBounded()",
+      "com.blockreality.core.engine.NativeCacheTest.otherVersionsAndLegacyCacheArePreserved()",
+      "com.blockreality.core.engine.NativeCacheTest.duplicatePlatformIsRejected()",
+      "com.blockreality.core.engine.NativeCacheTest.contractMismatchIsRejectedBeforeOpeningLibraryOrAdoptingCache()",
+      "com.blockreality.core.engine.NativeCacheTest.corruptCacheIsRepaired()",
+      "com.blockreality.core.engine.NativeCacheTest.interruptedStreamPublishesNothingAndCleansTemporary()",
+      "com.blockreality.core.engine.NativeCacheTest.fullHashAndPlatformArePartOfCacheIdentity()",
+      "com.blockreality.core.engine.NativeCacheTest.deniedDestinationIsRecoverable()",
+      "com.blockreality.core.engine.NativeCacheTest.overlongResourceStopsAtDeclaredSizePlusOne()",
+      "com.blockreality.core.engine.NativeCacheTest.simultaneousUnpackConverges()",
+      "com.blockreality.core.engine.NativeGameRuntimeTest.loadsLazilyReusesTheSessionAndKeepsDimensionsSeparate()",
+      "com.blockreality.core.engine.NativeGameRuntimeTest.offNeverCallsTheLoader()",
+      "com.blockreality.core.engine.NativeGameRuntimeTest.concurrentSubmissionsNeverEnterTheSameSessionTogether()",
+      "com.blockreality.core.engine.NativeGameRuntimeTest.aLoadFailureStaysDisabledUntilExplicitReset()",
+      "com.blockreality.core.engine.NativeGameRuntimeTest.closeRevokesBlockedResultsWithoutClosingAnActiveNativeCall()",
+      "com.blockreality.core.engine.NativeGameRuntimeTest.timeoutRevokesAuthorityButDoesNotPretendToKillNativeWork()",
+      "com.blockreality.core.engine.NativeGameRuntimeTest.resetWaitsForTheOldCallAndOpensAFreshSession()",
+      "com.blockreality.core.NativeOnlyResultsTest.everyPublicSnapshotConstructorRequiresAnExplicitVerdict()",
+      "com.blockreality.core.NativeOnlyResultsTest.suppliedFlagsSurviveNumericValuesThatSuggestTheOppositeVerdict()",
+      "com.blockreality.core.NativeOnlyResultsTest.absentDisplayAndNeutralAxisCannotBeReconstructedFromForcesOrOppositeSigns()",
+      "com.blockreality.impl.net.NativeOnlyPacketGoldenTest.fixedPacketsRemainByteIdenticalAcrossLegacyRemoval()",
+      "com.blockreality.impl.net.NativeResultPacketTest.sharedContractResourcesDescribeThisBuild()",
+      "com.blockreality.impl.net.NativeResultPacketTest.realNativeAnalysisReachesThePacketWithTheSameFlagsAndDoubles()",
+      "com.blockreality.impl.net.NativeResultPacketTest.failedAnalysisCannotBeEncodedAsAHealthyEmptyResult()"
+    ]
+  },
+  "linux": {
+    "core": {
+      "counts": {
+        "tests": 487,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "skipped_tests": [
+        "com.blockreality.core.sidecar.SidecarPathsTest.aStringThatCannotBeAPathIsReportedAndNotThrown()"
+      ],
+      "raw_results": "linux-core-full-fourth-xml"
+    },
+    "forge": {
+      "counts": {
+        "tests": 152,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "skipped_tests": [],
+      "raw_results": "linux-forge-full-fourth-xml"
+    },
+    "registered": 639,
+    "skipped": 1,
+    "passed": 638,
+    "native_named_tests_all_executed": [
+      "com.blockreality.core.engine.BundledNativesTest.theUnpackedLibraryIsNotExecutable(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.aDevelopmentJarWithNoLibrarySaysSoAndCarriesOn(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.aFiveFieldManifestIsRefusedRatherThanHalfUnderstood()",
+      "com.blockreality.core.engine.BundledNativesTest.aReplaceRefusedByAnOpenHandleAdoptsWhatIsAlreadyThere(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.aLibraryAlreadyInPlaceIsAdoptedWithoutRewriting(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.theShippedLoaderReadsFromTheJarWhenThereIsOne()",
+      "com.blockreality.core.engine.BundledNativesTest.sevenFieldsCarryTheEngineVersionAndTheContractItWasBuiltAgainst()",
+      "com.blockreality.core.engine.BundledNativesTest.unpackingNeverThrowsIntoTheModLoad(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.firstUseWritesTheLibraryUnderAHashNamedPath(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.theOverrideDirectoryBeatsTheCopyUnpackedFromTheJar(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.bytesThatDisagreeWithTheManifestUnpackNothing(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.anOlderLibraryAndUserFilesArePreserved(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.anUnsupportedPlatformIsToldWhatDidShipAndWhereToPutItsOwn(Path)",
+      "com.blockreality.core.engine.BundledNativesTest.aManifestThatTriesToEscapeTheUnpackDirectoryIsRefused()",
+      "com.blockreality.core.engine.BundledNativesTest.aContractFieldThatIsNotAHashIsRefused()",
+      "com.blockreality.core.engine.NativeGameRuntimeTest.loadsLazilyReusesTheSessionAndKeepsDimensionsSeparate()",
+      "com.blockreality.core.engine.NativeGameRuntimeTest.offNeverCallsTheLoader()",
+      "com.blockreality.core.engine.NativeGameRuntimeTest.concurrentSubmissionsNeverEnterTheSameSessionTogether()",
+      "com.blockreality.core.engine.NativeGameRuntimeTest.aLoadFailureStaysDisabledUntilExplicitReset()",
+      "com.blockreality.core.engine.NativeGameRuntimeTest.closeRevokesBlockedResultsWithoutClosingAnActiveNativeCall()",
+      "com.blockreality.core.engine.NativeGameRuntimeTest.timeoutRevokesAuthorityButDoesNotPretendToKillNativeWork()",
+      "com.blockreality.core.engine.NativeGameRuntimeTest.resetWaitsForTheOldCallAndOpensAFreshSession()",
+      "com.blockreality.core.NativeOnlyResultsTest.everyPublicSnapshotConstructorRequiresAnExplicitVerdict()",
+      "com.blockreality.core.NativeOnlyResultsTest.suppliedFlagsSurviveNumericValuesThatSuggestTheOppositeVerdict()",
+      "com.blockreality.core.NativeOnlyResultsTest.absentDisplayAndNeutralAxisCannotBeReconstructedFromForcesOrOppositeSigns()",
+      "com.blockreality.core.engine.GameInputNativeTest.refusedVocabularyRedeclarationInvalidatesOldWorldAndNames()",
+      "com.blockreality.core.engine.GameInputNativeTest.profilingObservesTheRealBridgeWithoutChangingNativeResults()",
+      "com.blockreality.core.engine.GameInputNativeTest.declaredRectangularPresentationAxesAgreeWithDeliveredNativeFrames()",
+      "com.blockreality.core.engine.GameInputNativeTest.fullGameVocabularyAndSnapshotReachTheRealEngine()",
+      "com.blockreality.core.engine.NativeCacheTest.darwinUsesTheSameNormalisationAsManifestSelection()",
+      "com.blockreality.core.engine.NativeCacheTest.manifestReadIsBounded()",
+      "com.blockreality.core.engine.NativeCacheTest.otherVersionsAndLegacyCacheArePreserved()",
+      "com.blockreality.core.engine.NativeCacheTest.duplicatePlatformIsRejected()",
+      "com.blockreality.core.engine.NativeCacheTest.contractMismatchIsRejectedBeforeOpeningLibraryOrAdoptingCache()",
+      "com.blockreality.core.engine.NativeCacheTest.corruptCacheIsRepaired()",
+      "com.blockreality.core.engine.NativeCacheTest.interruptedStreamPublishesNothingAndCleansTemporary()",
+      "com.blockreality.core.engine.NativeCacheTest.fullHashAndPlatformArePartOfCacheIdentity()",
+      "com.blockreality.core.engine.NativeCacheTest.deniedDestinationIsRecoverable()",
+      "com.blockreality.core.engine.NativeCacheTest.overlongResourceStopsAtDeclaredSizePlusOne()",
+      "com.blockreality.core.engine.NativeCacheTest.simultaneousUnpackConverges()",
+      "com.blockreality.core.engine.BsiAnalysisNativeTest.realCommitResultsShareNativeFlagsSamplesAndLifecycle()",
+      "com.blockreality.impl.net.NativeOnlyPacketGoldenTest.fixedPacketsRemainByteIdenticalAcrossLegacyRemoval()",
+      "com.blockreality.impl.net.NativeResultPacketTest.sharedContractResourcesDescribeThisBuild()",
+      "com.blockreality.impl.net.NativeResultPacketTest.realNativeAnalysisReachesThePacketWithTheSameFlagsAndDoubles()",
+      "com.blockreality.impl.net.NativeResultPacketTest.failedAnalysisCannotBeEncodedAsAHealthyEmptyResult()"
+    ]
+  }
+}

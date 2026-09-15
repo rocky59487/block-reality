@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.bsi.BsiRecordsTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:49:13" hostname="rockylaptop" time="0.033">
+  <properties/>
+  <testcase name="aBlockRecordIsTheFortyBytesTheContractDescribes()" classname="com.blockreality.core.bsi.BsiRecordsTest" time="0.002"/>
+  <testcase name="aLoadRecordIsSixtyFourBytesWithZeroMoments()" classname="com.blockreality.core.bsi.BsiRecordsTest" time="0.001"/>
+  <testcase name="everyRecordSizeMatchesTheSchemaShippedInThisJar()" classname="com.blockreality.core.bsi.BsiRecordsTest" time="0.011"/>
+  <testcase name="outOfRangeFieldsAreRefusedAtConstruction()" classname="com.blockreality.core.bsi.BsiRecordsTest" time="0.009"/>
+  <testcase name="blocksTravelInCanonicalOrderAndDuplicatesAreNamed()" classname="com.blockreality.core.bsi.BsiRecordsTest" time="0.007"/>
+  <testcase name="twoLoadsOnOneCellAreTwoLoadsOrderedByTheirBytes()" classname="com.blockreality.core.bsi.BsiRecordsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

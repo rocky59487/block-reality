@@ -1,0 +1,1 @@
+{"exit": 0, "command": ["bash", "gradlew", "--no-daemon", "--console=plain", "jar", "reobfJar"], "pre_runtime_correction": "Use the observed declaration(BlockKey) API rather than a nonexistent declarations() accessor."}

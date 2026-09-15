@@ -1,0 +1,55 @@
+BucklingPolicyTest > aNegativeLimitIsOffRatherThanInverted() PASSED
+
+BucklingPolicyTest > theNativeDefaultUsesEngineDofBudgetInsteadOfBlockCounts() PASSED
+
+ChunkAvailabilityTest > removingCoverageForgetsOldAvailabilityAndEmptyDomainDoesNotReadWorld() PASSED
+
+ChunkAvailabilityTest > pollHasBoundedWorkAndApplyRejectsAnUnvisitedMissingChunk() PASSED
+
+ChunkAvailabilityTest > demotionWithoutUnloadAndPromotionWithoutLoadInvalidate() PASSED
+
+GatherCycleTest > aCycleWithinBudgetCompletesInOneStep() PASSED
+
+GatherCycleTest > aRevisionChangeAbandonsTheParkedCycle() PASSED
+
+GatherCycleTest > anOverBudgetCycleYieldsAndResumesWhereItStopped() PASSED
+
+GatherCycleTest > stepWithNoCycleIsIdle() PASSED
+
+GatherCycleTest > zeroBudgetStillGuaranteesMinimumProgress() PASSED
+
+InputCoverageTest > fullyObservedDomainDispatchesOnce() PASSED
+
+InputCoverageTest > unreadableStructureAndGroundNeverDispatch() PASSED
+
+SnapshotLoadsTest > aLoadOnABlockThatFormsNoElementIsIdentifiedByTheProbe() PASSED
+
+SnapshotLoadsTest > aLoadInAnUnloadedChunkWaitsWithItsBlock() PASSED
+
+SnapshotLoadsTest > momentsAreNotInventedForPointLoads() PASSED
+
+SnapshotLoadsTest > aLoadOnAnIncludedBlockTravels() PASSED
+
+SnapshotLoadsTest > aBlockThatFormsNoElementButCarriesNoLoadIsLeftAlone() PASSED
+
+SnapshotLoadsTest > aLoadWhoseBlockIsGoneIsReportedStale() PASSED
+
+SolveDispatchTest > aSuccessfulRunHandsTheResultToDeliveryAndDoesNotReleaseItself() PASSED
+
+SolveDispatchTest > aThrowingSolveReleasesTheFlagAndLogs() PASSED
+
+SolveDispatchTest > anErrorInTheSolveDoesNotDoubleRelease() PASSED
+
+SolveDispatchTest > aThrowingDeliveryReleasesTheFlagAndLogs() PASSED
+
+WorldIndexDataTest > corruptExistingFileIsNeverReplacedByEmptyData() PASSED
+
+WorldIndexDataTest > actualSavedDataSurvivesReloadWithDimensionSeparation() PASSED
+
+WorldIndexDataTest > failedAtomicReplacementPreservesOldFileAndDirtyRetry() PASSED
+
+> Task :check
+> Task :build
+
+BUILD SUCCESSFUL in 14s
+11 actionable tasks: 6 executed, 5 up-to-date

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.bsi.BsiBeamDisplayTest" tests="9" skipped="0" failures="1" errors="0" timestamp="2026-09-10T01:47:29" hostname="rockylaptop" time="0.102">
+  <properties/>
+  <testcase name="surfaceTilesSplitWithoutSmearingAcrossTheJump()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.042"/>
+  <testcase name="neutralAxisIsSuppliedDataAndSegmentsDoNotCrossMissingOrDuplicateStations()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.009"/>
+  <testcase name="malformedDataAndExternalMutationCannotReachTheDisplay()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.006"/>
+  <testcase name="unequalVisualExtentsRetainIndependentNativeFacesAndBothSidesOfAJump()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.008">
+    <failure message="org.opentest4j.AssertionFailedError: the Y/Z face values and station sides cannot be swapped ==&gt; expected: &lt;16.0&gt; but was: &lt;7.5&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: the Y/Z face values and station sides cannot be swapped ==&gt; expected: &lt;16.0&gt; but was: &lt;7.5&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:86)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1024)
+	at app//com.blockreality.core.bsi.BsiBeamDisplayTest.unequalVisualExtentsRetainIndependentNativeFacesAndBothSidesOfAJump(BsiBeamDisplayTest.java:129)
+	at java.base@17.0.20/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base@17.0.20/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.20/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="boundedInterpolationUsesFaceCentresAndClamps()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.001"/>
+  <testcase name="samplesUnitsAndDiagnosticConventionComeFromWire()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.018"/>
+  <testcase name="revisionSectionsAndCatalogueAreRequiredButRequestedZeroIsValid()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.004"/>
+  <testcase name="duplicateStationsRetainBothSidesAndNeverInventAGoverningSide()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.005"/>
+  <testcase name="nativeVerdictNeverDependsOnDisplayedDc()" classname="com.blockreality.core.bsi.BsiBeamDisplayTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

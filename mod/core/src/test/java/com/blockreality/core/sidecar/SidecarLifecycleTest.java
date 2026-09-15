@@ -1,6 +1,6 @@
 package com.blockreality.core.sidecar;
 
-import com.blockreality.api.AnalysisResult;
+import com.blockreality.testlegacy.AnalysisResult;
 import com.blockreality.api.EngineCatalogue;
 import com.blockreality.api.WorldRevision;
 import com.blockreality.api.geom.BlockKey;

@@ -1,0 +1,37 @@
+LegendStop[translationKey=br.legend.dc.safe, value=0.0, colour=#2E6F8E, hatch=NONE]
+LegendStop[translationKey=br.legend.dc.watch, value=0.6, colour=#817875, hatch=DIAGONAL_DOWN]
+LegendStop[translationKey=br.legend.dc.limit, value=1.0, colour=#D0392B, hatch=CROSS]
+-1.0 / false = #2E6F8E
+-1.0 / true = #D0392B
+0.0 / false = #2E6F8E
+0.0 / true = #D0392B
+0.1 / false = #45718A
+0.1 / true = #D0392B
+0.6 / false = #817875
+0.6 / true = #D0392B
+0.95 / false = #C1842D
+0.95 / true = #D0392B
+0.9999999999999999 / false = #C8860D
+0.9999999999999999 / true = #D0392B
+1.0 / false = #C8860D
+1.0 / true = #D0392B
+1.0000000000000002 / false = #C8860D
+1.0000000000000002 / true = #D0392B
+3.0 / false = #C8860D
+3.0 / true = #D0392B
+NaN / false = #2E6F8E
+NaN / true = #D0392B
+-Infinity / false = #2E6F8E
+-Infinity / true = #D0392B
+Infinity / false = #C8860D
+Infinity / true = #D0392B
+SIGNED_DEFAULT / -100.0 = #B0342A / DIAGONAL_DOWN
+SIGNED_DEFAULT / -1.0 = #7A8587 / NONE
+SIGNED_DEFAULT / 0.0 = #7A8587 / NONE
+SIGNED_DEFAULT / 1.0 = #7A8587 / NONE
+SIGNED_DEFAULT / 100.0 = #2F6FB0 / DIAGONAL_UP
+TEACHING / -100.0 = #315E80 / DIAGONAL_DOWN
+TEACHING / -1.0 = #7A8587 / NONE
+TEACHING / 0.0 = #7A8587 / NONE
+TEACHING / 1.0 = #7A8587 / NONE
+TEACHING / 100.0 = #0C6266 / DIAGONAL_UP

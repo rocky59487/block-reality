@@ -1,0 +1,48 @@
+{
+  "contractSha256": "77d78df7a530a8db12e8eafd4db83baaf3c12082f0985668b835632178246e94",
+  "libraries": [
+    {
+      "platform": "windows-x86_64",
+      "os": "windows",
+      "arch": "x86_64",
+      "file": "bsi_tectonic.dll",
+      "sha256": "328496b3fa3901d0d1d90bd03c39ca9b10e0900fa1506d680dfb1ed7deb18fa3",
+      "size": 34895360,
+      "engineVersion": "tectonic-2.0.0+ddaaa92",
+      "engine": "tectonic",
+      "version": "2.0.0",
+      "buildSha": "ddaaa92",
+      "contractSha256": "77d78df7a530a8db12e8eafd4db83baaf3c12082f0985668b835632178246e94",
+      "releaseAsset": "tectonic2-2.0.0-windows-x86_64.zip",
+      "releaseAssetSha256": "09e9e77507c9fbe86956c49f6d8bdd4afdf14948a6e7b2c5f9f36cf26dc19038"
+    },
+    {
+      "platform": "linux-x86_64",
+      "os": "linux",
+      "arch": "x86_64",
+      "file": "libbsi_tectonic.so",
+      "sha256": "e0b2b85a86ad9984b0347555504e8c9bec19c77e3132749ad883195bdbfe6b2a",
+      "size": 31334920,
+      "engineVersion": "tectonic-2.0.0+ddaaa92",
+      "engine": "tectonic",
+      "version": "2.0.0",
+      "buildSha": "ddaaa92",
+      "contractSha256": "77d78df7a530a8db12e8eafd4db83baaf3c12082f0985668b835632178246e94",
+      "releaseAsset": "tectonic2-2.0.0-linux-x86_64.zip",
+      "releaseAssetSha256": "ab6f265dcafcbdf5d82403618f537825f2b0b62520fedb90f3f6f1651de76884"
+    }
+  ],
+  "release": {
+    "sourceCommit": "ddaaa92c930393051b67e75f7ccfbd5224580b16",
+    "version": "2.0.0",
+    "sha256sums": "1fabe312e70478359c8afdb8514f205a046339690abfc638313f632895f8d6a3",
+    "assets": {
+      "tectonic2-2.0.0-linux-x86_64.zip": "ab6f265dcafcbdf5d82403618f537825f2b0b62520fedb90f3f6f1651de76884",
+      "tectonic2-2.0.0-source.tar.gz": "7bafe3948218ef53955971ed8cce11a9c6e80ec32d2c3241389d7f08b280ad0e",
+      "tectonic2-2.0.0-windows-x86_64.zip": "09e9e77507c9fbe86956c49f6d8bdd4afdf14948a6e7b2c5f9f36cf26dc19038"
+    },
+    "inventoryProfile": "sdk",
+    "sourceFiles": 10432,
+    "basis": "published release integrity; runtime hello is a separate platform gate"
+  }
+}

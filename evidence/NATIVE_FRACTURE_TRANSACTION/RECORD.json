@@ -1,0 +1,143 @@
+{
+  "engine_commit": "0fcb60a111f9f39c4912b8d372cb1ec8f02c62af",
+  "contract_sha256": "dae6bb356bac7dd5a70b790b4218a62b7f4cb9c80892bbf8179c51e094563465",
+  "raw_sha256": "056717e7dc8179ef267a769fca2e3830bf18a98ec3364b7cc7c70b330099f35c",
+  "logical_files": 4805,
+  "source_sha256": {
+    "mod/core/src/main/java/com/blockreality/core/bsi/BsiFracture.java": {
+      "raw": "89f1b29e7bc5d8922ebd123d84be6b9f84981c173736bd20d0582a9a14730ff0",
+      "lf": "89f1b29e7bc5d8922ebd123d84be6b9f84981c173736bd20d0582a9a14730ff0"
+    },
+    "mod/core/src/main/java/com/blockreality/core/bsi/BsiFractureReceipt.java": {
+      "raw": "f786a9ca1ec08e05601b64925fa47c693152ce8f66b263250427e2ecb395769c",
+      "lf": "f786a9ca1ec08e05601b64925fa47c693152ce8f66b263250427e2ecb395769c"
+    },
+    "mod/core/src/main/java/com/blockreality/core/transaction/NativeFractureTransactions.java": {
+      "raw": "892e2936d08f6e77cde910fc702679f6d136bdc9eb1bbcb1e2c1aea7a8383c41",
+      "lf": "892e2936d08f6e77cde910fc702679f6d136bdc9eb1bbcb1e2c1aea7a8383c41"
+    },
+    "mod/core/src/test/java/com/blockreality/core/bsi/BsiFractureTest.java": {
+      "raw": "acc80c5732310e1a6a0ed964191bb93bfedfcfab721c3023fc52ac6781a3bbcc",
+      "lf": "acc80c5732310e1a6a0ed964191bb93bfedfcfab721c3023fc52ac6781a3bbcc"
+    },
+    "mod/core/src/test/java/com/blockreality/core/bsi/FractureCases.java": {
+      "raw": "1421b8c0ebfbf4d6c7b45cad2491272aee0750aa9b76c1a0a2eec031ef3b0969",
+      "lf": "1421b8c0ebfbf4d6c7b45cad2491272aee0750aa9b76c1a0a2eec031ef3b0969"
+    },
+    "mod/core/src/test/java/com/blockreality/core/engine/GameFractureIdentityTest.java": {
+      "raw": "963dbe0ce7f5d6bb2b897e1e0f1bc8140ccc288b225c5cae97d7afe82ddef3cc",
+      "lf": "963dbe0ce7f5d6bb2b897e1e0f1bc8140ccc288b225c5cae97d7afe82ddef3cc"
+    },
+    "mod/core/src/test/java/com/blockreality/core/engine/NativeFractureTest.java": {
+      "raw": "786c07cf091229f5a7d6eb92413d99e1b68313b342a4d96a9d37a7fff17a4deb",
+      "lf": "786c07cf091229f5a7d6eb92413d99e1b68313b342a4d96a9d37a7fff17a4deb"
+    },
+    "mod/core/src/test/java/com/blockreality/core/transaction/FractureTransactionFixture.java": {
+      "raw": "2346e4500c376244dc861d6f2036ec0c2b1c9e0237a9de9a2b4ce1647d79e579",
+      "lf": "2346e4500c376244dc861d6f2036ec0c2b1c9e0237a9de9a2b4ce1647d79e579"
+    },
+    "mod/core/src/test/java/com/blockreality/core/transaction/NativeFractureProcessDriver.java": {
+      "raw": "11bcef9de84f804de025aee35d251ea6c14c7bb4d74042e0e9031b5e3c00bdd1",
+      "lf": "11bcef9de84f804de025aee35d251ea6c14c7bb4d74042e0e9031b5e3c00bdd1"
+    },
+    "mod/core/src/test/java/com/blockreality/core/transaction/NativeFractureProcessGate.java": {
+      "raw": "791ccd6c04caab106fe3a5586ae85a4bbe0f6f3726202d626f6d1c7a6ab46412",
+      "lf": "791ccd6c04caab106fe3a5586ae85a4bbe0f6f3726202d626f6d1c7a6ab46412"
+    },
+    "mod/core/src/test/java/com/blockreality/core/transaction/NativeFractureTransactionsTest.java": {
+      "raw": "3eef287de79b314031b98753485cad75af4e1fd38f335fed7bc94406aca76e99",
+      "lf": "3eef287de79b314031b98753485cad75af4e1fd38f335fed7bc94406aca76e99"
+    },
+    "mod/core/src/test/resources/fracture/README.md": {
+      "raw": "d19b2d765b6c278896f680962d9223ea0b75214f9a633c614920c6dec6f22459",
+      "lf": "7337e5be4051f3ef4dee2d65f991d664a98b7f8594b81059d28a309c1c928d60"
+    },
+    "mod/core/src/test/resources/fracture/cases.jsonl": {
+      "raw": "1c2c59be69ed8bdb31faf1d62887e79a2c7dcd51267552ade3da148c54922f21",
+      "lf": "7e065fe01ae3fc99f3d9a68885ba3923b2914fc148db20d87d9cedea51365000"
+    },
+    "mod/core/build.gradle": {
+      "raw": "d2416edd2d61c986e4ce79f2924e20fbc867ee73b44ee651ddd26f4eb1150c43",
+      "lf": "5b8fc52b06e24481f01525535be7f19779c85098b4093770dba60a7e686caa6f"
+    },
+    "mod/core/src/main/java/com/blockreality/core/bsi/BsiHeaders.java": {
+      "raw": "95bc73c61891d7d275fe2ec994827a5668d5ff8adb9716b5e5a812a5a58863da",
+      "lf": "1552324bd96a3876f57f4398e105e2b2964f13e6c87322cd1d527e26c47c6a56"
+    },
+    "mod/core/src/main/java/com/blockreality/core/engine/GameWorldSnapshot.java": {
+      "raw": "a2c00c60de736eb3d0b8c4c5c015ddb1edc66f8e9a40d5086bcb23aa159f8c7c",
+      "lf": "f36ea6cadf545165cfac42b6d4309f4ced9f63135814dd988a070b8fabda4bf3"
+    },
+    "mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java": {
+      "raw": "02e9b2d41494dd3decbf57783123e38fcbbbe2ea27be15b75fcc8eaae6c61f6e",
+      "lf": "fb09def6b50ae1bf90559d81e5ffd2c608444a065219bacb56706a1de313d2e6"
+    },
+    "mod/core/src/main/java/com/blockreality/core/json/JsonValue.java": {
+      "raw": "1006de58ff3c9348e9ff3867271c5317d30944bcda1ce9e22ef8f8aabbcc4dbb",
+      "lf": "122f628f891fa8039be05fcb5cf38f571da9239215f2efe172bbbcbb249bcd2c"
+    }
+  },
+  "tests": {
+    "windows-core": {
+      "tests": 523,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 40
+    },
+    "linux-core": {
+      "tests": 523,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 29
+    },
+    "windows-forge": {
+      "tests": 124,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    }
+  },
+  "faults": {
+    "source-binding": {
+      "tests": 74,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "exit": 1,
+      "failed_names": [
+        "remainingRefusesDifferentSourceAtSameStamp()"
+      ]
+    },
+    "plan-binding": {
+      "tests": 74,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "exit": 1,
+      "failed_names": [
+        "wrongPlanIsRejectedBeforeNativePreparationAndChangedKeyConflicts()"
+      ]
+    },
+    "early-native-commit": {
+      "tests": 74,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 0,
+      "exit": 1,
+      "failed_names": [
+        "flush",
+        "omitted-world"
+      ]
+    },
+    "control": {
+      "tests": 74,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit": 0,
+      "failed_names": []
+    }
+  },
+  "windows_library_sha256": "7f28b84ffb00bffd166158b170f3d0249ff39b3b459c7738197c7101e8bb732e",
+  "linux_library_sha256": "ec5640f7a84cccd3e8fbba8900c19d61db09e13fff055a345c74bd3dde2ca24d"
+}

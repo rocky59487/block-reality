@@ -1,0 +1,51 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava UP-TO-DATE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:compileTestJava
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses
+
+> Task :core:test
+
+GameInputNativeTest > refusedVocabularyRedeclarationInvalidatesOldWorldAndNames() PASSED
+
+GameInputNativeTest > profilingObservesTheRealBridgeWithoutChangingNativeResults() PASSED
+
+GameInputNativeTest > fullGameVocabularyAndSnapshotReachTheRealEngine() PASSED
+
+InProcessRecoveryTest > nativeOptInSidesAndGoverningIdentityReachDisplay() PASSED
+
+InProcessRecoveryTest > nativeShellFramesAndSurfaceStorageAreCoherent() PASSED
+
+InProcessRecoveryTest > nativeBeamSamplesAndPointLoadSidesReachTheSharedDisplay() PASSED
+
+InProcessRecoveryTest > cantileverFaceSignsAndStorageMatchClosedForm() PASSED
+
+InProcessRecoveryTest > nativeShellRecoveryFeedsTheSameDisplayAndPickingPath() PASSED
+
+InProcessRecoveryTest > coupledSlabWeightAndTransformsAreInvariant() PASSED
+
+InProcessRecoveryTest > unifiedAnalysisKeepsTheNativeShellFlagsAndSamples() PASSED
+
+InProcessRecoveryTest > memberGeometryUsesActualAxesRotatedSectionAndF64WorldPositions() PASSED
+
+NativeGameRuntimeTest > loadsLazilyReusesTheSessionAndKeepsDimensionsSeparate() PASSED
+
+NativeGameRuntimeTest > offNeverCallsTheLoader() PASSED
+
+NativeGameRuntimeTest > concurrentSubmissionsNeverEnterTheSameSessionTogether() PASSED
+
+NativeGameRuntimeTest > aLoadFailureStaysDisabledUntilExplicitReset() PASSED
+
+NativeGameRuntimeTest > closeRevokesBlockedResultsWithoutClosingAnActiveNativeCall() PASSED
+
+NativeGameRuntimeTest > timeoutRevokesAuthorityButDoesNotPretendToKillNativeWork() PASSED
+
+NativeGameRuntimeTest > resetWaitsForTheOldCallAndOpensAFreshSession() PASSED
+
+BUILD SUCCESSFUL in 1s
+7 actionable tasks: 2 executed, 5 up-to-date

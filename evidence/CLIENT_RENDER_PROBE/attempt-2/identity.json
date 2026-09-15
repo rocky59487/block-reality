@@ -1,0 +1,13 @@
+{
+  "source": "0afdecf",
+  "native_source": "95a03e82bbc50c53eac97b5289b79d8e640f8075",
+  "native_sha256": "bbf38ff3d4633d4c9e0e7f42fb87e1e3183a6f9d7418ed88432b05392b36c121",
+  "server_root": "/home/rocky/br-client-render-server/forge/run",
+  "client_root": "/home/rocky/br-client-render-client/forge/run-client-probe",
+  "client_identity": "synthetic BRRenderProbe; offline test server",
+  "attempt": 2,
+  "probe_source": "0afdecf",
+  "scene_source": "32d9a7b",
+  "prior_failure": "/home/rocky/br-client-render-first",
+  "profile_change": "onboardAccessibility:false"
+}

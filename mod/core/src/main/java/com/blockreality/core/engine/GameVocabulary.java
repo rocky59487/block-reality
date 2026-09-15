@@ -1,0 +1,82 @@
+package com.blockreality.core.engine;
+
+import com.blockreality.core.bsi.BsiVocabulary;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Optional;
+
+/** Product declarations and SI material data; section properties remain engine-owned. */
+public final class GameVocabulary {
+    private GameVocabulary() { }
+
+    public record Product(String material, String section) { }
+    public record Binding(String material, String section) {
+        public int materialId(BsiVocabulary vocabulary) { return vocabulary.materialId(material); }
+        /** null means this product deliberately delegates section generation/defaults to the engine. */
+        public int sectionId(BsiVocabulary vocabulary) { return section == null ? -1 : vocabulary.sectionId(section); }
+    }
+
+    private static final Map<Product, Binding> PRODUCTS = Map.ofEntries(
+            member("steel", "steel_rect_200x400"), member("steel", "steel_rect_150x300"),
+            member("steel", "steel_rect_100x200"), member("timber", "timber_rect_140x240"),
+            member("rebar", "rebar_round_d25"),
+            Map.entry(new Product("concrete", "concrete_rect_400x600"), new Binding("concrete", null)),
+            Map.entry(new Product("brick", "brick_rect_230x350"), new Binding("brick", null)),
+            panel("concrete", "concrete_slab_200"), panel("concrete", "concrete_slab_150"),
+            panel("steel", "steel_plate_20"));
+
+    private static Map.Entry<Product, Binding> member(String material, String section) {
+        return Map.entry(new Product(material, section), new Binding(material, section));
+    }
+    private static Map.Entry<Product, Binding> panel(String material, String section) {
+        return Map.entry(new Product(material, section), new Binding(section, null));
+    }
+    public static Map<Product, Binding> products() { return PRODUCTS; }
+    public static Binding binding(String material, String section) {
+        var binding = PRODUCTS.get(new Product(material, section));
+        if (binding == null) throw new IllegalArgumentException("unknown structural declaration: " + material + "/" + section);
+        return binding;
+    }
+
+    public static String declaration() { return Declaration.LOADED.text(); }
+
+    /** Presentation failure must neither invent dimensions nor prevent placing a product. */
+    public static Optional<ProductGeometry> geometry(String material, String section) {
+        return Geometry.BY_PRODUCT.getOrDefault(new Product(material, section), Optional.empty());
+    }
+
+    private static final class Geometry {
+        private static final Map<Product, Optional<ProductGeometry>> BY_PRODUCT = read();
+        private static Map<Product, Optional<ProductGeometry>> read() {
+            Map<Product, Optional<ProductGeometry>> result = new HashMap<>();
+            PRODUCTS.forEach((product, binding) -> {
+                try {
+                    result.put(product, Optional.of(ProductGeometry.read(declaration(), binding)));
+                } catch (IllegalArgumentException | IllegalStateException e) {
+                    result.put(product, Optional.empty());
+                }
+            });
+            return Map.copyOf(result);
+        }
+    }
+
+    private static final class Declaration {
+        // A failed resource read stays an ordinary refusal on every call. Throwing out of
+        // <clinit> would permanently poison the class and turn a tooltip into a linkage crash.
+        private static final Loaded LOADED = read();
+        private record Loaded(String json, IOException failure) {
+            String text() {
+                if (failure != null) throw new IllegalStateException("cannot read game vocabulary", failure);
+                return json;
+            }
+        }
+        private static Loaded read() {
+            try (var in = GameVocabulary.class.getResourceAsStream("/blockreality/game-vocabulary.json")) {
+                if (in == null) throw new IOException("missing game vocabulary resource");
+                return new Loaded(new String(in.readAllBytes(), StandardCharsets.UTF_8), null);
+            } catch (IOException e) { return new Loaded(null, e); }
+        }
+    }
+}

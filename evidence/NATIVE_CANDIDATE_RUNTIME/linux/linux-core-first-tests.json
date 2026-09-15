@@ -1,0 +1,13 @@
+{
+  "tests": 412,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 1,
+  "skips": [
+    {
+      "class": "com.blockreality.core.sidecar.SidecarPathsTest",
+      "test": "aStringThatCannotBeAPathIsReportedAndNotThrown()"
+    }
+  ],
+  "passed": 411
+}

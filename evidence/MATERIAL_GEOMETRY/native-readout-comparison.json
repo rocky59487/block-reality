@@ -1,0 +1,229 @@
+{
+  "bootstrap_all_fields_equal": true,
+  "scenes": [
+    {
+      "file": "beam-en_us-1280.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "beam-en_us-1920.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "beam-zh_tw-1280.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "beam-zh_tw-1920.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "column-en_us-1280.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "column-en_us-1920.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "column-zh_tw-1280.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "column-zh_tw-1920.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "panel-en_us-1280.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "panel-en_us-1920.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "panel-zh_tw-1280.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "panel-zh_tw-1920.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "catalogue-en_us-1280.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "catalogue-en_us-1920.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "catalogue-zh_tw-1280.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    },
+    {
+      "file": "catalogue-zh_tw-1920.json",
+      "equal_fields": {
+        "worldRevision": true,
+        "resultRevision": true,
+        "kind": true,
+        "notice": true,
+        "hasData": true,
+        "stale": true,
+        "members": true,
+        "shells": true,
+        "maxDc": true
+      }
+    }
+  ]
+}

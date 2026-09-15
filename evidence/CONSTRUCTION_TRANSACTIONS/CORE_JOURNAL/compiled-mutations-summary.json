@@ -1,0 +1,28 @@
+{
+  "control": 27,
+  "arms": [
+    {
+      "arm": "commit-before-flush",
+      "compiled": true,
+      "exit": 1,
+      "caught_by": "everyParticipantWriteAndFlushFailureRestoresAllBeforeImagesWithoutPublication()",
+      "type": "org.opentest4j.AssertionFailedError"
+    },
+    {
+      "arm": "overwrite-foreign-value",
+      "compiled": true,
+      "exit": 1,
+      "caught_by": "unknownExternalValueOrRevisionPreventsAnyRecoveryWrite()",
+      "type": "org.opentest4j.AssertionFailedError"
+    },
+    {
+      "arm": "clear-corruption-with-baseline",
+      "compiled": true,
+      "exit": 1,
+      "caught_by": "corruptionCannotBeClearedByPublishingABaselineWithoutReopeningTheJournal()",
+      "type": "org.opentest4j.AssertionFailedError"
+    }
+  ],
+  "restored": 27,
+  "status": "PASS"
+}

@@ -1,0 +1,317 @@
+[
+  {
+    "path": ".gitattributes",
+    "bytes": 65,
+    "sha256": "b74567a2ffbbeacab8d4b295b91825aa6ec4391c38caecd8ee8128a8bc1465cd"
+  },
+  {
+    "path": "control-exit.json",
+    "bytes": 139,
+    "sha256": "51b54429a9a329460ff2962adcf757958c069e3a2b61f2d214eddfd772223b94"
+  },
+  {
+    "path": "counts.json",
+    "bytes": 511,
+    "sha256": "a827de798ffdaed8d5e75c0cf793cba695d4d3f592d365e43c9099d012d44569"
+  },
+  {
+    "path": "distribution-CANDIDATE.txt",
+    "bytes": 695,
+    "sha256": "da09e216a7963958316e21ef358a719dd099d62b8cbcae8fa10e743c0bfb4108"
+  },
+  {
+    "path": "distribution-SHA256SUMS.txt",
+    "bytes": 1177,
+    "sha256": "20d355467fffdd8068357413d86fd5ef5de141335adcc5ea5765dbcff1de9426"
+  },
+  {
+    "path": "final-exit.json",
+    "bytes": 139,
+    "sha256": "51b54429a9a329460ff2962adcf757958c069e3a2b61f2d214eddfd772223b94"
+  },
+  {
+    "path": "installation/control/INS_OWNED",
+    "bytes": 41,
+    "sha256": "f34ec320c634cf03285910227263c6b96461be8ea7ee5ef158762a9cf7554924"
+  },
+  {
+    "path": "installation/control/run.bat",
+    "bytes": 374,
+    "sha256": "a2e77a2e66e8cb2cefbfdaad509722896f9aaf0d35f00814930f36bd9c0fa65b"
+  },
+  {
+    "path": "installation/control/run.sh",
+    "bytes": 366,
+    "sha256": "b72cd6cb357204a8295c325a5462ac0fe288574c13edb9c4b507545173ac1965"
+  },
+  {
+    "path": "installation/control/user_jvm_args.txt",
+    "bytes": 90,
+    "sha256": "a6373c3c20960302a1d1462b46f3257cb07107f0701df5a9799c35f9fada08b5"
+  },
+  {
+    "path": "installation/final/INS_OWNED",
+    "bytes": 41,
+    "sha256": "f34ec320c634cf03285910227263c6b96461be8ea7ee5ef158762a9cf7554924"
+  },
+  {
+    "path": "installation/final/run.bat",
+    "bytes": 374,
+    "sha256": "a2e77a2e66e8cb2cefbfdaad509722896f9aaf0d35f00814930f36bd9c0fa65b"
+  },
+  {
+    "path": "installation/final/run.sh",
+    "bytes": 366,
+    "sha256": "b72cd6cb357204a8295c325a5462ac0fe288574c13edb9c4b507545173ac1965"
+  },
+  {
+    "path": "installation/final/user_jvm_args.txt",
+    "bytes": 88,
+    "sha256": "20ae47a9b97e271d0866bf70be94b69f5fd73314d30f4a54c3326053cef92250"
+  },
+  {
+    "path": "linux/control-after-restart.json",
+    "bytes": 2867,
+    "sha256": "8c094e93cdb859ea6faf1a8d2dffb44582b068f0147fa9d2314ade3d844a41b8"
+  },
+  {
+    "path": "linux/control-before-restart.json",
+    "bytes": 2841,
+    "sha256": "ffe8b3e641bf242e93d018415be48145611e5986e6084aa1574a4a26bdc4b0c8"
+  },
+  {
+    "path": "linux/control-classload.log.gz",
+    "bytes": 239746,
+    "sha256": "db47205e719c2397fda2202f4ef0707e1289c15748f886041b8eafd131002382"
+  },
+  {
+    "path": "linux/control-identity.json",
+    "bytes": 598,
+    "sha256": "65c3b39d06babf98299e64e819fb7104b96befd5db8c30ad2d73a8282a77375e"
+  },
+  {
+    "path": "linux/control-mod-class-origins.txt",
+    "bytes": 27063,
+    "sha256": "3caf0fba82125536b2c594a73ff8490fa166175469f44dfe01dd4039bc8d99f3"
+  },
+  {
+    "path": "linux/control-mods.toml",
+    "bytes": 1740,
+    "sha256": "323a34ad319a27d7cdd48e4d03f26f0e62301136311f93f45f30abc8e93c6211"
+  },
+  {
+    "path": "linux/control-restart-classload.log.gz",
+    "bytes": 240661,
+    "sha256": "d33b6b883ed5ddabe1b1c7fca0ef7b2f4dd7bc2a855436631632150cffbc7404"
+  },
+  {
+    "path": "linux/control-server-first.log",
+    "bytes": 14090,
+    "sha256": "943d43fd4f28d5544d1284d5223a01053ddb003681769b942e1f53e1d8bae850"
+  },
+  {
+    "path": "linux/control-server-restart.log",
+    "bytes": 9284,
+    "sha256": "6da40038f291d0ac52840a6c8f5163973425a82971133ee5ae4cf578125aafbb"
+  },
+  {
+    "path": "linux/control-smoke-first.json",
+    "bytes": 18268,
+    "sha256": "62fd61241af2a03346bb416b094a836bd9841e209ec5bd0916d15589a1ec752a"
+  },
+  {
+    "path": "linux/control-smoke-first.log",
+    "bytes": 432,
+    "sha256": "208e3e46229cab2ed93dd1101d77fd7c37c95517f3ade36da4bbd837ca9a8494"
+  },
+  {
+    "path": "linux/download-first-error.txt",
+    "bytes": 213,
+    "sha256": "92d5090a8c8180be01ff703fc08acb001dc25a9b96a025d60908677822d3194d"
+  },
+  {
+    "path": "linux/final-after-restart.json",
+    "bytes": 2867,
+    "sha256": "3631cfc9b60121d86472001fcee5af5150d5d8a53dd599d70f9f3e7a5abdb837"
+  },
+  {
+    "path": "linux/final-before-restart.json",
+    "bytes": 2841,
+    "sha256": "f4fc34e591c1d5811675d19e6541a13c068b68d310b0f2c5abcba45e7602bce7"
+  },
+  {
+    "path": "linux/final-classload.log.gz",
+    "bytes": 241072,
+    "sha256": "ae55d22f3a3af17543d3e3668cc1be807f68049aa13bd20100ed40eb91dff701"
+  },
+  {
+    "path": "linux/final-install.json",
+    "bytes": 352,
+    "sha256": "019e4d22b24bc25e3f1fda22f9bf25c330c264c6cf5f1ed44ebd9ed8a2ed722c"
+  },
+  {
+    "path": "linux/final-mod-class-origins.txt",
+    "bytes": 27987,
+    "sha256": "cde33f58f810fe3a715273d8ff3aad0b6afa2ad5c56d0733413468bc0bb20905"
+  },
+  {
+    "path": "linux/final-restart-classload.log.gz",
+    "bytes": 239927,
+    "sha256": "e6d62f918f07fd27870bc41b699a0ace6adb3fad5f84998628bd7900db4552ed"
+  },
+  {
+    "path": "linux/final-server-first.log",
+    "bytes": 14161,
+    "sha256": "022c14092aaf43e57f80e73e69ea468ed5f2b611483effbd28257712ec5bc970"
+  },
+  {
+    "path": "linux/final-server-restart.log",
+    "bytes": 9139,
+    "sha256": "0d6eef971b670a1b05c2f59edcb68136062d1b2cd6e65833fa84470a19462d46"
+  },
+  {
+    "path": "linux/final-smoke-first.json",
+    "bytes": 18271,
+    "sha256": "f01eb1661feeebb8b68ce449edabdb55ed98a8f40bdf13ca2370e43a36c8b951"
+  },
+  {
+    "path": "linux/final-smoke-first.log",
+    "bytes": 432,
+    "sha256": "208e3e46229cab2ed93dd1101d77fd7c37c95517f3ade36da4bbd837ca9a8494"
+  },
+  {
+    "path": "linux/forge-dependencies.json",
+    "bytes": 16098,
+    "sha256": "459532be26cf5aa89aeba55ba5ff44f5ca41d2c446d30f2b0f9b777caa288bac"
+  },
+  {
+    "path": "linux/install-second-exit.json",
+    "bytes": 186,
+    "sha256": "2cb965a02bff3dad3a633428fd159d10249aac8eae6be982d2868dfd2203eba8"
+  },
+  {
+    "path": "linux/install-second.log.gz",
+    "bytes": 125883,
+    "sha256": "2c65c3dc2da05930deaa6a508b0385b06cf7b7e447e00abed41ed237d27a74fd"
+  },
+  {
+    "path": "linux/install_profile.json",
+    "bytes": 39149,
+    "sha256": "f100f36256897a7ad3825affca7586d0a09a76ab2a64112a7b0b757d4a92d0f1"
+  },
+  {
+    "path": "linux/installer.json",
+    "bytes": 372,
+    "sha256": "c6535e10f0adf11d02435e5ec83c8ac72827f604f9a88afbba5e2e653c49bfa1"
+  },
+  {
+    "path": "linux/version.json",
+    "bytes": 16554,
+    "sha256": "44f17c82d921bc98c48018b21529fff4eddc3e647063ec234216822a3070e414"
+  },
+  {
+    "path": "raw-sources.json",
+    "bytes": 16517,
+    "sha256": "46a925ff02e9aae6f439f7679d960bd11d6880a91ef63dfe4af4927898d3047b"
+  },
+  {
+    "path": "RESULTS.md",
+    "bytes": 5839,
+    "sha256": "4bd477783cf9cd38e5b2938012e4eb5865a0e813812083d1198240566ceb785f"
+  },
+  {
+    "path": "shipping-source-unchanged.json",
+    "bytes": 125,
+    "sha256": "3989ac33fda9b0440a6d043d6e565199b463a276384af6e6d1a79bbd840b5ce4"
+  },
+  {
+    "path": "windows/archive-final.py",
+    "bytes": 3604,
+    "sha256": "82c0efbb44e356b679562f7c1be363af62792e4a4d66c9663c695b4df67abf0a"
+  },
+  {
+    "path": "windows/compare-final-jar.py",
+    "bytes": 1742,
+    "sha256": "60f70a253e81468b7516472a60d88b4f46dfbea8e8e0594ced1649ea1c9adf33"
+  },
+  {
+    "path": "windows/distribution.json",
+    "bytes": 161,
+    "sha256": "b8df9ab2f54f98f13785a0ae6f635c250b4369d221b7324a0128cf66423e79e1"
+  },
+  {
+    "path": "windows/download-second.log",
+    "bytes": 634,
+    "sha256": "8a99f5dc1ea1580dcdc35d40d8b9c622c23c1d7edffb1e0e8d467a21e3bf282c"
+  },
+  {
+    "path": "windows/final-artifact.json",
+    "bytes": 745,
+    "sha256": "634a42183bc8fd33759ff59d9ce7dccf8e53c5c9dad02095ce24a559712eb6f7"
+  },
+  {
+    "path": "windows/final-build-first.log",
+    "bytes": 1081,
+    "sha256": "8655b74c24219cebbb1a6453191f2d5e66ec98ea912f8591c9aa760900d03a24"
+  },
+  {
+    "path": "windows/final-bundle-first-exit.json",
+    "bytes": 42,
+    "sha256": "e814af5a08d4a951f07c9e8c27aad792b2cd883fb0589df415cd6e5a75dcb263"
+  },
+  {
+    "path": "windows/final-bundle-first.log",
+    "bytes": 133,
+    "sha256": "0215de3c71c9ebfe623db0effd64978da570c75f5fcbef1f08bbab1f8c2f788b"
+  },
+  {
+    "path": "windows/final-bundle-negative-first-exit.json",
+    "bytes": 51,
+    "sha256": "b4ad2972172e158150c8e4ac28ad0fce580f80db0c75d8a49352129a67f4e458"
+  },
+  {
+    "path": "windows/final-bundle-negative-first.log",
+    "bytes": 1999,
+    "sha256": "71c1aca3da3467e1718c960f475ec161a4a159c368eed43fa63d3a353d95ba7d"
+  },
+  {
+    "path": "windows/final-bundle-negative-second.log",
+    "bytes": 1635,
+    "sha256": "7aa1b80d5c48486ea57fcc2fd473acdfb1091ee2b79a01b92df00a465ffecb72"
+  },
+  {
+    "path": "windows/final-mods.toml",
+    "bytes": 1880,
+    "sha256": "bb599b788c1b8b1d88978b0acdbcbfb83aca99058c8b01d1ca6e65b42b6375ae"
+  },
+  {
+    "path": "windows/install-first.py",
+    "bytes": 1232,
+    "sha256": "cdd89e658d8c0f357f8435b0361888d6b5a69af488b13dc66b646fe8ffeb1415"
+  },
+  {
+    "path": "windows/install-second.py",
+    "bytes": 1641,
+    "sha256": "f801934cf97fbdbcfb10cf9c0a27877011a26bc7e102329c37b7f3614b68801b"
+  },
+  {
+    "path": "windows/package-final.py",
+    "bytes": 2497,
+    "sha256": "11ae9801af27f84d2fb43510a1673ed7f4f65d3871d2ef987096d3f947296c86"
+  },
+  {
+    "path": "windows/setup-control.py",
+    "bytes": 1859,
+    "sha256": "e641ce5cabe4dfbe5ac5c3813f399391750941927a9a09ed38d9928a5f387279"
+  },
+  {
+    "path": "windows/setup-final.py",
+    "bytes": 1521,
+    "sha256": "080f08b3b22ccb104a81dbc3c071ac511411b251a4490ecef455b297b4c7ed00"
+  },
+  {
+    "path": "windows/verify-install.py",
+    "bytes": 2166,
+    "sha256": "ae574ee63d727b4636715820f84b0d27da599afe067794957eedd07c0091ab8f"
+  }
+]

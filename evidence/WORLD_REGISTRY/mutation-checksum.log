@@ -1,0 +1,34 @@
+> Task :api:compileJava
+> Task :api:processResources NO-SOURCE
+> Task :api:classes
+> Task :api:jar
+> Task :core:compileJava
+> Task :core:processResources
+> Task :core:classes
+> Task :core:compileTestJava
+> Task :core:processTestResources
+> Task :core:testClasses
+
+> Task :core:test FAILED
+
+WorldCellIndexTest > damagedChecksumsAndEveryTruncationFailClosed() FAILED
+    org.opentest4j.AssertionFailedError: Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown.
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+        at app//org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:73)
+        at app//org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:35)
+        at app//org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3115)
+        at app//com.blockreality.core.world.WorldCellIndexTest.damagedChecksumsAndEveryTruncationFailClosed(WorldCellIndexTest.java:73)
+
+1 test completed, 1 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:test'.
+> There were failing tests. See the report at: file:///C:/Users/wmc02/Desktop/block-reality/build/wr-mutants-rno0ttlt/mod/core/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 10s
+7 actionable tasks: 7 executed

@@ -1,0 +1,57 @@
+{
+  "tests": 412,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 12,
+  "passed": 400,
+  "skips": [
+    {
+      "class": "com.blockreality.core.sidecar.BundledEngineTest",
+      "test": "theUnpackedEngineIsExecutable(Path)"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aCrashDuringAnalysisFailsThatRequestAndRecovers()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aStaleReplyLeftInThePipeDoesNotPoisonTheNextRequest()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "resetRevivesADisabledClientOnceTheBinaryIsInstalled()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aWedgedSidecarTimesOutAndIsKilled()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aFloodingSidecarIsKilledNotBuffered()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aProtocolMismatchIsRefusedOutrightAndNotRetried()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aShmDoorbellRevisionMismatchIsADesyncAndEndsTheConversation()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aClosedClientIsTerminalAndNeverRespawns()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "growIsRetriedOnceGrownAndARefusalAfterGrowthIsAnAnswer()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "closingSendsByeAndDoesNotLeaveAProcessBehind()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aRefusedShmMappingDowngradesToJsonAndTheSolveStillAnswers()"
+    }
+  ]
+}

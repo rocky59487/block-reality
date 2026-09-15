@@ -1,0 +1,16 @@
+{
+  "mod/core": {
+    "tests": 357,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 27,
+    "passed": 330
+  },
+  "forge": {
+    "tests": 85,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 84
+  }
+}

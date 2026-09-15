@@ -1,0 +1,8 @@
+{
+  "status": "FAIL",
+  "stage": "evidence finalization before copying the result report",
+  "observed_tool_output": "AssertionError at finalize-evidence.py line 8: a.read(n).replace(CRLF, LF) == b.read(n)",
+  "transcribed_from_tool_output_not_raw_subprocess_log": true,
+  "cause": "The driver normalized only the Windows side after guessing the platform direction of resource newline differences. Actual Linux snapshot entries have more CRLF and some Windows entries have mixed endings.",
+  "correction": "Normalize both sides, require byte equality, and retain exact size/CRLF counts. Production sources, candidate and test results are unchanged."
+}

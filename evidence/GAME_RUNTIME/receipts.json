@@ -1,0 +1,170 @@
+{
+  "note": "Text log copies strip trailing whitespace. rawSha256/size describe the original files. RCON replies remove Minecraft formatting codes; credentials are never copied.",
+  "files": {
+    "game-runtime-core-final.log": {
+      "source": "build/game-runtime-core-final.log",
+      "rawSha256": "9d4fc9a4dcf2903c7ebac797fe563ab74cf0aefd6d3249f9aad635fc6b4a1fa5",
+      "rawBytes": 28678,
+      "textCopySha256": "9d4fc9a4dcf2903c7ebac797fe563ab74cf0aefd6d3249f9aad635fc6b4a1fa5"
+    },
+    "game-runtime-forge-final.log": {
+      "source": "build/game-runtime-forge-final.log",
+      "rawSha256": "d6635943e4fd9b2007f5c6eff1a3708f957888563ec6a5bf6a512fcf791ebacd",
+      "rawBytes": 8548,
+      "textCopySha256": "d6635943e4fd9b2007f5c6eff1a3708f957888563ec6a5bf6a512fcf791ebacd"
+    },
+    "game-runtime-forge-first.log": {
+      "source": "build/game-runtime-forge-first.log",
+      "rawSha256": "447a7e41c46f7461ac9067aadec3a11bb8c3162d1063f87bd061d92a2c9d9339",
+      "rawBytes": 8321,
+      "textCopySha256": "447a7e41c46f7461ac9067aadec3a11bb8c3162d1063f87bd061d92a2c9d9339"
+    },
+    "game-runtime-policy-first.xml": {
+      "source": "build/game-runtime-policy-first.xml",
+      "rawSha256": "fdbba5f8427d4171d834277fe24d5d5a08a302a447eb9368b8e6e4f2e4e640ba",
+      "rawBytes": 2058,
+      "textCopySha256": "fdbba5f8427d4171d834277fe24d5d5a08a302a447eb9368b8e6e4f2e4e640ba"
+    },
+    "game-runtime-server-first.json": {
+      "source": "build/game-runtime-server-first.json",
+      "rawSha256": "2bb0b7cddfcd92d22f86f0ba24c233c34e05e0d989b226f455aa290e98053219",
+      "rawBytes": 25507,
+      "textCopySha256": "54af23eca0ecd5c185ebbfefe71dc69228da22ba74225c233ed89bdb7b69265c"
+    },
+    "game-runtime-server-second.json": {
+      "source": "build/game-runtime-server-second.json",
+      "rawSha256": "2b6c1dd9dc9580cec4f62822e341c1aeac1c7a961daca60cb1b1f9fbb5a6f9ca",
+      "rawBytes": 20450,
+      "textCopySha256": "e81e9d4e3c9a5e1cc0f7a7777162b76b79b98a1a0a515557e5e960e78bd85eac"
+    },
+    "game-runtime-server-third.json": {
+      "source": "build/game-runtime-server-third.json",
+      "rawSha256": "fd4b47baac9972449d24e6ca666e8a5615d3106e383b90d56d48f6ee128d849f",
+      "rawBytes": 10740,
+      "textCopySha256": "876441cc025118379f3d2e7c41bbf9aecb395fa1277abd44eb5dfce6263a8eed"
+    },
+    "game-runtime-server-final.json": {
+      "source": "build/game-runtime-server-final.json",
+      "rawSha256": "82d1a0dbea7c3d83703a4e3e9981ab766e542d7112a6c1b81a14ad209c6a99ef",
+      "rawBytes": 11152,
+      "textCopySha256": "88deb70cae42a9b49cda98e9bf1b10c5a3e0a971d6f6bf49797302ea32d2a149"
+    },
+    "game-runtime-server-stop-final.json": {
+      "source": "build/game-runtime-server-stop-final.json",
+      "rawSha256": "08c27e8096672a090e34d0d431fe3dd7dd1546c20d9aa8b73cb030cdf95cfbd2",
+      "rawBytes": 75,
+      "textCopySha256": "e43c64b8fb2698683bd2dea147a67fab6b22cbd57f82b27df8fa21da856b2d61"
+    },
+    "game-runtime-executable-rejected.log": {
+      "source": "build/game-runtime-executable-rejected.log",
+      "rawSha256": "310d56809a52cadcc4ed9667aa23035e247fe3e4d409da088a1090d1e03ee3b5",
+      "rawBytes": 584,
+      "textCopySha256": "310d56809a52cadcc4ed9667aa23035e247fe3e4d409da088a1090d1e03ee3b5"
+    },
+    "game-runtime-executable-rejected-fixed.log": {
+      "source": "build/game-runtime-executable-rejected-fixed.log",
+      "rawSha256": "975dc6a97e8979e5d032c498a8406a8714ca65165a44e176bcae5c086faf80a1",
+      "rawBytes": 542,
+      "textCopySha256": "975dc6a97e8979e5d032c498a8406a8714ca65165a44e176bcae5c086faf80a1"
+    },
+    "mutations/counts.json": {
+      "source": "build/game-runtime-mutations/counts.json",
+      "rawSha256": "113c8f7ded20f86aa35695bf07c86d02b909536e4a29d5d2576ef4b0c9b2b1ec",
+      "rawBytes": 488,
+      "textCopySha256": "113c8f7ded20f86aa35695bf07c86d02b909536e4a29d5d2576ef4b0c9b2b1ec"
+    },
+    "mutations/CLOSE_IGNORED/run.txt": {
+      "source": "build/game-runtime-mutations/CLOSE_IGNORED/run.txt",
+      "rawSha256": "b0a2d37d5b861064ea59a9a7db260f87e7545951046500aea2f791f7095b186a",
+      "rawBytes": 1042,
+      "textCopySha256": "b0a2d37d5b861064ea59a9a7db260f87e7545951046500aea2f791f7095b186a"
+    },
+    "mutations/OFF_LOAD/run.txt": {
+      "source": "build/game-runtime-mutations/OFF_LOAD/run.txt",
+      "rawSha256": "b4fdcb46a1edc8cb4b3333f91306a754b4d7c7491ed2d8590f144f2061cfb053",
+      "rawBytes": 1001,
+      "textCopySha256": "b4fdcb46a1edc8cb4b3333f91306a754b4d7c7491ed2d8590f144f2061cfb053"
+    },
+    "mutations/UNDECLARED_Y/run.txt": {
+      "source": "build/game-runtime-mutations/UNDECLARED_Y/run.txt",
+      "rawSha256": "e33815a2c8bdf8a7d15c305c969f14376ead26e2bf3823b2d22f81388ce6b8da",
+      "rawBytes": 1071,
+      "textCopySha256": "e33815a2c8bdf8a7d15c305c969f14376ead26e2bf3823b2d22f81388ce6b8da"
+    },
+    "mutations/CLOSE_IGNORED/results/TEST-com.blockreality.core.engine.NativeGameRuntimeTest.xml": {
+      "source": "build/game-runtime-mutations/CLOSE_IGNORED/results/TEST-com.blockreality.core.engine.NativeGameRuntimeTest.xml",
+      "rawSha256": "a8a08adf09ae03f8c614895991df0d6c5207ef516ba7dfe6817bcb4cce01cab7",
+      "rawBytes": 1621,
+      "textCopySha256": "a8a08adf09ae03f8c614895991df0d6c5207ef516ba7dfe6817bcb4cce01cab7"
+    },
+    "mutations/OFF_LOAD/results/TEST-com.blockreality.core.engine.NativeGameRuntimeTest.xml": {
+      "source": "build/game-runtime-mutations/OFF_LOAD/results/TEST-com.blockreality.core.engine.NativeGameRuntimeTest.xml",
+      "rawSha256": "71b5c74b428be99b82805e2b4c3a3b1026fd89eb1134007ff4d8fe7e205b2168",
+      "rawBytes": 1557,
+      "textCopySha256": "71b5c74b428be99b82805e2b4c3a3b1026fd89eb1134007ff4d8fe7e205b2168"
+    },
+    "mutations/UNDECLARED_Y/results/TEST-com.blockreality.impl.PlacementAxisTest.xml": {
+      "source": "build/game-runtime-mutations/UNDECLARED_Y/results/TEST-com.blockreality.impl.PlacementAxisTest.xml",
+      "rawSha256": "40b2961988793bef348dc9f6b68a55e105adef4156b480eb85bff54d24017ead",
+      "rawBytes": 1456,
+      "textCopySha256": "40b2961988793bef348dc9f6b68a55e105adef4156b480eb85bff54d24017ead"
+    },
+    "junit/TEST-com.blockreality.core.engine.NativeGameRuntimeTest.xml": {
+      "source": "mod/core/build/test-results/test/TEST-com.blockreality.core.engine.NativeGameRuntimeTest.xml",
+      "rawSha256": "38d12d3377fbbf54c6aca475f8251cf2b73afa2617a72f374d414d27388769e5",
+      "rawBytes": 1372,
+      "textCopySha256": "38d12d3377fbbf54c6aca475f8251cf2b73afa2617a72f374d414d27388769e5"
+    },
+    "junit/TEST-com.blockreality.impl.PlacementAxisTest.xml": {
+      "source": "forge/build/test-results/test/TEST-com.blockreality.impl.PlacementAxisTest.xml",
+      "rawSha256": "0647801a1876bfb28dc0cb7c34f1656e08b989f197e96e0b48293587564e88ce",
+      "rawBytes": 744,
+      "textCopySha256": "0647801a1876bfb28dc0cb7c34f1656e08b989f197e96e0b48293587564e88ce"
+    },
+    "server-first-excerpt.log": {
+      "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-game-runtime-server-first.log",
+      "rawSha256": "9dc26e159d3d2b694817cb154449665c1b2440fced70c5fa2a5c97facaa2ed5d",
+      "rawBytes": 646999,
+      "selection": "BlockReality, Done, stop/save, Gradle outcome lines only"
+    },
+    "server-second-excerpt.log": {
+      "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-game-runtime-server-second-saved.log",
+      "rawSha256": "969657299da2ec72cbebc66c0ffb574e35d4017569790c01867390dacc28e534",
+      "rawBytes": 114821,
+      "selection": "BlockReality, Done, stop/save, Gradle outcome lines only"
+    },
+    "server-final-excerpt.log": {
+      "source": "//wsl.localhost/Ubuntu-22.04/home/rocky/br-game-runtime-server-final.log",
+      "rawSha256": "6eb8809c1394485dfa21080f23b9cfefd21dc493acf3f9736e2f17924c5b27ec",
+      "rawBytes": 113746,
+      "selection": "BlockReality, Done, stop/save, Gradle outcome lines only"
+    },
+    "game-runtime-docs.log": {
+      "source": "build/game-runtime-docs.log",
+      "rawSha256": "09f9493dfb2dfdfd3c9c3bff10ace645ca128963bad63d100447ef24160e47d7",
+      "rawBytes": 118,
+      "textCopySha256": "09f9493dfb2dfdfd3c9c3bff10ace645ca128963bad63d100447ef24160e47d7"
+    }
+  },
+  "jar": {
+    "file": "forge/build/libs/blockreality-0.4.0-dev.jar",
+    "sha256": "75cbc66593a642c4ea341b282a7c2b935de22693d844aab3fb4e04a5b3eb1ecc",
+    "size": 402544,
+    "forbidden": [],
+    "requiredPresent": [
+      "com/blockreality/core/engine/NativeGameRuntime.class",
+      "com/blockreality/core/engine/GameNativeLoader.class",
+      "blockreality/game-vocabulary.json",
+      "META-INF/LICENSE",
+      "META-INF/NOTICE"
+    ],
+    "nativeLibraries": [],
+    "qualification": "development jar; no bundled native engine; not a v1 release"
+  },
+  "native": {
+    "sourceCommit": "95a03e82bbc50c53eac97b5289b79d8e640f8075",
+    "sha256": "bbf38ff3d4633d4c9e0e7f42fb87e1e3183a6f9d7418ed88432b05392b36c121",
+    "contractSha256": "4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801",
+    "qualification": "delivered Linux development library with external dependencies; not a release artifact"
+  }
+}

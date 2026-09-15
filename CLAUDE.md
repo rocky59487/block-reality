@@ -1,3 +1,9 @@
+> 2026-09-15 alpha 主線：模組 0.4.0-alpha.1，配套引擎 v2.0.0-alpha.1。
+> native runtime 與 transactional placement 已整合；後續從 Main 建短功能分支。
+> 正常封裝入口 scripts/package_native.py，版本／來源固定於 native-release.json。
+> dist 是 native JAR；sidecar/legacy-dist 僅為歷史相容測試，不再發布。
+> 完整 v2 與遊戲內實測的邊界見 docs/ALPHA_RELEASE.md。
+
 # CLAUDE.md
 
 Block Reality 開發指引。**寫的是現況**，不是歷史。
@@ -15,7 +21,7 @@ Block Reality 開發指引。**寫的是現況**，不是歷史。
 
 Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析。
 
-**力學不在這個 process 裡算，但引擎在這個 process 裡跑。** 這句話不矛盾，是 v0.4 的形狀：
+**原生引擎在同一 JVM process 內計算力學；Java 負責模組整合。** v0.4 的形狀：
 本倉是 **Minecraft 側**（方塊、材料、工法狀態機、CAD 工具、渲染），力學引擎是
 **jar 內的原生共享庫**（`libbsi_tectonic.so` / `bsi_tectonic.dll`），以 JNA 綁 `contract/bsi_capi.h`
 的五個 C 函式**進程內載入**（D-044）。**jar 零可執行檔、零子行程。**
@@ -24,42 +30,160 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 - **介面** = **BSI v1**（`contract/`），與 tectonic2 **逐位相同**、雜湊釘死（D-043）。
 - **代價照登**：進程內載入**放棄了崩潰隔離**——原生崩潰會帶掉 JVM。四條比「隔離」弱的防線寫在 D-044，不繞過去。
 
-### 現況（v0.4 進行中）
+### 現況（0.4.0-dev，尚未發布）
 
-- **已落地**：`contract/`（BSI v1 + 共用 host，逐位鏡像 tectonic2）；Java 側 `mod/core/.../bsi/`（frame/header/codec）
-  與 `.../engine/`（`InProcessEngine` + JNA 綁定）；N19–N24 判準已凍；CI 跑契約、打包、跨倉漂移。
-- **2026-09-04 量到的整合現況**（Linux 箱，RECORDED）：契約逐位、pin 自洽；`InProcessEngineTest` **首次在 CI 之外**對本機建的 `libbsi_tectonic.so` 跑，
-  `:core` 259 過 / 1 跳 / 0 敗；`sidecar/verify.py` 330 全過。當次引擎 `capabilities:[]`，members分支未執行。細節 `docs/GATES.md` 2026-09-04。
-  引擎側的 v2 程序（融合 + perfect engine）在 tectonic2 `docs/V2_PROGRAM.md`；本倉對位 **D-046**：**等的是 tectonic2 #20，不等其拆 `Session`**；
-  契約加法批次 #2（`include:"islands"`、`bsi.fracture.step`）綁 **v0.5 倒塌**，v0.4 的 N19–N24 一條不動。
-- **2026-09-06 BSI_CORE**：配對分支引擎宣告core/members，Windows真CAPI :core 260總數/220過/40跳。
-  members首次執行抓到測試root moment漏乘L，依契約原wL²/2修正；原記錄不改、見GATES.md。
-  引擎 v1.3 已驗 Windows/Linux 自足原生庫；NATIVE 的消費者封裝與遊戲換裝 #89 未完成。
-- **2026-09-07 BSI回收契約／codec**：facetBlocks、stations-only與f32布局已同步兩倉，hash59beed904d73…；
-  Java facets/格索引/surfaces解碼與typed precision已接，binary區段範圍/有限值守門；
-  271項=231PASS/40SKIP，真JNA五項全執行，七個Java變異具名咬合。首跑失敗見GATES.md。
-- **2026-09-08 原生回收整合**：引擎已提供stations/shells/f32，真C6/C8/C12通過；
-  新增InProcessRecoveryTest 3/3要求新能力，與原InProcessEngineTest 5/5使用真DLL全執行。
-  Java274項=234PASS/40SKIP/0FAIL；殼幾何/格索引/上下面/f32直接由引擎提供。
-  契約52檔hash b5ad59f1bfa9…同步，完整證據在tectonic2 MC65B_BSI_ADAPTER。
-  殼顯示已遷移：BsiShellDisplay→ShellDisplayField→ShellMesh/HUD/renderer/channel6，
-  客戶端只插值樣本，殼旗標獨立轉發；core283=271PASS/12SKIP、Forge57全過，真JNA9/9，八變異。
-  ShellFieldSpec仍留在Sidecar相容入口一次取樣/舊診斷；梁BSI框架/面中心幾何已接通。
-  53檔契約hash42a1b24c3c0b…；memberGeometry固定168B/f64，核心290=278PASS/12SKIP、Forge57PASS，
-  真JNA10/10，三個Java幾何守門變異有具名FAIL；引擎564checks/五變異三箱與sanitizer詳見MC65B_MEMBER_GEOMETRY。
-  梁顯示已接 BsiBeamDisplay→BeamDisplayField→ribbon/section/HUD/表面切分/channel7。
-  不重算梁力學，完整站點/格集合/NA缺值/overloaded與控制站索引原樣傳送；舊field只在Sidecar相容入口/診斷保留。
-  最新core305=293PASS/12SKIP、Forge64PASS，真JNA12/12、五身份變異具名咬合。
-  stationIdentity opt-in沿原生共同核轉發雙側與主宰旗標；BsiBeamDisplay/StressStation.Identity/channel8保留f64身份，舊請求單側不改。
-  契約54檔hash4977f57308e6，79checks/八變異三箱DET×3、sanitizer及兩箱48組舊回應逐位。
-  首跑ground-only EMPTY_WORLD、host stub零筆證據降級均留GATES與MC65B_BSI_STATION_IDENTITY。
-  下一單元先凍MC64_FORWARD全域/屈曲旗標與單一AnalysisResult入口，再凍display budget、接NATIVE/GAME_SWAP。
-  #89 與消費者封裝仍未完成，版本對位引擎 1.3.0、模組仍 0.4.0-dev。
-  正式引擎來源與原生資產見 tectonic2 v1.3 及套件 provenance.json；本倉 pin 鎖定同一引擎來源提交。
-- **還沒接**：**遊戲流程仍走 `SidecarClient`**（protocol 2 / FrameCore），`InProcessEngine` 尚未接進遊戲迴圈（#89）。
-  「檔案在」不算「有」——見下面的三條鐵則第 2 條。
-- **不會做**：FrameCore 的 BSI 對數臂（D-045）。連帶 N22 差異帳改形為「單臂語料 + 封閉解」並**降一級**，
-  代價寫在 `docs/GATES.md` 2026-09-03e，不用「改形」兩字帶過。
+2026-09-10：使用者指定引擎另有人負責，本工作只做模組（D-047、`docs/V1_MODULE_PROGRAM.md`）。
+引擎最新正式交付為 v1.5（runtime1.5.0），來源 `42ba7eb9`、契約 `5d4367f40de8…`。
+模組 Main #126 已整合；本分支已封裝並驗證該 SDK，沒有修改、建置或發布引擎。
+
+- NATIVE_V15_CONSUMER 的來源/完整測試/封裝/JNA/真安裝專服門檻1–5已通過。
+  同一顆15,286,415B jar、SHA9d8cb6795e9c…带 v1.5 双平台庫，236類別與46資源對CT前版逐位不變。
+  Windows561PASS/12平台SKIP、Linux572PASS/1平台SKIP；573登錄，原生適用測試全部執行。
+  兩平台各96frame×3直連與3個jar/JNA工作階段一致，涵蓋C14旋轉/鏡像/厚殼indicative原生回覆。
+  真安裝Linux Forge10項遊戲守門及重啟讀數/快取一致通過。NOTICE增量封裝缺陷已修，首敗照存。
+  詳 `evidence/NATIVE_V15_CONSUMER/RESULTS.md`；本版真client127模型/14互動/45守門及22圖通過，厚殼警示遊戲輸入仍未觀測；CI f7f9533四項通過/15原生步驟SKIP。
+  v1.5提供線性梁殼共同挫屈，未交付非線性倒塌/壓碎/接觸/剛體運動；不以Java補做。
+  以下NCR/INS/MG是保留的較早候選證據，不代表最新引擎版本。
+
+- NATIVE_CANDIDATE_RUNTIME 已整合 #119 及其最新交付文件，保留 #120 HUD。
+  同一顆15,203,560B jar帶雙平台42e10f5庫，兩平台48frame×3、解包/快取/權限/雙JVM通過；
+  Windows509 PASS/12平台SKIP，Linux520 PASS/1平台SKIP，原生相關全部執行。
+  真Forge開發環境由bundled資源解包，16項server狀態、24個合成玩家事件、45項client守門/16圖通過。
+  首次空世界前置錯誤與漏通知失敗保留；詳 `evidence/NATIVE_CANDIDATE_RUNTIME/RESULTS.md`。
+  這是候選與dev遊戲驗收，未替換正式資產，也不等於installed-jar/Windows CM/N25/FPS合格。
+- INSTALLED_NATIVE_SERVER 已把同一候選裝進普通 Linux Forge 47.4.13，control/final 各10項
+  server守門及重啟讀數/原生快取恢復通過，類別實際來自mods/中的jar。最終只修mods.toml舊介紹，
+  204類別與兩庫bytes不變；jar15,203,634B、SHA7bdfce5d1581…，安裝文字同步改正。
+  詳 `evidence/INSTALLED_NATIVE_SERVER/RESULTS.md`；Windows/真安裝客戶端、材質方向與v1仍待驗。
+- MATERIAL_GEOMETRY 已使4種矩形產品依宣告尺寸呈現，模型/目標/碰撞框共用bounds，
+  X/Y/Z端面與未宣告警示可見，原生掃描保留寬深與站點不連續。Java不增加力學/運動。
+  真Linux客戶端127項模型、14項原版入口互動、原16圖/45項守門與6張補充圖通過。
+  最終528登錄：Windows516PASS/12平台SKIP、Linux527PASS/1平台SKIP；3個可編譯反例被抓到。
+  jar15,216,948B/SHA8e587a715ebd…帶原42e10f5雙庫；207class/2負向臂與bundle9反例通過。
+  Windows首個直連/jar逐位比較因兩程序BLAS設定不同而失敗，設定一致後48frame×3通過；
+  首次只改Python環境仍失敗，後以啟動環境統一測試driver。原始回覆/失敗照存。
+  詳 evidence/MATERIAL_GEOMETRY；panel仍是材料格，Windows CM/N25/FPS/動態仍未接受。
+- `GAME_INPUT` 已接 engine-assigned vocabulary ID、SI 目錄與不可變 GameWorldSnapshot。
+- `GAME_RUNTIME` 已將 Forge 採集→worker→apply 換為真正的 BSI/JNA 原生 session。
+  玩家宣告 axis；觀測六面 sturdy 接觸為 ground；舊方塊未宣告要明示拒絕。
+  off 先於選庫/解包，無效明確路徑拒絕，關世界/reset/逾時使舊结果失效。
+  native 工作若不返回，Java 不能強殺；cleanup 僅在 worker/daemon，D-044 崩潰代價仍成立。
+- 生產 SidecarClient/SidecarProcess/SidecarConfig/ShmRegion 已退到 test；NoSubprocess ALLOWED={}。
+  預設 jar 無 exe、無 process launcher；Gradle 已拒絕 executable 封裝。
+- CONSTRUCTION_TRANSACTIONS 已凍 CT-1..9/D-048，核心日誌/復原已接軸向EDIT與單格BUILD；一般施工驗收仍未完成。
+  基礎檔案單元含35項核心與15項Forge玩家檔/NBT/精確欄位持久化測試；兩平台各37個真JVM
+  中斷/復原與跨程序鎖通過。先checkpoint完整玩家基線再PREPARED；3個新可編譯反例被抓到。
+  玩家adapter已由後續單格BUILD呼叫；完整多格世界/庫存交易與undo仍未完成。
+  日誌驗證規則快取使4096格配置約9MB→3.36MB，144份/平台檔案逐位相同；時間僅Recorded，
+  Windows p95增加、Linux降低，不能稱FPS資格。完整材料/區塊/身分/undo/UI仍待接合，#12/#17不關閉。
+  詳 `docs/CT_PLAYER_PARTICIPANT.md`、`evidence/CONSTRUCTION_TRANSACTIONS/PLAYER_PARTICIPANT/RESULTS.md`。
+  #125仍是draft；9976fc0的4項CI通過、15項native step跳過，不能代替本地原生實跑。
+  CT_JOURNAL_BOOTSTRAP 已在同一鎖內讀回原領域ID，缺manifest而有資料時拒絕新建；
+  提供有界不可變交易key清單、先核實未知寫入結果。5項新檔案測試及兩平台37次中斷/復原通過。
+  詳 `evidence/CONSTRUCTION_TRANSACTIONS/JOURNAL_BOOTSTRAP/RESULTS.md`；製造metadata與首個軸向Forge入口進度見後續段落。
+  目前開發jar15,440,153B/SHA87bb2ed0d34c…保留v1.5雙庫；沒有正式v1發布。
+- CT_MANUFACTURED_METADATA 已用COMMITTED日誌重建永久製造ID、精確所有權、不可逆編輯/退休與整批undo資格。
+  18項新測試、兩平台完整測試及37次中斷/復原通過；所有權與undo兩個可編譯反例被抓到。
+  原236類別與引擎/資源逐位不變，只增加14個metadata類別。雙平台864次日誌成本操作內容一致；
+  單格準備p95≤0.61ms，持久提交約13–46ms，131K重建約141/167ms；同主機並行量測僅Recorded。
+  單格BUILD已接Forge，undo仍無呼叫者；metadata資格不單獨授權世界修改或退款，完整CT-1..9/undo/UI仍開放。
+  詳 `evidence/CONSTRUCTION_TRANSACTIONS/MANUFACTURED_METADATA/RESULTS.md`。
+- CT_CHUNK_PARTICIPANT 已新增同一IOWorker上的整批NBT保存、全部future排空、強制落盤及完整讀回比對。
+  7項新測試含真region檔案重開，雙平台Forge131PASS；省略force/遺失capability兩反例被抓到。
+  原250類別與v1.5庫/資源逐位不變，只增加4類別；core沿用4737e3c已實跑的相同來源。
+  完整NBT需由host提供；解析上限與原版吞錯的後續修正見CT_BOUNDED_CHUNK_READ/CT_LIVE_CHUNK_CAPTURE。
+  詳 `evidence/CONSTRUCTION_TRANSACTIONS/CHUNK_PARTICIPANT/RESULTS.md`；軸向EDIT已接，完整CT仍開放。
+- CT_BOUNDED_CHUNK_READ 已在同一IOWorker內限制解壓讀取16MiB+1，再用嚴格NBT解析，拒絕pending影像。
+  13項區塊測試、雙平台Forge137PASS；省略stream cap與換回vanilla parser的可編譯反例被抓到。
+  普通jar在隔離已安裝Forge專服12項檢查通過：真chunk完整checkpoint/after/恢復、箱子原NBT不變，
+  duplicate/超量region拒絕且原檔不變。AT只由正式jar提供，harness不含它；專服正常exit0。
+  既有253類別/雙庫與資源不變，只改storage轉接、新增reader與精確4條AT。core仍沿用相同來源實跑。
+  詳 `evidence/CONSTRUCTION_TRANSACTIONS/BOUNDED_CHUNK_READ/RESULTS.md`；完整live capture後續見下一段；正式施工/undo/UI仍待接合。
+- CT_LIVE_CHUNK_CAPTURE 已以直接capability/方塊實體見證檢查原版完整NBT，保留新增save-hook欄位，
+  拒絕遺漏/改寫/不穩定資料與pending實體；整批擷取完成後才能寫入，不主動生成區塊。
+  雙平台Forge142PASS；普通jar隔離實裝44項檢查通過，含兩種真capability第1–4次呼叫故障、
+  hook錯誤、完整checkpoint/讀回、跨維度/執行緒拒絕與原庫存保留。核心沿用4737e3c相同來源。
+  詳 `evidence/CONSTRUCTION_TRANSACTIONS/LIVE_CHUNK_CAPTURE/RESULTS.md`；軸向交易抑制已接，普通放置與完整CT仍未完成。
+- CT_FORGE_AXIS_TRANSACTIONS 已接空手潛行右鍵的真Forge入口：完整區塊/舊覆蓋checkpoint、
+  PREPARED抑制觀測/派工/封包、COMMITTED後單次revision與發布，登入前復原。
+  普通jar實裝控制/恢復控制各60項通過，完整庫存/選取欄位/游標物NBT逐位不變；
+  3個真Minecraft JVM中斷與各2次重啟通過，提交前回滾、提交後保留、終態日誌不重寫。
+  時鐘保留與觀測洩漏兩個可編譯反例被抓到；首敗與原始日誌照存。
+  詳 `evidence/CONSTRUCTION_TRANSACTIONS/FORGE_AXIS_TRANSACTIONS/RESULTS.md`；玩家為synthetic，
+  這批軸向證據不包含一般放置/庫存消耗/blueprint/undo/C2S確認或真socket/UI；一般放置進度如下。
+- CT_TRANSACTIONAL_PLACEMENT 已實作單格材料預覽、獨立C2S確認、完整玩家/區塊checkpoint、
+  PREPARED私有寫入、COMMITTED後單次身分/revision發布，以及送出前持久保存的精確重試。
+  普通jar隔離實裝控制277項、重啟209項通過，各含100次admitted重送；玩家為synthetic。
+  8個真Minecraft SIGKILL中斷點、16次重啟及原始region/完整玩家檔解析通過；5個編譯反例被抓到。
+  真Linux開發client對普通jar專服的首輪48項/修正版52項通過，每輪2個client JVM與8張原始圖；
+  含三軸、取消、材料同步、箱子優先、保護取消、遺失回覆後跨client重啟的逐位相同確認重送。
+  面板隨內容收合，終態移除重試並把鍵盤焦點交給完成；原始大視窗空白與翻譯守門首敗照存。
+  後續普通jar边界首輪328項、逐actor容量守門加強版455項通過，含完整確認欄位、slot/NBT/
+  target變動、200tick過期、限流、64人容量、副手與最後一個材料；原生時鐘與admission未繞過。
+  真client第三輪46項/5圖通過：server EXPIRED保留舊紀錄，明確新預覽後另次確認才施工；
+  320×240GUI實際30px溢出可捲動，原生朗讀包括產品/軸向/用量/位置/狀態與焦點按鈕。
+  詳 `evidence/CONSTRUCTION_TRANSACTIONS/TRANSACTIONAL_PLACEMENT/BOUNDARIES_AND_NARRATION/RESULTS.md`。
+  六次計時新提交143–199ms/約7.1MB，僅Recorded，仍待優化；首個helper缺import編譯失敗照存。
+  額外capability/巢狀完整玩家資料/reentrant副作用仍待驗。587786b CI四工作成功/15原生SKIP，
+  最新來源56541f4已通過雙平台Forge完整測試，core逐位相同沿用；新版exact-head CI發布後核實。
+  blueprint/undo/一般拆除所有權整理、高性能與v1保持開放；沒有Java物理補做。
+- NATIVE_VERDICT_API 已刪除只看數字的未使用影線API，公開利用率配色必須收原生overload旗標.
+  37組顯示讀數不變，忽略旗標的可編譯反例被抓到；#128/6d1a0c2的4項CI通過、15原生步驟SKIP。
+  #124未於Main整合前仍保持開放；詳 `evidence/NATIVE_VERDICT_API/RESULTS.md`。
+- Windows core487/Forge152：639登錄、627PASS、12平台SKIP；Linux638PASS、1平台SKIP。
+  20項 native 相關全部執行。新庫Linux真 server 梁柱板/混合機構/支承恢復/reset 已實跑；
+  完整結果 `evidence/GAME_RUNTIME/RESULTS.md`，首敗保留、三故障臂具名咬合。
+- 全部失去支承時原生只回 SOLVE_FAILED；Java 保留拒絕，不能從 message 捏造 MECHANISM。
+  高性能、全機構 typed 展示、真客戶端 N25 尚未驗收。
+- UI_VERDICTS 已使共用 HUD/命令讀出保留 local-critical，世界未完整評估時不捏造因子；
+  命令列結果 revision 與 stale/current、修正 solved 數量，殼警示讀原生旗標。
+  真 server 長柱/混合世界已驗到警示與拒絕並存及移除後消失；`evidence/UI_VERDICTS/RESULTS.md`。
+  真 jar 已進 1.20.1/47.4.10 多人列表；尚未進世界，不算 N25 材質/布局驗收。
+- STATE_DELIVERY 已接 channel 11：來源/順序/revision 守門、登入/重生/跨維度快照補送、
+  EMPTY/OFF/拒絕分流與舊展示清除。真 server 16 項、24 個 synthetic 玩家事件及 Linux
+  native→封包→clock 已跑；`evidence/STATE_DELIVERY/RESULTS.md`。真 socket/client 時序仍待 N25。
+- CLIENT_MATERIALS CM-7 已從同一 SI 目錄提供角色/尺寸物品資訊，9 項資料/格式測試通過。
+  世界內基準畫面與材質模型未完成；Windows 安全性視窗待使用者處理。
+- CLIENT_RENDER_PROBE 已取得隔離 Linux 真客戶端16張基準圖、45項讀數/尺寸守門通過。
+  登入即收到既有原生 revision44；未宣告目錄真拒絕並清除舊色面。原HUD長訊息截斷、
+  文字對比及方向模型缺口已實見；首兩次探針失敗保留。這只是補充，CM/N25仍待驗。
+- HUD_READABILITY 已用原16場景加2張大字級圖驗換行、底板、原生警示與明示省略。
+  45項原始守門及16份完整讀數對照通過；首版與原生通知重疊已縮寬修正，首敗仍保留。
+  Windows Forge108 PASS/1 SKIP、12封包golden與jar守門通過；詳 evidence/HUD_READABILITY。
+- NATIVE_ONLY_RESULTS 已把舊 beam/shell 公式、JSON/shm codec 與數值推導 verdict 的相容 API
+  移到 test/fixtures。正式快照只接受原生樣本/旗標；12 組封包 bytes 不變，Linux recovery/packet
+  22 項無跳過通過。jar/class 常數池檢查與兩條可編譯故障臂通過，詳 `evidence/NATIVE_ONLY_RESULTS/RESULTS.md`。
+- WORLD_REGISTRY 已持久保存已知結構格，容量/損壞拒絕、原子寫入；缺少結構或支承觀測
+  時延後整個維度請求。真 server 卸載/重啟/載回的 49 格梁結果封包逐位恢復；首跑抓到
+  FULL 可讀性早於 Unload 事件消失，已補分批監測與 apply 完整性重查。
+  這是已知格索引與完整輸入守門；詳 `evidence/WORLD_REGISTRY/RESULTS.md`。
+- CONSTRUCTION_IDENTITY 已在同一原子存檔保存宣告、永久物件 ID、待處理拆除與拆分/合併譜系。
+  worker 依 metadata epoch 發布，OFF 仍可分組；`/br object` 以原生格清單提供精確 revision 的預覽連結。
+  真 server 放置/拆分/重建/卸載/重啟已驗；詳 `evidence/CONSTRUCTION_IDENTITY/RESULTS.md`。
+  分組只管理遊戲物件，不抽取物理元素；損傷、獨立區域排程與客戶端 hover identity 仍未完成。
+- MODULE_PIPELINE_PROFILE 已接預設 OFF、有界樣本的 `/br profile start|stop|show`。
+  真 Linux server 的 A49/F576/M832 各 10 次暖身、40 次量測完成，14 項功能檢查通過。
+  M832 背景分析 p95 65.6 ms、apply 1.6 ms；含原生工作，不是 FPS 或 v1 高性能資格。
+  詳 `evidence/MODULE_PIPELINE_PROFILE/RESULTS.md`；量測啟停不改 world/result revision。
+- 尚未完成：模組正式發布、Forge施工交易與undo/UI、獨立區域排程 #86、
+  原Windows CM/N25與厚殼警示遊戲輸入、FPS/soak、引擎 lifecycle/剛體姿態消費。
+  #89 仍開放；既有公式已退出出貨來源，v1 全部基礎能力仍未完成。
+- REGISTRY_SCALING 的原始基線與四版候選都已保存；最終 `0736baa` 通過原定相對性能與
+  配置預算，600 份 bytes 一致。131K/ONE capture p95 714→6.0 ms、reconcile 9522→283 ms；
+  快照配置增加 42.9%，冷編碼多一份獨立陣列，原始三版性能輸格不覆寫。
+  Windows 490 PASS/29 SKIP、Linux 指定45項無跳過；詳 `evidence/REGISTRY_SCALING/RESULTS.md`。
+  這不代表 FPS 或 v1 高性能；SavedData adapter 雙平台900次/720樣本已完成且資料一致。
+  131K READY 同步存檔 p95 Windows260 ms、Linux202 ms，時間僅 Recorded，仍須改善。
+- SAVE_COMPRESSION 已保留同步 fsync/原子替換，改用 JDK 快速 gzip 與32KiB緩衝。
+  原種子/900次對照全一致，131K READY 存檔 p95 Windows260→96.5 ms、Linux202→83.3 ms；
+  檔案增大約18%，Windows完整Forge108 PASS/1 SKIP、Linux109 PASS/0 SKIP。
+  原相對門檻全過，仍有同步阻塞成本；詳 `evidence/SAVE_COMPRESSION/RESULTS.md`。
+- 上游模組 #107 的文件已整合，對位引擎 #39 frame_v2；來源見 `docs/MC66A_FRAME_V2.md`。
+  不在本工作改引擎，也不把缺 TECTONIC2_TOKEN 而跳過的 CI native steps 說成已驗。
+
+上一單元證據：`evidence/GAME_INPUT/RESULTS.md`、`evidence/BUCKLING_RETENTION/RESULTS.md`。
+已接 display budget/channel11 envelope、直接樣本顯示與 per-island buckling 保存；歷史裁決與輸格保留在
+`docs/GATES.md`、`docs/DECISIONS.md`、各單元 evidence，而不再堆進本現況檔。
 
 ## 力學模型（必讀，決定了所有其他事）
 
@@ -99,8 +223,8 @@ Minecraft Forge 的結構工程沙盒。真實工法 + 真實有限元素分析�
 ## 兩條原則
 
 **算的歸算，演的歸演。**
-FEA 決定失效集合；`FallingBlockEntity`、粒子、碎塊只負責演出。演出層永遠不回頭影響判定。
-（取自前身 `教育程式_需求與任務規劃_v3` 對「遊戲物理 vs 工程力學」的裁決。）
+引擎交付權威事件與姿態後，Java 消費、同步並繪製它們。Java 不從D/C自行觸發破壞，
+不以 FallingBlockEntity 或手寫重力/碰撞補出引擎尚未交付的動態；視覺插值不回頭影響判定。
 
 **玩法即離散化的合法性條件。**
 玩家用材料宣告結構角色，因此「照工序蓋」不只是遊戲規則，同時保證了模型可解。
@@ -155,3 +279,15 @@ Java 的 `BsiFrame`/`BsiHeaders`/`BsiResponse` 只能實作契約，不得自創
 **嚴重度依「不符代表什麼」定**：兩個預設分支之間不符 = **真漂移 → 紅**；
 PR 上不符 = 變更**在途中** → 警告（否則每次合法的契約變更都從紅開始，然後所有人學會忽略它）。
 **fetch 失敗永不綠。** 最後一道是執行期握手：`bsi.hello` 的 `contractSha256` 不符 → `BSI_VERSION` → 引擎停用並指名兩個雜湊。
+
+## 2026-09-11 PGN候選
+
+PGN已接production GameWorldSnapshot的physical自重，舊public overload仍analysis；JNA與兩故障已驗。
+6916511靜態雙庫候選已換入同一jar，雙平台162frame DET3／雙JVM／production JNA235與native Java20通過。
+正式release未替換，不能發佈新契約配舊庫。詳docs/PHYSICAL_GRAVITY_DELIVERY.md；#94與v2仍開放。
+
+同分支的NATIVE_FRACTURE_TRANSACTION已把identified來源與完整physical receipt接至
+既有持久協調器；先持久COMMITTED再native commit，恢復用當前世界建立新session。
+engine來源0fcb60a，contract dae6bb356bac7…；Windows/Linux新增各74項與每平台
+28個中斷/56次獨立JVM恢復通過。完整首敗/反例在evidence/NATIVE_FRACTURE_TRANSACTION。
+Host仍是core介面，沒有正式Forge斷裂入口或native bundle發布，接觸/滾動/視覺未交付。

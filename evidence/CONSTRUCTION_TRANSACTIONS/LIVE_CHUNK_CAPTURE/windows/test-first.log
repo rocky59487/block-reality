@@ -1,0 +1,53 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :compileJava UP-TO-DATE
+
+> Task :bundleEngines
+bundleEngines: no native library requested (development build)
+
+> Task :processResources
+> Task :classes
+> Task :compileTestJava
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+
+> Task :test
+
+BoundedChunkReadTest > actualWorkerReopensEveryTagAndUnsortedFullChunkWithoutLoss() PASSED
+
+BoundedChunkReadTest > compressedOversizedDocumentRefusesBeforeNbtConstructionAndPreservesFiles() PASSED
+
+BoundedChunkReadTest > malformedAndDeepRegionDocumentsRefuseWithOriginalBytesRetained() PASSED
+
+BoundedChunkReadTest > decodedByteCapStopsTheStreamBeforeTagAllocation() PASSED
+
+BoundedChunkReadTest > duplicateNamesRefuseWithoutChangingRegionFiles() PASSED
+
+BoundedChunkReadTest > pendingMapNeverSubstitutesForForcedRegionData() PASSED
+
+ChunkFileParticipantTest > wholeImagesArePrivateAndForcingPrecedesVerifiedReadback() PASSED
+
+ChunkFileParticipantTest > invalidLastImageAndReducedBatchLimitsCannotIssuePartialWrites() PASSED
+
+ChunkFileParticipantTest > headersCoordinatesSectionTypeAndCanonicalBudgetsRefuseBeforeStorage() PASSED
+
+ChunkFileParticipantTest > outstandingStoresDrainBeforeFailureAndBeforeAnyForceOrRead() PASSED
+
+ChunkFileParticipantTest > missingReadDoesNotInventAirAndForeignThreadDoesNotPoisonOwner() PASSED
+
+ChunkFileParticipantTest > everyStorageFailureLatchesAndNewAdapterResolvesActualWrittenImage() PASSED
+
+ChunkFileParticipantTest > actualRegionWorkerPersistsCompleteMultipleChunksAndReopensExactBytes() PASSED
+
+LiveChunkCaptureTest > exactEntitiesAndCapabilitiesAllowDifferentListAndCompoundOrder() PASSED
+
+LiveChunkCaptureTest > entityTypePositionAndPackedFlagsAreStrict() PASSED
+
+LiveChunkCaptureTest > omittedChangedDuplicateAndForeignBlockEntitiesRefuse() PASSED
+
+LiveChunkCaptureTest > hooksCanAddButCannotReplaceDeleteOrMutateExistingFields() PASSED
+
+LiveChunkCaptureTest > droppedOrChangedChunkCapabilitiesNeverBecomeAnEmptySuccess() PASSED
+
+BUILD SUCCESSFUL in 24s
+5 actionable tasks: 4 executed, 1 up-to-date

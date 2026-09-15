@@ -1,0 +1,58 @@
+
+> Task :compileJava
+C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\BlockRealityMod.java:28: warning: [removal] get() in FMLJavaModLoadingContext has been deprecated and marked for removal
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+                                                ^
+C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\BlockRealityMod.java:32: warning: [removal] get() in ModLoadingContext has been deprecated and marked for removal
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                                                ^
+C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\net\BRNetwork.java:54: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation(BlockRealityMod.MOD_ID, "main"),
+            ^
+Note: C:\Users\wmc02\Desktop\block-reality\forge\src\main\java\com\blockreality\impl\block\StructuralBlock.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+3 warnings
+
+> Task :bundleEngines
+bundleEngines: no native library requested (development build)
+
+> Task :processResources UP-TO-DATE
+> Task :classes
+
+C:\Users\wmc02\Desktop\block-reality\forge\src\test\java\com\blockreality\impl\net\MemberPacketCodecTest.java:40: error: cannot find symbol
+> Task :compileTestJava
+                assertTrue(m.field().isEmpty());var f=m.display().orElseThrow();
+                            ^
+  symbol:   method field()
+  location: variable m of type MemberSnapshot
+C:\Users\wmc02\Desktop\block-reality\forge\src\test\java\com\blockreality\impl\net\ShellPacketCodecTest.java:46: error: cannot find symbol
+                assertTrue(s.rawDc().isEmpty()); assertTrue(s.field().isEmpty());
+                                                             ^
+  symbol:   method field()
+  location: variable s of type ShellSnapshot
+C:\Users\wmc02\Desktop\block-reality\forge\src\test\java\com\blockreality\impl\net\StressResultPacketTest.java:378: error: cannot find symbol
+        assertTrue(m.field().isEmpty());
+                    ^
+  symbol:   method field()
+  location: variable m of type MemberSnapshot
+C:\Users\wmc02\Desktop\block-reality\forge\src\test\java\com\blockreality\impl\net\StressResultPacketTest.java:386: error: cannot find symbol
+        assertTrue(s.field().isEmpty(), "client does not regenerate shell mechanics");
+                    ^
+  symbol:   method field()
+  location: variable s of type ShellSnapshot
+4 errors
+
+> Task :compileTestJava FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileTestJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 12s
+4 actionable tasks: 3 executed, 1 up-to-date

@@ -1,13 +1,5 @@
-# Runs the gates on every PR and on Main. Green here is a merge condition (#46):
-# a change that reaches Main without this passing is a capability claim without
-# a gate, which CLAUDE.md's iron rules forbid.
-#
-# The engine itself cannot be BUILT here — br-sidecar links FrameCore, an external
-# source dependency this repository does not carry. What CI verifies instead is the
-# coherence of what the repository actually ships: the committed dist/ binaries
-# against the committed acceptance suite, and the Java sources against those same
-# binaries through the cross-language tests. Rebuilding and re-verifying the engine
-# from source is scripts/package.sh's job, on a machine that has FrameCore.
+# Required checks exercise the exact native libraries in the shipped alpha JAR.
+# The old sidecar remains only as an explicit compatibility regression fixture.
 name: ci
 
 on:
@@ -33,49 +25,26 @@ defaults:
   run:
     shell: bash
 
+# Exact native reply fixtures were qualified with this BLAS profile.
+env:
+  OPENBLAS_CORETYPE: Haswell
+  OPENBLAS_NUM_THREADS: '4'
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   engine-gates:
     name: engine acceptance suite vs shipped binary
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: verify.py against dist/br-sidecar
-        run: |
-          chmod +x dist/br-sidecar
-          python3 sidecar/verify.py dist/br-sidecar | tail -3
+      - name: verify and extract the shipped native engine
+        run: python3 scripts/prepare_shipped_engine.py --out "$RUNNER_TEMP/shipped-engine"
+      - name: real native BSI conformance
+        run: python3 contract/conformance/run.py --adapter capi --lib "$BR_ENGINE"
 
-      # The Windows engine ships in the same archive and has no acceptance suite
-      # run against it here — CI has no Windows runner and cross-checking a PE
-      # binary from Linux is not a substitute. What CAN be gated from here is that
-      # it EXISTS and that its bytes are the ones the evidence record verified.
-      # Without this, `scripts/package.sh` on a machine without mingw deletes the
-      # committed .exe and every gate in the repository stays green (A-7).
-      # Installing the mod is now dropping one jar into mods/ (D-027), so "the jar
-      # contains an engine" is a claim with a build step behind it and no gate. Three
-      # hashes have to agree: the bytes in the jar, the manifest beside them, and the
-      # binary the acceptance suite and evidence.py actually ran.
-      - name: the jar carries the engines the evidence verified
-        run: python3 scripts/check_bundle.py dist
-
-      - name: Windows engine present and matching the evidence record
-        run: |
-          test -f dist/br-sidecar.exe
-          python3 - <<'PY'
-          import hashlib, json, sys
-          doc = json.load(open("evidence/verification.json"))
-          claimed = doc["identity"].get("binary_windows", {}).get("sha256")
-          if not claimed:
-              sys.exit("evidence/verification.json has no identity.binary_windows.sha256")
-          h = hashlib.sha256()
-          with open("dist/br-sidecar.exe", "rb") as f:
-              for chunk in iter(lambda: f.read(65536), b""):
-                  h.update(chunk)
-          actual = h.hexdigest()
-          if claimed != actual:
-              sys.exit(f"dist/br-sidecar.exe is {actual[:12]}... but the evidence "
-                       f"record verified {claimed[:12]}...")
-          print("windows engine matches the record:", actual[:12])
-          PY
 
   java:
     name: Java suites, cross-language against the shipped engine
@@ -87,21 +56,60 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
+      - name: verify and extract the shipped native engine
+        run: python3 scripts/prepare_shipped_engine.py --out "$RUNNER_TEMP/shipped-engine"
       - name: mod tests (engine-backed, -Dbr.sidecar fails loud if unresolvable)
         run: |
-          chmod +x dist/br-sidecar mod/gradlew
-          cd mod && ./gradlew --no-daemon test "-Dbr.sidecar=$GITHUB_WORKSPACE/dist/br-sidecar"
+          chmod +x sidecar/legacy-dist/br-sidecar mod/gradlew
+          cd mod && ./gradlew --no-daemon test "-Dbr.sidecar=$GITHUB_WORKSPACE/sidecar/legacy-dist/br-sidecar"
+      - name: construction journal survives interrupted JVMs (file participants)
+        working-directory: mod
+        run: ./gradlew --no-daemon :core:constructionRecoveryGate "-Dbr.transactionEvidence=$RUNNER_TEMP/construction-recovery"
+      - name: preserve construction process interruption receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: construction-core-recovery
+          path: ${{ runner.temp }}/construction-recovery
       - name: forge build and tests
         run: |
           chmod +x forge/gradlew
           cd forge && ./gradlew --no-daemon build
+
+      - name: shipped JAR JNA replay, cache faults and concurrent extraction
+        run: |
+          python3 - <<'PY'
+          import glob, json, os, pathlib, shutil, subprocess
+          lock = json.load(open('native-release.json'))
+          jna = glob.glob(os.path.expanduser('~/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/*/jna-5.12.1.jar'))
+          assert len(jna) == 1, jna
+          subprocess.run(['python3', 'scripts/check_native_jar.py',
+            '--jar', f'dist/blockreality-{lock["modVersion"]}.jar', '--java', shutil.which('java'),
+            '--classes', 'mod/core/build/classes/java/test', '--jna', jna[0],
+            '--library', os.environ['BR_ENGINE'], '--version', lock['version'],
+            '--build-sha', lock['sourceCommit'][:7], '--eigen', '--shell-eigen',
+            '--out', os.path.join(os.environ['RUNNER_TEMP'], 'native-jar-replay')], check=True)
+          PY
+
+      # Compile opt-in measurement drivers without running hardware benchmarks or
+      # adding their classes to the ordinary source sets/jar.
+      - name: compile core registry profile driver
+        working-directory: mod
+        run: ./gradlew --no-daemon -I ../scripts/registry-scaling.gradle :core:compileRegistryProfileJava
+      - name: compile Forge registry save profile driver
+        working-directory: forge
+        run: ./gradlew --no-daemon -I ../scripts/registry-save-profile.gradle compileRegistrySaveProfileJava
+
+      - name: compile manufactured metadata cost recorder
+        working-directory: mod
+        run: ./gradlew --no-daemon -I ../scripts/manufactured-metadata-profile.gradle :core:compileManufacturedMetadataProfileJava
 
       # Runs LAST because it reads gradle's JUnit XML, which only exists once both
       # suites have run. Every check count quoted in a document is compared against
       # what the suites actually printed — the defect this closes reached the public
       # release body as "219 acceptance checks" when the real number was 218.
       - name: quoted check counts match the suites
-        run: python3 scripts/check_docs.py dist/br-sidecar
+        run: python3 scripts/check_docs.py sidecar/legacy-dist/br-sidecar
 
   # --------------------------------------------------------------- BSI v1 (D-043 / D-044)
   #
@@ -156,7 +164,7 @@ jobs:
         run: |
           base=$(git merge-base origin/${{ github.base_ref }} HEAD)
           changed=$(git diff --name-only "$base"...HEAD -- contract/ | grep -v '^contract/CONTRACT_SHA256$' || true)
-          if [ -n "$changed" ] && ! git diff --name-only "$base"...HEAD | grep -q '^contract/CONTRACT_SHA256$'; then
+          if [ -n "$changed" ] && ! git diff --name-only "$base"...HEAD | grep '^contract/CONTRACT_SHA256$' > /dev/null; then
             echo "contract/ changed without re-pinning CONTRACT_SHA256:"; echo "$changed"; exit 1
           fi
 
@@ -167,7 +175,16 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: dependencies
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq cmake g++
+        run: |
+          if ! command -v cmake >/dev/null || ! command -v g++ >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq cmake g++
+          fi
+          cmake --version
+          g++ --version
+
+      - name: RCON framing used by server smoke tests
+        run: python3 scripts/test_rcon_client.py
 
       - name: build the BSI host and its stub engines
         run: |
@@ -198,11 +215,18 @@ jobs:
       # mutation binaries that never ran once were scored as ten that did).
       - name: a foreign engine ABI is refused
         run: |
-          test -f build/host/libbsi_stub_engine_abi2.so
-          if python3 contract/conformance/run.py --adapter engine \
-               --lib build/host/libbsi_stub_engine_abi2.so --hostd build/host/bsi-hostd --stub; then
-            echo "an ABI-2 engine was loaded; the version gate did nothing"; exit 1
+          # Use one past the current ABI; a newly supported version is not foreign.
+          abi=$(awk '$1=="#define" && $2=="BSI_ENGINE_ABI" {sub(/u$/, "", $3); print $3}' contract/bsi_engine.h)
+          test -n "$abi"
+          g++ -std=c++17 -shared -fPIC '-DBSI_STUB_ABI=(BSI_ENGINE_ABI+1u)' contract/host/test/stub_engine.cpp \
+              -o build/host/libbsi_stub_engine_unknown.so
+          test -f build/host/libbsi_stub_engine_unknown.so
+          if build/host/bsi-hostd --engine build/host/libbsi_stub_engine_unknown.so \
+              </dev/null >build/host/unknown-abi.log 2>&1; then
+            echo "an unknown engine ABI was loaded; the version gate did nothing"; exit 1
           fi
+          cat build/host/unknown-abi.log
+          grep -F "bsi_engine_entry returned NULL (host ABI $abi not supported)" build/host/unknown-abi.log
 
       # ---------------------------------------------------------------- N24-a, packaging
       #
@@ -394,7 +418,7 @@ jobs:
         run: |
           chmod +x mod/gradlew dist/br-sidecar
           cd mod && ./gradlew --no-daemon test \
-              "-Dbr.sidecar=$GITHUB_WORKSPACE/dist/br-sidecar" \
+              "-Dbr.sidecar=$GITHUB_WORKSPACE/sidecar/legacy-dist/br-sidecar" \
               "-Dbr.engine=$GITHUB_WORKSPACE/.tectonic2/build/libbsi_tectonic.so"
 
       - name: BsiNative large reply executes the real solver once
@@ -459,7 +483,7 @@ jobs:
             echo "engine-linux built the engine and ran the cross-language leg." \
               >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "::warning title=engine-linux did not run::No TECTONIC2_TOKEN, so the engine was never built. N24-a (packaging) still ran in the contract job against the stub engine; what was NOT measured here is the real engine building, its self-containment (L7), the cross-language leg N24-b5, and whether tectonic2's own main has moved the contract since the pinned commit (the pin check in the contract job cannot see that; tectonic2's CI reads this repository's Main hash without a token, which is the leg that always runs)."
+            echo "::warning title=engine-linux did not run::No TECTONIC2_TOKEN, so the engine was never built. N24-a (packaging) still ran in the contract job against the stub engine; what was NOT measured in this optional source-build job is rebuilding the engine and its self-containment (L7); required jobs separately test the shipped native SDK, including JNA, and whether tectonic2's own main has moved the contract since the pinned commit (the pin check in the contract job cannot see that; tectonic2's CI reads this repository's Main hash without a token, which is the leg that always runs)."
             {
               echo "### engine-linux measured NOTHING"
               echo
@@ -471,6 +495,6 @@ jobs:
               echo "N24-a3 (manifest against bytes, contract agreement), N24-a5 (licences),"
               echo "and the seven packaging injections."
               echo
-              echo "NOT measured: the engine builds at all, L7 self-containment, N24-b5."
+              echo "NOT measured in this job: engine source build and L7 self-containment. Shipped native BSI and JNA tests run in the required jobs."
             } >> "$GITHUB_STEP_SUMMARY"
           fi

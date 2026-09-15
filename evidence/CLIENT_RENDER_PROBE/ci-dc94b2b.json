@@ -1,0 +1,48 @@
+{
+  "run": 34418509122,
+  "head": "dc94b2b4fc4fb9df55f67a635042cb300f6f80e9",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 102688608478,
+      "name": "build the engine library, then the jar that carries it",
+      "conclusion": "success",
+      "skipped_steps": [
+        "which tectonic2 commit this repository mirrors",
+        "clone tectonic2 at that commit",
+        "contract/ is byte-for-byte identical (N23-b, the direct form)",
+        "tectonic2's default branch has not moved the contract alone (N23-b)",
+        "dependencies",
+        "static METIS (IDXTYPEWIDTH 32)",
+        "build libbsi_tectonic.so",
+        "the library is self-contained and exports only the contract",
+        "Java suites against the freshly built engine",
+        "BsiNative large reply executes the real solver once",
+        "stage the library, asking it what it is",
+        "build the jar that carries the library",
+        "assemble a staging directory and gate it (N24-a)",
+        "the packaging gate still bites",
+        "Run actions/upload-artifact@v4"
+      ]
+    },
+    {
+      "id": 102688608553,
+      "name": "engine acceptance suite vs shipped binary",
+      "conclusion": "success",
+      "skipped_steps": []
+    },
+    {
+      "id": 102688608616,
+      "name": "Java suites, cross-language against the shipped engine",
+      "conclusion": "success",
+      "skipped_steps": []
+    },
+    {
+      "id": 102688608636,
+      "name": "BSI contract, host, corpus, and the packaging rules",
+      "conclusion": "success",
+      "skipped_steps": []
+    }
+  ]
+}

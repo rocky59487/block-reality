@@ -1,0 +1,82 @@
+[
+  {
+    "file": "baseline/screenshots/beam-en_us-1280.png",
+    "bytes": 188167,
+    "sha256": "5f3cbe65a0542d7885c2d2d6e28e4ef7daf4490e66fba92da6a9566699baec8f"
+  },
+  {
+    "file": "baseline/screenshots/beam-en_us-1920.png",
+    "bytes": 161624,
+    "sha256": "d7a4aec5bebfb0a9341f915b7f31ea7b058ed7e8321e32e421b4441986ed1f9a"
+  },
+  {
+    "file": "baseline/screenshots/beam-zh_tw-1280.png",
+    "bytes": 131069,
+    "sha256": "183e4dcabb081d812055ad3947c05706bf4bbb9ec79182230edaccc56e19448f"
+  },
+  {
+    "file": "baseline/screenshots/beam-zh_tw-1920.png",
+    "bytes": 154315,
+    "sha256": "0802fadd1e9e204910a4d438cea2be060fcc2ea3bfec8134b4a1721148d3d724"
+  },
+  {
+    "file": "baseline/screenshots/catalogue-en_us-1280.png",
+    "bytes": 110115,
+    "sha256": "2820d600915a4677bbfe3a786157bcf886670a0f0e4e6882011e520f96c0080f"
+  },
+  {
+    "file": "baseline/screenshots/catalogue-en_us-1920.png",
+    "bytes": 191465,
+    "sha256": "713c381df03c4a6e6334d38bf35c65e694ec17f1de099237ca526a53e1653cae"
+  },
+  {
+    "file": "baseline/screenshots/catalogue-zh_tw-1280.png",
+    "bytes": 111950,
+    "sha256": "a4637b92968e6922f7e23f14c42178c2c3afde8cfb7c7ed6e19c44651964cb96"
+  },
+  {
+    "file": "baseline/screenshots/catalogue-zh_tw-1920.png",
+    "bytes": 191691,
+    "sha256": "678904ca55aaed2a6cbc85290008ffcb205d68cc99fcf2912e29d560645bd3d7"
+  },
+  {
+    "file": "baseline/screenshots/column-en_us-1280.png",
+    "bytes": 86121,
+    "sha256": "ac5237b52bd3b23c8c14b86f2199e0e6508bcbc86c762e8c0551c2614c24ea5e"
+  },
+  {
+    "file": "baseline/screenshots/column-en_us-1920.png",
+    "bytes": 140824,
+    "sha256": "aa3fe6059935819612cb025c514517a1be61692bfc79bbbc714dab83568f65a5"
+  },
+  {
+    "file": "baseline/screenshots/column-zh_tw-1280.png",
+    "bytes": 87971,
+    "sha256": "41bfce855fc44b86ad0f75b2143ec4e583ba79eaa4822549992915534cb24395"
+  },
+  {
+    "file": "baseline/screenshots/column-zh_tw-1920.png",
+    "bytes": 146425,
+    "sha256": "8bbdb52c63d049b2739fbeabbee61505fbff0c41e0160615c66ea4f647049e1a"
+  },
+  {
+    "file": "baseline/screenshots/panel-en_us-1280.png",
+    "bytes": 69091,
+    "sha256": "c6fd3d69d18bcad4fe66bfc780a2398cf33d37768d2e32050c2fbd52e56e4705"
+  },
+  {
+    "file": "baseline/screenshots/panel-en_us-1920.png",
+    "bytes": 133229,
+    "sha256": "7d85aaffd92382015da9fa94ddcd6bf8c29dab3deb42ef9595a77fad3131acd8"
+  },
+  {
+    "file": "baseline/screenshots/panel-zh_tw-1280.png",
+    "bytes": 73676,
+    "sha256": "a8cb77aa6459633b58f0186f27af3f02a58dcae5cad3d3e91732b219a6262960"
+  },
+  {
+    "file": "baseline/screenshots/panel-zh_tw-1920.png",
+    "bytes": 138080,
+    "sha256": "f92ec40985bd6375a13c2043d992dae67e1b9cdc19a6862a847120f0e4aeeb69"
+  }
+]

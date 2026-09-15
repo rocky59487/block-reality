@@ -99,12 +99,9 @@ class RevisionGateConcurrencyTest {
     }
 
     private static AnalysisResult usable(WorldRevision rev) {
-        return new AnalysisResult(rev, true, false, "", 0.5, 1, "member", 1, 0, 0, 0,
-                com.blockreality.api.BucklingState.DISABLED_BY_REQUEST,
-                List.of(new com.blockreality.api.MemberSnapshot(1, "steel", "s", 1000, 0.5,
+        return new AnalysisResult(rev, true, false, "", 0.5, 1, "member", 1, 0, 0, 0, com.blockreality.api.BucklingState.DISABLED_BY_REQUEST, List.of(new com.blockreality.api.MemberSnapshot(1, "steel", "s", 1000, 0.5,
                         com.blockreality.api.GoverningFibre.NONE, -1,
                         com.blockreality.api.EndForces.ZERO, com.blockreality.api.EndForces.ZERO,
-                        List.of(), List.of(), java.util.Optional.empty())),
-                List.of(), List.of());
+                        List.of(), List.of(), java.util.Optional.empty(), false, java.util.Optional.empty())), List.of(), List.of(), false, false);
     }
 }

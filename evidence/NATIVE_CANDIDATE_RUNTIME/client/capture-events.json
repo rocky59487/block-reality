@@ -1,0 +1,430 @@
+[
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":44,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "cached native result arrives without edit or resolve",
+    "pass": true
+  },
+  {
+    "command": "gamemode spectator BRRenderProbe",
+    "response": "Set BRRenderProbe's game mode to Spectator Mode\n"
+  },
+  {
+    "command": "item replace entity BRRenderProbe weapon.mainhand with blockreality:stress_glasses",
+    "response": "Replaced a slot on BRRenderProbe with [Stress Glasses]\n"
+  },
+  {
+    "command": "tp BRRenderProbe 2.5 201 -8 0 15",
+    "response": "Teleported BRRenderProbe to 2.500000, 201.000000, -7.500000\n"
+  },
+  {
+    "gate": "beam-en_us-1280 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":44,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "beam-en_us-1280 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "beam-en_us-1280 native payload values",
+    "pass": true
+  },
+  {
+    "gate": "beam-zh_tw-1280 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":44,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "beam-zh_tw-1280 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "beam-zh_tw-1280 native payload values",
+    "pass": true
+  },
+  {
+    "gate": "beam-en_us-1920 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":44,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "beam-en_us-1920 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "beam-en_us-1920 native payload values",
+    "pass": true
+  },
+  {
+    "gate": "beam-zh_tw-1920 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":44,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "beam-zh_tw-1920 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "beam-zh_tw-1920 native payload values",
+    "pass": true
+  },
+  {
+    "command": "tp BRRenderProbe 10.5 202 -8 0 5",
+    "response": "Teleported BRRenderProbe to 10.500000, 202.000000, -7.500000\n"
+  },
+  {
+    "gate": "column-en_us-1280 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":44,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "column-en_us-1280 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "column-en_us-1280 native payload values",
+    "pass": true
+  },
+  {
+    "gate": "column-zh_tw-1280 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":44,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "column-zh_tw-1280 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "column-zh_tw-1280 native payload values",
+    "pass": true
+  },
+  {
+    "gate": "column-en_us-1920 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":44,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "column-en_us-1920 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "column-en_us-1920 native payload values",
+    "pass": true
+  },
+  {
+    "gate": "column-zh_tw-1920 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":44,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "column-zh_tw-1920 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "column-zh_tw-1920 native payload values",
+    "pass": true
+  },
+  {
+    "command": "tp BRRenderProbe 2.5 215 6 0 50",
+    "response": "Teleported BRRenderProbe to 2.500000, 215.000000, 6.500000\n"
+  },
+  {
+    "gate": "panel-en_us-1280 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":44,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "panel-en_us-1280 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "panel-en_us-1280 native payload values",
+    "pass": true
+  },
+  {
+    "gate": "panel-zh_tw-1280 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":44,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "panel-zh_tw-1280 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "panel-zh_tw-1280 native payload values",
+    "pass": true
+  },
+  {
+    "gate": "panel-en_us-1920 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":44,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "panel-en_us-1920 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "panel-en_us-1920 native payload values",
+    "pass": true
+  },
+  {
+    "gate": "panel-zh_tw-1920 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":44,\"resultRevision\":44,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "panel-zh_tw-1920 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "panel-zh_tw-1920 native payload values",
+    "pass": true
+  },
+  {
+    "command": "setblock 0 200 24 blockreality:steel_beam[axis=x]",
+    "response": "Changed the block at 0, 200, 24\n"
+  },
+  {
+    "command": "setblock 0 200 28 blockreality:steel_beam[axis=y]",
+    "response": "Changed the block at 0, 200, 28\n"
+  },
+  {
+    "command": "setblock 0 200 32 blockreality:steel_beam[axis=z]",
+    "response": "Changed the block at 0, 200, 32\n"
+  },
+  {
+    "command": "setblock 0 200 36 blockreality:steel_beam[axis=undeclared]",
+    "response": "Changed the block at 0, 200, 36\n"
+  },
+  {
+    "command": "setblock 4 200 24 blockreality:steel_beam_150x300[axis=x]",
+    "response": "Changed the block at 4, 200, 24\n"
+  },
+  {
+    "command": "setblock 4 200 28 blockreality:steel_beam_150x300[axis=y]",
+    "response": "Changed the block at 4, 200, 28\n"
+  },
+  {
+    "command": "setblock 4 200 32 blockreality:steel_beam_150x300[axis=z]",
+    "response": "Changed the block at 4, 200, 32\n"
+  },
+  {
+    "command": "setblock 4 200 36 blockreality:steel_beam_150x300[axis=undeclared]",
+    "response": "Changed the block at 4, 200, 36\n"
+  },
+  {
+    "command": "setblock 8 200 24 blockreality:steel_beam_100x200[axis=x]",
+    "response": "Changed the block at 8, 200, 24\n"
+  },
+  {
+    "command": "setblock 8 200 28 blockreality:steel_beam_100x200[axis=y]",
+    "response": "Changed the block at 8, 200, 28\n"
+  },
+  {
+    "command": "setblock 8 200 32 blockreality:steel_beam_100x200[axis=z]",
+    "response": "Changed the block at 8, 200, 32\n"
+  },
+  {
+    "command": "setblock 8 200 36 blockreality:steel_beam_100x200[axis=undeclared]",
+    "response": "Changed the block at 8, 200, 36\n"
+  },
+  {
+    "command": "setblock 12 200 24 blockreality:timber_beam[axis=x]",
+    "response": "Changed the block at 12, 200, 24\n"
+  },
+  {
+    "command": "setblock 12 200 28 blockreality:timber_beam[axis=y]",
+    "response": "Changed the block at 12, 200, 28\n"
+  },
+  {
+    "command": "setblock 12 200 32 blockreality:timber_beam[axis=z]",
+    "response": "Changed the block at 12, 200, 32\n"
+  },
+  {
+    "command": "setblock 12 200 36 blockreality:timber_beam[axis=undeclared]",
+    "response": "Changed the block at 12, 200, 36\n"
+  },
+  {
+    "command": "setblock 16 200 24 blockreality:concrete_beam[axis=x]",
+    "response": "Changed the block at 16, 200, 24\n"
+  },
+  {
+    "command": "setblock 16 200 28 blockreality:concrete_beam[axis=y]",
+    "response": "Changed the block at 16, 200, 28\n"
+  },
+  {
+    "command": "setblock 16 200 32 blockreality:concrete_beam[axis=z]",
+    "response": "Changed the block at 16, 200, 32\n"
+  },
+  {
+    "command": "setblock 16 200 36 blockreality:concrete_beam[axis=undeclared]",
+    "response": "Changed the block at 16, 200, 36\n"
+  },
+  {
+    "command": "setblock 20 200 24 blockreality:brick_pier[axis=x]",
+    "response": "Changed the block at 20, 200, 24\n"
+  },
+  {
+    "command": "setblock 20 200 28 blockreality:brick_pier[axis=y]",
+    "response": "Changed the block at 20, 200, 28\n"
+  },
+  {
+    "command": "setblock 20 200 32 blockreality:brick_pier[axis=z]",
+    "response": "Changed the block at 20, 200, 32\n"
+  },
+  {
+    "command": "setblock 20 200 36 blockreality:brick_pier[axis=undeclared]",
+    "response": "Changed the block at 20, 200, 36\n"
+  },
+  {
+    "command": "setblock 24 200 24 blockreality:concrete_slab[axis=x]",
+    "response": "Changed the block at 24, 200, 24\n"
+  },
+  {
+    "command": "setblock 24 200 28 blockreality:concrete_slab[axis=y]",
+    "response": "Changed the block at 24, 200, 28\n"
+  },
+  {
+    "command": "setblock 24 200 32 blockreality:concrete_slab[axis=z]",
+    "response": "Changed the block at 24, 200, 32\n"
+  },
+  {
+    "command": "setblock 24 200 36 blockreality:concrete_slab[axis=undeclared]",
+    "response": "Changed the block at 24, 200, 36\n"
+  },
+  {
+    "command": "setblock 28 200 24 blockreality:concrete_slab_150[axis=x]",
+    "response": "Changed the block at 28, 200, 24\n"
+  },
+  {
+    "command": "setblock 28 200 28 blockreality:concrete_slab_150[axis=y]",
+    "response": "Changed the block at 28, 200, 28\n"
+  },
+  {
+    "command": "setblock 28 200 32 blockreality:concrete_slab_150[axis=z]",
+    "response": "Changed the block at 28, 200, 32\n"
+  },
+  {
+    "command": "setblock 28 200 36 blockreality:concrete_slab_150[axis=undeclared]",
+    "response": "Changed the block at 28, 200, 36\n"
+  },
+  {
+    "command": "setblock 32 200 24 blockreality:steel_plate[axis=x]",
+    "response": "Changed the block at 32, 200, 24\n"
+  },
+  {
+    "command": "setblock 32 200 28 blockreality:steel_plate[axis=y]",
+    "response": "Changed the block at 32, 200, 28\n"
+  },
+  {
+    "command": "setblock 32 200 32 blockreality:steel_plate[axis=z]",
+    "response": "Changed the block at 32, 200, 32\n"
+  },
+  {
+    "command": "setblock 32 200 36 blockreality:steel_plate[axis=undeclared]",
+    "response": "Changed the block at 32, 200, 36\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":116,\"resultRevision\":44,\"kind\":\"PENDING\",\"detail\":\"\",\"objectsReady\":false,\"cells\":58,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":116,\"resultRevision\":44,\"kind\":\"PENDING\",\"detail\":\"\",\"objectsReady\":true,\"cells\":58,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":116,\"resultRevision\":116,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":58,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "command": "tp BRRenderProbe 16 215 12 0 30",
+    "response": "Teleported BRRenderProbe to 16.500000, 215.000000, 12.500000\n"
+  },
+  {
+    "gate": "catalogue-en_us-1280 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":116,\"resultRevision\":116,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":58,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "catalogue-en_us-1280 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "catalogue-zh_tw-1280 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":116,\"resultRevision\":116,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":58,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "catalogue-zh_tw-1280 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "catalogue-en_us-1920 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":116,\"resultRevision\":116,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":58,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "catalogue-en_us-1920 no intervening structure edit",
+    "pass": true
+  },
+  {
+    "gate": "catalogue-zh_tw-1920 actual framebuffer and server revision",
+    "pass": true
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":116,\"resultRevision\":116,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":58,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "catalogue-zh_tw-1920 no intervening structure edit",
+    "pass": true
+  }
+]

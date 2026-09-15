@@ -1395,3 +1395,300 @@ display budget要依原v2顯示軌與訂閱需求另凍，不能以f32存儲充�
 NATIVE自足包/來源鏈及GAME_SWAP(#89)真遊戲驗收之前保留最後Sidecar相容入口；
 目前遊戲仍SidecarClient/protocol2/FrameCore。MC65B active、引擎1.2.0/模組0.4.0-dev不變。
 本段沒有重跑2690或效能；原41.7ms FAIL、Linux7FAIL及v2/v3/v4欠項照留。
+
+## 2026-09-08 MC64_FORWARD
+
+判準docs/MC64_FORWARD.md先凍（012a9af）；revision未逃逸與Forge資源首敗依4c0305a/e45e6b2先記後修。
+headless BSI→AnalysisResult→channel9保存獨立flags與f64；core316=304PASS/12SKIP、Forge71PASS（共387登錄）。
+十變異具名assertion FAIL；原REVISION單點變異9PASS不算咬合，改整鏈錯信reply revision才咬原stale oracle。
+Forge首70項為69PASS/1FAIL，原因缺契約資源；共用Gradle規則修復，正式輸出hash/schema逐位核對。
+原始輸出、XML與來源SHA見tectonic2 gate/evidence/MC64_FORWARD；未宣稱真遊戲換裝/屈曲求解/效能。
+
+## 2026-09-08 DISPLAY_DELIVERY
+
+docs/DISPLAY_DELIVERY.md先凍131e29b；基線量測後e58b1a8釘256KiB/16384格/2048站，實作後未移線。
+channel10完整元素交付、控制優先/超額明示、收端累積額度与配置守門；core316=304PASS/12SKIP、Forge80PASS。
+十條隔離變異各1test/1 AssertionFailedError/0error/0skip；真v1.3 DLL分析/回收/Forge packet與Sidecar28實跑。
+四固定語料三輪DET，dense由905978B到259973B；shell-heavy由1546682B到193342B（省略完整元素）。
+小語料為共享payload與守門增加配置：55.9KB→71.8KB；不稱全面效能改善。AMD時間只RECORDED_ONLY。
+資料量上限不代表整體求解/FPS上限；未做新i9/Linux/真HUD驗收，GAME_SWAP仍未換裝。
+原始stdout/stderr/XML、基線/後測、source hash與mutation compiler bytes見tectonic2 gate/evidence/DISPLAY_DELIVERY。
+
+## 2026-09-09 NATIVE消費者封裝（判準先凍）
+
+判準docs/NATIVE_CONSUMER.md由fcbb9e4先凍；七字元hello身份2e0ad2f、精確授權例外76b8021
+先記首敗再改。真v1.3 Windows/Linux庫已封同一jar；根checksum、來源3761檔、provenance/SDK
+與每份原bytes核對。兩平台CAPI→JNA各24回應×3逐位、兩JVM真競爭、真ACL/POSIX拒絕、
+缺/壞pin與損壞/超長/中斷/版本並存全執行。13真JNA/28舊Sidecar；core327=315PASS/12SKIP、
+Forge80PASS、合計407登錄/395PASS/12SKIP。十Java變異、十來源鏈破壞及四guard移除、
+六Gradle破壞、九jar注入；首次7FAIL、driver/來源inventory/hello/授權首敗及未咬cleanup變異
+全保存於配對引擎gate/evidence/NATIVE_CONSUMER。N24 Windows半邊已有真bytes腿，macOS仍無實機。
+舊anOlderLibraryIsRemovedButNothingElseIs由本次凍結改為保存其他版本，原測試bytes保留；
+既有≥64KiB規則只對兩份精確hash的授權全文開例外，不泛放行license目錄。
+WSL首次/tmp輸出後續無法讀回，最終改persistent ext4全重跑保存218檔；不冒充Linux全Java回歸。
+舊41.7ms/Linux7FAIL保留，遊戲迴圈尚未換裝；這是封裝本地驗收，不是v2/v4或遊戲發布。
+
+
+## 2026-09-09 MC66A BSI 完整世界快照
+
+先凍docs/MC66A_BSI_BUCKLING.md，再接BSI eigen/材料EB/Java不可變每島與世界摘要。
+core334=322PASS/12SKIP，Forge80PASS；合計414登錄/402PASS/12SKIP，真JNA15項全執行。
+八Java變異AGG/FACTOR/CRITICAL/KIND/RESERVED/MIN/IDS/REQUEST均有具名失敗；
+三島125列獨立先凍表、局部critical在世界拒絕時保留，Java不重新比較lambda。
+引擎833checks/12故障三箱DET3與所有首次輸格、來源、原始bytes見配對引擎MC66A_BSI證據。
+新native開發庫與契約55檔已驗；正式v1.3 jar不包含此版本，GAME_SWAP與真HUD仍待驗。
+
+### 2026-09-10 GAME_RUNTIME：原生換裝的資源政策與舊門檻退場
+
+判準先凍於 docs/GAME_RUNTIME.md（18b9946）。使用者限定模組工作，引擎另有人負責。
+遊戲由 block-count buckling limit 600 改為引擎 per-island budgetDof，初始 2400 可配置。
+原 sidecar 600 格成本表不再適用於新預算；性能結論降為未驗，待固定場景實測。
+首次 Forge 85 項中的 1 FAIL 正是舊預設檢查，保留原 XML，再讓當前預設門改驗 DOF wire。
+N24-a2 SidecarProcess 生產豁免隨遊戲切換移除；原實作移至 test source，不在新 jar。
+N25 真 server/client、最新 Win/Linux 原生資產與 v1 性能/倒塌/剛體資格仍按原線待驗。
+
+### 2026-09-10 GAME_RUNTIME 全機構回覆界線
+
+第二次真 server 支承移除已使 revision 前進，原生返回 SOLVE_FAILED/no solved island；
+smoke 原預期 MECHANISM，仍判 FAIL，原檔保留。不得把引擎診斷 message 轉成 Java 機構判定。
+後續只驗新 revision 撤銷舊結果並明示拒絕，這條降為傳輸/生命週期驗證；全機構 typed 展示
+仍未完成。混合世界的 singular 計數另驗，不把它移作全機構證據。詳見 GAME_RUNTIME.md。
+
+### 2026-09-10 WORLD_REGISTRY：已知格持久化與完整輸入
+
+WR 判準由 `cd4c1b3` 先凍。首跑真 server 的遠端 chunk 已不可讀，但 Forge Unload 事件
+尚未送出，結果仍為 CURRENT；55 秒首敗保留，沒有放寬等待條件。增加每 tick 至多
+256 個必要 chunk 的可讀性檢查，apply 前重查完整範圍後，同場景卸載/重啟/載回通過。
+13 項真 server gates、487 登錄/459 PASS/28 SKIP、两條可編譯行為故障臂與 jar gate 已驗。
+這只完成已知格索引與整維度延後；#86 物件/區域排程、#17 identity/lineage 未完成，
+效能仍待量測。N14 舊消費端守門保留，未把資料完整性測試當作高性能或 v1 資格。
+
+### 2026-09-10 CONSTRUCTION_IDENTITY：永久遊戲構件與譜系
+
+判準先凍於 `735fa0a`；唯讀權限及原生 member 0 入口由 `e30c416` 在命令實作前加凍。
+首跑 Forge 保存測試绕過正式 dirty notification，導致重開讀到舊 graph；保留 13 PASS/1 FAIL
+原 XML，將 publish/dirty 集中至同一入口後原斷言通過。邊界複查另抓到拆分時一段同批重建，
+另一段錯留母 ID；首敗保留，計算母 ID 出現於所有子段後全部子段取得新身份，不放寬 split 判準。
+終值 epoch 複查另抓到拒絕前已記 destruction，造成拒絕存檔無法重讀；保留首敗，先檢查上界後
+原圖及拒絕理由都能保存/重開。最終 Windows 505 登錄/477 PASS/28 SKIP；兩條具名可編譯故障臂咬住 ID 重用及 schema bypass。
+真 server 保存原生 OFF、拆分/合併/重建、跨 chunk 卸載/重啟/恢復、原生多元素對一物件證據。
+這是遊戲身份與建造譜系，不是引擎抽取、damage、剛體或 v1 完成；详 evidence/CONSTRUCTION_IDENTITY。
+
+### 2026-09-10 MODULE_PIPELINE_PROFILE：模組階段成本基線
+
+`5d9a078` 先凍預設 OFF、有界記錄器與 A49/F576/M832，各 10 次暖身/40 次量測。
+三場景首跑全保留、14 項功能門通過；所有時間依原分級為 Recorded，沒有事後補性能勝負線。
+M832 背景 worker p95 65.627 ms、含引擎的原生呼叫 p95 48.566 ms、apply p95 1.611 ms；
+兩次 native call/resolve，nested stages 互相重疊，不相加/相減成引擎 CPU 時間或 FPS。
+832 格混合結果的 display packet 已截取為 259753 B，明示 omission；不假稱所有元素都送到。
+512 登錄/483 PASS/29 SKIP，Linux 指定18項無跳過；真大回覆擴容與記錄開關前後樣本一致。
+原 counted BsiRetryGate fixture 此機未備，本輪不冒稱又驗到 solve vtable 一次；其原證據保留。
+單一共享開發機的首批基線未驗統計穩定性、真玩家網路、FPS、save/容量上界或 edit storm。
+原 41.7 ms FAIL/Linux 紅帳與 v1 高性能/封裝/物理展示全部門檻不降，詳 evidence/MODULE_PIPELINE_PROFILE。
+
+### 2026-09-10 REGISTRY_SCALING：不可變 entry 的驗收範圍
+
+`a04b538` 先凍四種容量/分布、兩種編輯、三個 JVM fork；`51c5d69` 根據原始首批快照
+787 ms/分組 9178 ms 先凍相對性能與配置預算。首次候選測試抓到 Java 17 的 wrapped
+HashMap entry 陣列可改值；沿同一路徑也抓到既有 Graph wrapped TreeMap 的可寫 entry。
+保留兩份首敗，先補凍 ordered record/range views 的不可变出口再改儲存；這是修正範圍擴展，
+原性能/配置預算、identity/bytes 不變，未降低門檻。最終效能結論待完整比較，不能提前稱過門。
+
+RS 首次完整對照：600 份 bytes 雜湊一致、Linux 指定36項無跳過通過，但 D4096/ONE
+object encode 4.427358 ms 超過 3.803510 ms，D131072/BURST64 coverage encode
+4.130830 ms 超過 3.560641 ms；兩條性能門仍判 FAIL。完整首批保存，不靠主流程加速抵銷。
+先加凍 codec 的精確配置/宣告 bytes 重用及舊版 golden，再改序列化；原 baseline、場景、
+fork 數、暖身與每條預算一律不動。新版若仍輸，照登；SP 尚未開始量測。
+
+RS serializer 候選 `bd9053d`：600 份 bytes 仍一致、Linux 37項無跳過；object encode 已過門，
+但 coverage ONE 在 D131072 為 4.240746 > 4.129652 ms，在 F131072 為
+3.777959 > 3.269339 ms，兩條仍 FAIL。先凍不變 coverage 的有界編碼 cache、所有變更失效
+與 caller-owned 回傳/故障臂，再改索引；原性能線不移，額外首次配置與保留記憶體照登。
+
+
+RS cached candidate `d1457a7`: 600 payload pairs match and 45 selected Linux tests
+pass without skips. D32768/BURST64 coverage encode still FAILS its original budget
+(2.146288 > 2.039887 ms). Preserve the complete third run. Before further code
+changes, freeze reuse of the existing canonical list snapshot during encoding,
+including its bounded retention and extra cold-call allocation when no prior reader
+requested the list. No scene, warmup, fork, percentile or budget is changed.
+
+
+RS final `0736baa` passes the unchanged 64 timing and 16 allocation budgets with
+600 identical payload pairs. All three failed predecessor candidates remain failed
+in their original evidence. Final Windows 490 PASS/29 SKIP; Linux selected45 PASS,
+zero skips. The declared memory losses remain visible. No v1 FPS/tick/performance
+or engine capability gate is lowered. See evidence/REGISTRY_SCALING/RESULTS.md.
+
+
+### 2026-09-10 SAVE_COMPRESSION
+
+`201e081` froze compression latency/size/allocation and compatibility criteria
+before `4e9e927` changed the writer. All 900 paired payloads, 36 timing and 36
+allocation budgets, and every 1.50x file-size limit pass on the first candidate.
+The unchanged SP baseline remains Recorded, not retroactively assigned a pass/fail.
+Size grows about18% at131K cells; synchronous save still blocks for tens to over
+100ms. No v1 tick/FPS, native or visual gate is lowered. Linux full Forge109 PASS,
+zero skips; Windows108 PASS/1 SKIP. See evidence/SAVE_COMPRESSION/RESULTS.md.
+
+### 2026-09-10 CLIENT_RENDER_PROBE: explicit supplemental visual workflow
+
+The installed Windows client still has a security permission dialog. A separate
+Linux development client/software renderer may provide a real baseline before
+source-level material/HUD edits. This changes CM's preparation order, not its
+acceptance: resulting visuals are downgraded to supplemental candidates, and
+CM-1..6/N25 remain unaccepted until their original installed-client/profile gates
+run. The installed jar and CM server remain untouched. No screenshot or synthetic
+delivery substitutes for Windows or native release qualification. CRP criteria
+are in docs/CLIENT_RENDER_PROBE.md, committed before probe code or launch.
+
+CRP third attempt collected16 real screenshots and passed45 coordinator checks.
+The first onboarding timeout and second probe-observation failure remain failed.
+Revision44 cached bootstrap and revision116 model refusal were observed over the
+actual socket. Direction models and1280px long-message readability visibly fail
+in the baseline. This permits supplemental source candidates, not CM/N25 acceptance.
+See evidence/CLIENT_RENDER_PROBE/RESULTS.md; no production engine/delivery edit.
+
+### 2026-09-10 HUD_READABILITY
+
+`59e7809` froze the supplemental HUD criteria before the display edit. The first
+completed candidate passes the16 original scenes but its extra scale3 capture
+exposes a vanilla login-toast overlap; retain it. Final `299750b` narrows to44%
+inside the original48% maximum and passes the same45 assertions,16 identical
+observed-state comparisons, and2 additional real large-GUI captures with the toast
+still visible and separated. The first missing-key build and launcher setup error
+remain recorded. No CM/N25, unobserved state or native release gate is lowered.
+See evidence/HUD_READABILITY/RESULTS.md for exact scope and original failures.
+
+### 2026-09-10 NATIVE_CANDIDATE_RUNTIME
+
+`d96d98a` froze #120/#119 integration before merge `c2a1b94`. The delivered42e10f5
+libraries and current jar now pass full Windows509/12 platformSKIP and Linux520/1
+platformSKIP, 48-frame direct/extracted replay on both platforms, bundle/source
+negative arms and production-bytecode guards. Engine originals remain read-only.
+The real bundled-development-resource game run passes16 server statuses,24
+synthetic events and45 client assertions/16 captures. First empty-world setup and
+missed-config-notification failures remain failed; third setup explicitly observes
+OFF and seeds the required model before the unchanged smoke passes. No criteria
+were lowered. Installed-jar/Windows CM/N25, general file-watch reliability, physics
+independence, FPS and v1 are not established by these checks. See
+evidence/NATIVE_CANDIDATE_RUNTIME/RESULTS.md and its exact-source raw receipts.
+
+### 2026-09-10 INSTALLED_NATIVE_SERVER
+
+`474fb12` froze ordinary installed-jar checks before installation or metadata changes.
+Control NCR jar and final `ae6a4eb` jar each pass10 native server statuses, normal save/
+shutdown and identical displayed native readouts/cache reuse after restart. All4 starts
+use generated Forge run.sh and installed mods/ classes, with source=BUNDLED and expected
+SO bytes; no development classpath or probe enters the jar.63 official profile dependencies
+are independently rechecked. The sole changed jar entry is mods.toml:204 classes and both
+native libraries remain byte-identical, so NCR executable tests are explicitly reused.
+First installer HTTP403 and first bundle-child encoding failure remain FAIL; the same
+official installer hash and unchanged9 negative arms pass with corrected transport/encoding.
+This accepts a Linux installed dedicated-server candidate only. Windows CM/N25, installed
+client, visuals/input/FPS and v1 are not lowered. See evidence/INSTALLED_NATIVE_SERVER/RESULTS.md.
+
+
+### 2026-09-10 NATIVE_V15_CONSUMER and CT player persistence
+
+Native criteria1972f7f preceded the Main #126 merge and SDK profile/replay edits.
+Gates1–5 pass with published source42ba7eb9, contract5d4367f40de8 and jar9d8cb6795e9c.
+573 registered tests: Windows561 PASS/12 platform SKIP, Linux572 PASS/1 platform SKIP.
+Both platforms preserve96 full-frame responses across3 CAPI and3 production jar/JNA
+sessions. Installed Linux Forge passes10 checks and normal restart/cache comparison.
+The first stale-NOTICE incremental artifact, withheld-copy replay setup failures and
+incorrect JNA source-jar selection are retained. Incremental input criteriaa132e32
+preceded fix1a60418; successful-build/stale-artifact mutation is caught. Gates6 client
+and7 exact-head CI remain open. No Windows CM/N25/FPS or v1 requirement is lowered.
+See evidence/NATIVE_V15_CONSUMER/RESULTS.md for source/artifact/raw-byte scope.
+
+CT criteria60f02f6/cf0a22f/4dbff5a preceded player adapter changes.30 core and15 Forge
+participant tests,37 interrupted/recovery JVM pairs per platform and3 compiled arms
+pass. First archive-helper failures and exact-head CI docs-count failure remain
+recorded; corrected9976fc0 CI has4 successful jobs and15 skipped native steps.
+Player adapters have no production Forge construction caller; CT-1..9 remain open.
+Recorded save costs, including the Windows small-fixture p95 loss, are not FPS gates.
+
+Native v1.5 client follow-up at98dbd54 passes127 real-model,14 vanilla-interaction,
+45 original scene and6 extra capture checks,22 PNGs. Missing Gradle-copy input,
+onboarding timeout and failed profile preparation remain in the first-attempt
+records. Gate6 geometry/HUD passes; actual-game shell-indicative warning remains
+unobserved/open. No native C14 result is relabeled as a client observation. CI
+f7f9533/run34441250786 passes4 jobs with15 native step SKIPs. See
+evidence/NATIVE_V15_CONSUMER/client/RESULTS.md. No original gate is lowered.
+
+### 2026-09-10 NATIVE_VERDICT_API
+
+Criteria d386ced precede9558351. Public result colours now require the supplied
+native overload flag; unused numeric hatch is removed. Windows561 PASS/12 platform
+SKIP, Forge packet/jar checks and37 ordinary-jar display readouts pass unchanged.
+Linux15-test control/restored pass; the compiled ignored-flag mutant fails the
+boundary assertion. The first single-changed-class expectation FAILS because
+LegendStop.class also has8 line-number bytes changed180→169. Its complete code,
+descriptors and remaining bytes are identical. This follows the frozen criterion's
+extra-entry investigation, not a hidden replacement of the original assertion.
+Qualified artifact scope explicitly includes that debug delta. See
+evidence/NATIVE_VERDICT_API/RESULTS.md; no native, UI scene or v1 gate is lowered.
+
+### 2026-09-10 CT_JOURNAL_BOOTSTRAP
+
+019ca33 froze domain discovery and bounded key inventory before471fad9. New5
+file tests pass on both platforms; malformed-manifest integrity bypass compiles
+and is caught, with5-test control/restored passing. Full578 registered:
+Windows566 PASS/12 platform SKIP; Linux577 PASS/1 platform SKIP. Both existing37
+interrupted/recovery JVM runs and owner checks pass; those remain synthetic file
+participants. Ordinary jar changes only FileTransactionJournal.class;386 entries
+including both native libraries/resources remain identical. No game transaction,
+metadata replay, FPS or CT-1..9 completion claim. See
+evidence/CONSTRUCTION_TRANSACTIONS/JOURNAL_BOOTSTRAP/RESULTS.md.
+
+### 2026-09-10 CT_MANUFACTURED_METADATA
+
+Criteria a409ada/aba5aac precede4737e3c; c1d8ebb fixes the cost protocol before its
+profile driver. Permanent manufactured IDs, committed-journal reconstruction,
+strict ownership and irreversible whole-build undo metadata pass18 new tests on
+both platforms. Full596 registered:Windows584 PASS/12 platform SKIP, Linux595
+PASS/1 platform SKIP. Both37 interrupted/recovery JVM runs and owner checks pass.
+Two compiled planner/committed-validator removals fail ownership and undo assertions;
+control/restored18 pass. The first14-test source/XML remains pre-extension evidence.
+Jar1315dce1e785 adds14 classes; all387 old entries/236 classes remain byte-identical.
+Both native libraries/resources remain unchanged. The864 profile operations retain
+all samples, matching fingerprints and2400 identical copied files per platform.
+Times are Recorded only, with concurrent same-host execution and the Linux1024
+reopen313ms p95 tail retained. No Forge construction caller, world/player atomicity,
+refund authorization, CT-1..9, FPS or v1 completion follows from metadata alone.
+See evidence/CONSTRUCTION_TRANSACTIONS/MANUFACTURED_METADATA/RESULTS.md.
+
+### 2026-09-10 CT_CHUNK_PARTICIPANT
+
+f693306 freezes chunk storage criteria before70d1112. Whole-batch canonical-image
+admission, complete store-future draining, force-before-readback, error latching and
+new-adapter synchronization pass7 tests, including actual region-file reopen.
+Windows/Linux full Forge131 PASS/0 SKIP; unchanged472-test core evidence is reused
+from4737e3c, not described as a fresh run. Current603 registration has Windows591
+PASS/12 platform SKIP and Linux602 PASS/1 platform SKIP coverage. Both compiled
+force/lost-capability mutants fail behavior;7-test control/restored pass. All401
+old jar entries/250 classes remain identical;4 adapter classes are added.
+The live level binding/capture is not exercised and no production construction
+caller exists. Review finds vanilla chunk reads allocate NBT with an unlimited
+accounter before canonical admission, while ChunkSerializer can swallow capability
+errors. These remain open live-integration limitations, not relaxed corrupt-disk
+bounds or accepted capture guarantees. No CT-1..9/FPS/v1 gate is lowered. See
+evidence/CONSTRUCTION_TRANSACTIONS/CHUNK_PARTICIPANT/RESULTS.md.
+
+### 2026-09-10 CT_BOUNDED_CHUNK_READ
+
+b8b3f7a precedes production0c95eea and source snapshot bca242a. The same-worker
+reader caps decoded bytes before NBT tag allocation, preserves strict parsing and
+refuses pending images. Both Forge137-test suites and13-test chunk controls pass;
+unchanged472-test core evidence is reused. Current609 registration has Windows597
+PASS/12 platform SKIP and Linux608 PASS/1 platform SKIP coverage. The compiled
+stream-cap and vanilla-parser mutants each fail their selected behavioral assertion;
+control/restored13 pass, and all raw region fixtures are retained.
+Ordinary jar4bf732d83a1e contains the exact four AT directives, changes only the
+storage delegate and adds one reader class. The separate installed harness has no
+AT or production classes;12 checks exercise actual mods/ classes, a real level's
+complete NBT checkpoint/after/restore, unchanged chest items and corrupt-file refusal.
+Normal server exit0/port release are verified. No Minecraft crash recovery, throwing
+capability/custom-hook capture, full construction, socket/UI, FPS or v1 gate is
+substituted or lowered. See evidence/CONSTRUCTION_TRANSACTIONS/BOUNDED_CHUNK_READ/RESULTS.md.

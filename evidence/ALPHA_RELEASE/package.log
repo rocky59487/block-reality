@@ -1,0 +1,1555 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :api:compileTestJava NO-SOURCE
+> Task :api:processTestResources NO-SOURCE
+> Task :api:testClasses UP-TO-DATE
+> Task :api:test NO-SOURCE
+> Task :core:compileJava UP-TO-DATE
+> Task :core:processResources
+> Task :core:classes
+> Task :core:compileTestJava UP-TO-DATE
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses UP-TO-DATE
+
+> Task :core:test
+
+AnalysisDeliveryClockTest > travelRequiresFreshBootstrapAndKeepsTheConnectionWatermark() PASSED
+
+AnalysisDeliveryClockTest > rejectsOtherDimensionsWithoutChangingState() PASSED
+
+AnalysisDeliveryClockTest > rejectsAnotherSourceUntilBootstrap() PASSED
+
+AnalysisDeliveryClockTest > aNewSequenceCanRecoverARefusalAtTheSameRevision() PASSED
+
+AnalysisDeliveryClockTest > aNewConnectionStartsANewOrderingDomain() PASSED
+
+AnalysisDeliveryClockTest > rejectsLateAndDuplicateUpdates() PASSED
+
+AnalysisDeliveryClockTest > rejectsImpossibleRevisionsBeforeBinding() PASSED
+
+DisplayTrackPrecisionTest > oneFloatRoundTripStaysInsideTheDisplayBudget() PASSED
+
+DisplayTrackPrecisionTest > theBoundaryValuesTheClassifierCaresAboutSurvive() PASSED
+
+NativeOnlyResultsTest > everyPublicSnapshotConstructorRequiresAnExplicitVerdict() PASSED
+
+NativeOnlyResultsTest > suppliedFlagsSurviveNumericValuesThatSuggestTheOppositeVerdict() PASSED
+
+NativeOnlyResultsTest > absentDisplayAndNeutralAxisCannotBeReconstructedFromForcesOrOppositeSigns() PASSED
+
+RevisionGateConcurrencyTest > acceptForCommitRacingBumpNeverAcceptsASupersededResult() PASSED
+
+RevisionGateConcurrencyTest > concurrentBumpsAreNeverLost() PASSED
+
+RevisionGateTest > oneMechanismDoesNotBlankTheWholeWorld() PASSED
+
+RevisionGateTest > aResultForASupersededWorldNeverCommits() PASSED
+
+RevisionGateTest > revisionsAreMonotonic() PASSED
+
+RevisionGateTest > currentResultCommits() PASSED
+
+RevisionGateTest > staleResultsAreStillDrawableButLabelled() PASSED
+
+RevisionGateTest > aMechanismNeitherCommitsNorDrawsAsAStressField() PASSED
+
+RevisionGateTest > restoredJournalFloorIsMonotonicAndInvalidatesEarlierAcceptedResults() PASSED
+
+RevisionGateTest > revisionFloorRejectsNegativeAndDoesNotLoopThroughLargeGaps() PASSED
+
+RevisionGateTest > engineFailureDrawsNothing() PASSED
+
+RevisionGateTest > aWorldOfNothingButMechanismsHasNothingToDraw() PASSED
+
+ShellFieldSpecTest > vonMisesOfPureShearIsRootThreeTau() PASSED
+
+ShellFieldSpecTest > naturalCoordinatesInvertThePositionMapping() PASSED
+
+ShellFieldSpecTest > biaxialVonMisesFollowsTheDefinition() PASSED
+
+ShellFieldSpecTest > aPointOutsideTheFacetReportsItRatherThanPretending() PASSED
+
+ShellFieldSpecTest > signedPrincipalKeepsTheSignAndMatchesUniaxialStress() PASSED
+
+ShellFieldSpecTest > peakIsTheLargestMagnitudeOnEitherFace() PASSED
+
+ShellFieldSpecTest > cornerValuesAreReproducedExactlyAtTheCorners() PASSED
+
+ShellFieldSpecTest > pureBendingIsEqualAndOppositeOnTheTwoFaces() PASSED
+
+ShellFieldSpecTest > offNormalDistanceMeasuresThroughTheThickness() PASSED
+
+ShellFieldSpecTest > pureMembraneIsConstantThroughTheThickness() PASSED
+
+ShellFieldSpecTest > positionsBeyondTheFacesAreClampedNotExtrapolated() PASSED
+
+ShellFieldSpecTest > theNeutralSurfaceSitsWhereTheTwoTermsCancel() PASSED
+
+StressFieldSpecTest > axialIsCompressionPositiveOnTheWireAndTensionPositiveOut() PASSED
+
+StressFieldSpecTest > theTwoBendingTermsCarryOppositeSigns() PASSED
+
+StressFieldSpecTest > positionsAlongTheMemberAreClampedToItsLength() PASSED
+
+StressFieldSpecTest > worldPointsMapOntoTheSectionRatherThanOutsideIt() PASSED
+
+StressFieldSpecTest > aCantileverReproducesTheClosedFormAtEveryPoint() PASSED
+
+StressFieldSpecTest > theUniformLoadParabolaIsExactNotSampled() PASSED
+
+StressFieldSpecTest > biaxialBendingSuperposes() PASSED
+
+StressFieldSpecTest > peakIsFoundEvenWhenItIsInTheMiddle() PASSED
+
+UnassignedReportingTest > an unknown group still carries its blocks and can still be named PASSED
+
+UnassignedReportingTest > N17-e: fully supported and a plate strip do not share a translation PASSED
+
+UnassignedReportingTest > N18-a: each buckling state has its own wire token and its own sentence PASSED
+
+UnassignedReportingTest > the extraction failures are the ones a test load can never sit on PASSED
+
+UnassignedReportingTest > an unknown code does NOT authorise deleting the load PASSED
+
+UnassignedReportingTest > the result separates every unassigned block from the load-refusing subset PASSED
+
+UnassignedReportingTest > every code this build knows survives a trip through the wire spelling PASSED
+
+UnassignedReportingTest > only COMPUTED means there is a number to show PASSED
+
+UnassignedReportingTest > N17-c: a code from a newer engine is UNKNOWN, not an exception PASSED
+
+UnassignedReportingTest > the engine never says disabled-by-scale; only the host can know that PASSED
+
+UnassignedReportingTest > nothing unassigned means both views are empty, not merely small PASSED
+
+UnassignedReportingTest > a mechanism block and a fully supported block ARE elements; loads stay PASSED
+
+UnassignedReportingTest > a reply that said nothing about buckling is UNKNOWN, not COMPUTED PASSED
+
+BsiAnalysisResultTest > unsupportedOrContradictoryBucklingIsNotFlattened() PASSED
+
+BsiAnalysisResultTest > missingSectionsAndOwnersAreRefused() PASSED
+
+BsiAnalysisResultTest > malformedIslandCollectionsAndFactorsFailClosed() PASSED
+
+BsiAnalysisResultTest > allHomogeneousStatesRetainTheirMeaning() PASSED
+
+BsiAnalysisResultTest > allBlocksContributeEvenWhenTheLastOneIsClear() PASSED
+
+BsiAnalysisResultTest > globalFlagsAreIndependentOfNumericThresholds() PASSED
+
+BsiAnalysisResultTest > all125MixedWorldsPreserveEveryIslandAndGlobalRefusals() PASSED
+
+BsiAnalysisResultTest > malformedValuesNeverBecomeHealthyDefaults() PASSED
+
+BsiAnalysisResultTest > computedWorldUsesSmallestSuppliedFactorAndChecksHeader() PASSED
+
+BsiAnalysisResultTest > stalePartialAndErrorRepliesCannotReuseSuccessfulFlags() PASSED
+
+BsiAnalysisResultTest > refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds() PASSED
+
+BsiAnalysisResultTest > incompleteQualityOrDisplayCannotBecomeCommitResults() PASSED
+
+BsiAnalysisResultTest > emptyCollectionsDistinguishDisabledFromUnevaluated() PASSED
+
+BsiAnalysisResultTest > legacyConstructorRetainsItsDistinctBoundaryConvention() PASSED
+
+BsiBeamDisplayTest > surfaceTilesSplitWithoutSmearingAcrossTheJump() PASSED
+
+BsiBeamDisplayTest > neutralAxisIsSuppliedDataAndSegmentsDoNotCrossMissingOrDuplicateStations() PASSED
+
+BsiBeamDisplayTest > malformedDataAndExternalMutationCannotReachTheDisplay() PASSED
+
+BsiBeamDisplayTest > unequalVisualExtentsRetainIndependentNativeFacesAndBothSidesOfAJump() PASSED
+
+BsiBeamDisplayTest > boundedInterpolationUsesFaceCentresAndClamps() PASSED
+
+BsiBeamDisplayTest > samplesUnitsAndDiagnosticConventionComeFromWire() PASSED
+
+BsiBeamDisplayTest > revisionSectionsAndCatalogueAreRequiredButRequestedZeroIsValid() PASSED
+
+BsiBeamDisplayTest > duplicateStationsRetainBothSidesAndNeverInventAGoverningSide() PASSED
+
+BsiBeamDisplayTest > nativeVerdictNeverDependsOnDisplayedDc() PASSED
+
+BsiBucklingTest > localCriticalSurvivesWorldRefusalWithoutReclassification() PASSED
+
+BsiBucklingTest > worldMinimumOnlyExistsForComputedSummary() PASSED
+
+BsiBucklingTest > frozen125WorldRowsPreserveEveryIsland() PASSED
+
+BsiBucklingTest > malformedIdentityKindStateAndFactorsAreRefused() PASSED
+
+BsiBucklingTest > eigenIsAdditiveAndBudgetIsBounded() PASSED
+
+BsiFractureTest > malformedPayloads() > source bytes PASSED
+
+BsiFractureTest > malformedPayloads() > negative artifact PASSED
+
+BsiFractureTest > malformedPayloads() > unknown group PASSED
+
+BsiFractureTest > malformedPayloads() > reserved cell PASSED
+
+BsiFractureTest > malformedPayloads() > unrepresented broken PASSED
+
+BsiFractureTest > malformedPayloads() > bad plane PASSED
+
+BsiFractureTest > malformedPayloads() > nonfinite physical PASSED
+
+BsiFractureTest > malformedPayloads() > negative tensor PASSED
+
+BsiFractureTest > malformedPayloads() > fragment parent start PASSED
+
+BsiFractureTest > malformedPayloads() > fragment flags PASSED
+
+BsiFractureTest > malformedPayloads() > foreign parent PASSED
+
+BsiFractureTest > malformedPayloads() > duplicate parent PASSED
+
+BsiFractureTest > malformedPayloads() > event duplicate cell PASSED
+
+BsiFractureTest > malformedPayloads() > event fragment cell PASSED
+
+BsiFractureTest > malformedPayloads() > invalid capacity face PASSED
+
+BsiFractureTest > malformedPayloads() > event reserved PASSED
+
+BsiFractureTest > malformedPayloads() > nonfinite utilization PASSED
+
+BsiFractureTest > malformedHeaders() > wrong id PASSED
+
+BsiFractureTest > malformedHeaders() > wrong method PASSED
+
+BsiFractureTest > malformedHeaders() > wrong envelope revision PASSED
+
+BsiFractureTest > malformedHeaders() > wrong after PASSED
+
+BsiFractureTest > malformedHeaders() > wrong namespace PASSED
+
+BsiFractureTest > malformedHeaders() > wrong domain PASSED
+
+BsiFractureTest > malformedHeaders() > wrong request PASSED
+
+BsiFractureTest > malformedHeaders() > zero context PASSED
+
+BsiFractureTest > malformedHeaders() > zero sequence PASSED
+
+BsiFractureTest > malformedHeaders() > remaining count PASSED
+
+BsiFractureTest > malformedHeaders() > steps beyond budget PASSED
+
+BsiFractureTest > malformedHeaders() > unknown flags PASSED
+
+BsiFractureTest > malformedHeaders() > physical stride 81 PASSED
+
+BsiFractureTest > malformedHeaders() > cell stride 143 PASSED
+
+BsiFractureTest > malformedHeaders() > fragment stride 95 PASSED
+
+BsiFractureTest > malformedHeaders() > duplicate key PASSED
+
+BsiFractureTest > malformedHeaders() > non-JSON number PASSED
+
+BsiFractureTest > malformedHeaders() > unknown section PASSED
+
+BsiFractureTest > oracleReceiptDecoding() > L PASSED
+
+BsiFractureTest > oracleReceiptDecoding() > mixed-supported PASSED
+
+BsiFractureTest > oracleReceiptDecoding() > mixed-free PASSED
+
+BsiFractureTest > oracleReceiptDecoding() > mechanism-rollback PASSED
+
+BsiFractureTest > oracleReceiptDecoding() > mechanism-prefix PASSED
+
+BsiFractureTest > oracleReceiptDecoding() > topology-B PASSED
+
+BsiFractureTest > oracleReceiptDecoding() > topology-C PASSED
+
+BsiFractureTest > oracleReceiptDecoding() > support-removed PASSED
+
+BsiFractureTest > oracleReceiptDecoding() > support-retained PASSED
+
+BsiFractureTest > remainingRefusesDifferentSourceAtSameStamp() PASSED
+
+BsiFractureTest > completeReceiptIsImmutableAndRetainsOrphanedGround() PASSED
+
+BsiFractureTest > planHashBindsSourceIdentityOptionsAndCanonicalOrder() PASSED
+
+BsiFractureTest > strictJsonRetainsExactI64AndRejectsNonJsonWhitespace() PASSED
+
+BsiFrameAndResponseTest > headersCarryTheirKeysInSchemaOrder() PASSED
+
+BsiFrameAndResponseTest > sectionsAreReadWhereTheyLie() PASSED
+
+BsiFrameAndResponseTest > decodingNeverThrowsForAnyTruncationOfAValidFrame() PASSED
+
+BsiFrameAndResponseTest > theThreeBlockFlagsAreIndependentBits() PASSED
+
+BsiFrameAndResponseTest > badMagicAndInconsistentLengthsAreRefused() PASSED
+
+BsiFrameAndResponseTest > anErrorFrameCarriesItsTokenNotItsProse() PASSED
+
+BsiFrameAndResponseTest > aFrameRoundTrips() PASSED
+
+BsiMemberGeometryTest > handPackedGeometryKeepsSiAndSampleOrder() PASSED
+
+BsiMemberGeometryTest > snapshotsAndSourceListsAreImmutable() PASSED
+
+BsiMemberGeometryTest > invalidFramesAreRejected() PASSED
+
+BsiMemberGeometryTest > everyNonfiniteAndMisorderedSampleIsRejected() PASSED
+
+BsiMemberGeometryTest > missingAndEmptyAreDistinctAndTruncationsFail() PASSED
+
+BsiMemberGeometryTest > idsAndReservedBitsMustMatch() PASSED
+
+BsiRecordsTest > aBlockRecordIsTheFortyBytesTheContractDescribes() PASSED
+
+BsiRecordsTest > aLoadRecordIsSixtyFourBytesWithZeroMoments() PASSED
+
+BsiRecordsTest > everyRecordSizeMatchesTheSchemaShippedInThisJar() PASSED
+
+BsiRecordsTest > outOfRangeFieldsAreRefusedAtConstruction() PASSED
+
+BsiRecordsTest > blocksTravelInCanonicalOrderAndDuplicatesAreNamed() PASSED
+
+BsiRecordsTest > twoLoadsOnOneCellAreTwoLoadsOrderedByTheirBytes() PASSED
+
+BsiRecoveryTest > facetsRequireTheirSurfacesAndCellIndexWithEqualCardinality() PASSED
+
+BsiRecoveryTest > oldHeadersAreByteIdenticalAndStorageDoesNotImplyDisplay() PASSED
+
+BsiRecoveryTest > allElevenStationFieldsUseTheSelectedStorageIncludingPositionAndMissingAxes() PASSED
+
+BsiRecoveryTest > surfacesKeepTopBottomCornerAndScalarOrderAtBothWidths() PASSED
+
+BsiRecoveryTest > parentRangesUseUnsignedArithmeticAndCannotOverflow() PASSED
+
+BsiRecoveryTest > duplicatesOverlapsAndDualStorageAreRejectedButUnknownSectionsRemain() PASSED
+
+BsiRecoveryTest > everyEmittedRecoveryScalarRejectsNonfiniteValuesExceptMissingAxes() PASSED
+
+BsiRecoveryTest > malformedDirectoryNeverBecomesAnEmptyReadback() PASSED
+
+BsiRecoveryTest > validatedPayloadCannotBeChangedThroughCallerAliases() PASSED
+
+BsiRecoveryTest > everyFacetFieldAndItsChildRangesDecodeFromSpecifiedOffsets() PASSED
+
+BsiRecoveryTest > vocabularySectionsAreNameIdTablesAndNeverBinaryRecords() PASSED
+
+BsiShellDisplayTest > displaySamplesAndGeometryAreImmutable() PASSED
+
+BsiShellDisplayTest > legacyDegenerateGeometryKeepsDiagnosticsWithoutADrawableField() PASSED
+
+BsiShellDisplayTest > verdictIsIndependentOfTheDisplayedDc() PASSED
+
+BsiShellDisplayTest > unitsCornerOrderFacesAndFrameComeFromRecovery() PASSED
+
+BsiShellDisplayTest > nonFiniteSamplesAndDegenerateFramesAreRejected() PASSED
+
+BsiShellDisplayTest > scalarInterpolationClampsAndSharesTheMeshScale() PASSED
+
+BsiShellDisplayTest > wrongRevisionMissingResponseAndUnresolvedVocabularyAreRejected() PASSED
+
+BsiShellDisplayTest > meshPickingUsesSuppliedGeometryAndNormal() PASSED
+
+BsiStationIdentityTest > exactIdentityAndSourceGoverningReachTheSharedSamples() PASSED
+
+BsiStationIdentityTest > invalidNumbersSidesFlagsAndReservedAreRejected() PASSED
+
+BsiStationIdentityTest > missingGoverningAndRequestedZeroAreExplicit() PASSED
+
+BsiStationIdentityTest > immutableIdentityAndAllTruncations() PASSED
+
+BsiStationIdentityTest > pairingOrderAndGoverningMustBeConsistent() PASSED
+
+BsiVocabularyTest > refusesRepliesForAnotherSessionRequestOrRevision() PASSED
+
+BsiVocabularyTest > usesReturnedIdsInsteadOfDeclarationOrder() PASSED
+
+BsiVocabularyTest > refusesMalformedAndAmbiguousIdentityTables() PASSED
+
+NoSubprocessTest > theInProcessEngineStartsNothing() PASSED
+
+NoSubprocessTest > theShippedCodeStartsNoProcessesExceptTheOnesNamedHere() PASSED
+
+PipelineProfileTest > stopAndRestartRejectOldWorkAndPreserveImmutableStoppedSnapshot() PASSED
+
+PipelineProfileTest > closeIsIdempotentAndInvalidDurationsAreNotRecorded() PASSED
+
+PipelineProfileTest > concurrentCompletionsAndCountersStayBounded() PASSED
+
+PipelineProfileTest > scheduledWorkKeepsItsOriginalSessionThroughWorkerAndDelivery() PASSED
+
+PipelineProfileTest > exactNearestRankQuantilesAndBoundedRollingWindow() PASSED
+
+PipelineProfileTest > disabledDoesNotReadClockAllocateSpansOrStoreSamples() PASSED
+
+BsiAnalysisNativeTest > realCommitResultsShareNativeFlagsSamplesAndLifecycle() PASSED
+
+BundledNativesTest > theUnpackedLibraryIsNotExecutable(Path) PASSED
+
+BundledNativesTest > aDevelopmentJarWithNoLibrarySaysSoAndCarriesOn(Path) PASSED
+
+BundledNativesTest > aFiveFieldManifestIsRefusedRatherThanHalfUnderstood() PASSED
+
+BundledNativesTest > aReplaceRefusedByAnOpenHandleAdoptsWhatIsAlreadyThere(Path) PASSED
+
+BundledNativesTest > aLibraryAlreadyInPlaceIsAdoptedWithoutRewriting(Path) PASSED
+
+BundledNativesTest > theShippedLoaderReadsFromTheJarWhenThereIsOne() PASSED
+
+BundledNativesTest > sevenFieldsCarryTheEngineVersionAndTheContractItWasBuiltAgainst() PASSED
+
+BundledNativesTest > unpackingNeverThrowsIntoTheModLoad(Path) PASSED
+
+BundledNativesTest > firstUseWritesTheLibraryUnderAHashNamedPath(Path) PASSED
+
+BundledNativesTest > theOverrideDirectoryBeatsTheCopyUnpackedFromTheJar(Path) PASSED
+
+BundledNativesTest > bytesThatDisagreeWithTheManifestUnpackNothing(Path) PASSED
+
+BundledNativesTest > anOlderLibraryAndUserFilesArePreserved(Path) PASSED
+
+BundledNativesTest > anUnsupportedPlatformIsToldWhatDidShipAndWhereToPutItsOwn(Path) PASSED
+
+BundledNativesTest > aManifestThatTriesToEscapeTheUnpackDirectoryIsRefused() PASSED
+
+BundledNativesTest > aContractFieldThatIsNotAHashIsRefused() PASSED
+
+EngineLocatorTest > thePropertyOutranksTheOverrideDirectoryAndTheEnvironmentOutranksTheBundledCopy(Path) PASSED
+
+EngineLocatorTest > platformAndFileNameFollowTheManifestSpelling() PASSED
+
+EngineLocatorTest > theSystemFormReadsTheSamePropertyTheBuildForwards(Path) PASSED
+
+EngineLocatorTest > theOverrideDirectoryWinsOverTheBundledCopy(Path) PASSED
+
+EngineLocatorTest > anInvalidExplicitPathCannotSelectADifferentBundledEngine(Path) PASSED
+
+EngineLocatorTest > theBundledCopyIsUsedWhenNothingOverridesIt(Path) PASSED
+
+EngineLocatorTest > configAndPropertyOutrankEverythingAndAbsenceIsReportedNotGuessed(Path) PASSED
+
+GameFractureIdentityTest > preservesExactRevisionNamespaceAndEngineAssignedIds() PASSED
+
+GameFractureIdentityTest > staleProductOrDirectionAtSamePositionCannotOwnCurrentSource() PASSED
+
+GameFractureIdentityTest > externalLoadsAndZeroIdentitiesCannotBeSilentlyOmitted() PASSED
+
+GameFractureIdentityTest > missingForeignAndDuplicateOwnersAreRefused() PASSED
+
+GameInputNativeTest > refusedVocabularyRedeclarationInvalidatesOldWorldAndNames() PASSED
+
+GameInputNativeTest > profilingObservesTheRealBridgeWithoutChangingNativeResults() PASSED
+
+GameInputNativeTest > declaredRectangularPresentationAxesAgreeWithDeliveredNativeFrames() PASSED
+
+GameInputNativeTest > fullGameVocabularyAndSnapshotReachTheRealEngine() PASSED
+
+GameWorldSnapshotTest > rejectsUnknownOrUnobservedInputsBeforeSending() PASSED
+
+GameWorldSnapshotTest > snapshotOwnsItsCollections() PASSED
+
+GameWorldSnapshotTest > includesAllSixObservedContactsOnceInCanonicalOrder() PASSED
+
+GameWorldSnapshotTest > preservesDeclaredAxesRotationJointAndSiValues() PASSED
+
+GameWorldSnapshotTest > shippedVocabularyUsesSiAndExplicitProductRoles() PASSED
+
+GameWorldSnapshotTest > contactsCommuteWithMirrorAndRotation() PASSED
+
+InProcessBucklingTest > actualBudgetRefusalAndGreenhillAreDistinct() PASSED
+
+InProcessBucklingTest > actualEigenAndMixedFlagsReachTheSharedAnalysis() PASSED
+
+InProcessEngineTest > thisBuildKnowsWhichContractItSpeaks() PASSED
+
+InProcessEngineTest > aCantileverUnderItsOwnWeightComesBackWithTheClosedFormReaction() PASSED
+
+InProcessEngineTest > aForeignContractHashIsRefusedAndNothingElseIsSent() PASSED
+
+InProcessEngineTest > anEngineThatIsNotOneIsRefusedWithAReason() PASSED
+
+InProcessEngineTest > openOptionsStayInsideWhatTheContractAccepts() PASSED
+
+InProcessRecoveryTest > nativeOptInSidesAndGoverningIdentityReachDisplay() PASSED
+
+InProcessRecoveryTest > nativeShellFramesAndSurfaceStorageAreCoherent() PASSED
+
+InProcessRecoveryTest > nativeBeamSamplesAndPointLoadSidesReachTheSharedDisplay() PASSED
+
+InProcessRecoveryTest > cantileverFaceSignsAndStorageMatchClosedForm() PASSED
+
+InProcessRecoveryTest > nativeShellRecoveryFeedsTheSameDisplayAndPickingPath() PASSED
+
+InProcessRecoveryTest > coupledSlabWeightAndTransformsAreInvariant() PASSED
+
+InProcessRecoveryTest > unifiedAnalysisKeepsTheNativeShellFlagsAndSamples() PASSED
+
+InProcessRecoveryTest > memberGeometryUsesActualAxesRotatedSectionAndF64WorldPositions() PASSED
+
+NativeCacheTest > darwinUsesTheSameNormalisationAsManifestSelection() PASSED
+
+NativeCacheTest > manifestReadIsBounded() PASSED
+
+NativeCacheTest > otherVersionsAndLegacyCacheArePreserved() PASSED
+
+NativeCacheTest > duplicatePlatformIsRejected() PASSED
+
+NativeCacheTest > contractMismatchIsRejectedBeforeOpeningLibraryOrAdoptingCache() PASSED
+
+NativeCacheTest > corruptCacheIsRepaired() PASSED
+
+NativeCacheTest > interruptedStreamPublishesNothingAndCleansTemporary() PASSED
+
+NativeCacheTest > fullHashAndPlatformArePartOfCacheIdentity() PASSED
+
+NativeCacheTest > deniedDestinationIsRecoverable() PASSED
+
+NativeCacheTest > overlongResourceStopsAtDeclaredSizePlusOne() PASSED
+
+NativeCacheTest > simultaneousUnpackConverges() PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > L PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > mixed-supported PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > mixed-free PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > mechanism-rollback PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > mechanism-prefix PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > topology-B PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > topology-C PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > support-removed PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > support-retained PASSED
+
+NativeFractureTest > oracleScenariosThroughProductionSession() > initial-mechanism PASSED
+
+NativeFractureTest > foreignSessionAndStoredTokensCannotCommit() PASSED
+
+NativeFractureTest > rejectedWorldAndOptionsPreserveLiveCandidateAndSource() PASSED
+
+NativeGameRuntimeTest > loadsLazilyReusesTheSessionAndKeepsDimensionsSeparate() PASSED
+
+NativeGameRuntimeTest > offNeverCallsTheLoader() PASSED
+
+NativeGameRuntimeTest > concurrentSubmissionsNeverEnterTheSameSessionTogether() PASSED
+
+NativeGameRuntimeTest > aLoadFailureStaysDisabledUntilExplicitReset() PASSED
+
+NativeGameRuntimeTest > closeRevokesBlockedResultsWithoutClosingAnActiveNativeCall() PASSED
+
+NativeGameRuntimeTest > timeoutRevokesAuthorityButDoesNotPretendToKillNativeWork() PASSED
+
+NativeGameRuntimeTest > resetWaitsForTheOldCallAndOpensAFreshSession() PASSED
+
+ProductFormTest > materialCellsNeverTurnLegacySectionNamesOrPanelAxesIntoPhysicalDimensions() PASSED
+
+ProductFormTest > undeclaredMissingAndUnsupportedProductsRemainExplicitlyUnresolved() PASSED
+
+ProductFormTest > changedCatalogueDimensionsReachTheShapeAndBothSamplingExtents() PASSED
+
+ProductFormTest > onlyFullFaceContactHidesAScanSurface() PASSED
+
+ProductFormTest > unequalDeclaredWidthsAndDepthsKeepTheirAxesInAllThreeOrientations() PASSED
+
+ProductGeometryTest > anExplicitBindingWinsOverTheMaterialDefaultButAbsentBindingUsesTheDeclaredDefault() PASSED
+
+ProductGeometryTest > missingPackagedCatalogueCannotPoisonTooltipClassInitialization() PASSED
+
+ProductGeometryTest > legacyMonolithSectionNamesNeverBecomeDimensionsAndPanelAliasesUseThickness() PASSED
+
+ProductGeometryTest > damagedOrAmbiguousDeclarationsRefuseWithoutFallbackDimensions() PASSED
+
+ProductGeometryTest > dimensionsComeFromTheDeclarationEvenWhenTheTokenSaysSomethingElse() PASSED
+
+ProductGeometryTest > catalogueExposesAllTenProductsIncludingTheUnplacedRebarDeclaration() PASSED
+
+JsonTest > malformedInputParsesToNullRatherThanThrowing() PASSED
+
+JsonTest > writerEscapesControlCharactersSoOneMessageStaysOneLine() PASSED
+
+JsonTest > plainIntegersSurviveAbove2Pow53() PASSED
+
+JsonTest > parsesTheProtocolShape() PASSED
+
+JsonTest > invalidEscapesAreAParseErrorNotALiteral() PASSED
+
+JsonTest > malformedNumbersAreAParseError() PASSED
+
+JsonTest > nullInputIsSafe() PASSED
+
+JsonTest > roundTripsNestedStructures() PASSED
+
+JsonTest > trailingGarbageRejectsTheWholeLine() PASSED
+
+JsonTest > deeplyNestedInputDoesNotBlowTheStack() PASSED
+
+JsonTest > missingAndWrongTypedFieldsDegradeToDefaults() PASSED
+
+JsonTest > nonPlainNumbersAreNotExactIntegers() PASSED
+
+JsonTest > writerEmitsNullForNonFiniteDoubles() PASSED
+
+BinaryCodecTest > aRevisionMismatchIsRejected() PASSED
+
+BinaryCodecTest > aNonFiniteDemandCapacityIsRejected() PASSED
+
+BinaryCodecTest > decodeNeverThrowsForAnyTruncationOfAValidFrame() PASSED
+
+BinaryCodecTest > theBucklingFlagBitFollowsTheRequest() PASSED
+
+BinaryCodecTest > aTokenOutsideTheCatalogueCannotTravelAsAnIndex() PASSED
+
+BinaryCodecTest > aBadMagicIsRejected() PASSED
+
+BinaryCodecTest > tokenRolesAreEnforcedNotJustRanges() PASSED
+
+BinaryCodecTest > unknownShellFlagBitsAreRejected() PASSED
+
+BinaryCodecTest > aFrameShorterThanItsContentIsRejected() PASSED
+
+BinaryCodecTest > aNonOkFrameInTheRegionIsRejected() PASSED
+
+BinaryCodecTest > aWellFormedFrameDecodesCompletely() PASSED
+
+BinaryCodecTest > nanNeutralAxisMeansAbsentNotError() PASSED
+
+BinaryCodecTest > aFrameLongerThanItsContentIsRejected() PASSED
+
+BinaryCodecTest > aHostileCountFailsBeforeAllocating() PASSED
+
+BinaryCodecTest > encodeReturnsTheExactByteCountTheDoorbellNeeds() PASSED
+
+BinaryCodecTest > aNegativeCountIsRejected() PASSED
+
+BinaryCodecTest > anUnknownFibreOrdinalIsRejectedNotMapped() PASSED
+
+BinaryCodecTest > aBooleanWireFieldMustBeExactlyZeroOrOne() PASSED
+
+ProtocolCodecTest > aCompleteHelloYieldsTheCatalogue() PASSED
+
+ProtocolCodecTest > errorLineBecomesAFailedResult() PASSED
+
+ProtocolCodecTest > unknownGoverningFibreFailsTheReplyRatherThanDegrading() PASSED
+
+ProtocolCodecTest > wrongTypedRequiredFieldsFail() PASSED
+
+ProtocolCodecTest > replyForTheWrongRevisionIsRejected() PASSED
+
+ProtocolCodecTest > absentNeutralAxisStaysAbsent() PASSED
+
+ProtocolCodecTest > solveRequestCarriesBlocksAndMaterialsOnly() PASSED
+
+ProtocolCodecTest > unknownFailModeDegradesRatherThanThrowingInTheApiHelper() PASSED
+
+ProtocolCodecTest > helloWithoutShmIsJsonOnlyNotRejected() PASSED
+
+ProtocolCodecTest > aCompleteReplyDecodesWithEveryFieldCarried() PASSED
+
+ProtocolCodecTest > helloIsRejectedWhenTheCatalogueCannotServeAsTheIndexAbi() PASSED
+
+ProtocolCodecTest > truncatedReplyIsAFailureNotAnException() PASSED
+
+ProtocolCodecTest > solveShmDoorbellCarriesRevisionAndByteCount() PASSED
+
+ProtocolCodecTest > aRevisionWrittenAsADoubleIsRejected() PASSED
+
+ProtocolCodecTest > helloIsRejectedWhenNotOk() PASSED
+
+ProtocolCodecTest > bucklingIsWrittenOnlyWhenOff() PASSED
+
+ProtocolCodecTest > missingRequiredFieldsFailTheReplyAndNameTheField() PASSED
+
+ProtocolCodecTest > singularReplyIsOkButNotUsable() PASSED
+
+TruncationTest > N14-b: a skipped block touching the request is on the truncation face PASSED
+
+TruncationTest > touching is also six-faced: an element only cornering the face keeps its verdict PASSED
+
+TruncationTest > N14-c: the element against the missing base is withheld, the far one is not PASSED
+
+TruncationTest > the portal case from #74: the surviving column is withheld, the far one is not PASSED
+
+TruncationTest > an element is withheld when ANY of its blocks touches the face, not only the first PASSED
+
+TruncationTest > an empty request cannot be truncated by anything PASSED
+
+TruncationTest > the face keeps the order it was given, so reported examples are stable PASSED
+
+TruncationTest > N14-e: nothing skipped means nothing to say PASSED
+
+TruncationTest > no face means no element is withheld, whatever was solved PASSED
+
+TruncationTest > a skipped block nowhere near the request is a different structure, not a truncation PASSED
+
+TruncationTest > adjacency is the six faces: a diagonal neighbour carries no load path PASSED
+
+TruncationTest > ids are reported, not indices �X the packet identifies elements by id PASSED
+
+TruncationTest > all six faces are checked, none forgotten PASSED
+
+BucklingReadoutTest > refusedWorldKeepsTheSuppliedLocalCriticalWarning() PASSED
+
+BucklingReadoutTest > neverDerivesCriticalFromTheDisplayedFactor() PASSED
+
+BucklingReadoutTest > everyWorldStateHasAnExplicitReadout() PASSED
+
+DrawableCellsTest > occupancy follows, so a face the mined block was hiding becomes visible PASSED
+
+DrawableCellsTest > the key packs the full build height and both horizontal extents PASSED
+
+DrawableCellsTest > a block a member shares with a facet is one cell, not two PASSED
+
+DrawableCellsTest > an emptied world draws nothing at all, rather than the last picture PASSED
+
+DrawableCellsTest > plate blocks are in the set too, or a buried beam fights the floor above it PASSED
+
+DrawableCellsTest > with the world unchanged, every cell of the answer is drawable PASSED
+
+DrawableCellsTest > mining a slab block drops it as well; the rule is not member-only PASSED
+
+DrawableCellsTest > a mined block leaves the drawable set the same frame, with no new packet PASSED
+
+MemberPickTest > anEmptyWorldPicksNothingAndDoesNotThrow() PASSED
+
+MemberPickTest > aMemberYouAreNotLookingAtDoesNotStealFocus() PASSED
+
+MemberPickTest > aLongMemberIsSelectableByItsMiddleNotJustItsEnds() PASSED
+
+MemberPickTest > picksTheMemberUnderTheCrosshair() PASSED
+
+MemberPickTest > aDistantMemberIsContextNotASubject() PASSED
+
+MemberPickTest > lookingAtNothingPicksNothing() PASSED
+
+SectionDiagramTest > aStationWithoutTheYFibresProducesNothing() PASSED
+
+SectionDiagramTest > axialForceMovesTheNeutralAxisOffCentre() PASSED
+
+SectionDiagramTest > aSaggingSectionHasCompressionOnTopAndThatIsAlsoCorrect() PASSED
+
+SectionDiagramTest > theProfileIsLinearAcrossTheDepth() PASSED
+
+SectionDiagramTest > outOfRangeDepthsAreClampedRatherThanExtrapolated() PASSED
+
+SectionDiagramTest > aSectionEntirelyInTensionHasNoNeutralAxis() PASSED
+
+SectionDiagramTest > aHoggingSectionHasTensionOnTop() PASSED
+
+StressPaletteTest > the material lens carries no magnitude: it is flat by construction PASSED
+
+StressPaletteTest > every shipped material gets its own colour, so the lens says something PASSED
+
+StressPaletteTest > teachingPaletteKeepsItsOwnTokens() PASSED
+
+StressPaletteTest > saturationRisesWithMagnitude() PASSED
+
+StressPaletteTest > the material legend names exactly the materials the lens can colour PASSED
+
+StressPaletteTest > magnitudeMapsLinearlySoAFigureCanBeReadAgainstItsLegend() PASSED
+
+StressPaletteTest > tensionIsBlueAndCompressionIsRed() PASSED
+
+StressPaletteTest > equalAndOppositeStressesGiveDistinctColours() PASSED
+
+StressPaletteTest > utilisationRampIsColdThenAmberThenFlatVermilion() PASSED
+
+StressPaletteTest > linearLightInterpolationKeepsTheMidpointOutOfTheMud() PASSED
+
+StressPaletteTest > failureRedIsNotTheSameAsCompressionRed() PASSED
+
+StressPaletteTest > hatchAndUtilizationKeepNativeVerdictAuthority() PASSED
+
+StressPaletteTest > an unknown token gets its OWN colour, not another material's PASSED
+
+StressPaletteTest > degenerateInputsGiveNeutralRatherThanNaN() PASSED
+
+StressPaletteTest > zeroStressIsNeutral() PASSED
+
+StressRibbonBuilderTest > scenePeakMakesMembersComparableAndMemberPeakDoesNot() PASSED
+
+StressRibbonBuilderTest > positionsComeOutInBlocksAndOffsetToTheRightFace() PASSED
+
+StressRibbonBuilderTest > oneStripPerFibrePerSpan() PASSED
+
+StressRibbonBuilderTest > stressFallsOffAlongTheMemberInsteadOfBeingOneFlatColour() PASSED
+
+StressRibbonBuilderTest > topAndBottomFacesGetOppositeHues() PASSED
+
+StressRibbonBuilderTest > neutralAxisIsOmittedWhereThereIsNone() PASSED
+
+BundledEngineTest > aJarWhoseBytesDisagreeWithItsManifestUnpacksNothing(Path) PASSED
+
+BundledEngineTest > aDevelopmentJarWithNoEngineSaysSoAndCarriesOn(Path) PASSED
+
+BundledEngineTest > anUnsupportedPlatformIsToldWhatDidShip(Path) PASSED
+
+BundledEngineTest > aReplaceRefusedByAnOpenHandleAdoptsWhatIsAlreadyThere(Path) PASSED
+
+BundledEngineTest > firstUseUnpacksTheRightBytesUnderAHashNamedPath(Path) PASSED
+
+BundledEngineTest > whatComesBackIsWhatIsONDISK(Path) PASSED
+
+BundledEngineTest > aSecondLaunchDoesNotRewriteIt(Path) PASSED
+
+BundledEngineTest > aManifestWithoutTheFileItPromisesUnpacksNothing(Path) PASSED
+
+BundledEngineTest > theShippedLoaderReadsFromTheJarWhenThereIsOne() PASSED
+
+BundledEngineTest > theUnpackedEngineIsExecutable(Path) SKIPPED
+
+BundledEngineTest > unpackingNeverThrowsIntoTheModLoad(Path) PASSED
+
+BundledEngineTest > aManifestThisCodeOnlyHalfUnderstandsIsAnError() PASSED
+
+BundledEngineTest > aCorruptedOrTruncatedFileOnDiskIsReplaced(Path) PASSED
+
+BundledEngineTest > platformSupportAnswersFromTheManifestAndNeverCriesWolf() PASSED
+
+BundledEngineTest > darwinIsNotWindows() PASSED
+
+BundledEngineTest > theManifestParsesAndCommentsAndBlanksAreSkipped() PASSED
+
+BundledEngineTest > anOlderEngineIsRemovedButNothingElseIs(Path) PASSED
+
+BundledEngineTest > theBinaryIsChosenByPlatformAndNeverByGuesswork() PASSED
+
+BundledEngineTest > aFileNameThatIsAPathIsRefused() PASSED
+
+ShmRegionTest > aClosedRegionRefusesToHandOutBuffers() PASSED
+
+ShmRegionTest > independentViewsShareThePages() PASSED
+
+ShmRegionTest > closeIsIdempotent() PASSED
+
+ShmRegionTest > closeDeletesTheBackingFile() PASSED
+
+SidecarEngineTest > theWorstSectionCanBeInTheMiddleAndTheScreenMustSeeIt() SKIPPED
+
+SidecarEngineTest > aLoadInsideAMemberSplitsItAtThatPoint() SKIPPED
+
+SidecarEngineTest > anUnknownSectionIsRefusedRatherThanDefaulted() SKIPPED
+
+SidecarEngineTest > aSectionChangeSplitsTheMemberButKeepsItConnected() SKIPPED
+
+SidecarEngineTest > theSupportMomentIsRecoveredAndNeverLowersADemand() SKIPPED
+
+SidecarEngineTest > repeatedSolvesAtTheSameRevisionAreIdentical() SKIPPED
+
+SidecarEngineTest > aFloorCarriesNoMembraneForceUnderItsOwnWeight() SKIPPED
+
+SidecarEngineTest > aShearWallCarriesLoadInItsOwnPlane() SKIPPED
+
+SidecarEngineTest > overloadingTheMemberPushesDemandOverCapacity() SKIPPED
+
+SidecarEngineTest > shmAndJsonTransportsAgree() SKIPPED
+
+SidecarEngineTest > everyBlockCentreIsInsideTheMeshAndOnlyTheOuterHalfBlockIsClamped() SKIPPED
+
+SidecarEngineTest > aLoadOnNoElementAtAllIsStillRefused() SKIPPED
+
+SidecarEngineTest > everySolveCarriesItsOwnEquilibriumCheck() SKIPPED
+
+SidecarEngineTest > shmTransportCarriesShellsIdentically() SKIPPED
+
+SidecarEngineTest > anUnsupportedStructureIsReportedAsAMechanism() SKIPPED
+
+SidecarEngineTest > oneUnsupportedBuildingDoesNotSilenceTheOthers() SKIPPED
+
+SidecarEngineTest > everyStationMatchesTheClosedFormBendingStress() SKIPPED
+
+SidecarEngineTest > aRunOfBlocksBecomesOneMemberNotFive() SKIPPED
+
+SidecarEngineTest > aSlabBecomesPlateFacetsAndNotAGridOfBeams() SKIPPED
+
+SidecarEngineTest > aSlenderColumnIsCalledSafeByStressAndUnstableByBuckling() SKIPPED
+
+SidecarEngineTest > handshakeReportsTheCatalogue() SKIPPED
+
+SidecarEngineTest > theSpanMomentMatchesTimoshenko() SKIPPED
+
+SidecarEngineTest > aSingleBlockIsNotABeam() SKIPPED
+
+SidecarEngineTest > aColumnSharesItsTopNodeWithTheFloorItHoldsUp() SKIPPED
+
+SidecarEngineTest > theFreeEndCarriesNoBendingStress() SKIPPED
+
+SidecarEngineTest > aBeamHeldAtBothEndsHogsAtTheSupportAndSagsBetween() SKIPPED
+
+SidecarEngineTest > theOverlayDrawnFromRealEngineOutputIsBlueOnTopAndRedBelow() SKIPPED
+
+SidecarEngineTest > topFibreIsInTensionAndBottomInCompression() SKIPPED
+
+SidecarLifecycleTest > closeOnANeverStartedClientIsSafeAndTerminal() PASSED
+
+SidecarLifecycleTest > aCrashDuringAnalysisFailsThatRequestAndRecovers() SKIPPED
+
+SidecarLifecycleTest > aStaleReplyLeftInThePipeDoesNotPoisonTheNextRequest() SKIPPED
+
+SidecarLifecycleTest > resetRevivesADisabledClientOnceTheBinaryIsInstalled() SKIPPED
+
+SidecarLifecycleTest > aWedgedSidecarTimesOutAndIsKilled() SKIPPED
+
+SidecarLifecycleTest > aFloodingSidecarIsKilledNotBuffered() SKIPPED
+
+SidecarLifecycleTest > missingBinaryDisablesAnalysisAndLeavesTheGamePlayable() PASSED
+
+SidecarLifecycleTest > aProtocolMismatchIsRefusedOutrightAndNotRetried() SKIPPED
+
+SidecarLifecycleTest > aShmDoorbellRevisionMismatchIsADesyncAndEndsTheConversation() SKIPPED
+
+SidecarLifecycleTest > aClosedClientIsTerminalAndNeverRespawns() SKIPPED
+
+SidecarLifecycleTest > growIsRetriedOnceGrownAndARefusalAfterGrowthIsAnAnswer() SKIPPED
+
+SidecarLifecycleTest > closingSendsByeAndDoesNotLeaveAProcessBehind() SKIPPED
+
+SidecarLifecycleTest > concurrentSolveResetStatusAndCloseNeverThrowAndCloseWins() PASSED
+
+SidecarLifecycleTest > aRefusedShmMappingDowngradesToJsonAndTheSolveStillAnswers() SKIPPED
+
+SidecarPathsTest > whatExplorersCopyAsPathGivesYouIsAPath() PASSED
+
+SidecarPathsTest > blankAndNullAreSimplyAbsent() PASSED
+
+SidecarPathsTest > aStringThatCannotBeAPathIsReportedAndNotThrown() PASSED
+
+SidecarPathsTest > surroundingSpaceIsNotPartOfTheName() PASSED
+
+AtomicConstructionCoordinatorTest > everyPrepareAndCommitStorageStageFailureEitherAbortsOrRetainsDurableCommit() PASSED
+
+AtomicConstructionCoordinatorTest > decisionVerificationFailureDoesNotGuessRollbackAndMissingPreparedFileDoesNotReopenWrites() PASSED
+
+AtomicConstructionCoordinatorTest > everyParticipantWriteAndFlushFailureRestoresAllBeforeImagesWithoutPublication() PASSED
+
+AtomicConstructionCoordinatorTest > secondPlayerOnSameBaseIsRejectedAndOrderedNonconflictingCommitAdvancesOnlyOnce() PASSED
+
+AtomicConstructionCoordinatorTest > unknownExternalValueOrRevisionPreventsAnyRecoveryWrite() PASSED
+
+AtomicConstructionCoordinatorTest > abortDecisionFailuresKeepRestoredImagesAndRequireRecoveryUntilTheMarkerIsDurable() PASSED
+
+AtomicConstructionCoordinatorTest > commitConsumesAllImagesOnceAndReplaySurvivesRestartAndLaterEdits() PASSED
+
+AtomicConstructionCoordinatorTest > checkpointCannotHideChangedImagesOrRevision() PASSED
+
+AtomicConstructionCoordinatorTest > collisionsBindActorSessionDomainPayloadAndBaseWithoutChangingOriginalDecision() PASSED
+
+AtomicConstructionCoordinatorTest > lostPublicationKeepsCommittedDecisionAndRecoveryPublishesBaselineWithoutApplyingAgain() PASSED
+
+AtomicConstructionCoordinatorTest > callbacksCannotReenterCoordinatorAndBaselineFailureLeavesItClosed() PASSED
+
+AtomicConstructionCoordinatorTest > checkpointMakesUnsavedBaselineDurableBeforePreparedAndIsNeverRepeatedForReplay() PASSED
+
+AtomicConstructionCoordinatorTest > corruptionCannotBeClearedByPublishingABaselineWithoutReopeningTheJournal() PASSED
+
+AtomicConstructionCoordinatorTest > failedCheckpointCreatesNoIntentAndDoesNotChangeVisibleParticipants() PASSED
+
+AtomicConstructionCoordinatorTest > validationStaleBaseAndConflictingImagesRefuseBeforeWritesAndRetainReplay() PASSED
+
+AtomicConstructionCoordinatorTest > missingRevisionParticipantCannotCommitEvenWhenEverySuppliedImageMatches() PASSED
+
+AtomicConstructionCoordinatorTest > failedRollbackRetainsPreparedAndBlocksUntilExplicitSuccessfulRecovery() PASSED
+
+FileTransactionJournalTest > fullKeyAndByteQuotasRefuseNewKeysButStillAllowTheReservedDecisionAndReplay() PASSED
+
+FileTransactionJournalTest > refusedAndAbortedKeysAreNeverEvictedAndClosedStoresCannotMutate() PASSED
+
+FileTransactionJournalTest > everyAtomicWriteFaultIsResolvedFromRealFilesAndTempsRemainEvidence() PASSED
+
+FileTransactionJournalTest > onlyOnePreparedIntentAndNoForeignDomainOrPrematureTerminalCreation() PASSED
+
+FileTransactionJournalTest > corruptRecordsUnknownSchemaTruncationAndDomainMarkerArePreservedAndRefused() PASSED
+
+FileTransactionJournalTest > exclusiveOwnerDomainPinAndLazyRestartReplayRetainOriginalImages() PASSED
+
+FileTransactionJournalTest > readThroughDetectsDeletionAndCorruptionInsteadOfServingCachedSuccess() PASSED
+
+JournalBootstrapTest > malformedManifestIsNeverAcceptedOrReplaced() PASSED
+
+JournalBootstrapTest > inventoryResolvesAmbiguousReplacementAndRefusesClosedOrLatchedCorruption() PASSED
+
+JournalBootstrapTest > missingManifestWithAnyEvidenceRefusesFreshIdentityAndLeavesFilesUntouched() PASSED
+
+JournalBootstrapTest > inventoryIsImmutableSortedAndIndependentOfDecisionOrderAndLaterWrites() PASSED
+
+JournalBootstrapTest > newDomainReopensWithoutASecondIdentityStoreAndPreservesPinnedCompatibility() PASSED
+
+ManufacturedRegistryTest > validatedPendingContextCannotExposeForeignMetadataAsRecoveryAuthority() PASSED
+
+ManufacturedRegistryTest > cutPreservesOriginalIdentityAndNeverRestoresUndoEligibility() PASSED
+
+ManufacturedRegistryTest > forgedOwnershipCannotPublishOrReconstructEvenWithValidJournalChecksums() PASSED
+
+ManufacturedRegistryTest > wholeBuildUndoRetiresAllIdsAndPreservesCreativeAndActorBinding() PASSED
+
+ManufacturedRegistryTest > PrematureMissingAndForeignPublicationRefuseButVerificationFailureLatches() PASSED
+
+ManufacturedRegistryTest > mixedPhasesNeverReplayOldWorldOrPlayerImages() PASSED
+
+ManufacturedRegistryTest > wrongBeforeImagesBirthReceiptsRevisionAndOrderRefuseWithoutMutation() PASSED
+
+ManufacturedRegistryTest > journalKeyOrderIsNotCommitOrderAndDuplicateSequenceIsRefused() PASSED
+
+ManufacturedRegistryTest > dependencyMarkAndEmptyEditsRetainPermanentTombstones() PASSED
+
+ManufacturedRegistryTest > planningConflictsAndLifetimeOrCellCapacityRefuseWithoutPartialAdmission() PASSED
+
+ManufacturedRegistryTest > abortedBeforeRevisionSurvivesRepeatedReopenWithoutPromotingRejectedRequests() PASSED
+
+ManufacturedRegistryTest > retiredIdCannotBeRebornEvenWithNewBirthFieldsAndAValidEnvelope() PASSED
+
+ManufacturedRegistryTest > previewDoesNotPublishAndAdjacentEqualProductsRemainSeparateAcrossReopen() PASSED
+
+ManufacturedRegistryTest > forgedPartialUndoCreativeModeAndActorCannotAuthorizeAnInverse() PASSED
+
+ManufacturedRegistryTest > declaredBoundariesValidateRunsConnectedCellsAxesAndWorldLimits() PASSED
+
+ManufacturedRegistryTest > dimensionsOwnSeparateCellsAndPermitOnlyMonotonicCommittedRevisionBindings() PASSED
+
+ManufacturedRegistryTest > committedCoverageIsImmutableDimensionScopedAndTracksReleasedOwnership() PASSED
+
+MetadataCodecTest > numericAndDimensionEncodingsAreBoundedAndUnambiguous() PASSED
+
+MetadataCodecTest > allRecordStatesRoundTripCanonicallyAndNeverExposeCellArrays() PASSED
+
+MetadataCodecTest > descriptorsBindOperationCreativeModeDimensionAndOriginalBuild() PASSED
+
+MetadataCodecTest > everyTruncationTrailingDataSchemaAndUnsuitableFieldIsRejected() PASSED
+
+NativeFractureTransactionsTest > interruptionsBeforeDecisionRestoreWholeSource() > checkpoint PASSED
+
+NativeFractureTransactionsTest > interruptionsBeforeDecisionRestoreWholeSource() > write PASSED
+
+NativeFractureTransactionsTest > interruptionsBeforeDecisionRestoreWholeSource() > flush PASSED
+
+NativeFractureTransactionsTest > interruptionsBeforeDecisionRestoreWholeSource() > omitted-world PASSED
+
+NativeFractureTransactionsTest > wrongPlanIsRejectedBeforeNativePreparationAndChangedKeyConflicts() PASSED
+
+NativeFractureTransactionsTest > recoveryCannotPublishAnotherJournalsWorld() PASSED
+
+NativeFractureTransactionsTest > committedDecisionSurvivesLostAckAndPublicationFailure() > decision-lost-ack PASSED
+
+NativeFractureTransactionsTest > committedDecisionSurvivesLostAckAndPublicationFailure() > native-closed PASSED
+
+NativeFractureTransactionsTest > committedDecisionSurvivesLostAckAndPublicationFailure() > publication PASSED
+
+NativeFractureTransactionsTest > durableReceiptReplayAndFreshSessionRecovery() PASSED
+
+PendingRequestStoreTest > reopensExactPendingRequestAndReceiptCannotEraseAnotherBinding() PASSED
+
+PendingRequestStoreTest > capacitiesRefuseWithoutEvictionOrDataLoss() PASSED
+
+PendingRequestStoreTest > anotherClientOwnerCannotRaceTheStorageBarrier() PASSED
+
+PendingRequestStoreTest > corruptOversizedAndTruncatedFilesRefuseAndRetainOriginals() PASSED
+
+PendingWorkTest > oldLeasesCannotReleaseAfterServerReset() PASSED
+
+PendingWorkTest > concurrentNetworkThreadsCannotOverAdmit() PASSED
+
+PendingWorkTest > identityLimitsTotalAndIdempotentRelease() PASSED
+
+TransactionCodecTest > aggregateSizeAndIndividualResourcePieceAndBindingBoundsApplyBeforeEncoding() PASSED
+
+TransactionCodecTest > imagesAndListsAreImmutableAndMissingIsNotEmpty() PASSED
+
+TransactionCodecTest > resignedSchemaPhaseReasonRevisionCountsAndNoncanonicalKeysRefuse() PASSED
+
+TransactionCodecTest > phasesRoundTripCanonicallyAndOnlyCommittedReceiptsExposePieceIds() PASSED
+
+TransactionCodecTest > terminalPhasesCannotChangeOrSmuggleDifferentImages() PASSED
+
+TransactionCodecTest > everyCorruptedByteEveryTruncationAndTrailingDataRefuse() PASSED
+
+TransientOffersTest > capacityRefusesWithoutEvictingOthersAndAccountsReplacement() PASSED
+
+TransientOffersTest > connectionIdentityReplacementAndExactExpiry() PASSED
+
+TransientOffersTest > expirationSurvivesTickWrapAndInvalidSizesRefuse() PASSED
+
+ArtifactAnalysisLinksTest > staleFailedOrPendingStateDoesNotPublishCurrentMappings() PASSED
+
+ArtifactAnalysisLinksTest > oneObjectLinksToManyNativeElementsAndNeverChangesWithSolverNumbers() PASSED
+
+ConstructionCodecTest > encoderPreservesCatalogueLineageAndModifiedUtfGolden() PASSED
+
+ConstructionCodecTest > resignedUnknownSchemaAndInvalidEpochCounterAndCountsStillRefuse() PASSED
+
+ConstructionCodecTest > corruptionTruncationAndTrailingDataAlwaysRefuse() PASSED
+
+ConstructionCodecTest > duplicateIdsOwnershipAndOrphanParentsRefuseEvenWithValidChecksum() PASSED
+
+ConstructionLedgerTest > cellAndEpochBoundsRefuseWithoutEvictionOrWraparound() PASSED
+
+ConstructionLedgerTest > frameRunsKeepParallelCrossingProductAndUndeclaredAxesSeparate() PASSED
+
+ConstructionLedgerTest > immutableWorkerInputAndStaleCompletionCannotOverwriteNewEdits() PASSED
+
+ConstructionLedgerTest > historyAndLineageBoundsCannotEvictPublishedAncestors() PASSED
+
+ConstructionLedgerTest > restoredRegistryIsIndependentOfLoadedObservationOrderAndEmptyWorldRetires() PASSED
+
+ConstructionLedgerTest > splitRetiresParentEvenWhenOneChildWasCompletelyReplacedInTheBatch() PASSED
+
+ConstructionLedgerTest > monolithAndPanelGroupsUseOnlyDeclaredProductsAndFaceAdjacency() PASSED
+
+ConstructionLedgerTest > splitAndMergeCreateNewIdentitiesWithExactLineage() PASSED
+
+ConstructionLedgerTest > fullDestructionAndSameTickReplacementCannotResurrectIdentityEvenAfterPendingSave() PASSED
+
+ConstructionLedgerTest > noOpExtensionTrimAndUnrelatedObjectsRetainPublishedIdentity() PASSED
+
+ConstructionSnapshotTest > workAndGraphViewsRejectEveryMutableEntryPoint() PASSED
+
+ConstructionSnapshotTest > backgroundSnapshotRemainsStableDuringEditsAndStaleResultCannotPublish() PASSED
+
+ConstructionSnapshotTest > snapshotNullRejectionSurvivesHashBackedStorage() PASSED
+
+ConstructionSnapshotTest > workSnapshotDoesNotAliasCallerCollections() PASSED
+
+ConstructionSnapshotTest > graphRecordsAndRangeViewsNeverExposeMutableEntries() PASSED
+
+WorldCellIndexTest > coverageIncludesOnlyActualGroundBordersWithoutInventingDiagonalContacts() PASSED
+
+WorldCellIndexTest > oppositeObservationOrdersAndReloadHaveIdenticalBytes() PASSED
+
+WorldCellIndexTest > emptyReconciliationOnlyRemovesItsOwnChunkAndSnapshotsStayImmutable() PASSED
+
+WorldCellIndexTest > encodedSnapshotsAreCallerOwnedAndInvalidateAfterCoverageEdits() PASSED
+
+WorldCellIndexTest > capacityFailureDoesNotEvictAndSurvivesRestart() PASSED
+
+WorldCellIndexTest > invalidChunkObservationsAreAtomic() PASSED
+
+WorldCellIndexTest > damagedChecksumsAndEveryTruncationFailClosed() PASSED
+
+WorldCellIndexTest > validDigestCannotAuthorizeUnknownSchemaDuplicatesOrderingOrOutOfWorldCells() PASSED
+
+> Task :core:constructionRecoveryGate
+PASS prepare-temp_forced
+PASS prepare-replaced
+PASS prepare-target_forced
+PASS prepare-directory_forced
+PASS commit-temp_forced
+PASS commit-replaced
+PASS commit-target_forced
+PASS commit-directory_forced
+PASS abort-temp_forced
+PASS abort-replaced
+PASS abort-target_forced
+PASS abort-directory_forced
+PASS write-1
+PASS flush-1
+PASS write-2
+PASS flush-2
+PASS write-3
+PASS flush-3
+PASS write-4
+PASS flush-4
+PASS write-5
+PASS flush-5
+PASS write-6
+PASS flush-6
+PASS rollback-write-1
+PASS rollback-flush-1
+PASS rollback-write-2
+PASS rollback-flush-2
+PASS rollback-write-3
+PASS rollback-flush-3
+PASS rollback-write-4
+PASS rollback-flush-4
+PASS rollback-write-5
+PASS rollback-flush-5
+PASS rollback-write-6
+PASS rollback-flush-6
+PASS publish
+{"status":"PASS","crashed_jvms":37,"fresh_recovery_jvms":37,"concurrent_owner_checks":1,"elapsed_ms":15787,"scope":"file participants, not Minecraft"}
+
+BUILD SUCCESSFUL in 26s
+8 actionable tasks: 3 executed, 5 up-to-date
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :compileJava UP-TO-DATE
+
+> Task :bundleEngines
+bundleEngines: 2 engine library/libraries from C:\Users\wmc02\Documents\ChatGPT\tectonic2\.agent-work\.native-package-nk7x8_mt\natives
+
+> Task :processResources
+> Task :classes
+> Task :jar
+> Task :downloadMcpConfig
+> Task :extractSrg UP-TO-DATE
+> Task :createMcpToSrg UP-TO-DATE
+> Task :reobfJar
+> Task :jarJar SKIPPED
+> Task :reobfJarJar SKIPPED
+> Task :assemble
+
+> Task :checkNativeOnlyJar
+{
+  "classes": 308,
+  "errors": [],
+  "sha256": "e50615244b5f33dfcf0e3a414fb482ed074218daa00a65f7d93db2f75d20abf7",
+  "mutations": [
+    {
+      "arm": "bundled-legacy",
+      "compileExit": 0,
+      "refused": [
+        "forbidden entry: com/blockreality/testlegacy/Forbidden.class",
+        "forbidden constant: com/blockreality/testlegacy/Forbidden.class -> com/blockreality/testlegacy/"
+      ]
+    },
+    {
+      "arm": "dormant-reference",
+      "compileExit": 0,
+      "refused": [
+        "forbidden constant: com/blockreality/impl/ResurrectedReference.class -> com/blockreality/testlegacy/"
+      ]
+    },
+    {
+      "arm": "construction-process-driver",
+      "compileExit": 0,
+      "refused": [
+        "forbidden entry: com/blockreality/core/transaction/TransactionProcessLeak.class",
+        "forbidden constant: com/blockreality/core/transaction/TransactionProcessLeak.class -> com/blockreality/core/transaction/TransactionProcess"
+      ]
+    }
+  ]
+}
+
+> Task :compileTestJava UP-TO-DATE
+> Task :processTestResources NO-SOURCE
+> Task :testClasses UP-TO-DATE
+
+> Task :test
+
+GameVocabularyResourceTest > forgeCarriesTheSameVocabularyAndEveryRegisteredBlockHasABinding() PASSED
+
+LangKeysTest > the two languages carry the same keys, so neither is half translated PASSED
+
+LangKeysTest > a format string with a placeholder has one in both languages PASSED
+
+LangKeysTest > every key the game can ask for has an English string PASSED
+
+LangKeysTest > no br.* string is carried that nothing can ask for PASSED
+
+PlacementAxisTest > gameSourceUsesNativeSnapshotsAndObservedContactFaces() PASSED
+
+PlacementAxisTest > rotationsAndCyclingKeepExplicitThreeAxisDeclarations() PASSED
+
+PlacementAxisTest > undeclaredLegacyBlocksNeverInventAWorldAxis() PASSED
+
+ProductTooltipTest > solidCellsAndPanelsDescribeDifferentRolesWithoutInventingANormal() PASSED
+
+ProductTooltipTest > millimetresRetainNonSquareOrderWithoutBinaryRoundingOrLocaleDrift() PASSED
+
+ProductTooltipTest > unknownProductsShowInformationUnavailableInsteadOfAnEmptyOrFictionalSize() PASSED
+
+BrPermissionsTest > privilegedSubcommandsAreAllPresent() PASSED
+
+BrPermissionsTest > anUnknownLiteralIsARegistrationError() PASSED
+
+BrPermissionsTest > theWhitelistIsExactlyTheReadOnlyDiagnostics() PASSED
+
+BrPermissionsTest > everythingOutsideTheReadOnlyWhitelistRequiresOp() PASSED
+
+AnalysisUpdatePacketTest > diagnosticClippingPreservesUnicodeAndFitsTheReserve() PASSED
+
+AnalysisUpdatePacketTest > maximumIdentityAndSummaryShareTheExistingByteReserve() PASSED
+
+AnalysisUpdatePacketTest > everyKindRoundTripsWithSourceAndRevision() PASSED
+
+AnalysisUpdatePacketTest > malformedIdentityEnumsAndTrailingPayloadAreRejected() PASSED
+
+AnalysisUpdatePacketTest > decodedNoticesCannotRollBackAnAcceptedResult() PASSED
+
+AnalysisUpdatePacketTest > everyByteTruncationFailsClosedForEveryKind() PASSED
+
+AnalysisUpdatePacketTest > senderRefusesContradictoryResultsBeforeWriting() PASSED
+
+ConstructionProtocolTest > trailingOversizedTruncatedAndUnknownEnumsRefuse() PASSED
+
+ConstructionProtocolTest > allMessagesRoundTripWithoutChangingBytes() PASSED
+
+ConstructionProtocolTest > opaqueOfferAndEveryConfirmationFieldRemainBound() PASSED
+
+ConstructionProtocolTest > draftDoesNotRetainMutablePositionsOrAcceptNonfiniteHits() PASSED
+
+DisplayDeliveryTest > countIdentityAndOmissionContradictionsAreRejected() PASSED
+
+DisplayDeliveryTest > receivingChargesAggregateStationsBeforeAllocation() PASSED
+
+DisplayDeliveryTest > selectedRecordsAreCompleteAndThreeEncodesAreIdentical() PASSED
+
+DisplayDeliveryTest > controllingElementReservesBudgetBeforeBothFamilies() PASSED
+
+DisplayDeliveryTest > oversizedControllerIsExplicitAndNeverChangesSummary() PASSED
+
+DisplayDeliveryTest > oversizedFrameIsRejectedBeforeParsing() PASSED
+
+DisplayDeliveryTest > receivingChargesAggregateBlocksBeforeAllocation() PASSED
+
+DisplayDeliveryTest > wholeElementsFitExactBytesAndOneLessOmitsThem() PASSED
+
+DisplayDeliveryTest > countsAreSharedAcrossElementsAndFamilies() PASSED
+
+GlobalVerdictPacketTest > invalidGlobalValuesRejectTheWholePacket() PASSED
+
+GlobalVerdictPacketTest > globalDecisionDoesNotDependOnDisplayedElements() PASSED
+
+GlobalVerdictPacketTest > explicitFlagsSurviveWithoutChangingTheirNumbers() PASSED
+
+GlobalVerdictPacketTest > incompleteWorldSummaryRetainsComputedIslandCritical() PASSED
+
+GlobalVerdictPacketTest > fullDoubleRangeSurvivesWithoutNarrowingOrRepair() PASSED
+
+MemberPacketCodecTest > allSampledPacketTruncationsAreRejected() PASSED
+
+MemberPacketCodecTest > absentDisplayDoesNotEraseSamplesOrDiagnostics() PASSED
+
+MemberPacketCodecTest > fullPacketPreservesEverySampleCellFlagAndGoverningIndex() PASSED
+
+MemberPacketCodecTest > oversizedCollectionsRejectInsteadOfDroppingTailSamples() PASSED
+
+MemberPacketCodecTest > exactIdentityAndMissingGoverningSurviveTheFullPacket() PASSED
+
+MemberPacketCodecTest > identifiedPacketTruncationsAndInvalidIdentityAreRejected() PASSED
+
+MemberPacketCodecTest > nonFiniteMetadataAndSamplesAreRejected() PASSED
+
+NativeOnlyPacketGoldenTest > fixedPacketsRemainByteIdenticalAcrossLegacyRemoval() PASSED
+
+NativeResultPacketTest > sharedContractResourcesDescribeThisBuild() PASSED
+
+NativeResultPacketTest > realNativeAnalysisReachesThePacketWithTheSameFlagsAndDoubles() PASSED
+
+NativeResultPacketTest > failedAnalysisCannotBeEncodedAsAHealthyEmptyResult() PASSED
+
+ShellPacketCodecTest > missingDisplayAndOptionalRawRemainDistinct() PASSED
+
+ShellPacketCodecTest > nonFiniteSurfaceAndInvalidFrameRejectTheWholePacket() PASSED
+
+ShellPacketCodecTest > everyTruncationOfASampledShellPacketIsRejected() PASSED
+
+ShellPacketCodecTest > completePacketPreservesVerdictBlocksAndSamplesThroughPicking() PASSED
+
+StressResultPacketTest > aHostileMemberCountRejectsThePacket() PASSED
+
+StressResultPacketTest > roundTripPreservesTheDrawableResult() PASSED
+
+StressResultPacketTest > theWithheldFlagFollowsItsMemberThroughOverlayTruncation() PASSED
+
+StressResultPacketTest > withholdingWithoutATruncatedBlockIsRejected() PASSED
+
+StressResultPacketTest > anUnknownBucklingStateOrdinalIsRejectedNotClamped() PASSED
+
+StressResultPacketTest > everyBucklingStateSurvivesTheTrip() PASSED
+
+StressResultPacketTest > unassignedCountsTravelPerReason() PASSED
+
+StressResultPacketTest > anOverLongTokenIsTruncatedRatherThanThrownDuringTheBroadcast() PASSED
+
+StressResultPacketTest > theSmallestDoubleFactorIsPreservedExactly() PASSED
+
+StressResultPacketTest > anOverlongDimensionIsClippedNotThrown() PASSED
+
+StressResultPacketTest > theHostSubstitutesDisabledByScaleAndNobodyElseCan() PASSED
+
+StressResultPacketTest > everyNumberTheClientDrawsIsWithinTheDisplayBudgetOfTheServersOwn() PASSED
+
+StressResultPacketTest > aWholeModelSendsNoWithholdingAtAll() PASSED
+
+StressResultPacketTest > aMemberWithoutAGoverningStationDecodesAsNone() PASSED
+
+StressResultPacketTest > withheldElementsAndTheirReasonSurviveTheWire() PASSED
+
+StressResultPacketTest > aStateThatContradictsItsFactorIsRejected() PASSED
+
+StressResultPacketTest > theMaterialTokenSurvivesTheWire() PASSED
+
+StressResultPacketTest > theSafetyClassificationIsTheServersNotAFloatComparison() PASSED
+
+StressResultPacketTest > truncationKeepsTheGoverningMemberAndSaysSo() PASSED
+
+StressResultPacketTest > bucklingSkippedRoundTripsAndAContradictionIsRejected() PASSED
+
+StressResultPacketTest > aTruncatedBufferNeverThrowsItRejects() PASSED
+
+StressResultPacketTest > nanIsCorruptionNotZero() PASSED
+
+StressResultPacketTest > anEmptyResultRoundTripsAsMechanismData() PASSED
+
+StressResultPacketTest > governingStationSurvivesTheTripAsAPosition() PASSED
+
+AnalysisExecutorTest > shutdownIsIdempotentAndSafeWithoutAPool() PASSED
+
+AnalysisExecutorTest > submitAfterShutdownDoesNotThrowItReportsFalse() PASSED
+
+AnalysisExecutorTest > thePoolIsRebuiltAfterShutdown() PASSED
+
+BucklingPolicyTest > theLimitIsInclusiveAndZeroMeansNever() PASSED
+
+BucklingPolicyTest > aNegativeLimitIsOffRatherThanInverted() PASSED
+
+BucklingPolicyTest > theNativeDefaultUsesEngineDofBudgetInsteadOfBlockCounts() PASSED
+
+ChunkAvailabilityTest > removingCoverageForgetsOldAvailabilityAndEmptyDomainDoesNotReadWorld() PASSED
+
+ChunkAvailabilityTest > pollHasBoundedWorkAndApplyRejectsAnUnvisitedMissingChunk() PASSED
+
+ChunkAvailabilityTest > demotionWithoutUnloadAndPromotionWithoutLoadInvalidate() PASSED
+
+GatherCycleTest > aCycleWithinBudgetCompletesInOneStep() PASSED
+
+GatherCycleTest > aRevisionChangeAbandonsTheParkedCycle() PASSED
+
+GatherCycleTest > anOverBudgetCycleYieldsAndResumesWhereItStopped() PASSED
+
+GatherCycleTest > stepWithNoCycleIsIdle() PASSED
+
+GatherCycleTest > zeroBudgetStillGuaranteesMinimumProgress() PASSED
+
+InputCoverageTest > fullyObservedDomainDispatchesOnce() PASSED
+
+InputCoverageTest > unreadableStructureAndGroundNeverDispatch() PASSED
+
+SnapshotLoadsTest > aLoadOnABlockThatFormsNoElementIsIdentifiedByTheProbe() PASSED
+
+SnapshotLoadsTest > aLoadInAnUnloadedChunkWaitsWithItsBlock() PASSED
+
+SnapshotLoadsTest > momentsAreNotInventedForPointLoads() PASSED
+
+SnapshotLoadsTest > aLoadOnAnIncludedBlockTravels() PASSED
+
+SnapshotLoadsTest > aBlockThatFormsNoElementButCarriesNoLoadIsLeftAlone() PASSED
+
+SnapshotLoadsTest > aLoadWhoseBlockIsGoneIsReportedStale() PASSED
+
+SolveDispatchTest > aSuccessfulRunHandsTheResultToDeliveryAndDoesNotReleaseItself() PASSED
+
+SolveDispatchTest > aThrowingSolveReleasesTheFlagAndLogs() PASSED
+
+SolveDispatchTest > anErrorInTheSolveDoesNotDoubleRelease() PASSED
+
+SolveDispatchTest > aThrowingDeliveryReleasesTheFlagAndLogs() PASSED
+
+WorldIndexDataTest > corruptExistingFileIsNeverReplacedByEmptyData() PASSED
+
+WorldIndexDataTest > constructionCheckpointPersistsUnsavedLegacyCoverageAndExactMetadata() PASSED
+
+WorldIndexDataTest > actualSavedDataSurvivesReloadWithDimensionSeparation() PASSED
+
+WorldIndexDataTest > constructionCheckpointRefusesFailedWritesAndIncorrectReadback() PASSED
+
+WorldIndexDataTest > gzipWriterReadsLegacyCompressionAndPreservesPendingMetadataForVanilla() PASSED
+
+WorldIndexDataTest > legacyCoverageMigratesWithoutForgettingUnloadedUnknownDeclarations() PASSED
+
+WorldIndexDataTest > savedPendingReplacementRetiresOriginalIdentityAfterReload() PASSED
+
+WorldIndexDataTest > failedAtomicReplacementPreservesOldFileAndDirtyRetry() PASSED
+
+WorldIndexDataTest > unknownObjectSchemaCannotFallBackToCoverageOrOverwriteFile() PASSED
+
+WorldIndexDataTest > failedCompressedWritePreservesOriginalFileAndAllowsExactRetry() PASSED
+
+BoundedChunkReadTest > actualWorkerReopensEveryTagAndUnsortedFullChunkWithoutLoss() PASSED
+
+BoundedChunkReadTest > compressedOversizedDocumentRefusesBeforeNbtConstructionAndPreservesFiles() PASSED
+
+BoundedChunkReadTest > malformedAndDeepRegionDocumentsRefuseWithOriginalBytesRetained() PASSED
+
+BoundedChunkReadTest > decodedByteCapStopsTheStreamBeforeTagAllocation() PASSED
+
+BoundedChunkReadTest > duplicateNamesRefuseWithoutChangingRegionFiles() PASSED
+
+BoundedChunkReadTest > pendingMapNeverSubstitutesForForcedRegionData() PASSED
+
+CanonicalNbtTest > truncationTrailingDuplicateUnknownAndImpossibleLengthsRefuse() PASSED
+
+CanonicalNbtTest > everyTagTypeRoundTripsWithVanillaAndIndependentImages() PASSED
+
+CanonicalNbtTest > byteDepthAndTagBudgetsRefuseBeforeLargeAllocation() PASSED
+
+CanonicalNbtTest > compoundInsertionOrderDoesNotChangeImageAndSmallGoldenIsExact() PASSED
+
+CanonicalNbtTest > numericPayloadBitsSurviveAndUnrepresentableNegativeZeroRefuses() PASSED
+
+CellStateImageTest > canonicalCellKeysHaveExactBoundsAndNoAlternativeIntegerSpellings() PASSED
+
+ChunkFileParticipantTest > wholeImagesArePrivateAndForcingPrecedesVerifiedReadback() PASSED
+
+ChunkFileParticipantTest > invalidLastImageAndReducedBatchLimitsCannotIssuePartialWrites() PASSED
+
+ChunkFileParticipantTest > headersCoordinatesSectionTypeAndCanonicalBudgetsRefuseBeforeStorage() PASSED
+
+ChunkFileParticipantTest > outstandingStoresDrainBeforeFailureAndBeforeAnyForceOrRead() PASSED
+
+ChunkFileParticipantTest > missingReadDoesNotInventAirAndForeignThreadDoesNotPoisonOwner() PASSED
+
+ChunkFileParticipantTest > everyStorageFailureLatchesAndNewAdapterResolvesActualWrittenImage() PASSED
+
+ChunkFileParticipantTest > actualRegionWorkerPersistsCompleteMultipleChunksAndReopensExactBytes() PASSED
+
+LiveChunkCaptureTest > exactEntitiesAndCapabilitiesAllowDifferentListAndCompoundOrder() PASSED
+
+LiveChunkCaptureTest > entityTypePositionAndPackedFlagsAreStrict() PASSED
+
+LiveChunkCaptureTest > omittedChangedDuplicateAndForeignBlockEntitiesRefuse() PASSED
+
+LiveChunkCaptureTest > hooksCanAddButCannotReplaceDeleteOrMutateExistingFields() PASSED
+
+LiveChunkCaptureTest > droppedOrChangedChunkCapabilitiesNeverBecomeAnEmptySuccess() PASSED
+
+PlacementPlanTest > malformedExtraMissingAndUnknownSchemaCannotDefault() PASSED
+
+PlacementPlanTest > exactPlanPreservesBindingAndVerifiesEveryParticipant() PASSED
+
+PlacementPlanTest > targetAndSlotBoundsAreIndependentOfNBTDefaults() PASSED
+
+PlayerFileParticipantTest > nonFileTargetAndNonFileDirectoryRefuseWithoutReplacement() PASSED
+
+PlayerFileParticipantTest > corruptionTruncationTrailingGzipAndInflationCapacityPreserveOriginals() PASSED
+
+PlayerFileParticipantTest > exactFullPlayerSurvivesVanillaAndOfflineReloadWithInventoryOnlyChange() PASSED
+
+PlayerFileParticipantTest > staleForeignAndMissingIdentityCannotOverwriteExistingPlayer() PASSED
+
+PlayerFileParticipantTest > retainedTemporaryCountAndByteCapacityRefuseWithoutDeletingEvidence() PASSED
+
+PlayerFileParticipantTest > failuresAtEveryRealStorageBoundaryRemainResolvable() PASSED
+
+PlayerFileParticipantTest > changeDuringStagingIsDetectedBeforeAtomicReplacement() PASSED
+
+PlayerInventoryImageTest > rejectsDuplicateUnknownMistypedAndMalformedInventoryWithoutMutation() PASSED
+
+PlayerInventoryImageTest > mapsAllVanillaSlotsAndPreservesExactItemData() PASSED
+
+PlayerInventoryImageTest > modifiesOnlyRequestedSlotsAndNeverAliasesInput() PASSED
+
+> Task :check
+> Task :build
+
+BUILD SUCCESSFUL in 22s
+11 actionable tasks: 7 executed, 4 up-to-date
+blockreality-0.4.0-alpha.1.jar: the library shape: windows-x86_64, linux-x86_64, jar == manifest, contract pin agrees, zero executables
+{
+  "classes": 308,
+  "errors": [],
+  "sha256": "e50615244b5f33dfcf0e3a414fb482ed074218daa00a65f7d93db2f75d20abf7"
+}
+NATIVE-PACKAGE PASS C:\Users\wmc02\Documents\ChatGPT\tectonic2\.agent-work\alpha-mod-package-final

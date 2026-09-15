@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.engine.InProcessBucklingTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-10T00:22:06" hostname="ROCKYLAPTOP" time="0.011">
+  <properties/>
+  <testcase name="actualBudgetRefusalAndGreenhillAreDistinct()" classname="com.blockreality.core.engine.InProcessBucklingTest" time="0.002"/>
+  <testcase name="actualEigenAndMixedFlagsReachTheSharedAnalysis()" classname="com.blockreality.core.engine.InProcessBucklingTest" time="0.009"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

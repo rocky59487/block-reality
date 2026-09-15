@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.protocol.TruncationTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-09-09T22:35:43" hostname="ROCKYLAPTOP" time="0.008">
+  <properties/>
+  <testcase name="N14-b: a skipped block touching the request is on the truncation face" classname="com.blockreality.core.protocol.TruncationTest" time="0.003"/>
+  <testcase name="touching is also six-faced: an element only cornering the face keeps its verdict" classname="com.blockreality.core.protocol.TruncationTest" time="0.002"/>
+  <testcase name="N14-c: the element against the missing base is withheld, the far one is not" classname="com.blockreality.core.protocol.TruncationTest" time="0.0"/>
+  <testcase name="the portal case from #74: the surviving column is withheld, the far one is not" classname="com.blockreality.core.protocol.TruncationTest" time="0.001"/>
+  <testcase name="an element is withheld when ANY of its blocks touches the face, not only the first" classname="com.blockreality.core.protocol.TruncationTest" time="0.0"/>
+  <testcase name="an empty request cannot be truncated by anything" classname="com.blockreality.core.protocol.TruncationTest" time="0.0"/>
+  <testcase name="the face keeps the order it was given, so reported examples are stable" classname="com.blockreality.core.protocol.TruncationTest" time="0.0"/>
+  <testcase name="N14-e: nothing skipped means nothing to say" classname="com.blockreality.core.protocol.TruncationTest" time="0.0"/>
+  <testcase name="no face means no element is withheld, whatever was solved" classname="com.blockreality.core.protocol.TruncationTest" time="0.0"/>
+  <testcase name="a skipped block nowhere near the request is a different structure, not a truncation" classname="com.blockreality.core.protocol.TruncationTest" time="0.0"/>
+  <testcase name="adjacency is the six faces: a diagonal neighbour carries no load path" classname="com.blockreality.core.protocol.TruncationTest" time="0.0"/>
+  <testcase name="ids are reported, not indices — the packet identifies elements by id" classname="com.blockreality.core.protocol.TruncationTest" time="0.0"/>
+  <testcase name="all six faces are checked, none forgotten" classname="com.blockreality.core.protocol.TruncationTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

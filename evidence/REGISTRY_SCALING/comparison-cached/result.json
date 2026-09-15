@@ -1,0 +1,17 @@
+{
+  "measured_pairs": 480,
+  "warmup_and_measured_digest_pairs": 600,
+  "digest_mismatches": [],
+  "budget_failures": [
+    {
+      "fixture": "D32768",
+      "pattern": "BURST64",
+      "stage": "coverage_encode",
+      "kind": "timing",
+      "baseline_ns": 1039887,
+      "candidate_ns": 2146288,
+      "budget_ns": 2039887
+    }
+  ],
+  "pass": false
+}

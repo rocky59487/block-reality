@@ -1,0 +1,169 @@
+{
+  "tests": 419,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 40,
+  "skips": [
+    {
+      "class": "com.blockreality.core.sidecar.BundledEngineTest",
+      "test": "theUnpackedEngineIsExecutable(Path)"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "theWorstSectionCanBeInTheMiddleAndTheScreenMustSeeIt()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "aLoadInsideAMemberSplitsItAtThatPoint()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "anUnknownSectionIsRefusedRatherThanDefaulted()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "aSectionChangeSplitsTheMemberButKeepsItConnected()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "theSupportMomentIsRecoveredAndNeverLowersADemand()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "repeatedSolvesAtTheSameRevisionAreIdentical()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "aFloorCarriesNoMembraneForceUnderItsOwnWeight()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "aShearWallCarriesLoadInItsOwnPlane()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "overloadingTheMemberPushesDemandOverCapacity()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "shmAndJsonTransportsAgree()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "everyBlockCentreIsInsideTheMeshAndOnlyTheOuterHalfBlockIsClamped()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "aLoadOnNoElementAtAllIsStillRefused()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "everySolveCarriesItsOwnEquilibriumCheck()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "shmTransportCarriesShellsIdentically()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "anUnsupportedStructureIsReportedAsAMechanism()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "oneUnsupportedBuildingDoesNotSilenceTheOthers()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "everyStationMatchesTheClosedFormBendingStress()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "aRunOfBlocksBecomesOneMemberNotFive()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "aSlabBecomesPlateFacetsAndNotAGridOfBeams()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "aSlenderColumnIsCalledSafeByStressAndUnstableByBuckling()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "handshakeReportsTheCatalogue()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "theSpanMomentMatchesTimoshenko()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "aSingleBlockIsNotABeam()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "aColumnSharesItsTopNodeWithTheFloorItHoldsUp()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "theFreeEndCarriesNoBendingStress()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "aBeamHeldAtBothEndsHogsAtTheSupportAndSagsBetween()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "theOverlayDrawnFromRealEngineOutputIsBlueOnTopAndRedBelow()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarEngineTest",
+      "test": "topFibreIsInTensionAndBottomInCompression()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aCrashDuringAnalysisFailsThatRequestAndRecovers()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aStaleReplyLeftInThePipeDoesNotPoisonTheNextRequest()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "resetRevivesADisabledClientOnceTheBinaryIsInstalled()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aWedgedSidecarTimesOutAndIsKilled()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aFloodingSidecarIsKilledNotBuffered()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aProtocolMismatchIsRefusedOutrightAndNotRetried()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aShmDoorbellRevisionMismatchIsADesyncAndEndsTheConversation()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aClosedClientIsTerminalAndNeverRespawns()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "growIsRetriedOnceGrownAndARefusalAfterGrowthIsAnAnswer()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "closingSendsByeAndDoesNotLeaveAProcessBehind()"
+    },
+    {
+      "class": "com.blockreality.core.sidecar.SidecarLifecycleTest",
+      "test": "aRefusedShmMappingDowngradesToJsonAndTheSolveStillAnswers()"
+    }
+  ],
+  "passed": 379
+}

@@ -1,11 +1,11 @@
 package com.blockreality.core.sidecar;
 
-import com.blockreality.api.AnalysisResult;
+import com.blockreality.testlegacy.AnalysisResult;
 import com.blockreality.api.Fibre;
-import com.blockreality.api.MemberSnapshot;
-import com.blockreality.api.ShellFieldSpec;
-import com.blockreality.api.ShellSnapshot;
-import com.blockreality.api.StressFieldSpec;
+import com.blockreality.testlegacy.MemberSnapshot;
+import com.blockreality.testlegacy.ShellFieldSpec;
+import com.blockreality.testlegacy.ShellSnapshot;
+import com.blockreality.testlegacy.StressFieldSpec;
 import com.blockreality.api.geom.Vec3d;
 import com.blockreality.core.render.ShellMesh;
 import com.blockreality.api.StressStation;
@@ -172,8 +172,8 @@ class SidecarEngineTest {
         assertTrue(r.isUsable(), r.diagnostic());
 
         MemberSnapshot m = r.members().get(0);
-        StressRibbon ribbon = StressRibbonBuilder.build(m, StressPalette.SIGNED_DEFAULT,
-                StressRibbonBuilder.memberPeak(m));
+        StressRibbon ribbon = StressRibbonBuilder.build(m.snapshot(), StressPalette.SIGNED_DEFAULT,
+                StressRibbonBuilder.memberPeak(m.snapshot()));
 
         StressRibbon.Band top = ribbon.bands().stream()
                 .filter(b -> b.fibre().equals("TOP_Y")).findFirst().orElseThrow();
@@ -580,10 +580,10 @@ class SidecarEngineTest {
         double centre = (n - 1) / 2.0 * 1000.0 + 500.0;
         double expect = 0.0229051 / 1.3 * (1 + SLAB_NU) * Q_SLAB * a * a;
 
-        Optional<ShellMesh.Hit> hit = ShellMesh.locate(r.shells(), new Vec3d(centre, 64500, centre));
+        Optional<ShellMesh.Hit> hit = ShellMesh.locate(r.snapshot().shells(), new Vec3d(centre, 64500, centre));
         assertTrue(hit.isPresent());
         assertEquals(0.0, hit.get().outsideMm(), 1e-9, "the plate centre is inside a facet");
-        double got = hit.get().shell().field().orElseThrow().momentAt(hit.get().xi(), hit.get().eta()).mxx();
+        double got = r.shell(hit.get().shell().id()).orElseThrow().field().orElseThrow().momentAt(hit.get().xi(), hit.get().eta()).mxx();
         assertEquals(expect, Math.abs(got), 0.01 * expect,
                 "span moment within 1% at " + (n - 1) + " elements");
     }
@@ -623,13 +623,13 @@ class SidecarEngineTest {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 Vec3d centre = new Vec3d(i * 1000 + 500, 64500, j * 1000 + 500);
-                ShellMesh.Hit h = ShellMesh.locate(r.shells(), centre).orElseThrow();
+                ShellMesh.Hit h = ShellMesh.locate(r.snapshot().shells(), centre).orElseThrow();
                 assertEquals(0.0, h.outsideMm(), 1e-6, "centre of block " + i + "," + j);
             }
         }
         // The outer face of the first block is half a block beyond the last node, and no
         // further: a larger overshoot would mean the wrong facet had been picked.
-        ShellMesh.Hit outer = ShellMesh.locate(r.shells(), new Vec3d(0, 64500, 3500)).orElseThrow();
+        ShellMesh.Hit outer = ShellMesh.locate(r.snapshot().shells(), new Vec3d(0, 64500, 3500)).orElseThrow();
         assertEquals(500.0, outer.outsideMm(), 1e-6);
         assertEquals(-1.0, outer.xi(), 1e-12, "clamped onto the facet edge, not past it");
     }

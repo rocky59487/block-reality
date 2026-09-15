@@ -1,0 +1,112 @@
+_XSERVTransmkdir: Mode of /tmp/.X11-unix should be set to 1777
+_XSERVTransSocketCreateListener: failed to bind listener
+_XSERVTransSocketUNIXCreateListener: ...SocketCreateListener() failed
+_XSERVTransMakeAllCOTSServerListeners: failed to create listener for unix
+sh: 1: /usr/bin/xkbcomp: not found
+sh: 1: /usr/bin/xkbcomp: not found
+XKB: Failed to compile keymap
+Keyboard initialization failed. This could be a missing or incorrect setup of xkeyboard-config.
+(EE) 
+Fatal server error:
+(EE) Failed to activate virtual core keyboard: 2(EE) 
+_XSERVTransmkdir: Mode of /tmp/.X11-unix should be set to 1777
+_XSERVTransSocketCreateListener: failed to bind listener
+_XSERVTransSocketUNIXCreateListener: ...SocketCreateListener() failed
+_XSERVTransMakeAllCOTSServerListeners: failed to create listener for unix
+sh: 1: /usr/bin/xkbcomp: not found
+sh: 1: /usr/bin/xkbcomp: not found
+XKB: Failed to compile keymap
+Keyboard initialization failed. This could be a missing or incorrect setup of xkeyboard-config.
+(EE) 
+Fatal server error:
+(EE) Failed to activate virtual core keyboard: 2(EE) 
+_XSERVTransmkdir: Mode of /tmp/.X11-unix should be set to 1777
+_XSERVTransSocketCreateListener: failed to bind listener
+_XSERVTransSocketUNIXCreateListener: ...SocketCreateListener() failed
+_XSERVTransMakeAllCOTSServerListeners: failed to create listener for unix
+sh: 1: /usr/bin/xkbcomp: not found
+sh: 1: /usr/bin/xkbcomp: not found
+XKB: Failed to compile keymap
+Keyboard initialization failed. This could be a missing or incorrect setup of xkeyboard-config.
+(EE) 
+Fatal server error:
+(EE) Failed to activate virtual core keyboard: 2(EE) 
+_XSERVTransmkdir: Mode of /tmp/.X11-unix should be set to 1777
+_XSERVTransSocketCreateListener: failed to bind listener
+_XSERVTransSocketUNIXCreateListener: ...SocketCreateListener() failed
+_XSERVTransMakeAllCOTSServerListeners: failed to create listener for unix
+sh: 1: /usr/bin/xkbcomp: not found
+sh: 1: /usr/bin/xkbcomp: not found
+XKB: Failed to compile keymap
+Keyboard initialization failed. This could be a missing or incorrect setup of xkeyboard-config.
+(EE) 
+Fatal server error:
+(EE) Failed to activate virtual core keyboard: 2(EE) 
+_XSERVTransmkdir: Mode of /tmp/.X11-unix should be set to 1777
+_XSERVTransSocketCreateListener: failed to bind listener
+_XSERVTransSocketUNIXCreateListener: ...SocketCreateListener() failed
+_XSERVTransMakeAllCOTSServerListeners: failed to create listener for unix
+sh: 1: /usr/bin/xkbcomp: not found
+sh: 1: /usr/bin/xkbcomp: not found
+XKB: Failed to compile keymap
+Keyboard initialization failed. This could be a missing or incorrect setup of xkeyboard-config.
+(EE) 
+Fatal server error:
+(EE) Failed to activate virtual core keyboard: 2(EE) 
+_XSERVTransmkdir: Mode of /tmp/.X11-unix should be set to 1777
+_XSERVTransSocketCreateListener: failed to bind listener
+_XSERVTransSocketUNIXCreateListener: ...SocketCreateListener() failed
+_XSERVTransMakeAllCOTSServerListeners: failed to create listener for unix
+sh: 1: /usr/bin/xkbcomp: not found
+sh: 1: /usr/bin/xkbcomp: not found
+XKB: Failed to compile keymap
+Keyboard initialization failed. This could be a missing or incorrect setup of xkeyboard-config.
+(EE) 
+Fatal server error:
+(EE) Failed to activate virtual core keyboard: 2(EE) 
+_XSERVTransmkdir: Mode of /tmp/.X11-unix should be set to 1777
+_XSERVTransSocketCreateListener: failed to bind listener
+_XSERVTransSocketUNIXCreateListener: ...SocketCreateListener() failed
+_XSERVTransMakeAllCOTSServerListeners: failed to create listener for unix
+sh: 1: /usr/bin/xkbcomp: not found
+sh: 1: /usr/bin/xkbcomp: not found
+XKB: Failed to compile keymap
+Keyboard initialization failed. This could be a missing or incorrect setup of xkeyboard-config.
+(EE) 
+Fatal server error:
+(EE) Failed to activate virtual core keyboard: 2(EE) 
+_XSERVTransmkdir: Mode of /tmp/.X11-unix should be set to 1777
+_XSERVTransSocketCreateListener: failed to bind listener
+_XSERVTransSocketUNIXCreateListener: ...SocketCreateListener() failed
+_XSERVTransMakeAllCOTSServerListeners: failed to create listener for unix
+sh: 1: /usr/bin/xkbcomp: not found
+sh: 1: /usr/bin/xkbcomp: not found
+XKB: Failed to compile keymap
+Keyboard initialization failed. This could be a missing or incorrect setup of xkeyboard-config.
+(EE) 
+Fatal server error:
+(EE) Failed to activate virtual core keyboard: 2(EE) 
+_XSERVTransmkdir: Mode of /tmp/.X11-unix should be set to 1777
+_XSERVTransSocketCreateListener: failed to bind listener
+_XSERVTransSocketUNIXCreateListener: ...SocketCreateListener() failed
+_XSERVTransMakeAllCOTSServerListeners: failed to create listener for unix
+sh: 1: /usr/bin/xkbcomp: not found
+sh: 1: /usr/bin/xkbcomp: not found
+XKB: Failed to compile keymap
+Keyboard initialization failed. This could be a missing or incorrect setup of xkeyboard-config.
+(EE) 
+Fatal server error:
+(EE) Failed to activate virtual core keyboard: 2(EE) 
+_XSERVTransmkdir: Mode of /tmp/.X11-unix should be set to 1777
+_XSERVTransSocketCreateListener: failed to bind listener
+_XSERVTransSocketUNIXCreateListener: ...SocketCreateListener() failed
+_XSERVTransMakeAllCOTSServerListeners: failed to create listener for unix
+sh: 1: /usr/bin/xkbcomp: not found
+sh: 1: /usr/bin/xkbcomp: not found
+XKB: Failed to compile keymap
+Keyboard initialization failed. This could be a missing or incorrect setup of xkeyboard-config.
+(EE) 
+Fatal server error:
+(EE) Failed to activate virtual core keyboard: 2(EE) 
+/home/rocky/br-render-tools/root/usr/bin/xvfb-run: 91: kill: No such process
+

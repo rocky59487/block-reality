@@ -1,0 +1,16 @@
+// Both the standalone core build and Forge consume the same canonical BSI identity.
+// No checked-in resource copy: the handshake always describes contract/ in this checkout.
+tasks.named('processResources') {
+    def contractDir = rootProject.file('../contract')
+    inputs.dir contractDir
+    from(contractDir) {
+        include 'CONTRACT_SHA256'
+        include 'bsi.schema.json'
+        into 'blockreality/contract'
+    }
+    doFirst {
+        if (!new File(contractDir, 'CONTRACT_SHA256').isFile()) {
+            throw new GradleException('contract/CONTRACT_SHA256 is missing: no BSI identity to ship')
+        }
+    }
+}

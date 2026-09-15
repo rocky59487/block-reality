@@ -1,0 +1,36 @@
+> Task :downloadMcpConfig
+> Task :extractSrg UP-TO-DATE
+> Task :createMcpToSrg UP-TO-DATE
+> Task :compileJava UP-TO-DATE
+> Task :bundleEngines UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jar
+> Task :reobfJar
+
+> Task :checkNativeOnlyJar
+{
+  "classes": 201,
+  "errors": [],
+  "sha256": "b0a3f9447cfcc3c2f22659c0c6e0705fe24aa57b9591c48d10e300f6d8adfd35",
+  "mutations": [
+    {
+      "arm": "bundled-legacy",
+      "compileExit": 0,
+      "refused": [
+        "forbidden entry: com/blockreality/testlegacy/Forbidden.class",
+        "forbidden constant: com/blockreality/testlegacy/Forbidden.class -> com/blockreality/testlegacy/"
+      ]
+    },
+    {
+      "arm": "dormant-reference",
+      "compileExit": 0,
+      "refused": [
+        "forbidden constant: com/blockreality/impl/ResurrectedReference.class -> com/blockreality/testlegacy/"
+      ]
+    }
+  ]
+}
+
+BUILD SUCCESSFUL in 4s
+9 actionable tasks: 4 executed, 5 up-to-date

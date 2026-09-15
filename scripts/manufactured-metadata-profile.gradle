@@ -1,0 +1,20 @@
+// Opt-in metadata-only cost recorder. Never part of a normal jar or check invocation.
+allprojects { afterEvaluate { p ->
+    if (p.name == 'core') {
+        def profile = p.sourceSets.create('manufacturedMetadataProfile') {
+            java.srcDir 'src/profile/java'
+            java.include 'com/blockreality/core/transaction/ManufacturedMetadataProfile.java'
+            compileClasspath += p.sourceSets.main.output + p.configurations.compileClasspath
+            runtimeClasspath += p.sourceSets.main.output + p.configurations.runtimeClasspath
+        }
+        p.tasks.register('manufacturedMetadataProfile', JavaExec) {
+            dependsOn p.tasks.named(profile.classesTaskName)
+            classpath = profile.runtimeClasspath
+            mainClass = 'com.blockreality.core.transaction.ManufacturedMetadataProfile'
+            jvmArgs '-Xms256m', '-Xmx2g'
+            doFirst {
+                args System.getProperty('br.metadataMode'), System.getProperty('br.metadataFixture'), System.getProperty('br.metadataOutput')
+            }
+        }
+    }
+} }

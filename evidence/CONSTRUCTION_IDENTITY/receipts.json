@@ -1,0 +1,47 @@
+{
+  "criteria": [
+    "735fa0a",
+    "e30c416"
+  ],
+  "parent": "cfaeb798abab7c7346fa6f807e761fd56042f20d",
+  "native_source": "95a03e82bbc50c53eac97b5289b79d8e640f8075",
+  "native_sha256": "bbf38ff3d4633d4c9e0e7f42fb87e1e3183a6f9d7418ed88432b05392b36c121",
+  "contract_sha256": "4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801",
+  "server_gates": {
+    "server-first.json": {
+      "checks": 47,
+      "passed": 47
+    },
+    "server-final.json": {
+      "checks": 47,
+      "passed": 47
+    },
+    "wr-server-final.json": {
+      "checks": 13,
+      "passed": 13
+    }
+  },
+  "engine_changed": false,
+  "client_materials_baseline_changed": false,
+  "server_source_text_lf_sha256": {
+    "mod/core/src/main/java/com/blockreality/core/world/ConstructionCodec.java": "4b5423dae8f09f83be1a705022c4fe4e495de676f7c01fd2cb478d67dd2450b2",
+    "mod/core/src/main/java/com/blockreality/core/world/ConstructionDeclaration.java": "a8ee9bf9c9a4b291f5b04a3342f6969ab193f98d850aa1ef1e10f611438b3972",
+    "mod/core/src/main/java/com/blockreality/core/world/ConstructionLedger.java": "149ca34ea79ce00cc3821e72d65b5256692ff8223ae208893b112bd66d7d73ca",
+    "mod/core/src/main/java/com/blockreality/core/world/ArtifactAnalysisLinks.java": "9c6471838c71d203c9149a7a51a9aa079f7d13e6328191ded9b7fd1332ff186c",
+    "forge/src/main/java/com/blockreality/impl/server/WorldIndexData.java": "863033db90b667aa90d5f632d80d7474e6b6de95ccab8e268022ff182309acfd",
+    "forge/src/main/java/com/blockreality/impl/server/StructureManager.java": "bbaf447c074d9bc7ffef9cb3f6f54fea700d79411cba2010ed1dc951f77fb71e",
+    "forge/src/main/java/com/blockreality/impl/block/StructuralBlock.java": "77e53b7fb74531cdee83fe8d067bcfd037bc5ed0422655289c56bd451c5fea2c",
+    "forge/src/main/java/com/blockreality/impl/command/BRCommand.java": "a190115706eb55f7a9343b22140da3d550a6510e861c1bd37e968cc1704e5ca9"
+  },
+  "final_source_text_lf_sha256": {
+    "mod/core/src/main/java/com/blockreality/core/world/ConstructionCodec.java": "4b5423dae8f09f83be1a705022c4fe4e495de676f7c01fd2cb478d67dd2450b2",
+    "mod/core/src/main/java/com/blockreality/core/world/ConstructionDeclaration.java": "a8ee9bf9c9a4b291f5b04a3342f6969ab193f98d850aa1ef1e10f611438b3972",
+    "mod/core/src/main/java/com/blockreality/core/world/ConstructionLedger.java": "7084dba8ccbfa6aa30801207077906f7ad92e63905921a3932eb0292998d0715",
+    "mod/core/src/main/java/com/blockreality/core/world/ArtifactAnalysisLinks.java": "9c6471838c71d203c9149a7a51a9aa079f7d13e6328191ded9b7fd1332ff186c",
+    "forge/src/main/java/com/blockreality/impl/server/WorldIndexData.java": "863033db90b667aa90d5f632d80d7474e6b6de95ccab8e268022ff182309acfd",
+    "forge/src/main/java/com/blockreality/impl/server/StructureManager.java": "bbaf447c074d9bc7ffef9cb3f6f54fea700d79411cba2010ed1dc951f77fb71e",
+    "forge/src/main/java/com/blockreality/impl/block/StructuralBlock.java": "77e53b7fb74531cdee83fe8d067bcfd037bc5ed0422655289c56bd451c5fea2c",
+    "forge/src/main/java/com/blockreality/impl/command/BRCommand.java": "a190115706eb55f7a9343b22140da3d550a6510e861c1bd37e968cc1704e5ca9"
+  },
+  "post_server_delta": "ConstructionLedger.rememberDestruction rejects Long.MAX_VALUE before recording a destruction; full core/Forge suites and jar audit rerun."
+}

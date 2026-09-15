@@ -1,0 +1,51 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes
+> Task :core:compileTestJava
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses
+
+> Task :core:test
+
+GameInputNativeTest > refusedVocabularyRedeclarationInvalidatesOldWorldAndNames() PASSED
+
+GameInputNativeTest > fullGameVocabularyAndSnapshotReachTheRealEngine() PASSED
+
+BsiAnalysisNativeTest > realCommitResultsShareNativeFlagsSamplesAndLifecycle() PASSED
+
+InProcessBucklingTest > actualBudgetRefusalAndGreenhillAreDistinct() PASSED
+
+InProcessBucklingTest > actualEigenAndMixedFlagsReachTheSharedAnalysis() PASSED
+
+InProcessEngineTest > thisBuildKnowsWhichContractItSpeaks() PASSED
+
+InProcessEngineTest > aCantileverUnderItsOwnWeightComesBackWithTheClosedFormReaction() PASSED
+
+InProcessEngineTest > aForeignContractHashIsRefusedAndNothingElseIsSent() PASSED
+
+InProcessEngineTest > anEngineThatIsNotOneIsRefusedWithAReason() PASSED
+
+InProcessEngineTest > openOptionsStayInsideWhatTheContractAccepts() PASSED
+
+InProcessRecoveryTest > nativeOptInSidesAndGoverningIdentityReachDisplay() PASSED
+
+InProcessRecoveryTest > nativeShellFramesAndSurfaceStorageAreCoherent() PASSED
+
+InProcessRecoveryTest > nativeBeamSamplesAndPointLoadSidesReachTheSharedDisplay() PASSED
+
+InProcessRecoveryTest > cantileverFaceSignsAndStorageMatchClosedForm() PASSED
+
+InProcessRecoveryTest > nativeShellRecoveryFeedsTheSameDisplayAndPickingPath() PASSED
+
+InProcessRecoveryTest > coupledSlabWeightAndTransformsAreInvariant() PASSED
+
+InProcessRecoveryTest > unifiedAnalysisKeepsTheNativeShellFlagsAndSamples() PASSED
+
+InProcessRecoveryTest > memberGeometryUsesActualAxesRotatedSectionAndF64WorldPositions() PASSED
+
+BUILD SUCCESSFUL in 3s
+7 actionable tasks: 3 executed, 4 up-to-date

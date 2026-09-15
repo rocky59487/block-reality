@@ -1,0 +1,243 @@
+{
+  "status": "PASS",
+  "production_jar_unchanged": true,
+  "cases": [
+    {
+      "region_sha256": "21b9e6f6a343082492b6659a0653e4132f321464c6c6cb95c189ca48c090f2d6",
+      "chunk_nbt_sha256": "266cdcc0ccd7d107364ccd348cdba625640c0e32ed484a6fcb806376442ac1a8",
+      "sector_offset": 2,
+      "sectors": 1,
+      "compression": 2,
+      "palette_size": 2,
+      "palette_index": 0,
+      "bits": 4,
+      "point": "prepared",
+      "world_after": false,
+      "player_after": false,
+      "disk_cell": [
+        10,
+        {
+          "Name": [
+            8,
+            "minecraft:air"
+          ]
+        }
+      ],
+      "player_file_sha256": "4881997dfe0eac3b755347f8416603057b75d2b8ff5eb9765291a23a82973d83",
+      "status": "PASS"
+    },
+    {
+      "region_sha256": "fae63f87a1103f93532de5fb609bbffe2b0b5f91f00836b9298dfaf298643de6",
+      "chunk_nbt_sha256": "266cdcc0ccd7d107364ccd348cdba625640c0e32ed484a6fcb806376442ac1a8",
+      "sector_offset": 2,
+      "sectors": 1,
+      "compression": 2,
+      "palette_size": 2,
+      "palette_index": 0,
+      "bits": 4,
+      "point": "world-applied",
+      "world_after": false,
+      "player_after": false,
+      "disk_cell": [
+        10,
+        {
+          "Name": [
+            8,
+            "minecraft:air"
+          ]
+        }
+      ],
+      "player_file_sha256": "4881997dfe0eac3b755347f8416603057b75d2b8ff5eb9765291a23a82973d83",
+      "status": "PASS"
+    },
+    {
+      "region_sha256": "e65531c0334b270e8df70c01fdb531325c287b6531fa51828a9aa1f9eeae9715",
+      "chunk_nbt_sha256": "266cdcc0ccd7d107364ccd348cdba625640c0e32ed484a6fcb806376442ac1a8",
+      "sector_offset": 2,
+      "sectors": 1,
+      "compression": 2,
+      "palette_size": 2,
+      "palette_index": 0,
+      "bits": 4,
+      "point": "player-applied",
+      "world_after": false,
+      "player_after": false,
+      "disk_cell": [
+        10,
+        {
+          "Name": [
+            8,
+            "minecraft:air"
+          ]
+        }
+      ],
+      "player_file_sha256": "4881997dfe0eac3b755347f8416603057b75d2b8ff5eb9765291a23a82973d83",
+      "status": "PASS"
+    },
+    {
+      "region_sha256": "80dfdd4d2c012cbc5dda695592c71cf111fe6da0e4b41e9b83f4ca60772de5cc",
+      "chunk_nbt_sha256": "1aab6942fd4171761910f5181fd104c817cea06ff8e2c17b1e6beb571664e2bf",
+      "sector_offset": 3,
+      "sectors": 1,
+      "compression": 2,
+      "palette_size": 3,
+      "palette_index": 2,
+      "bits": 4,
+      "point": "world-durable",
+      "world_after": true,
+      "player_after": false,
+      "disk_cell": [
+        10,
+        {
+          "Properties": [
+            10,
+            {
+              "axis": [
+                8,
+                "y"
+              ]
+            }
+          ],
+          "Name": [
+            8,
+            "blockreality:steel_beam"
+          ]
+        }
+      ],
+      "player_file_sha256": "4881997dfe0eac3b755347f8416603057b75d2b8ff5eb9765291a23a82973d83",
+      "status": "PASS"
+    },
+    {
+      "region_sha256": "6393b0dc8dfe749580d48c4aec73461bce12c2dd29cb6a42d97749edb4e0b5c0",
+      "chunk_nbt_sha256": "1aab6942fd4171761910f5181fd104c817cea06ff8e2c17b1e6beb571664e2bf",
+      "sector_offset": 3,
+      "sectors": 1,
+      "compression": 2,
+      "palette_size": 3,
+      "palette_index": 2,
+      "bits": 4,
+      "point": "player-durable",
+      "world_after": true,
+      "player_after": true,
+      "disk_cell": [
+        10,
+        {
+          "Properties": [
+            10,
+            {
+              "axis": [
+                8,
+                "y"
+              ]
+            }
+          ],
+          "Name": [
+            8,
+            "blockreality:steel_beam"
+          ]
+        }
+      ],
+      "player_file_sha256": "fb024d1cb4d0d702d32a40ecd73fe3f44b1b073fe8fc3d7280fe17f75dcadc4d",
+      "status": "PASS"
+    },
+    {
+      "region_sha256": "55de67cc804cc875b957f6c7b81fdc9f0ed3a4d5e502286f8dc6c9d53e4f6187",
+      "chunk_nbt_sha256": "1aab6942fd4171761910f5181fd104c817cea06ff8e2c17b1e6beb571664e2bf",
+      "sector_offset": 3,
+      "sectors": 1,
+      "compression": 2,
+      "palette_size": 3,
+      "palette_index": 2,
+      "bits": 4,
+      "point": "committed-temp",
+      "world_after": true,
+      "player_after": true,
+      "disk_cell": [
+        10,
+        {
+          "Properties": [
+            10,
+            {
+              "axis": [
+                8,
+                "y"
+              ]
+            }
+          ],
+          "Name": [
+            8,
+            "blockreality:steel_beam"
+          ]
+        }
+      ],
+      "player_file_sha256": "fb024d1cb4d0d702d32a40ecd73fe3f44b1b073fe8fc3d7280fe17f75dcadc4d",
+      "status": "PASS"
+    },
+    {
+      "region_sha256": "58bd153e159a13c1c603feb2fe54f67462e8647f82e744fbe960b77774df1bfb",
+      "chunk_nbt_sha256": "1aab6942fd4171761910f5181fd104c817cea06ff8e2c17b1e6beb571664e2bf",
+      "sector_offset": 3,
+      "sectors": 1,
+      "compression": 2,
+      "palette_size": 3,
+      "palette_index": 2,
+      "bits": 4,
+      "point": "committed",
+      "world_after": true,
+      "player_after": true,
+      "disk_cell": [
+        10,
+        {
+          "Properties": [
+            10,
+            {
+              "axis": [
+                8,
+                "y"
+              ]
+            }
+          ],
+          "Name": [
+            8,
+            "blockreality:steel_beam"
+          ]
+        }
+      ],
+      "player_file_sha256": "fb024d1cb4d0d702d32a40ecd73fe3f44b1b073fe8fc3d7280fe17f75dcadc4d",
+      "status": "PASS"
+    },
+    {
+      "region_sha256": "044548bf2a475afc93b5509706b8388ac09b945323195acb8b8cc8a64ab4a416",
+      "chunk_nbt_sha256": "1aab6942fd4171761910f5181fd104c817cea06ff8e2c17b1e6beb571664e2bf",
+      "sector_offset": 3,
+      "sectors": 1,
+      "compression": 2,
+      "palette_size": 3,
+      "palette_index": 2,
+      "bits": 4,
+      "point": "published",
+      "world_after": true,
+      "player_after": true,
+      "disk_cell": [
+        10,
+        {
+          "Properties": [
+            10,
+            {
+              "axis": [
+                8,
+                "y"
+              ]
+            }
+          ],
+          "Name": [
+            8,
+            "blockreality:steel_beam"
+          ]
+        }
+      ],
+      "player_file_sha256": "fb024d1cb4d0d702d32a40ecd73fe3f44b1b073fe8fc3d7280fe17f75dcadc4d",
+      "status": "PASS"
+    }
+  ]
+}

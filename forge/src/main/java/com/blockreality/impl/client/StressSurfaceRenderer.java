@@ -10,6 +10,7 @@ import com.blockreality.api.render.Rgb;
 import com.blockreality.api.render.StressPalette;
 import com.blockreality.core.render.DrawableCells;
 import com.blockreality.core.render.ShellMesh;
+import com.blockreality.core.engine.ProductForm;
 import com.blockreality.impl.BRContent;
 import com.blockreality.impl.block.StructuralBlock;
 import com.blockreality.impl.BlockRealityMod;
@@ -150,7 +151,20 @@ public final class StressSurfaceRenderer {
                 // Gone from the world this frame: painting a stress on empty air is a
                 // claim about something that is not there.
                 if (!occupied.contains(DrawableCells.key(b))) continue;
-                drawBlock(buf, m, b, f, occupied, flat, scale, alpha);
+                var state = mc.level.getBlockState(new BlockPos(b.x(), b.y(), b.z()));
+                var block = (StructuralBlock)state.getBlock();
+                var form = block.form(state);
+                if (!form.resolved()) continue;
+                var binding = com.blockreality.core.engine.GameVocabulary.binding(block.materialToken(), block.sectionToken());
+                if (!binding.material().equals(member.material())) continue;
+                if (binding.section() != null) {
+                    if (!binding.section().equals(member.section())) continue;
+                    // A changed placement axis must not receive an old frame's samples while pending.
+                    int axis = state.getValue(StructuralBlock.AXIS).wire();
+                    double direction = axis == 0 ? f.ax().x() : axis == 1 ? f.ax().y() : f.ax().z();
+                    if (Math.abs(direction) < 1 - 1e-6) continue;
+                }
+                drawBlock(buf, m, b, f, form, occupied, flat, scale, alpha);
             }
         }
 
@@ -204,6 +218,12 @@ public final class StressSurfaceRenderer {
                                                          b.z() * 1000.0 + 500));
             if (hit.isEmpty()) continue;
             ShellMesh.Hit h = hit.get();
+            var state = Minecraft.getInstance().level.getBlockState(new BlockPos(b.x(), b.y(), b.z()));
+            var block = (StructuralBlock)state.getBlock();
+            var form = block.form(state);
+            var binding = com.blockreality.core.engine.GameVocabulary.binding(block.materialToken(), block.sectionToken());
+            if (!form.resolved() || !form.box().equals(ProductForm.CELL) || binding.section() != null
+                    || !binding.material().equals(h.shell().material())) continue;
             Rgb flat = switch (mode) {
                 case UTILIZATION -> StressPalette.utilization(h.shell().dc(), h.shell().overloaded());
                 case MATERIAL -> StressPalette.material(h.shell().material());
@@ -211,7 +231,7 @@ public final class StressSurfaceRenderer {
             };
 
             for (int[] face : FACES) {
-                if (occupied.contains(key(b.x() + face[0], b.y() + face[1], b.z() + face[2]))) continue;
+                if (covered(b, ProductForm.CELL, face, occupied)) continue;
 
                 double cx = b.x() + 0.5 + face[0] * (0.5 + LIFT);
                 double cy = b.y() + 0.5 + face[1] * (0.5 + LIFT);
@@ -259,27 +279,41 @@ public final class StressSurfaceRenderer {
     private static double clamp(double v) { return v < -1 ? -1 : Math.min(v, 1); }
 
     private static void drawBlock(BufferBuilder buf, Matrix4f m, BlockKey b, BeamDisplayField f,
-                                  Set<Long> occupied, Rgb flat, double scale, float alpha) {
+                                  ProductForm form, Set<Long> occupied, Rgb flat, double scale, float alpha) {
+        var bounds = form.box();
         for (int[] face : FACES) {
-            // A face shared with another structural block is interior: not a surface.
-            if (occupied.contains(key(b.x() + face[0], b.y() + face[1], b.z() + face[2]))) continue;
+            if (covered(b, bounds, face, occupied)) continue;
 
             // Face centre in blocks, then the two in-plane half-axes.
-            double cx = b.x() + 0.5 + face[0] * (0.5 + LIFT);
-            double cy = b.y() + 0.5 + face[1] * (0.5 + LIFT);
-            double cz = b.z() + 0.5 + face[2] * (0.5 + LIFT);
+            double cx = b.x() + 0.5 + face[0] * (bounds.half(0) + LIFT);
+            double cy = b.y() + 0.5 + face[1] * (bounds.half(1) + LIFT);
+            double cz = b.z() + 0.5 + face[2] * (bounds.half(2) + LIFT);
+            double hu = faceHalf(bounds, face, 3), hv = faceHalf(bounds, face, 6);
 
             for (int i = 0; i < GRID; i++) {
                 for (int j = 0; j < GRID; j++) {
-                    double u0 = -0.5 + (double) i / GRID, u1 = -0.5 + (double) (i + 1) / GRID;
-                    double v0 = -0.5 + (double) j / GRID, v1 = -0.5 + (double) (j + 1) / GRID;
+                    double u0 = -hu + 2*hu*i/GRID, u1 = -hu + 2*hu*(i+1)/GRID;
+                    double v0 = -hv + 2*hv*j/GRID, v1 = -hv + 2*hv*(j+1)/GRID;
 
                     drawBeamTile(buf, m, List.of(point(cx, cy, cz, face, u0, v0),
                             point(cx, cy, cz, face, u1, v0), point(cx, cy, cz, face, u1, v1),
-                            point(cx, cy, cz, face, u0, v1)), f, flat, scale, alpha);
+                            point(cx, cy, cz, face, u0, v1)), f, form, flat, scale, alpha);
                 }
             }
         }
+    }
+
+    private static double faceHalf(ProductForm.Box box, int[] face, int offset) {
+        return box.half(0)*Math.abs(face[offset]) + box.half(1)*Math.abs(face[offset+1]) + box.half(2)*Math.abs(face[offset+2]);
+    }
+
+    private static boolean covered(BlockKey block, ProductForm.Box bounds, int[] face, Set<Long> occupied) {
+        int x = block.x()+face[0], y = block.y()+face[1], z = block.z()+face[2];
+        if (!occupied.contains(key(x, y, z))) return false;
+        var state = Minecraft.getInstance().level.getBlockState(new BlockPos(x, y, z));
+        if (!(state.getBlock() instanceof StructuralBlock neighbor)) return false;
+        int axis = face[0] != 0 ? 0 : face[1] != 0 ? 1 : 2;
+        return bounds.coveredBy(neighbor.form(state).box(), axis, face[axis]);
     }
 
     private static Vec3d point(double cx, double cy, double cz, int[] face, double u, double v) {
@@ -288,12 +322,13 @@ public final class StressSurfaceRenderer {
     }
 
     private static void drawBeamTile(BufferBuilder buf, Matrix4f m, List<Vec3d> tile,
-                                     BeamDisplayField f, Rgb flat, double scale, float alpha) {
+                                     BeamDisplayField f, ProductForm form, Rgb flat, double scale, float alpha) {
         if (flat != null) {
             for (Vec3d p : tile) beamVertex(buf, m, p, flat, alpha);
             return;
         }
-        for (var polygon : com.blockreality.core.render.BeamSurfacePatch.sample(f, tile, 500)) {
+        for (var polygon : com.blockreality.core.render.BeamSurfacePatch.sample(f, tile,
+                form.depthHalfMetres()*1000, form.widthHalfMetres()*1000)) {
             // Triangle fan encoded as degenerate quads, sharing the existing QUADS render pass.
             for (int k = 1; k + 1 < polygon.size(); k++) {
                 for (int index : new int[]{0, k, k + 1, k + 1}) {

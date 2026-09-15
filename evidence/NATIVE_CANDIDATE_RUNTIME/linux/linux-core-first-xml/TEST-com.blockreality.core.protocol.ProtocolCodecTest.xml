@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.protocol.ProtocolCodecTest" tests="18" skipped="0" failures="0" errors="0" timestamp="2026-09-10T00:24:35" hostname="rockylaptop" time="0.023">
+  <properties/>
+  <testcase name="aCompleteHelloYieldsTheCatalogue()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.0"/>
+  <testcase name="errorLineBecomesAFailedResult()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.0"/>
+  <testcase name="unknownGoverningFibreFailsTheReplyRatherThanDegrading()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.002"/>
+  <testcase name="wrongTypedRequiredFieldsFail()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.001"/>
+  <testcase name="replyForTheWrongRevisionIsRejected()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.0"/>
+  <testcase name="absentNeutralAxisStaysAbsent()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.001"/>
+  <testcase name="solveRequestCarriesBlocksAndMaterialsOnly()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.001"/>
+  <testcase name="unknownFailModeDegradesRatherThanThrowingInTheApiHelper()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.001"/>
+  <testcase name="helloWithoutShmIsJsonOnlyNotRejected()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.0"/>
+  <testcase name="aCompleteReplyDecodesWithEveryFieldCarried()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.002"/>
+  <testcase name="helloIsRejectedWhenTheCatalogueCannotServeAsTheIndexAbi()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.001"/>
+  <testcase name="truncatedReplyIsAFailureNotAnException()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.0"/>
+  <testcase name="solveShmDoorbellCarriesRevisionAndByteCount()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.0"/>
+  <testcase name="aRevisionWrittenAsADoubleIsRejected()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.0"/>
+  <testcase name="helloIsRejectedWhenNotOk()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.001"/>
+  <testcase name="bucklingIsWrittenOnlyWhenOff()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.0"/>
+  <testcase name="missingRequiredFieldsFailTheReplyAndNameTheField()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.003"/>
+  <testcase name="singularReplyIsOkButNotUsable()" classname="com.blockreality.core.protocol.ProtocolCodecTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

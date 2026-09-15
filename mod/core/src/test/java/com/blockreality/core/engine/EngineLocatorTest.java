@@ -47,10 +47,13 @@ class EngineLocatorTest {
     }
 
     @Test
-    void aConfiguredPathThatDoesNotExistFallsThroughRatherThanFailing(@TempDir Path dir) throws Exception {
+    void anInvalidExplicitPathCannotSelectADifferentBundledEngine(@TempDir Path dir) throws Exception {
         Path bundled = Files.write(dir.resolve("bundled.so"), new byte[]{2});
-        EngineLocator.Located found = EngineLocator.locate(dir.resolve("nope.so").toString(), null, null, null, bundled);
-        assertEquals(bundled, found.path(), "a stale config entry must not disable an engine that is present");
+        String missing = dir.resolve("nope.so").toString();
+        assertThrows(IllegalArgumentException.class, () -> EngineLocator.locate(missing, null, null, null, bundled));
+        assertThrows(IllegalArgumentException.class, () -> EngineLocator.locate(null, missing, null, null, bundled));
+        assertThrows(IllegalArgumentException.class, () -> EngineLocator.locate(null, null, missing, null, bundled));
+        assertThrows(IllegalArgumentException.class, () -> EngineLocator.locate("bad\0path", null, null, null, bundled));
     }
 
     @Test

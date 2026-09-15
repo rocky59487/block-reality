@@ -1,6 +1,6 @@
 package com.blockreality.core;
 
-import com.blockreality.api.ShellFieldSpec;
+import com.blockreality.testlegacy.ShellFieldSpec;
 import com.blockreality.api.geom.Vec3d;
 import org.junit.jupiter.api.Test;
 

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.diagnostics.PipelineProfileTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-09T21:03:03" hostname="ROCKYLAPTOP" time="0.051">
+  <properties/>
+  <testcase name="stopAndRestartRejectOldWorkAndPreserveImmutableStoppedSnapshot()" classname="com.blockreality.core.diagnostics.PipelineProfileTest" time="0.051">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;{APPLY=Summary[observed=1, retained=1, p50Ns=3, p95Ns=3, maxNs=3]}&gt; but was: &lt;{APPLY=Summary[observed=1, retained=1, p50Ns=3, p95Ns=3, maxNs=3], NATIVE_CALL=Summary[observed=1, retained=1, p50Ns=3, p95Ns=3, maxNs=3]}&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;{APPLY=Summary[observed=1, retained=1, p50Ns=3, p95Ns=3, maxNs=3]}&gt; but was: &lt;{APPLY=Summary[observed=1, retained=1, p50Ns=3, p95Ns=3, maxNs=3], NATIVE_CALL=Summary[observed=1, retained=1, p50Ns=3, p95Ns=3, maxNs=3]}&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at app//com.blockreality.core.diagnostics.PipelineProfileTest.stopAndRestartRejectOldWorkAndPreserveImmutableStoppedSnapshot(PipelineProfileTest.java:28)
+	at java.base@17.0.18/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base@17.0.18/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.18/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

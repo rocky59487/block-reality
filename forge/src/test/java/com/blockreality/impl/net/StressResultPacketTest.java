@@ -5,11 +5,11 @@ import com.blockreality.api.BucklingState;
 import com.blockreality.api.EndForces;
 import com.blockreality.api.GoverningFibre;
 import com.blockreality.api.MemberSnapshot;
-import com.blockreality.api.ShellFieldSpec;
+import com.blockreality.testlegacy.ShellFieldSpec;
 import com.blockreality.api.ShellSnapshot;
 import com.blockreality.api.UnassignedBlocks;
 import com.blockreality.api.UnassignedReason;
-import com.blockreality.api.StressFieldSpec;
+import com.blockreality.testlegacy.StressFieldSpec;
 import com.blockreality.api.WorldRevision;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.api.geom.Vec3d;
@@ -53,12 +53,9 @@ class StressResultPacketTest {
 
     private static MemberSnapshot member(int id, double dc, int governingStation) {
         StressFieldSpec f = field(4000);
-        return new MemberSnapshot(id, "steel", "steel_rect_200x400", 4000, dc,
-                GoverningFibre.CRUSH, governingStation,
-                f.endI(), f.endJ(),
-                List.of(new BlockKey(id, 64, 0)),
-                f.stations(11),
-                Optional.of(f));
+        return new com.blockreality.testlegacy.MemberSnapshot(
+                id, "steel", "steel_rect_200x400", 4000, dc, GoverningFibre.CRUSH, governingStation, f.endI(),
+                f.endJ(), List.of(new BlockKey(id, 64, 0)), f.stations(11), Optional.of(f)).snapshot();
     }
 
     private static ShellSnapshot shell(int id, double dc) {
@@ -70,10 +67,8 @@ class StressResultPacketTest {
         ShellFieldSpec f = new ShellFieldSpec(corners,
                 new Vec3d(1, 0, 0), new Vec3d(0, 0, 1), new Vec3d(0, 1, 0),
                 200, -10, -10, 0, 1e5, 1e5, 0, 0, 0, mc);
-        return new ShellSnapshot(id, "concrete", "concrete_slab_200", 200, dc, dc, true, false,
-                List.of(new BlockKey(0, 70, 0), new BlockKey(1, 70, 0),
-                        new BlockKey(1, 70, 1), new BlockKey(0, 70, 1)),
-                Optional.of(f));
+        return new com.blockreality.testlegacy.ShellSnapshot(id, "concrete", "concrete_slab_200", 200, dc, dc, true, false, List.of(new BlockKey(0, 70, 0), new BlockKey(1, 70, 0),
+                        new BlockKey(1, 70, 1), new BlockKey(0, 70, 1)), Optional.of(f)).snapshot();
     }
 
     private static AnalysisResult result(List<MemberSnapshot> members, List<ShellSnapshot> shells,
@@ -91,9 +86,9 @@ class StressResultPacketTest {
         // point of N18-b: there is no such thing as a factor without a state.
         BucklingState state = bucklingFactor > 0
                 ? BucklingState.COMPUTED : BucklingState.NO_POSITIVE_EIGENVALUE;
-        return new AnalysisResult(new WorldRevision(9), true, false, "",
-                maxDc, governing, governingKind, 1, 0, 1e-14, bucklingFactor, state,
-                members, shells, unassigned);
+        return new AnalysisResult(
+                new WorldRevision(9), true, false, "", maxDc, governing, governingKind, 1, 0, 1e-14, bucklingFactor,
+                state, members, shells, unassigned, maxDc > 1.0, bucklingFactor > 0 && bucklingFactor <= 1.0);
     }
 
     @org.junit.jupiter.api.Test
@@ -118,8 +113,9 @@ class StressResultPacketTest {
         // "ran and found nothing" arrived looking exactly like "never ran".
         for (BucklingState s : BucklingState.values()) {
             if (s == BucklingState.COMPUTED || s == BucklingState.DISABLED_BY_SCALE) continue;
-            AnalysisResult r = new AnalysisResult(new WorldRevision(9), true, false, "",
-                    0.4, -1, "", 1, 0, 1e-14, 0, s, List.of(), List.of(), List.of());
+            AnalysisResult r = new AnalysisResult(
+                    new WorldRevision(9), true, false, "", 0.4, -1, "", 1, 0, 1e-14, 0, s, List.of(), List.of(),
+                    List.of(), false, false);
             StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
             assertTrue(out.valid(), s + ": " + out.invalidReason());
             assertEquals(s, out.bucklingState());
@@ -131,9 +127,9 @@ class StressResultPacketTest {
     void theHostSubstitutesDisabledByScaleAndNobodyElseCan() {
         // The engine says disabled-by-request because from its side that is all it knows.
         // Only this side knows the reason was size, and this is the one place it is said.
-        AnalysisResult asked = new AnalysisResult(new WorldRevision(9), true, false, "",
-                0.4, -1, "", 1, 0, 1e-14, 0, BucklingState.DISABLED_BY_REQUEST,
-                List.of(), List.of(), List.of());
+        AnalysisResult asked = new AnalysisResult(
+                new WorldRevision(9), true, false, "", 0.4, -1, "", 1, 0, 1e-14, 0,
+                BucklingState.DISABLED_BY_REQUEST, List.of(), List.of(), List.of(), false, false);
         StressResultPacket out = roundTrip(StressResultPacket.of(asked, DIM, true));
         assertEquals(BucklingState.DISABLED_BY_SCALE, out.bucklingState());
         assertTrue(out.bucklingSkipped());
@@ -144,17 +140,13 @@ class StressResultPacketTest {
     }
 
     @org.junit.jupiter.api.Test
-    void aFactorTooSmallForAFloatIsRestoredNotRejected() {
-        // The smallest positive double becomes 0.0f in transit. The state says a factor
-        // WAS computed and was positive; only its magnitude is lost, so the decoder puts
-        // back the smallest positive value rather than calling the packet a contradiction.
-        // Same treatment maxDc already gets, and for the same reason: the verdict travels
-        // as its own flag and never depended on this number.
+    void theSmallestDoubleFactorIsPreservedExactly() {
+        // Channel9 retains the original subnormal double and the independent flag.
         AnalysisResult r = result(List.of(), List.of(), 0.4, -1, "", Double.MIN_VALUE);
         StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
         assertTrue(out.valid(), out.invalidReason());
         assertEquals(BucklingState.COMPUTED, out.bucklingState());
-        assertTrue(out.bucklingFactor() > 0, "a computed factor must stay positive");
+        assertEquals(Double.MIN_VALUE, out.bucklingFactor(), "channel9 preserves the exact factor");
         assertTrue(out.bucklingCritical(), "0 < factor <= 1, decided on the server's double");
     }
 
@@ -186,11 +178,11 @@ class StressResultPacketTest {
         buf.writeVarLong(9);
         buf.writeUtf(DIM, 256);
         buf.writeBoolean(false);   // singular
-        buf.writeFloat(0.25f);     // maxDc
+        buf.writeDouble(0.25f);     // maxDc
         buf.writeBoolean(false);   // overCapacity
         buf.writeVarInt(1);        // islands
         buf.writeVarInt(0);        // singularIslands
-        buf.writeFloat(2.5f);      // bucklingFactor
+        buf.writeDouble(2.5f);      // bucklingFactor
         buf.writeBoolean(false);   // bucklingCritical
         buf.writeByte(BucklingState.NOT_ELIGIBLE.ordinal());   // ...which cannot have one
         for (int i = 0; i < UnassignedReason.values().length; i++) buf.writeVarInt(0);
@@ -210,11 +202,11 @@ class StressResultPacketTest {
         buf.writeVarLong(9);
         buf.writeUtf(DIM, 256);
         buf.writeBoolean(false);
-        buf.writeFloat(0.25f);
+        buf.writeDouble(0.25f);
         buf.writeBoolean(false);
         buf.writeVarInt(1);
         buf.writeVarInt(0);
-        buf.writeFloat(0f);
+        buf.writeDouble(0f);
         buf.writeBoolean(false);
         buf.writeByte(120);        // no such state
         for (int i = 0; i < UnassignedReason.values().length; i++) buf.writeVarInt(0);
@@ -287,9 +279,9 @@ class StressResultPacketTest {
         List<MemberSnapshot> members = new ArrayList<>();
         for (int i = 1; i <= 4; i++) {
             StressFieldSpec f = awkwardField(i * 7);
-            members.add(new MemberSnapshot(i, "steel", "steel_rect_200x400", 4000,
-                    0.37 * i, GoverningFibre.CRUSH, 5, f.endI(), f.endJ(),
-                    List.of(new BlockKey(i, 64, 0)), f.stations(11), Optional.of(f)));
+            members.add(new com.blockreality.testlegacy.MemberSnapshot(
+                    i, "steel", "steel_rect_200x400", 4000, 0.37 * i, GoverningFibre.CRUSH, 5, f.endI(), f.endJ(),
+                    List.of(new BlockKey(i, 64, 0)), f.stations(11), Optional.of(f)).snapshot());
         }
         AnalysisResult r = result(members, List.of(shell(1, 0.1)), 1.48, 4, "member", 3.75);
 
@@ -360,9 +352,9 @@ class StressResultPacketTest {
         // is exactly the case a guard exists for.
         String huge = "x".repeat(400);
         StressFieldSpec f = field(4000);
-        MemberSnapshot m = new MemberSnapshot(1, "steel", huge, 4000, 0.4,
-                GoverningFibre.CRUSH, 5, f.endI(), f.endJ(),
-                List.of(new BlockKey(1, 64, 0)), f.stations(11), Optional.of(f));
+        MemberSnapshot m = new com.blockreality.testlegacy.MemberSnapshot(
+                1, "steel", huge, 4000, 0.4, GoverningFibre.CRUSH, 5, f.endI(), f.endJ(),
+                List.of(new BlockKey(1, 64, 0)), f.stations(11), Optional.of(f)).snapshot();
         StressResultPacket out = roundTrip(
                 StressResultPacket.of(result(List.of(m), List.of(), 0.4, 1, "member", 0), DIM, false));
         assertTrue(out.valid(), out.invalidReason());
@@ -395,7 +387,7 @@ class StressResultPacketTest {
         assertEquals("steel_rect_200x400", m.section());
         assertEquals(List.of(new BlockKey(1, 64, 0)), m.blocks());
         assertTrue(m.display().isPresent());
-        assertTrue(m.field().isEmpty());
+        assertTrue(com.blockreality.testfixtures.NativeSnapshotChecks.hasNoLegacyField(m));
         assertEquals(11, m.stations().size(), "all supplied stations survive unchanged");
 
         assertEquals(1, out.shells().size());
@@ -403,7 +395,7 @@ class StressResultPacketTest {
         assertEquals("concrete_slab_200", s.plate());
         assertTrue(s.governingTopFace());
         assertTrue(s.display().isPresent());
-        assertTrue(s.field().isEmpty(), "client does not regenerate shell mechanics");
+        assertTrue(com.blockreality.testfixtures.NativeSnapshotChecks.hasNoLegacyField(s), "client does not regenerate shell mechanics");
     }
 
     @Test
@@ -491,11 +483,11 @@ class StressResultPacketTest {
         buf.writeVarLong(9);
         buf.writeUtf(DIM, 256);
         buf.writeBoolean(false);
-        buf.writeFloat(0.25f);
+        buf.writeDouble(0.25f);
         buf.writeBoolean(false);
         buf.writeVarInt(1);
         buf.writeVarInt(0);
-        buf.writeFloat(0f);    // bucklingFactor
+        buf.writeDouble(0f);    // bucklingFactor
         buf.writeBoolean(false);  // bucklingCritical
         buf.writeByte(BucklingState.NOT_ELIGIBLE.ordinal());   // bucklingState
         for (int i = 0; i < UnassignedReason.values().length; i++) {
@@ -529,9 +521,9 @@ class StressResultPacketTest {
     void anEmptyResultRoundTripsAsMechanismData() {
         // All-singular verdicts are broadcast with empty lists; the client's
         // mechanism branch depends on this arriving intact (#43).
-        AnalysisResult r = new AnalysisResult(new WorldRevision(4), true, true,
-                "no restrained structure", 0, -1, "", 1, 1, 0, 0,
-                BucklingState.NOT_ELIGIBLE, List.of(), List.of(), List.of());
+        AnalysisResult r = new AnalysisResult(
+                new WorldRevision(4), true, true, "no restrained structure", 0, -1, "", 1, 1, 0, 0,
+                BucklingState.NOT_ELIGIBLE, List.of(), List.of(), List.of(), false, false);
         StressResultPacket out = roundTrip(StressResultPacket.of(r, DIM, false));
         assertTrue(out.valid(), out.invalidReason());
         assertTrue(out.singular());

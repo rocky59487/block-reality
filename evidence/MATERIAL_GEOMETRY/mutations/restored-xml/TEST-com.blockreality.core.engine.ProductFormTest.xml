@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.engine.ProductFormTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-10T01:47:36" hostname="rockylaptop" time="0.02">
+  <properties/>
+  <testcase name="materialCellsNeverTurnLegacySectionNamesOrPanelAxesIntoPhysicalDimensions()" classname="com.blockreality.core.engine.ProductFormTest" time="0.012"/>
+  <testcase name="undeclaredMissingAndUnsupportedProductsRemainExplicitlyUnresolved()" classname="com.blockreality.core.engine.ProductFormTest" time="0.003"/>
+  <testcase name="changedCatalogueDimensionsReachTheShapeAndBothSamplingExtents()" classname="com.blockreality.core.engine.ProductFormTest" time="0.001"/>
+  <testcase name="onlyFullFaceContactHidesAScanSurface()" classname="com.blockreality.core.engine.ProductFormTest" time="0.001"/>
+  <testcase name="unequalDeclaredWidthsAndDepthsKeepTheirAxesInAllThreeOrientations()" classname="com.blockreality.core.engine.ProductFormTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

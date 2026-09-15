@@ -1,0 +1,5 @@
+{
+  "parent": "blockreality:block/timber_beam",
+  "loader": "blockreality:product",
+  "undeclared": true
+}

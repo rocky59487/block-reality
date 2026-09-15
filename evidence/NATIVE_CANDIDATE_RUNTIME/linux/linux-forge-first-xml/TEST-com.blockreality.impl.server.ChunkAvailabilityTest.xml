@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.server.ChunkAvailabilityTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-10T00:27:10" hostname="rockylaptop" time="0.008">
+  <properties/>
+  <testcase name="removingCoverageForgetsOldAvailabilityAndEmptyDomainDoesNotReadWorld()" classname="com.blockreality.impl.server.ChunkAvailabilityTest" time="0.004"/>
+  <testcase name="pollHasBoundedWorkAndApplyRejectsAnUnvisitedMissingChunk()" classname="com.blockreality.impl.server.ChunkAvailabilityTest" time="0.002"/>
+  <testcase name="demotionWithoutUnloadAndPromotionWithoutLoadInvalidate()" classname="com.blockreality.impl.server.ChunkAvailabilityTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

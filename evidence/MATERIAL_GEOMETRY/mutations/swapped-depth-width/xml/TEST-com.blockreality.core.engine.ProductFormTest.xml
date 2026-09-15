@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.engine.ProductFormTest" tests="5" skipped="0" failures="2" errors="0" timestamp="2026-09-10T01:47:06" hostname="rockylaptop" time="0.056">
+  <properties/>
+  <testcase name="materialCellsNeverTurnLegacySectionNamesOrPanelAxesIntoPhysicalDimensions()" classname="com.blockreality.core.engine.ProductFormTest" time="0.039"/>
+  <testcase name="undeclaredMissingAndUnsupportedProductsRemainExplicitlyUnresolved()" classname="com.blockreality.core.engine.ProductFormTest" time="0.003"/>
+  <testcase name="changedCatalogueDimensionsReachTheShapeAndBothSamplingExtents()" classname="com.blockreality.core.engine.ProductFormTest" time="0.007">
+    <failure message="org.opentest4j.AssertionFailedError: array contents differ at index [1], expected: &lt;0.405&gt; but was: &lt;0.315&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: array contents differ at index [1], expected: &lt;0.405&gt; but was: &lt;0.315&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertArrayEquals.failArraysNotEqual(AssertArrayEquals.java:440)
+	at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:323)
+	at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:147)
+	at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:143)
+	at app//org.junit.jupiter.api.Assertions.assertArrayEquals(Assertions.java:1422)
+	at app//com.blockreality.core.engine.ProductFormTest.bounds(ProductFormTest.java:15)
+	at app//com.blockreality.core.engine.ProductFormTest.changedCatalogueDimensionsReachTheShapeAndBothSamplingExtents(ProductFormTest.java:32)
+	at java.base@17.0.20/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base@17.0.20/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.20/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="onlyFullFaceContactHidesAScanSurface()" classname="com.blockreality.core.engine.ProductFormTest" time="0.001"/>
+  <testcase name="unequalDeclaredWidthsAndDepthsKeepTheirAxesInAllThreeOrientations()" classname="com.blockreality.core.engine.ProductFormTest" time="0.002">
+    <failure message="org.opentest4j.AssertionFailedError: array contents differ at index [1], expected: &lt;0.3&gt; but was: &lt;0.4&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: array contents differ at index [1], expected: &lt;0.3&gt; but was: &lt;0.4&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertArrayEquals.failArraysNotEqual(AssertArrayEquals.java:440)
+	at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:323)
+	at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:147)
+	at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:143)
+	at app//org.junit.jupiter.api.Assertions.assertArrayEquals(Assertions.java:1422)
+	at app//com.blockreality.core.engine.ProductFormTest.bounds(ProductFormTest.java:15)
+	at app//com.blockreality.core.engine.ProductFormTest.unequalDeclaredWidthsAndDepthsKeepTheirAxesInAllThreeOrientations(ProductFormTest.java:20)
+	at java.base@17.0.20/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base@17.0.20/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.20/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

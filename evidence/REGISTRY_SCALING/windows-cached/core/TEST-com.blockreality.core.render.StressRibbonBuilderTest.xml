@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.render.StressRibbonBuilderTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-09T22:35:43" hostname="ROCKYLAPTOP" time="0.005">
+  <properties/>
+  <testcase name="scenePeakMakesMembersComparableAndMemberPeakDoesNot()" classname="com.blockreality.core.render.StressRibbonBuilderTest" time="0.0"/>
+  <testcase name="positionsComeOutInBlocksAndOffsetToTheRightFace()" classname="com.blockreality.core.render.StressRibbonBuilderTest" time="0.001"/>
+  <testcase name="oneStripPerFibrePerSpan()" classname="com.blockreality.core.render.StressRibbonBuilderTest" time="0.001"/>
+  <testcase name="stressFallsOffAlongTheMemberInsteadOfBeingOneFlatColour()" classname="com.blockreality.core.render.StressRibbonBuilderTest" time="0.001"/>
+  <testcase name="topAndBottomFacesGetOppositeHues()" classname="com.blockreality.core.render.StressRibbonBuilderTest" time="0.0"/>
+  <testcase name="neutralAxisIsOmittedWhereThereIsNone()" classname="com.blockreality.core.render.StressRibbonBuilderTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

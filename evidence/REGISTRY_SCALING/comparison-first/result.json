@@ -1,0 +1,26 @@
+{
+  "measured_pairs": 480,
+  "warmup_and_measured_digest_pairs": 600,
+  "digest_mismatches": [],
+  "budget_failures": [
+    {
+      "fixture": "D4096",
+      "pattern": "ONE",
+      "stage": "objects_encode",
+      "kind": "timing",
+      "baseline_ns": 2803510,
+      "candidate_ns": 4427358,
+      "budget_ns": 3803510
+    },
+    {
+      "fixture": "D131072",
+      "pattern": "BURST64",
+      "stage": "coverage_encode",
+      "kind": "timing",
+      "baseline_ns": 2560641,
+      "candidate_ns": 4130830,
+      "budget_ns": 3560641
+    }
+  ],
+  "pass": false
+}

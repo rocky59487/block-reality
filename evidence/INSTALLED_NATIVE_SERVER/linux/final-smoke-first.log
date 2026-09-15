@@ -1,0 +1,10 @@
+native cantilever: PASS
+ground removal revokes old success and reports native refusal: PASS
+ground restoration restores support: PASS
+column beam slab and mechanism: PASS
+legacy undeclared axis is explicit: PASS
+declared model recovers: PASS
+native session reset: PASS
+mixed readout reports solved and current revision: PASS
+native local critical remains visible in refused world: PASS
+removing critical column clears warning: PASS

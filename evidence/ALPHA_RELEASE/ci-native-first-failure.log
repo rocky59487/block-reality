@@ -1,0 +1,1535 @@
+﻿2026-09-15T05:17:01.4125507Z Current runner version: '2.337.0'
+2026-09-15T05:17:01.4152782Z ##[group]Runner Image Provisioner
+2026-09-15T05:17:01.4153657Z Hosted Compute Agent
+2026-09-15T05:17:01.4154316Z Version: 20260828.587
+2026-09-15T05:17:01.4155003Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+2026-09-15T05:17:01.4155755Z Build Date: 2026-08-28T16:44:25Z
+2026-09-15T05:17:01.4156471Z Worker ID: {dad3e378-b246-49af-b5bb-24a53c7c96ef}
+2026-09-15T05:17:01.4157183Z Azure Region: westcentralus
+2026-09-15T05:17:01.4157814Z ##[endgroup]
+2026-09-15T05:17:01.4159138Z ##[group]Operating System
+2026-09-15T05:17:01.4159756Z Ubuntu
+2026-09-15T05:17:01.4160313Z 24.04.5
+2026-09-15T05:17:01.4161103Z LTS
+2026-09-15T05:17:01.4161679Z ##[endgroup]
+2026-09-15T05:17:01.4162237Z ##[group]Runner Image
+2026-09-15T05:17:01.4162834Z Image: ubuntu-24.04
+2026-09-15T05:17:01.4163422Z Version: 20260907.300.1
+2026-09-15T05:17:01.4164655Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260907.300/images/ubuntu/Ubuntu2404-Readme.md
+2026-09-15T05:17:01.4166172Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260907.300
+2026-09-15T05:17:01.4167097Z ##[endgroup]
+2026-09-15T05:17:01.4168286Z ##[group]GITHUB_TOKEN Permissions
+2026-09-15T05:17:01.4170341Z Contents: read
+2026-09-15T05:17:01.4171209Z Metadata: read
+2026-09-15T05:17:01.4171782Z Packages: read
+2026-09-15T05:17:01.4172309Z ##[endgroup]
+2026-09-15T05:17:01.4174450Z Secret source: Actions
+2026-09-15T05:17:01.4175334Z Cache mode: write
+2026-09-15T05:17:01.4176044Z Prepare workflow directory
+2026-09-15T05:17:01.4565887Z Prepare all required actions
+2026-09-15T05:17:01.4616809Z Getting action download info
+2026-09-15T05:17:01.8135818Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-09-15T05:17:01.9201973Z Download action repository 'actions/setup-java@v4' (SHA:cf277c60eb25467037889841efdb72551f06f6c3)
+2026-09-15T05:17:02.9059381Z Download action repository 'gradle/actions@v4' (SHA:ed408507eac070d1f99cc633dbcf757c94c7933a)
+2026-09-15T05:17:04.7783888Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-09-15T05:17:05.0596695Z Complete job name: Java suites, cross-language against the shipped engine
+2026-09-15T05:17:05.1238731Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-15T05:17:05.1246628Z ##[group]Run actions/checkout@v4
+2026-09-15T05:17:05.1247190Z with:
+2026-09-15T05:17:05.1247573Z   repository: rocky59487/block-reality
+2026-09-15T05:17:05.1250438Z   token: ***
+2026-09-15T05:17:05.1251063Z   ssh-strict: true
+2026-09-15T05:17:05.1251392Z   ssh-user: git
+2026-09-15T05:17:05.1251721Z   persist-credentials: true
+2026-09-15T05:17:05.1252103Z   clean: true
+2026-09-15T05:17:05.1252456Z   sparse-checkout-cone-mode: true
+2026-09-15T05:17:05.1252839Z   fetch-depth: 1
+2026-09-15T05:17:05.1253158Z   fetch-tags: false
+2026-09-15T05:17:05.1253470Z   show-progress: true
+2026-09-15T05:17:05.1253842Z   lfs: false
+2026-09-15T05:17:05.1254220Z   submodules: false
+2026-09-15T05:17:05.1254568Z   set-safe-directory: true
+2026-09-15T05:17:05.1254949Z   allow-unsafe-pr-checkout: false
+2026-09-15T05:17:05.1255503Z ##[endgroup]
+2026-09-15T05:17:05.2270587Z Syncing repository: rocky59487/block-reality
+2026-09-15T05:17:05.2273298Z ##[group]Getting Git version info
+2026-09-15T05:17:05.2274155Z Working directory is '/home/runner/work/block-reality/block-reality'
+2026-09-15T05:17:05.2275383Z [command]/usr/bin/git version
+2026-09-15T05:17:05.2283108Z git version 2.55.0
+2026-09-15T05:17:05.2301134Z ##[endgroup]
+2026-09-15T05:17:05.2314148Z Temporarily overriding HOME='/home/runner/work/_temp/e9cda3c5-4fc9-4cc6-b59e-398eda0f2eb3' before making global git config changes
+2026-09-15T05:17:05.2316151Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-15T05:17:05.2318777Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/block-reality/block-reality
+2026-09-15T05:17:05.2391998Z Deleting the contents of '/home/runner/work/block-reality/block-reality'
+2026-09-15T05:17:05.2397340Z ##[group]Initializing the repository
+2026-09-15T05:17:05.2401052Z [command]/usr/bin/git init /home/runner/work/block-reality/block-reality
+2026-09-15T05:17:05.2498139Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-09-15T05:17:05.2499649Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-09-15T05:17:05.2501047Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-09-15T05:17:05.2502147Z hint: call:
+2026-09-15T05:17:05.2502714Z hint:
+2026-09-15T05:17:05.2503443Z hint: 	git config --global init.defaultBranch <name>
+2026-09-15T05:17:05.2504239Z hint:
+2026-09-15T05:17:05.2505029Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-09-15T05:17:05.2506132Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-09-15T05:17:05.2507023Z hint:
+2026-09-15T05:17:05.2507700Z hint: 	git branch -m <name>
+2026-09-15T05:17:05.2508360Z hint:
+2026-09-15T05:17:05.2509074Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-09-15T05:17:05.2510443Z Initialized empty Git repository in /home/runner/work/block-reality/block-reality/.git/
+2026-09-15T05:17:05.2513370Z [command]/usr/bin/git remote add origin https://github.com/rocky59487/block-reality
+2026-09-15T05:17:05.2557219Z ##[endgroup]
+2026-09-15T05:17:05.2558264Z ##[group]Disabling automatic garbage collection
+2026-09-15T05:17:05.2560547Z [command]/usr/bin/git config --local gc.auto 0
+2026-09-15T05:17:05.2596902Z ##[endgroup]
+2026-09-15T05:17:05.2597720Z ##[group]Setting up auth
+2026-09-15T05:17:05.2604587Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-15T05:17:05.2634163Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-15T05:17:05.2971785Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-09-15T05:17:05.3004941Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-09-15T05:17:05.3211693Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-15T05:17:05.3242922Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-15T05:17:05.3428748Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-09-15T05:17:05.3462640Z ##[endgroup]
+2026-09-15T05:17:05.3463570Z ##[group]Fetching the repository
+2026-09-15T05:17:05.3471645Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +1cfce270db7bc385ba7f743c86f460b8b3a7e52c:refs/remotes/pull/139/merge
+2026-09-15T05:17:08.8936696Z From https://github.com/rocky59487/block-reality
+2026-09-15T05:17:08.8937554Z  * [new ref]         1cfce270db7bc385ba7f743c86f460b8b3a7e52c -> pull/139/merge
+2026-09-15T05:17:08.8939979Z ##[endgroup]
+2026-09-15T05:17:08.8941046Z ##[group]Determining the checkout info
+2026-09-15T05:17:08.8948604Z ##[endgroup]
+2026-09-15T05:17:08.8950344Z [command]/usr/bin/git sparse-checkout disable
+2026-09-15T05:17:08.9001298Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-09-15T05:17:08.9025357Z ##[group]Checking out the ref
+2026-09-15T05:17:08.9030120Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/139/merge
+2026-09-15T05:17:09.4631453Z Note: switching to 'refs/remotes/pull/139/merge'.
+2026-09-15T05:17:09.4632059Z 
+2026-09-15T05:17:09.4632686Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-09-15T05:17:09.4633430Z changes and commit them, and you can discard any commits you make in this
+2026-09-15T05:17:09.4634159Z state without impacting any branches by switching back to a branch.
+2026-09-15T05:17:09.4634625Z 
+2026-09-15T05:17:09.4634937Z If you want to create a new branch to retain commits you create, you may
+2026-09-15T05:17:09.4635525Z do so (now or later) by using -c with the switch command. Example:
+2026-09-15T05:17:09.4635897Z 
+2026-09-15T05:17:09.4636050Z   git switch -c <new-branch-name>
+2026-09-15T05:17:09.4636311Z 
+2026-09-15T05:17:09.4636485Z Or undo this operation with:
+2026-09-15T05:17:09.4636705Z 
+2026-09-15T05:17:09.4636841Z   git switch -
+2026-09-15T05:17:09.4637050Z 
+2026-09-15T05:17:09.4637445Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-09-15T05:17:09.4637915Z 
+2026-09-15T05:17:09.4638449Z HEAD is now at 1cfce27 Merge e818302ff4ca89b8ca2f80e64dad04f418c3d2ff into d32c7444f478c3d1f1c4b727957d26589b3ab0f5
+2026-09-15T05:17:09.4660467Z ##[endgroup]
+2026-09-15T05:17:09.4709066Z [command]/usr/bin/git log -1 --format=%H
+2026-09-15T05:17:09.4734721Z 1cfce270db7bc385ba7f743c86f460b8b3a7e52c
+2026-09-15T05:17:09.5031046Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-15T05:17:09.5032696Z ##[group]Run actions/setup-java@v4
+2026-09-15T05:17:09.5033006Z with:
+2026-09-15T05:17:09.5033262Z   distribution: temurin
+2026-09-15T05:17:09.5033525Z   java-version: 17
+2026-09-15T05:17:09.5033771Z   java-package: jdk
+2026-09-15T05:17:09.5034025Z   check-latest: false
+2026-09-15T05:17:09.5034291Z   server-id: github
+2026-09-15T05:17:09.5034560Z   server-username: GITHUB_ACTOR
+2026-09-15T05:17:09.5034845Z   server-password: GITHUB_TOKEN
+2026-09-15T05:17:09.5035137Z   overwrite-settings: true
+2026-09-15T05:17:09.5035398Z   job-status: success
+2026-09-15T05:17:09.5037914Z   token: ***
+2026-09-15T05:17:09.5038155Z ##[endgroup]
+2026-09-15T05:17:09.6698808Z ##[warning]setup-java v4 is deprecated and will no longer receive updates. Please migrate to actions/setup-java@v5.
+2026-09-15T05:17:09.6710330Z ##[group]Installed distributions
+2026-09-15T05:17:09.6886113Z Resolved Java 17.0.20+1 from tool-cache
+2026-09-15T05:17:09.6886618Z Setting Java 17.0.20+1 as the default
+2026-09-15T05:17:09.6895573Z (node:2302) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-15T05:17:09.6896237Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-15T05:17:09.6898564Z Creating toolchains.xml for JDK version 17 from temurin
+2026-09-15T05:17:09.6969392Z Writing to /home/runner/.m2/toolchains.xml
+2026-09-15T05:17:09.6970059Z 
+2026-09-15T05:17:09.6970436Z Java configuration:
+2026-09-15T05:17:09.6971032Z   Distribution: temurin
+2026-09-15T05:17:09.6971400Z   Version: 17.0.20+1
+2026-09-15T05:17:09.6971939Z   Path: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+2026-09-15T05:17:09.6972453Z 
+2026-09-15T05:17:09.6973027Z ##[endgroup]
+2026-09-15T05:17:09.6995654Z Creating settings.xml with server-id: github
+2026-09-15T05:17:09.7022228Z Writing to /home/runner/.m2/settings.xml
+2026-09-15T05:17:09.7350203Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-15T05:17:09.7351735Z ##[group]Run gradle/actions/setup-gradle@v4
+2026-09-15T05:17:09.7352047Z with:
+2026-09-15T05:17:09.7352441Z   cache-disabled: false
+2026-09-15T05:17:09.7352710Z   cache-read-only: true
+2026-09-15T05:17:09.7352964Z   cache-write-only: false
+2026-09-15T05:17:09.7353237Z   cache-overwrite-existing: false
+2026-09-15T05:17:09.7353528Z   cache-cleanup: on-success
+2026-09-15T05:17:09.7353846Z   gradle-home-cache-includes: caches
+notifications
+
+2026-09-15T05:17:09.7354196Z   add-job-summary: always
+2026-09-15T05:17:09.7354476Z   add-job-summary-as-pr-comment: never
+2026-09-15T05:17:09.7354774Z   dependency-graph: disabled
+2026-09-15T05:17:09.7355153Z   dependency-graph-report-dir: dependency-graph-reports
+2026-09-15T05:17:09.7355537Z   dependency-graph-continue-on-failure: true
+2026-09-15T05:17:09.7355854Z   build-scan-publish: false
+2026-09-15T05:17:09.7356128Z   validate-wrappers: true
+2026-09-15T05:17:09.7356398Z   allow-snapshot-wrappers: false
+2026-09-15T05:17:09.7356691Z   gradle-home-cache-strict-match: false
+2026-09-15T05:17:09.7356996Z   workflow-job-context: null
+2026-09-15T05:17:09.7359838Z   github-token: ***
+2026-09-15T05:17:09.7360088Z env:
+2026-09-15T05:17:09.7360407Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+2026-09-15T05:17:09.7361175Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+2026-09-15T05:17:09.7361815Z ##[endgroup]
+2026-09-15T05:17:11.8965822Z Merged default JDK locations into /home/runner/.m2/toolchains.xml
+2026-09-15T05:17:11.8969536Z ##[group]Restore Gradle state from cache
+2026-09-15T05:17:12.1165780Z Cache hit for restore-key: gradle-home-v1|Linux-X64|java[204d1015cd504eb3139fafcc27ae6f10]-d32c7444f478c3d1f1c4b727957d26589b3ab0f5
+2026-09-15T05:17:13.3388210Z Received 41943040 of 333641679 (12.6%), 40.0 MBs/sec
+2026-09-15T05:17:14.3472062Z Received 188743680 of 333641679 (56.6%), 90.0 MBs/sec
+2026-09-15T05:17:15.1773821Z Received 333641679 of 333641679 (100.0%), 112.1 MBs/sec
+2026-09-15T05:17:15.1776495Z Cache Size: ~318 MB (333641679 B)
+2026-09-15T05:17:15.1859024Z [command]/usr/bin/tar -xf /home/runner/work/_temp/fd6fdc94-e168-4109-b587-27278d91e434/cache.tzst -P -C /home/runner/work/block-reality/block-reality --use-compress-program unzstd
+2026-09-15T05:17:15.7579310Z Cache restored successfully
+2026-09-15T05:17:15.7706185Z Restored cache entry with key gradle-home-v1|Linux-X64|java[204d1015cd504eb3139fafcc27ae6f10]-1cfce270db7bc385ba7f743c86f460b8b3a7e52c to /home/runner/.gradle/caches,/home/runner/.gradle/notifications,/home/runner/.gradle/.setup-gradle in 3872ms
+2026-09-15T05:17:15.9700513Z Cache hit for: gradle-transforms-v1-539e59ffb4c4881ebfba62386921b073
+2026-09-15T05:17:15.9772306Z Cache hit for: gradle-wrapper-zips-v1-9b12742562b89ad80b153fd0e40e926d
+2026-09-15T05:17:15.9776762Z Cache hit for: gradle-groovy-dsl-v1-804a44c3e1915fa7f213f6c32cd9cdb5
+2026-09-15T05:17:15.9780864Z Cache hit for: gradle-dependencies-v1-d2496b4c607243bb7f4257d61e079b15
+2026-09-15T05:17:15.9824848Z Cache hit for: gradle-instrumented-jars-v1-69366d1ed9e03e2ef021c3f227fc8d33
+2026-09-15T05:17:16.4948887Z Received 171073 of 171073 (100.0%), 0.8 MBs/sec
+2026-09-15T05:17:16.4950035Z Cache Size: ~0 MB (171073 B)
+2026-09-15T05:17:16.4982272Z [command]/usr/bin/tar -xf /home/runner/work/_temp/1aa80170-018f-4d5b-8d81-64521e87be5f/cache.tzst -P -C /home/runner/work/block-reality/block-reality --use-compress-program unzstd
+2026-09-15T05:17:16.5111085Z Cache restored successfully
+2026-09-15T05:17:16.5112524Z Restored cache entry with key gradle-instrumented-jars-v1-69366d1ed9e03e2ef021c3f227fc8d33 to /home/runner/.gradle/caches/jars-*/*/ in 739ms
+2026-09-15T05:17:16.7104995Z Received 274311 of 274311 (100.0%), 0.6 MBs/sec
+2026-09-15T05:17:16.7106159Z Cache Size: ~0 MB (274311 B)
+2026-09-15T05:17:16.7204805Z [command]/usr/bin/tar -xf /home/runner/work/_temp/dd9d1d7f-d662-4c7d-bd2d-c5e9b208cfbf/cache.tzst -P -C /home/runner/work/block-reality/block-reality --use-compress-program unzstd
+2026-09-15T05:17:16.7438265Z Cache restored successfully
+2026-09-15T05:17:16.7440502Z Restored cache entry with key gradle-groovy-dsl-v1-804a44c3e1915fa7f213f6c32cd9cdb5 to /home/runner/.gradle/caches/*/groovy-dsl/*/ in 971ms
+2026-09-15T05:17:17.1215612Z Received 11979973 of 11979973 (100.0%), 12.4 MBs/sec
+2026-09-15T05:17:17.1216234Z Cache Size: ~11 MB (11979973 B)
+2026-09-15T05:17:17.1237015Z [command]/usr/bin/tar -xf /home/runner/work/_temp/1ed768d4-a11b-4332-acd5-d69c9bc0866d/cache.tzst -P -C /home/runner/work/block-reality/block-reality --use-compress-program unzstd
+2026-09-15T05:17:17.1915157Z Received 33554432 of 137363783 (24.4%), 31.9 MBs/sec
+2026-09-15T05:17:17.2251764Z Received 37748736 of 84254964 (44.8%), 35.7 MBs/sec
+2026-09-15T05:17:17.2752958Z Cache restored successfully
+2026-09-15T05:17:17.2769261Z Restored cache entry with key gradle-transforms-v1-539e59ffb4c4881ebfba62386921b073 to /home/runner/.gradle/caches/transforms-4/*/,/home/runner/.gradle/caches/*/transforms/*/ in 1503ms
+2026-09-15T05:17:17.5047135Z Received 84254964 of 84254964 (100.0%), 62.4 MBs/sec
+2026-09-15T05:17:17.5047762Z Cache Size: ~80 MB (84254964 B)
+2026-09-15T05:17:17.5324937Z [command]/usr/bin/tar -xf /home/runner/work/_temp/4dc08831-c6a8-4c96-bb96-0f7559cbfba9/cache.tzst -P -C /home/runner/work/block-reality/block-reality --use-compress-program unzstd
+2026-09-15T05:17:17.6351487Z Cache restored successfully
+2026-09-15T05:17:17.6366466Z Restored cache entry with key gradle-dependencies-v1-d2496b4c607243bb7f4257d61e079b15 to /home/runner/.gradle/caches/modules-*/files-*/*/*/*/* in 1864ms
+2026-09-15T05:17:18.0264019Z Received 137363783 of 137363783 (100.0%), 71.2 MBs/sec
+2026-09-15T05:17:18.0264738Z Cache Size: ~131 MB (137363783 B)
+2026-09-15T05:17:18.0283639Z [command]/usr/bin/tar -xf /home/runner/work/_temp/70388eca-d7c5-46fa-bf5b-7ad60d3f094c/cache.tzst -P -C /home/runner/work/block-reality/block-reality --use-compress-program unzstd
+2026-09-15T05:17:18.1657886Z Cache restored successfully
+2026-09-15T05:17:18.1708478Z Restored cache entry with key gradle-wrapper-zips-v1-9b12742562b89ad80b153fd0e40e926d to /home/runner/.gradle/wrapper/dists/gradle-8.8-bin/dl7vupf4psengwqhwktix4v1 in 2399ms
+2026-09-15T05:17:18.2076317Z ##[endgroup]
+2026-09-15T05:17:18.2988022Z ##[group]All Gradle Wrapper jars are valid
+2026-09-15T05:17:18.2990456Z ✓ Found known Gradle Wrapper JAR files:
+2026-09-15T05:17:18.2991566Z   7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172 forge/gradle/wrapper/gradle-wrapper.jar
+2026-09-15T05:17:18.2992736Z   7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172 mod/gradle/wrapper/gradle-wrapper.jar
+2026-09-15T05:17:18.2993857Z ##[endgroup]
+2026-09-15T05:17:18.3431346Z ##[group]Run python3 scripts/prepare_shipped_engine.py --out "$RUNNER_TEMP/shipped-engine"
+2026-09-15T05:17:18.3432357Z [36;1mpython3 scripts/prepare_shipped_engine.py --out "$RUNNER_TEMP/shipped-engine"[0m
+2026-09-15T05:17:18.3461876Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-15T05:17:18.3462387Z env:
+2026-09-15T05:17:18.3462951Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+2026-09-15T05:17:18.3463586Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+2026-09-15T05:17:18.3464256Z   GRADLE_ACTION_ID: gradle/actions/setup-gradle
+2026-09-15T05:17:18.3464718Z   GRADLE_USER_HOME: /home/runner/.gradle
+2026-09-15T05:17:18.3465225Z   GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
+2026-09-15T05:17:18.3465700Z   GRADLE_BUILD_ACTION_CACHE_RESTORED: true
+2026-09-15T05:17:18.3466333Z   DEVELOCITY_INJECTION_INIT_SCRIPT_NAME: gradle-actions.inject-develocity.init.gradle
+2026-09-15T05:17:18.3467124Z   DEVELOCITY_INJECTION_CUSTOM_VALUE: gradle-actions
+2026-09-15T05:17:18.3467615Z   GITHUB_DEPENDENCY_GRAPH_ENABLED: false
+2026-09-15T05:17:18.3468041Z ##[endgroup]
+2026-09-15T05:17:18.8326523Z blockreality-0.4.0-alpha.1.jar: the library shape: windows-x86_64, linux-x86_64, jar == manifest, contract pin agrees, zero executables
+2026-09-15T05:17:18.9675093Z {
+2026-09-15T05:17:18.9675808Z   "classes": 308,
+2026-09-15T05:17:18.9676722Z   "errors": [],
+2026-09-15T05:17:18.9677703Z   "sha256": "e50615244b5f33dfcf0e3a414fb482ed074218daa00a65f7d93db2f75d20abf7"
+2026-09-15T05:17:18.9678988Z }
+2026-09-15T05:17:19.2865903Z SHIPPED-ENGINE PASS /home/runner/work/_temp/shipped-engine/libbsi_tectonic.so
+2026-09-15T05:17:19.2975186Z ##[group]Run chmod +x sidecar/legacy-dist/br-sidecar mod/gradlew
+2026-09-15T05:17:19.2975967Z [36;1mchmod +x sidecar/legacy-dist/br-sidecar mod/gradlew[0m
+2026-09-15T05:17:19.2976744Z [36;1mcd mod && ./gradlew --no-daemon test "-Dbr.sidecar=$GITHUB_WORKSPACE/sidecar/legacy-dist/br-sidecar"[0m
+2026-09-15T05:17:19.3001801Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-15T05:17:19.3002422Z env:
+2026-09-15T05:17:19.3003078Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+2026-09-15T05:17:19.3003913Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+2026-09-15T05:17:19.3004684Z   GRADLE_ACTION_ID: gradle/actions/setup-gradle
+2026-09-15T05:17:19.3005156Z   GRADLE_USER_HOME: /home/runner/.gradle
+2026-09-15T05:17:19.3005669Z   GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
+2026-09-15T05:17:19.3006143Z   GRADLE_BUILD_ACTION_CACHE_RESTORED: true
+2026-09-15T05:17:19.3006975Z   DEVELOCITY_INJECTION_INIT_SCRIPT_NAME: gradle-actions.inject-develocity.init.gradle
+2026-09-15T05:17:19.3007673Z   DEVELOCITY_INJECTION_CUSTOM_VALUE: gradle-actions
+2026-09-15T05:17:19.3008185Z   GITHUB_DEPENDENCY_GRAPH_ENABLED: false
+2026-09-15T05:17:19.3008765Z   BR_ENGINE: /home/runner/work/_temp/shipped-engine/libbsi_tectonic.so
+2026-09-15T05:17:19.3009297Z ##[endgroup]
+2026-09-15T05:17:21.1145726Z To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+2026-09-15T05:17:23.1122290Z Daemon will be stopped at the end of the build 
+2026-09-15T05:17:31.0163054Z > Task :api:compileJava
+2026-09-15T05:17:31.1133957Z > Task :api:processResources NO-SOURCE
+2026-09-15T05:17:31.1159492Z > Task :api:classes
+2026-09-15T05:17:31.1160358Z > Task :api:jar
+2026-09-15T05:17:31.1161485Z > Task :api:compileTestJava NO-SOURCE
+2026-09-15T05:17:31.1162338Z > Task :api:processTestResources NO-SOURCE
+2026-09-15T05:17:31.1163181Z > Task :api:testClasses UP-TO-DATE
+2026-09-15T05:17:31.1163949Z > Task :api:test NO-SOURCE
+2026-09-15T05:17:32.8147621Z /home/runner/work/block-reality/block-reality/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:144: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+2026-09-15T05:17:32.8149138Z 
+2026-09-15T05:17:32.8152247Z         try (var ignored = profile.begin(WORLD_ENCODE)) { payload = BsiRecords.encodeBlocks(blocks); }
+2026-09-15T05:17:32.8153229Z > Task :core:compileJava
+2026-09-15T05:17:32.8154028Z                  ^
+2026-09-15T05:17:32.8155844Z /home/runner/work/block-reality/block-reality/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:197: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+2026-09-15T05:17:32.8158121Z             try (var ignored = profile.begin(WORLD_MAP)) { blocks = snapshot.blocks(vocabulary); }
+2026-09-15T05:17:32.8159087Z                      ^
+2026-09-15T05:17:32.8161136Z /home/runner/work/block-reality/block-reality/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:230: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+2026-09-15T05:17:32.8163149Z         try (var ignored = profile.begin(RESULT_DECODE)) {
+2026-09-15T05:17:32.8163975Z                  ^
+2026-09-15T05:17:32.8165747Z /home/runner/work/block-reality/block-reality/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:271: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+2026-09-15T05:17:32.8167877Z             try (var ignored = profile.begin(FRAME_ENCODE)) { request = BsiFrame.encode(header, payload); }
+2026-09-15T05:17:32.8168861Z                      ^
+2026-09-15T05:17:32.8171210Z /home/runner/work/block-reality/block-reality/mod/core/src/main/java/com/blockreality/core/engine/InProcessEngine.java:274: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+2026-09-15T05:17:32.8172968Z             try (var ignored = profile.begin(FRAME_DECODE)) {
+2026-09-15T05:17:32.8173876Z                      ^
+2026-09-15T05:17:32.8175475Z /home/runner/work/block-reality/block-reality/mod/core/src/main/java/com/blockreality/core/engine/BsiNative.java:118: warning: [try] auto-closeable resource ignored is never referenced in body of corresponding try statement
+2026-09-15T05:17:32.8177334Z                 try (var ignored = profile.begin(REPLY_COPY)) {
+2026-09-15T05:17:32.8178136Z                          ^
+2026-09-15T05:17:32.8178815Z 6 warnings
+2026-09-15T05:17:32.9124809Z 
+2026-09-15T05:17:32.9132147Z > Task :core:processResources
+2026-09-15T05:17:32.9132827Z > Task :core:classes
+2026-09-15T05:17:34.9132515Z /home/runner/work/block-reality/block-reality/mod/core/src/test/java/com/blockreality/core/transaction/PendingRequestStoreTest.java:53: warning: [try] auto-closeable resource lock is never referenced in body of corresponding try statement
+2026-09-15T05:17:34.9139213Z 
+2026-09-15T05:17:34.9151084Z         try(var channel=FileChannel.open(directory.resolve("pending.lock"),StandardOpenOption.WRITE);var lock=channel.lock()) {
+2026-09-15T05:17:34.9166285Z                                                                                                          ^
+2026-09-15T05:17:34.9167210Z > Task :core:compileTestJava
+2026-09-15T05:17:34.9169533Z /home/runner/work/block-reality/block-reality/mod/core/src/test/java/com/blockreality/core/transaction/JournalBootstrapTest.java:40: warning: [try] auto-closeable resource journal is never referenced in body of corresponding try statement
+2026-09-15T05:17:34.9171880Z         try (var journal = new FileTransactionJournal(root.resolve("valid"), DOMAIN)) {
+2026-09-15T05:17:34.9172959Z                  ^
+2026-09-15T05:17:35.7123144Z /home/runner/work/block-reality/block-reality/mod/core/src/test/java/com/blockreality/core/diagnostics/PipelineProfileTest.java:60: warning: [try] auto-closeable resource s is never referenced in body of corresponding try statement
+2026-09-15T05:17:35.7127789Z         p.run(first,()->{try(var s=p.begin(RESULT_DECODE)){
+2026-09-15T05:17:35.7129017Z                                  ^
+2026-09-15T05:17:36.2121709Z 3 warnings
+2026-09-15T05:17:36.4125649Z 
+2026-09-15T05:17:36.4142581Z > Task :core:processTestResources
+2026-09-15T05:17:36.4171837Z > Task :core:testClasses
+2026-09-15T05:17:38.4120551Z 
+2026-09-15T05:17:38.4151151Z > Task :core:test
+2026-09-15T05:17:38.4154491Z 
+2026-09-15T05:17:38.4185707Z AnalysisDeliveryClockTest > travelRequiresFreshBootstrapAndKeepsTheConnectionWatermark() PASSED
+2026-09-15T05:17:38.4186543Z 
+2026-09-15T05:17:38.4187169Z AnalysisDeliveryClockTest > rejectsOtherDimensionsWithoutChangingState() PASSED
+2026-09-15T05:17:38.4187876Z 
+2026-09-15T05:17:38.4188339Z AnalysisDeliveryClockTest > rejectsAnotherSourceUntilBootstrap() PASSED
+2026-09-15T05:17:38.4188911Z 
+2026-09-15T05:17:38.4189422Z AnalysisDeliveryClockTest > aNewSequenceCanRecoverARefusalAtTheSameRevision() PASSED
+2026-09-15T05:17:38.4190046Z 
+2026-09-15T05:17:38.4190462Z AnalysisDeliveryClockTest > aNewConnectionStartsANewOrderingDomain() PASSED
+2026-09-15T05:17:38.4191695Z 
+2026-09-15T05:17:38.4192117Z AnalysisDeliveryClockTest > rejectsLateAndDuplicateUpdates() PASSED
+2026-09-15T05:17:38.4192646Z 
+2026-09-15T05:17:38.4193113Z AnalysisDeliveryClockTest > rejectsImpossibleRevisionsBeforeBinding() PASSED
+2026-09-15T05:17:38.4193692Z 
+2026-09-15T05:17:38.4194228Z DisplayTrackPrecisionTest > oneFloatRoundTripStaysInsideTheDisplayBudget() PASSED
+2026-09-15T05:17:38.4194875Z 
+2026-09-15T05:17:38.4195399Z DisplayTrackPrecisionTest > theBoundaryValuesTheClassifierCaresAboutSurvive() PASSED
+2026-09-15T05:17:38.4196052Z 
+2026-09-15T05:17:38.4196657Z NativeOnlyResultsTest > everyPublicSnapshotConstructorRequiresAnExplicitVerdict() PASSED
+2026-09-15T05:17:38.4197938Z 
+2026-09-15T05:17:38.4198744Z NativeOnlyResultsTest > suppliedFlagsSurviveNumericValuesThatSuggestTheOppositeVerdict() PASSED
+2026-09-15T05:17:38.4199596Z 
+2026-09-15T05:17:38.4200373Z NativeOnlyResultsTest > absentDisplayAndNeutralAxisCannotBeReconstructedFromForcesOrOppositeSigns() PASSED
+2026-09-15T05:17:38.4201361Z 
+2026-09-15T05:17:38.4201936Z RevisionGateConcurrencyTest > acceptForCommitRacingBumpNeverAcceptsASupersededResult() PASSED
+2026-09-15T05:17:38.4202664Z 
+2026-09-15T05:17:38.4203129Z RevisionGateConcurrencyTest > concurrentBumpsAreNeverLost() PASSED
+2026-09-15T05:17:38.4203707Z 
+2026-09-15T05:17:38.4204115Z RevisionGateTest > oneMechanismDoesNotBlankTheWholeWorld() PASSED
+2026-09-15T05:17:38.4204648Z 
+2026-09-15T05:17:38.4205092Z RevisionGateTest > aResultForASupersededWorldNeverCommits() PASSED
+2026-09-15T05:17:38.4205616Z 
+2026-09-15T05:17:38.4205918Z RevisionGateTest > revisionsAreMonotonic() PASSED
+2026-09-15T05:17:38.4206367Z 
+2026-09-15T05:17:38.4206735Z RevisionGateTest > currentResultCommits() PASSED
+2026-09-15T05:17:38.4207196Z 
+2026-09-15T05:17:38.4207629Z RevisionGateTest > staleResultsAreStillDrawableButLabelled() PASSED
+2026-09-15T05:17:38.4208191Z 
+2026-09-15T05:17:38.4208681Z RevisionGateTest > aMechanismNeitherCommitsNorDrawsAsAStressField() PASSED
+2026-09-15T05:17:38.4209306Z 
+2026-09-15T05:17:38.4209936Z RevisionGateTest > restoredJournalFloorIsMonotonicAndInvalidatesEarlierAcceptedResults() PASSED
+2026-09-15T05:17:38.4222781Z 
+2026-09-15T05:17:38.4223730Z RevisionGateTest > revisionFloorRejectsNegativeAndDoesNotLoopThroughLargeGaps() PASSED
+2026-09-15T05:17:38.4224511Z 
+2026-09-15T05:17:38.4224879Z RevisionGateTest > engineFailureDrawsNothing() PASSED
+2026-09-15T05:17:38.4225373Z 
+2026-09-15T05:17:38.4225894Z RevisionGateTest > aWorldOfNothingButMechanismsHasNothingToDraw() PASSED
+2026-09-15T05:17:38.4226516Z 
+2026-09-15T05:17:38.4226937Z ShellFieldSpecTest > vonMisesOfPureShearIsRootThreeTau() PASSED
+2026-09-15T05:17:38.4227527Z 
+2026-09-15T05:17:38.4228069Z ShellFieldSpecTest > naturalCoordinatesInvertThePositionMapping() PASSED
+2026-09-15T05:17:38.4228697Z 
+2026-09-15T05:17:38.4229125Z ShellFieldSpecTest > biaxialVonMisesFollowsTheDefinition() PASSED
+2026-09-15T05:17:38.4229690Z 
+2026-09-15T05:17:38.4230286Z ShellFieldSpecTest > aPointOutsideTheFacetReportsItRatherThanPretending() PASSED
+2026-09-15T05:17:38.4231163Z 
+2026-09-15T05:17:38.4231703Z ShellFieldSpecTest > signedPrincipalKeepsTheSignAndMatchesUniaxialStress() PASSED
+2026-09-15T05:17:38.4232387Z 
+2026-09-15T05:17:38.4232868Z ShellFieldSpecTest > peakIsTheLargestMagnitudeOnEitherFace() PASSED
+2026-09-15T05:17:38.4233440Z 
+2026-09-15T05:17:38.4233929Z ShellFieldSpecTest > cornerValuesAreReproducedExactlyAtTheCorners() PASSED
+2026-09-15T05:17:38.4234532Z 
+2026-09-15T05:17:38.4235037Z ShellFieldSpecTest > pureBendingIsEqualAndOppositeOnTheTwoFaces() PASSED
+2026-09-15T05:17:38.4235642Z 
+2026-09-15T05:17:38.4236124Z ShellFieldSpecTest > offNormalDistanceMeasuresThroughTheThickness() PASSED
+2026-09-15T05:17:38.4236772Z 
+2026-09-15T05:17:38.4237290Z ShellFieldSpecTest > pureMembraneIsConstantThroughTheThickness() PASSED
+2026-09-15T05:17:38.4237884Z 
+2026-09-15T05:17:38.4238397Z ShellFieldSpecTest > positionsBeyondTheFacesAreClampedNotExtrapolated() PASSED
+2026-09-15T05:17:38.4239029Z 
+2026-09-15T05:17:38.4239541Z ShellFieldSpecTest > theNeutralSurfaceSitsWhereTheTwoTermsCancel() PASSED
+2026-09-15T05:17:38.4240123Z 
+2026-09-15T05:17:38.4240841Z StressFieldSpecTest > axialIsCompressionPositiveOnTheWireAndTensionPositiveOut() PASSED
+2026-09-15T05:17:38.4241582Z 
+2026-09-15T05:17:38.4242100Z StressFieldSpecTest > theTwoBendingTermsCarryOppositeSigns() PASSED
+2026-09-15T05:17:38.4242638Z 
+2026-09-15T05:17:38.4243045Z StressFieldSpecTest > positionsAlongTheMemberAreClampedToItsLength() PASSED
+2026-09-15T05:17:38.4243635Z 
+2026-09-15T05:17:38.4244383Z StressFieldSpecTest > worldPointsMapOntoTheSectionRatherThanOutsideIt() PASSED
+2026-09-15T05:17:38.4245402Z 
+2026-09-15T05:17:38.4245959Z StressFieldSpecTest > aCantileverReproducesTheClosedFormAtEveryPoint() PASSED
+2026-09-15T05:17:38.4246732Z 
+2026-09-15T05:17:38.4247450Z StressFieldSpecTest > theUniformLoadParabolaIsExactNotSampled() PASSED
+2026-09-15T05:17:38.4248055Z 
+2026-09-15T05:17:38.4248414Z StressFieldSpecTest > biaxialBendingSuperposes() PASSED
+2026-09-15T05:17:38.4248902Z 
+2026-09-15T05:17:38.4249363Z StressFieldSpecTest > peakIsFoundEvenWhenItIsInTheMiddle() PASSED
+2026-09-15T05:17:38.4249858Z 
+2026-09-15T05:17:38.4250401Z UnassignedReportingTest > an unknown group still carries its blocks and can still be named PASSED
+2026-09-15T05:17:38.4253887Z 
+2026-09-15T05:17:38.4254590Z UnassignedReportingTest > N17-e: fully supported and a plate strip do not share a translation PASSED
+2026-09-15T05:17:38.4255320Z 
+2026-09-15T05:17:38.4255901Z UnassignedReportingTest > N18-a: each buckling state has its own wire token and its own sentence PASSED
+2026-09-15T05:17:38.4256594Z 
+2026-09-15T05:17:38.4257215Z UnassignedReportingTest > the extraction failures are the ones a test load can never sit on PASSED
+2026-09-15T05:17:38.4257944Z 
+2026-09-15T05:17:38.4258450Z UnassignedReportingTest > an unknown code does NOT authorise deleting the load PASSED
+2026-09-15T05:17:38.4259067Z 
+2026-09-15T05:17:38.4259710Z UnassignedReportingTest > the result separates every unassigned block from the load-refusing subset PASSED
+2026-09-15T05:17:38.4260461Z 
+2026-09-15T05:17:38.4261233Z UnassignedReportingTest > every code this build knows survives a trip through the wire spelling PASSED
+2026-09-15T05:17:38.4261930Z 
+2026-09-15T05:17:38.4262477Z UnassignedReportingTest > only COMPUTED means there is a number to show PASSED
+2026-09-15T05:17:38.4263076Z 
+2026-09-15T05:17:38.4263625Z UnassignedReportingTest > N17-c: a code from a newer engine is UNKNOWN, not an exception PASSED
+2026-09-15T05:17:38.4275152Z 
+2026-09-15T05:17:38.4282155Z UnassignedReportingTest > the engine never says disabled-by-scale; only the host can know that PASSED
+2026-09-15T05:17:38.4321184Z 
+2026-09-15T05:17:38.4334089Z UnassignedReportingTest > nothing unassigned means both views are empty, not merely small PASSED
+2026-09-15T05:17:38.4361162Z 
+2026-09-15T05:17:38.4392248Z UnassignedReportingTest > a mechanism block and a fully supported block ARE elements; loads stay PASSED
+2026-09-15T05:17:38.4421543Z 
+2026-09-15T05:17:38.4422556Z UnassignedReportingTest > a reply that said nothing about buckling is UNKNOWN, not COMPUTED PASSED
+2026-09-15T05:17:38.4423671Z 
+2026-09-15T05:17:38.4424463Z BsiAnalysisResultTest > unsupportedOrContradictoryBucklingIsNotFlattened() PASSED
+2026-09-15T05:17:38.4451132Z 
+2026-09-15T05:17:38.4481880Z BsiAnalysisResultTest > missingSectionsAndOwnersAreRefused() PASSED
+2026-09-15T05:17:38.4500412Z 
+2026-09-15T05:17:38.4513960Z BsiAnalysisResultTest > malformedIslandCollectionsAndFactorsFailClosed() PASSED
+2026-09-15T05:17:38.4541207Z 
+2026-09-15T05:17:38.4571887Z BsiAnalysisResultTest > allHomogeneousStatesRetainTheirMeaning() PASSED
+2026-09-15T05:17:38.4591181Z 
+2026-09-15T05:17:38.4611555Z BsiAnalysisResultTest > allBlocksContributeEvenWhenTheLastOneIsClear() PASSED
+2026-09-15T05:17:38.4632116Z 
+2026-09-15T05:17:38.4659741Z BsiAnalysisResultTest > globalFlagsAreIndependentOfNumericThresholds() PASSED
+2026-09-15T05:17:38.4681117Z 
+2026-09-15T05:17:38.4696793Z BsiAnalysisResultTest > all125MixedWorldsPreserveEveryIslandAndGlobalRefusals() PASSED
+2026-09-15T05:17:38.4727105Z 
+2026-09-15T05:17:38.4753843Z BsiAnalysisResultTest > malformedValuesNeverBecomeHealthyDefaults() PASSED
+2026-09-15T05:17:38.4769904Z 
+2026-09-15T05:17:38.4791882Z BsiAnalysisResultTest > computedWorldUsesSmallestSuppliedFactorAndChecksHeader() PASSED
+2026-09-15T05:17:38.4821250Z 
+2026-09-15T05:17:38.4841989Z BsiAnalysisResultTest > stalePartialAndErrorRepliesCannotReuseSuccessfulFlags() PASSED
+2026-09-15T05:17:38.4859001Z 
+2026-09-15T05:17:38.4877782Z BsiAnalysisResultTest > refusedWorldKeepsLocalCriticalWithoutRecomputingThresholds() PASSED
+2026-09-15T05:17:38.4901127Z 
+2026-09-15T05:17:38.4932325Z BsiAnalysisResultTest > incompleteQualityOrDisplayCannotBecomeCommitResults() PASSED
+2026-09-15T05:17:38.4941462Z 
+2026-09-15T05:17:38.4971726Z BsiAnalysisResultTest > emptyCollectionsDistinguishDisabledFromUnevaluated() PASSED
+2026-09-15T05:17:38.4988023Z 
+2026-09-15T05:17:38.5022027Z BsiAnalysisResultTest > legacyConstructorRetainsItsDistinctBoundaryConvention() PASSED
+2026-09-15T05:17:38.5061286Z 
+2026-09-15T05:17:38.5062111Z BsiBeamDisplayTest > surfaceTilesSplitWithoutSmearingAcrossTheJump() PASSED
+2026-09-15T05:17:38.5062784Z 
+2026-09-15T05:17:38.5063549Z BsiBeamDisplayTest > neutralAxisIsSuppliedDataAndSegmentsDoNotCrossMissingOrDuplicateStations() PASSED
+2026-09-15T05:17:38.5064405Z 
+2026-09-15T05:17:38.5064876Z BsiBeamDisplayTest > malformedDataAndExternalMutationCannotReachTheDisplay() PASSED
+2026-09-15T05:17:38.5065546Z 
+2026-09-15T05:17:38.5066248Z BsiBeamDisplayTest > unequalVisualExtentsRetainIndependentNativeFacesAndBothSidesOfAJump() PASSED
+2026-09-15T05:17:38.5067168Z 
+2026-09-15T05:17:38.5067684Z BsiBeamDisplayTest > boundedInterpolationUsesFaceCentresAndClamps() PASSED
+2026-09-15T05:17:38.5068336Z 
+2026-09-15T05:17:38.5068914Z BsiBeamDisplayTest > samplesUnitsAndDiagnosticConventionComeFromWire() PASSED
+2026-09-15T05:17:38.5069573Z 
+2026-09-15T05:17:38.5070201Z BsiBeamDisplayTest > revisionSectionsAndCatalogueAreRequiredButRequestedZeroIsValid() PASSED
+2026-09-15T05:17:38.5071155Z 
+2026-09-15T05:17:38.5071819Z BsiBeamDisplayTest > duplicateStationsRetainBothSidesAndNeverInventAGoverningSide() PASSED
+2026-09-15T05:17:38.5091445Z 
+2026-09-15T05:17:38.5091926Z BsiBeamDisplayTest > nativeVerdictNeverDependsOnDisplayedDc() PASSED
+2026-09-15T05:17:38.5092528Z 
+2026-09-15T05:17:38.5093318Z BsiBucklingTest > localCriticalSurvivesWorldRefusalWithoutReclassification() PASSED
+2026-09-15T05:17:38.5094034Z 
+2026-09-15T05:17:38.5094472Z BsiBucklingTest > worldMinimumOnlyExistsForComputedSummary() PASSED
+2026-09-15T05:17:38.5095030Z 
+2026-09-15T05:17:38.5095511Z BsiBucklingTest > frozen125WorldRowsPreserveEveryIsland() PASSED
+2026-09-15T05:17:38.5096129Z 
+2026-09-15T05:17:38.5096628Z BsiBucklingTest > malformedIdentityKindStateAndFactorsAreRefused() PASSED
+2026-09-15T05:17:38.5097235Z 
+2026-09-15T05:17:38.5097682Z BsiBucklingTest > eigenIsAdditiveAndBudgetIsBounded() PASSED
+2026-09-15T05:17:38.5098221Z 
+2026-09-15T05:17:38.5098606Z BsiFractureTest > malformedPayloads() > source bytes PASSED
+2026-09-15T05:17:38.5099079Z 
+2026-09-15T05:17:38.5099536Z BsiFractureTest > malformedPayloads() > negative artifact PASSED
+2026-09-15T05:17:38.5100063Z 
+2026-09-15T05:17:38.5100408Z BsiFractureTest > malformedPayloads() > unknown group PASSED
+2026-09-15T05:17:38.5101186Z 
+2026-09-15T05:17:38.5101619Z BsiFractureTest > malformedPayloads() > reserved cell PASSED
+2026-09-15T05:17:38.5102122Z 
+2026-09-15T05:17:38.5102535Z BsiFractureTest > malformedPayloads() > unrepresented broken PASSED
+2026-09-15T05:17:38.5103070Z 
+2026-09-15T05:17:38.5103605Z BsiFractureTest > malformedPayloads() > bad plane PASSED
+2026-09-15T05:17:38.5104107Z 
+2026-09-15T05:17:38.5104518Z BsiFractureTest > malformedPayloads() > nonfinite physical PASSED
+2026-09-15T05:17:38.5105050Z 
+2026-09-15T05:17:38.5105489Z BsiFractureTest > malformedPayloads() > negative tensor PASSED
+2026-09-15T05:17:38.5106017Z 
+2026-09-15T05:17:38.5106424Z BsiFractureTest > malformedPayloads() > fragment parent start PASSED
+2026-09-15T05:17:38.5106950Z 
+2026-09-15T05:17:38.5107398Z BsiFractureTest > malformedPayloads() > fragment flags PASSED
+2026-09-15T05:17:38.5107908Z 
+2026-09-15T05:17:38.5108269Z BsiFractureTest > malformedPayloads() > foreign parent PASSED
+2026-09-15T05:17:38.5108762Z 
+2026-09-15T05:17:38.5109207Z BsiFractureTest > malformedPayloads() > duplicate parent PASSED
+2026-09-15T05:17:38.5109704Z 
+2026-09-15T05:17:38.5110104Z BsiFractureTest > malformedPayloads() > event duplicate cell PASSED
+2026-09-15T05:17:38.5110622Z 
+2026-09-15T05:17:38.5111246Z BsiFractureTest > malformedPayloads() > event fragment cell PASSED
+2026-09-15T05:17:38.5111790Z 
+2026-09-15T05:17:38.5112593Z BsiFractureTest > malformedPayloads() > invalid capacity face PASSED
+2026-09-15T05:17:38.5113136Z 
+2026-09-15T05:17:38.5113683Z BsiFractureTest > malformedPayloads() > event reserved PASSED
+2026-09-15T05:17:38.5114196Z 
+2026-09-15T05:17:38.5114606Z BsiFractureTest > malformedPayloads() > nonfinite utilization PASSED
+2026-09-15T05:17:38.5115180Z 
+2026-09-15T05:17:38.5115566Z BsiFractureTest > malformedHeaders() > wrong id PASSED
+2026-09-15T05:17:38.5116044Z 
+2026-09-15T05:17:38.5116401Z BsiFractureTest > malformedHeaders() > wrong method PASSED
+2026-09-15T05:17:38.5116878Z 
+2026-09-15T05:17:38.5117320Z BsiFractureTest > malformedHeaders() > wrong envelope revision PASSED
+2026-09-15T05:17:38.5117870Z 
+2026-09-15T05:17:38.5118244Z BsiFractureTest > malformedHeaders() > wrong after PASSED
+2026-09-15T05:17:38.5118717Z 
+2026-09-15T05:17:38.5119136Z BsiFractureTest > malformedHeaders() > wrong namespace PASSED
+2026-09-15T05:17:38.5119651Z 
+2026-09-15T05:17:38.5120011Z BsiFractureTest > malformedHeaders() > wrong domain PASSED
+2026-09-15T05:17:38.5120490Z 
+2026-09-15T05:17:38.5121030Z BsiFractureTest > malformedHeaders() > wrong request PASSED
+2026-09-15T05:17:38.5121548Z 
+2026-09-15T05:17:38.5121935Z BsiFractureTest > malformedHeaders() > zero context PASSED
+2026-09-15T05:17:38.5122400Z 
+2026-09-15T05:17:38.5122803Z BsiFractureTest > malformedHeaders() > zero sequence PASSED
+2026-09-15T05:17:38.5123309Z 
+2026-09-15T05:17:38.5123686Z BsiFractureTest > malformedHeaders() > remaining count PASSED
+2026-09-15T05:17:38.5124187Z 
+2026-09-15T05:17:38.5124618Z BsiFractureTest > malformedHeaders() > steps beyond budget PASSED
+2026-09-15T05:17:38.5125147Z 
+2026-09-15T05:17:38.5125538Z BsiFractureTest > malformedHeaders() > unknown flags PASSED
+2026-09-15T05:17:38.5126013Z 
+2026-09-15T05:17:38.5126476Z BsiFractureTest > malformedHeaders() > physical stride 81 PASSED
+2026-09-15T05:17:38.5126997Z 
+2026-09-15T05:17:38.5127362Z BsiFractureTest > malformedHeaders() > cell stride 143 PASSED
+2026-09-15T05:17:38.5127928Z 
+2026-09-15T05:17:38.5128275Z BsiFractureTest > malformedHeaders() > fragment stride 95 PASSED
+2026-09-15T05:17:38.5128875Z 
+2026-09-15T05:17:38.5129203Z BsiFractureTest > malformedHeaders() > duplicate key PASSED
+2026-09-15T05:17:38.5129804Z 
+2026-09-15T05:17:38.5130196Z BsiFractureTest > malformedHeaders() > non-JSON number PASSED
+2026-09-15T05:17:38.5173583Z 
+2026-09-15T05:17:38.5174154Z BsiFractureTest > malformedHeaders() > unknown section PASSED
+2026-09-15T05:17:38.5174806Z 
+2026-09-15T05:17:38.5175221Z BsiFractureTest > oracleReceiptDecoding() > L PASSED
+2026-09-15T05:17:38.5175888Z 
+2026-09-15T05:17:38.5176319Z BsiFractureTest > oracleReceiptDecoding() > mixed-supported PASSED
+2026-09-15T05:17:38.5176910Z 
+2026-09-15T05:17:38.5177317Z BsiFractureTest > oracleReceiptDecoding() > mixed-free PASSED
+2026-09-15T05:17:38.5177851Z 
+2026-09-15T05:17:38.5178285Z BsiFractureTest > oracleReceiptDecoding() > mechanism-rollback PASSED
+2026-09-15T05:17:38.5178869Z 
+2026-09-15T05:17:38.5179344Z BsiFractureTest > oracleReceiptDecoding() > mechanism-prefix PASSED
+2026-09-15T05:17:38.5179949Z 
+2026-09-15T05:17:38.5180352Z BsiFractureTest > oracleReceiptDecoding() > topology-B PASSED
+2026-09-15T05:17:38.5181092Z 
+2026-09-15T05:17:38.5181480Z BsiFractureTest > oracleReceiptDecoding() > topology-C PASSED
+2026-09-15T05:17:38.5181988Z 
+2026-09-15T05:17:38.5182420Z BsiFractureTest > oracleReceiptDecoding() > support-removed PASSED
+2026-09-15T05:17:38.5182967Z 
+2026-09-15T05:17:38.5183459Z BsiFractureTest > oracleReceiptDecoding() > support-retained PASSED
+2026-09-15T05:17:38.5184085Z 
+2026-09-15T05:17:38.5184580Z BsiFractureTest > remainingRefusesDifferentSourceAtSameStamp() PASSED
+2026-09-15T05:17:38.5185240Z 
+2026-09-15T05:17:38.5185796Z BsiFractureTest > completeReceiptIsImmutableAndRetainsOrphanedGround() PASSED
+2026-09-15T05:17:38.5186475Z 
+2026-09-15T05:17:38.5187008Z BsiFractureTest > planHashBindsSourceIdentityOptionsAndCanonicalOrder() PASSED
+2026-09-15T05:17:38.5187761Z 
+2026-09-15T05:17:38.5188350Z BsiFractureTest > strictJsonRetainsExactI64AndRejectsNonJsonWhitespace() PASSED
+2026-09-15T05:17:38.5189648Z 
+2026-09-15T05:17:38.5190231Z BsiFrameAndResponseTest > headersCarryTheirKeysInSchemaOrder() PASSED
+2026-09-15T05:17:38.5191032Z 
+2026-09-15T05:17:38.5191430Z BsiFrameAndResponseTest > sectionsAreReadWhereTheyLie() PASSED
+2026-09-15T05:17:38.5192030Z 
+2026-09-15T05:17:38.5192554Z BsiFrameAndResponseTest > decodingNeverThrowsForAnyTruncationOfAValidFrame() PASSED
+2026-09-15T05:17:38.5193312Z 
+2026-09-15T05:17:38.5193713Z BsiFrameAndResponseTest > theThreeBlockFlagsAreIndependentBits() PASSED
+2026-09-15T05:17:38.5194293Z 
+2026-09-15T05:17:38.5194750Z BsiFrameAndResponseTest > badMagicAndInconsistentLengthsAreRefused() PASSED
+2026-09-15T05:17:38.5195419Z 
+2026-09-15T05:17:38.5195889Z BsiFrameAndResponseTest > anErrorFrameCarriesItsTokenNotItsProse() PASSED
+2026-09-15T05:17:38.5196478Z 
+2026-09-15T05:17:38.5196825Z BsiFrameAndResponseTest > aFrameRoundTrips() PASSED
+2026-09-15T05:17:38.5197359Z 
+2026-09-15T05:17:38.5197845Z BsiMemberGeometryTest > handPackedGeometryKeepsSiAndSampleOrder() PASSED
+2026-09-15T05:17:38.5198420Z 
+2026-09-15T05:17:38.5198823Z BsiMemberGeometryTest > snapshotsAndSourceListsAreImmutable() PASSED
+2026-09-15T05:17:38.5199461Z 
+2026-09-15T05:17:38.5199825Z BsiMemberGeometryTest > invalidFramesAreRejected() PASSED
+2026-09-15T05:17:38.5200335Z 
+2026-09-15T05:17:38.5270608Z BsiMemberGeometryTest > everyNonfiniteAndMisorderedSampleIsRejected() PASSED
+2026-09-15T05:17:38.5271596Z 
+2026-09-15T05:17:38.5272304Z BsiMemberGeometryTest > missingAndEmptyAreDistinctAndTruncationsFail() PASSED
+2026-09-15T05:17:38.5272998Z 
+2026-09-15T05:17:38.5273392Z BsiMemberGeometryTest > idsAndReservedBitsMustMatch() PASSED
+2026-09-15T05:17:38.5273940Z 
+2026-09-15T05:17:38.5274534Z BsiRecordsTest > aBlockRecordIsTheFortyBytesTheContractDescribes() PASSED
+2026-09-15T05:17:38.5275146Z 
+2026-09-15T05:17:38.5275590Z BsiRecordsTest > aLoadRecordIsSixtyFourBytesWithZeroMoments() PASSED
+2026-09-15T05:17:38.5276149Z 
+2026-09-15T05:17:38.5276683Z BsiRecordsTest > everyRecordSizeMatchesTheSchemaShippedInThisJar() PASSED
+2026-09-15T05:17:38.5277318Z 
+2026-09-15T05:17:38.5277778Z BsiRecordsTest > outOfRangeFieldsAreRefusedAtConstruction() PASSED
+2026-09-15T05:17:38.5278366Z 
+2026-09-15T05:17:38.5278907Z BsiRecordsTest > blocksTravelInCanonicalOrderAndDuplicatesAreNamed() PASSED
+2026-09-15T05:17:38.5279537Z 
+2026-09-15T05:17:38.5280014Z BsiRecordsTest > twoLoadsOnOneCellAreTwoLoadsOrderedByTheirBytes() PASSED
+2026-09-15T05:17:38.5280608Z 
+2026-09-15T05:17:38.5281657Z BsiRecoveryTest > facetsRequireTheirSurfacesAndCellIndexWithEqualCardinality() PASSED
+2026-09-15T05:17:38.5282355Z 
+2026-09-15T05:17:38.5282895Z BsiRecoveryTest > oldHeadersAreByteIdenticalAndStorageDoesNotImplyDisplay() PASSED
+2026-09-15T05:17:38.5283589Z 
+2026-09-15T05:17:38.5284326Z BsiRecoveryTest > allElevenStationFieldsUseTheSelectedStorageIncludingPositionAndMissingAxes() PASSED
+2026-09-15T05:17:38.5285268Z 
+2026-09-15T05:17:38.5285822Z BsiRecoveryTest > surfacesKeepTopBottomCornerAndScalarOrderAtBothWidths() PASSED
+2026-09-15T05:17:38.5286582Z 
+2026-09-15T05:17:38.5287114Z BsiRecoveryTest > parentRangesUseUnsignedArithmeticAndCannotOverflow() PASSED
+2026-09-15T05:17:38.5287763Z 
+2026-09-15T05:17:38.5288438Z BsiRecoveryTest > duplicatesOverlapsAndDualStorageAreRejectedButUnknownSectionsRemain() PASSED
+2026-09-15T05:17:38.5289251Z 
+2026-09-15T05:17:38.5289916Z BsiRecoveryTest > everyEmittedRecoveryScalarRejectsNonfiniteValuesExceptMissingAxes() PASSED
+2026-09-15T05:17:38.5290929Z 
+2026-09-15T05:17:38.5291469Z BsiRecoveryTest > malformedDirectoryNeverBecomesAnEmptyReadback() PASSED
+2026-09-15T05:17:38.5292259Z 
+2026-09-15T05:17:38.5292819Z BsiRecoveryTest > validatedPayloadCannotBeChangedThroughCallerAliases() PASSED
+2026-09-15T05:17:38.5293538Z 
+2026-09-15T05:17:38.5294184Z BsiRecoveryTest > everyFacetFieldAndItsChildRangesDecodeFromSpecifiedOffsets() PASSED
+2026-09-15T05:17:38.5294978Z 
+2026-09-15T05:17:38.5295561Z BsiRecoveryTest > vocabularySectionsAreNameIdTablesAndNeverBinaryRecords() PASSED
+2026-09-15T05:17:38.5296649Z 
+2026-09-15T05:17:38.5297238Z BsiShellDisplayTest > displaySamplesAndGeometryAreImmutable() PASSED
+2026-09-15T05:17:38.5297970Z 
+2026-09-15T05:17:38.5298602Z BsiShellDisplayTest > legacyDegenerateGeometryKeepsDiagnosticsWithoutADrawableField() PASSED
+2026-09-15T05:17:38.5299292Z 
+2026-09-15T05:17:38.5299709Z BsiShellDisplayTest > verdictIsIndependentOfTheDisplayedDc() PASSED
+2026-09-15T05:17:38.5300239Z 
+2026-09-15T05:17:38.5341164Z BsiShellDisplayTest > unitsCornerOrderFacesAndFrameComeFromRecovery() PASSED
+2026-09-15T05:17:38.5342090Z 
+2026-09-15T05:17:38.5342671Z BsiShellDisplayTest > nonFiniteSamplesAndDegenerateFramesAreRejected() PASSED
+2026-09-15T05:17:38.5343484Z 
+2026-09-15T05:17:38.5344069Z BsiShellDisplayTest > scalarInterpolationClampsAndSharesTheMeshScale() PASSED
+2026-09-15T05:17:38.5344730Z 
+2026-09-15T05:17:38.5345410Z BsiShellDisplayTest > wrongRevisionMissingResponseAndUnresolvedVocabularyAreRejected() PASSED
+2026-09-15T05:17:38.5346260Z 
+2026-09-15T05:17:38.5346882Z BsiShellDisplayTest > meshPickingUsesSuppliedGeometryAndNormal() PASSED
+2026-09-15T05:17:38.5347505Z 
+2026-09-15T05:17:38.5348103Z BsiStationIdentityTest > exactIdentityAndSourceGoverningReachTheSharedSamples() PASSED
+2026-09-15T05:17:38.5348877Z 
+2026-09-15T05:17:38.5349464Z BsiStationIdentityTest > invalidNumbersSidesFlagsAndReservedAreRejected() PASSED
+2026-09-15T05:17:38.5350140Z 
+2026-09-15T05:17:38.5350853Z BsiStationIdentityTest > missingGoverningAndRequestedZeroAreExplicit() PASSED
+2026-09-15T05:17:38.5351554Z 
+2026-09-15T05:17:38.5352024Z BsiStationIdentityTest > immutableIdentityAndAllTruncations() PASSED
+2026-09-15T05:17:38.5352606Z 
+2026-09-15T05:17:38.5353092Z BsiStationIdentityTest > pairingOrderAndGoverningMustBeConsistent() PASSED
+2026-09-15T05:17:38.5353760Z 
+2026-09-15T05:17:38.5354314Z BsiVocabularyTest > refusesRepliesForAnotherSessionRequestOrRevision() PASSED
+2026-09-15T05:17:38.5354942Z 
+2026-09-15T05:17:38.5355387Z BsiVocabularyTest > usesReturnedIdsInsteadOfDeclarationOrder() PASSED
+2026-09-15T05:17:38.5356009Z 
+2026-09-15T05:17:38.5356457Z BsiVocabularyTest > refusesMalformedAndAmbiguousIdentityTables() PASSED
+2026-09-15T05:17:38.5357001Z 
+2026-09-15T05:17:38.5357385Z NoSubprocessTest > theInProcessEngineStartsNothing() PASSED
+2026-09-15T05:17:38.5357965Z 
+2026-09-15T05:17:38.5358491Z NoSubprocessTest > theShippedCodeStartsNoProcessesExceptTheOnesNamedHere() PASSED
+2026-09-15T05:17:38.5359223Z 
+2026-09-15T05:17:38.5360173Z PipelineProfileTest > stopAndRestartRejectOldWorkAndPreserveImmutableStoppedSnapshot() PASSED
+2026-09-15T05:17:38.5361163Z 
+2026-09-15T05:17:38.5361737Z PipelineProfileTest > closeIsIdempotentAndInvalidDurationsAreNotRecorded() PASSED
+2026-09-15T05:17:38.5391461Z 
+2026-09-15T05:17:38.5392021Z PipelineProfileTest > concurrentCompletionsAndCountersStayBounded() PASSED
+2026-09-15T05:17:38.5392972Z 
+2026-09-15T05:17:38.5393666Z PipelineProfileTest > scheduledWorkKeepsItsOriginalSessionThroughWorkerAndDelivery() PASSED
+2026-09-15T05:17:38.5394558Z 
+2026-09-15T05:17:38.5395071Z PipelineProfileTest > exactNearestRankQuantilesAndBoundedRollingWindow() PASSED
+2026-09-15T05:17:38.5395873Z 
+2026-09-15T05:17:38.5396454Z PipelineProfileTest > disabledDoesNotReadClockAllocateSpansOrStoreSamples() PASSED
+2026-09-15T05:17:38.5397166Z 
+2026-09-15T05:17:38.5397755Z BsiAnalysisNativeTest > realCommitResultsShareNativeFlagsSamplesAndLifecycle() PASSED
+2026-09-15T05:17:38.5398552Z 
+2026-09-15T05:17:38.5399049Z BundledNativesTest > theUnpackedLibraryIsNotExecutable(Path) PASSED
+2026-09-15T05:17:38.5399644Z 
+2026-09-15T05:17:38.5400169Z BundledNativesTest > aDevelopmentJarWithNoLibrarySaysSoAndCarriesOn(Path) PASSED
+2026-09-15T05:17:38.5401204Z 
+2026-09-15T05:17:38.5401725Z BundledNativesTest > aFiveFieldManifestIsRefusedRatherThanHalfUnderstood() PASSED
+2026-09-15T05:17:38.5402399Z 
+2026-09-15T05:17:38.5402948Z BundledNativesTest > aReplaceRefusedByAnOpenHandleAdoptsWhatIsAlreadyThere(Path) PASSED
+2026-09-15T05:17:38.5403719Z 
+2026-09-15T05:17:38.5404244Z BundledNativesTest > aLibraryAlreadyInPlaceIsAdoptedWithoutRewriting(Path) PASSED
+2026-09-15T05:17:38.5405212Z 
+2026-09-15T05:17:38.5405801Z BundledNativesTest > theShippedLoaderReadsFromTheJarWhenThereIsOne() PASSED
+2026-09-15T05:17:38.5406495Z 
+2026-09-15T05:17:38.5407098Z BundledNativesTest > sevenFieldsCarryTheEngineVersionAndTheContractItWasBuiltAgainst() PASSED
+2026-09-15T05:17:38.5407895Z 
+2026-09-15T05:17:38.5408309Z BundledNativesTest > unpackingNeverThrowsIntoTheModLoad(Path) PASSED
+2026-09-15T05:17:38.5408916Z 
+2026-09-15T05:17:38.5409353Z BundledNativesTest > firstUseWritesTheLibraryUnderAHashNamedPath(Path) PASSED
+2026-09-15T05:17:38.5409953Z 
+2026-09-15T05:17:38.5410464Z BundledNativesTest > theOverrideDirectoryBeatsTheCopyUnpackedFromTheJar(Path) PASSED
+2026-09-15T05:17:38.5411373Z 
+2026-09-15T05:17:38.5411930Z BundledNativesTest > bytesThatDisagreeWithTheManifestUnpackNothing(Path) PASSED
+2026-09-15T05:17:38.5412576Z 
+2026-09-15T05:17:38.5413016Z BundledNativesTest > anOlderLibraryAndUserFilesArePreserved(Path) PASSED
+2026-09-15T05:17:38.5413670Z 
+2026-09-15T05:17:38.5414270Z BundledNativesTest > anUnsupportedPlatformIsToldWhatDidShipAndWhereToPutItsOwn(Path) PASSED
+2026-09-15T05:17:38.5415059Z 
+2026-09-15T05:17:38.5415587Z BundledNativesTest > aManifestThatTriesToEscapeTheUnpackDirectoryIsRefused() PASSED
+2026-09-15T05:17:38.5416333Z 
+2026-09-15T05:17:38.5416800Z BundledNativesTest > aContractFieldThatIsNotAHashIsRefused() PASSED
+2026-09-15T05:17:38.5417378Z 
+2026-09-15T05:17:38.5418139Z EngineLocatorTest > thePropertyOutranksTheOverrideDirectoryAndTheEnvironmentOutranksTheBundledCopy(Path) PASSED
+2026-09-15T05:17:38.5419106Z 
+2026-09-15T05:17:38.5419585Z EngineLocatorTest > platformAndFileNameFollowTheManifestSpelling() PASSED
+2026-09-15T05:17:38.5420205Z 
+2026-09-15T05:17:38.5451267Z EngineLocatorTest > theSystemFormReadsTheSamePropertyTheBuildForwards(Path) PASSED
+2026-09-15T05:17:38.5452307Z 
+2026-09-15T05:17:38.5452882Z EngineLocatorTest > theOverrideDirectoryWinsOverTheBundledCopy(Path) PASSED
+2026-09-15T05:17:38.5453566Z 
+2026-09-15T05:17:38.5454189Z EngineLocatorTest > anInvalidExplicitPathCannotSelectADifferentBundledEngine(Path) PASSED
+2026-09-15T05:17:38.5455028Z 
+2026-09-15T05:17:38.5455530Z EngineLocatorTest > theBundledCopyIsUsedWhenNothingOverridesIt(Path) PASSED
+2026-09-15T05:17:38.5456185Z 
+2026-09-15T05:17:38.5456847Z EngineLocatorTest > configAndPropertyOutrankEverythingAndAbsenceIsReportedNotGuessed(Path) PASSED
+2026-09-15T05:17:38.5457806Z 
+2026-09-15T05:17:38.5458398Z GameFractureIdentityTest > preservesExactRevisionNamespaceAndEngineAssignedIds() PASSED
+2026-09-15T05:17:38.5459151Z 
+2026-09-15T05:17:38.5459818Z GameFractureIdentityTest > staleProductOrDirectionAtSamePositionCannotOwnCurrentSource() PASSED
+2026-09-15T05:17:38.5460801Z 
+2026-09-15T05:17:38.5461306Z GameFractureIdentityTest > externalLoadsAndZeroIdentitiesCannotBeSilentlyOmitted() PASSED
+2026-09-15T05:17:38.5461988Z 
+2026-09-15T05:17:38.5462457Z GameFractureIdentityTest > missingForeignAndDuplicateOwnersAreRefused() PASSED
+2026-09-15T05:17:38.5463132Z 
+2026-09-15T05:17:38.5463708Z GameInputNativeTest > refusedVocabularyRedeclarationInvalidatesOldWorldAndNames() PASSED
+2026-09-15T05:17:38.5464662Z 
+2026-09-15T05:17:38.5465286Z GameInputNativeTest > profilingObservesTheRealBridgeWithoutChangingNativeResults() PASSED
+2026-09-15T05:17:38.5466015Z 
+2026-09-15T05:17:38.5466630Z GameInputNativeTest > declaredRectangularPresentationAxesAgreeWithDeliveredNativeFrames() PASSED
+2026-09-15T05:17:38.5467425Z 
+2026-09-15T05:17:38.5467964Z GameInputNativeTest > fullGameVocabularyAndSnapshotReachTheRealEngine() PASSED
+2026-09-15T05:17:38.5468675Z 
+2026-09-15T05:17:38.5469189Z GameWorldSnapshotTest > rejectsUnknownOrUnobservedInputsBeforeSending() PASSED
+2026-09-15T05:17:38.5469850Z 
+2026-09-15T05:17:38.5470252Z GameWorldSnapshotTest > snapshotOwnsItsCollections() PASSED
+2026-09-15T05:17:38.5470966Z 
+2026-09-15T05:17:38.5471526Z GameWorldSnapshotTest > includesAllSixObservedContactsOnceInCanonicalOrder() PASSED
+2026-09-15T05:17:38.5472226Z 
+2026-09-15T05:17:38.5473092Z GameWorldSnapshotTest > preservesDeclaredAxesRotationJointAndSiValues() PASSED
+2026-09-15T05:17:38.5473774Z 
+2026-09-15T05:17:38.5474421Z GameWorldSnapshotTest > shippedVocabularyUsesSiAndExplicitProductRoles() PASSED
+2026-09-15T05:17:38.5475117Z 
+2026-09-15T05:17:38.5475640Z GameWorldSnapshotTest > contactsCommuteWithMirrorAndRotation() PASSED
+2026-09-15T05:17:38.5476264Z 
+2026-09-15T05:17:38.5476766Z InProcessBucklingTest > actualBudgetRefusalAndGreenhillAreDistinct() PASSED
+2026-09-15T05:17:38.5477471Z 
+2026-09-15T05:17:38.5478027Z InProcessBucklingTest > actualEigenAndMixedFlagsReachTheSharedAnalysis() PASSED
+2026-09-15T05:17:38.5478698Z 
+2026-09-15T05:17:38.5479123Z InProcessEngineTest > thisBuildKnowsWhichContractItSpeaks() PASSED
+2026-09-15T05:17:38.5479676Z 
+2026-09-15T05:17:38.5480365Z InProcessEngineTest > aCantileverUnderItsOwnWeightComesBackWithTheClosedFormReaction() PASSED
+2026-09-15T05:17:38.5511829Z 
+2026-09-15T05:17:38.5512513Z InProcessEngineTest > aForeignContractHashIsRefusedAndNothingElseIsSent() PASSED
+2026-09-15T05:17:38.5513321Z 
+2026-09-15T05:17:38.5513930Z InProcessEngineTest > anEngineThatIsNotOneIsRefusedWithAReason() PASSED
+2026-09-15T05:17:38.5514580Z 
+2026-09-15T05:17:38.5515097Z InProcessEngineTest > openOptionsStayInsideWhatTheContractAccepts() PASSED
+2026-09-15T05:17:38.6131526Z 
+2026-09-15T05:17:38.6146580Z InProcessRecoveryTest > nativeOptInSidesAndGoverningIdentityReachDisplay() PASSED
+2026-09-15T05:17:38.6191268Z 
+2026-09-15T05:17:38.6222099Z InProcessRecoveryTest > nativeShellFramesAndSurfaceStorageAreCoherent() PASSED
+2026-09-15T05:17:38.6250957Z 
+2026-09-15T05:17:38.6282205Z InProcessRecoveryTest > nativeBeamSamplesAndPointLoadSidesReachTheSharedDisplay() PASSED
+2026-09-15T05:17:38.6311041Z 
+2026-09-15T05:17:38.6332130Z InProcessRecoveryTest > cantileverFaceSignsAndStorageMatchClosedForm() PASSED
+2026-09-15T05:17:38.6361023Z 
+2026-09-15T05:17:38.6392279Z InProcessRecoveryTest > nativeShellRecoveryFeedsTheSameDisplayAndPickingPath() PASSED
+2026-09-15T05:17:38.6420970Z 
+2026-09-15T05:17:38.6451841Z InProcessRecoveryTest > coupledSlabWeightAndTransformsAreInvariant() PASSED
+2026-09-15T05:17:38.6481011Z 
+2026-09-15T05:17:38.6512081Z InProcessRecoveryTest > unifiedAnalysisKeepsTheNativeShellFlagsAndSamples() PASSED
+2026-09-15T05:17:38.6541037Z 
+2026-09-15T05:17:38.6572071Z InProcessRecoveryTest > memberGeometryUsesActualAxesRotatedSectionAndF64WorldPositions() PASSED
+2026-09-15T05:17:38.7120340Z 
+2026-09-15T05:17:38.7142499Z NativeCacheTest > darwinUsesTheSameNormalisationAsManifestSelection() PASSED
+2026-09-15T05:17:38.7143699Z 
+2026-09-15T05:17:38.7144152Z NativeCacheTest > manifestReadIsBounded() PASSED
+2026-09-15T05:17:38.7144802Z 
+2026-09-15T05:17:38.7145380Z NativeCacheTest > otherVersionsAndLegacyCacheArePreserved() PASSED
+2026-09-15T05:17:38.7146054Z 
+2026-09-15T05:17:38.7146521Z NativeCacheTest > duplicatePlatformIsRejected() PASSED
+2026-09-15T05:17:38.7147138Z 
+2026-09-15T05:17:38.7147854Z NativeCacheTest > contractMismatchIsRejectedBeforeOpeningLibraryOrAdoptingCache() PASSED
+2026-09-15T05:17:38.7148747Z 
+2026-09-15T05:17:38.7149204Z NativeCacheTest > corruptCacheIsRepaired() PASSED
+2026-09-15T05:17:38.7149773Z 
+2026-09-15T05:17:38.7150420Z NativeCacheTest > interruptedStreamPublishesNothingAndCleansTemporary() PASSED
+2026-09-15T05:17:38.7151419Z 
+2026-09-15T05:17:38.7151997Z NativeCacheTest > fullHashAndPlatformArePartOfCacheIdentity() PASSED
+2026-09-15T05:17:38.7152710Z 
+2026-09-15T05:17:38.7153199Z NativeCacheTest > deniedDestinationIsRecoverable() PASSED
+2026-09-15T05:17:38.7153769Z 
+2026-09-15T05:17:38.7154503Z NativeCacheTest > overlongResourceStopsAtDeclaredSizePlusOne() PASSED
+2026-09-15T05:17:38.7155200Z 
+2026-09-15T05:17:38.7155656Z NativeCacheTest > simultaneousUnpackConverges() PASSED
+2026-09-15T05:17:38.8151209Z 
+2026-09-15T05:17:38.8152711Z NativeFractureTest > oracleScenariosThroughProductionSession() > L FAILED
+2026-09-15T05:17:38.8158538Z     org.opentest4j.AssertionFailedError: full seven-section native oracle bytes ==> array contents differ at index [1952], expected: <-74> but was: <-87>
+2026-09-15T05:17:38.8192395Z         at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+2026-09-15T05:17:38.8223346Z         at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+2026-09-15T05:17:38.8251842Z         at app//org.junit.jupiter.api.AssertArrayEquals.failArraysNotEqual(AssertArrayEquals.java:440)
+2026-09-15T05:17:38.8252980Z         at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:209)
+2026-09-15T05:17:38.8253942Z         at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:63)
+2026-09-15T05:17:38.8254809Z         at app//org.junit.jupiter.api.Assertions.assertArrayEquals(Assertions.java:1238)
+2026-09-15T05:17:38.8255785Z         at app//com.blockreality.core.engine.NativeFractureTest.lambda$oracleScenariosThroughProductionSession$1(NativeFractureTest.java:26)
+2026-09-15T05:17:38.8256489Z 
+2026-09-15T05:17:38.8256852Z NativeFractureTest > oracleScenariosThroughProductionSession() > mixed-supported FAILED
+2026-09-15T05:17:38.8257858Z     org.opentest4j.AssertionFailedError: full seven-section native oracle bytes ==> array contents differ at index [1944], expected: <-20> but was: <-111>
+2026-09-15T05:17:38.8259011Z         at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+2026-09-15T05:17:38.8261109Z         at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+2026-09-15T05:17:38.8262171Z         at app//org.junit.jupiter.api.AssertArrayEquals.failArraysNotEqual(AssertArrayEquals.java:440)
+2026-09-15T05:17:38.8263024Z         at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:209)
+2026-09-15T05:17:38.8263870Z         at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:63)
+2026-09-15T05:17:38.8264680Z         at app//org.junit.jupiter.api.Assertions.assertArrayEquals(Assertions.java:1238)
+2026-09-15T05:17:38.8265641Z         at app//com.blockreality.core.engine.NativeFractureTest.lambda$oracleScenariosThroughProductionSession$1(NativeFractureTest.java:26)
+2026-09-15T05:17:38.8266268Z 
+2026-09-15T05:17:38.8266728Z NativeFractureTest > oracleScenariosThroughProductionSession() > mixed-free PASSED
+2026-09-15T05:17:38.8267369Z 
+2026-09-15T05:17:38.8267729Z NativeFractureTest > oracleScenariosThroughProductionSession() > mechanism-rollback PASSED
+2026-09-15T05:17:38.8268178Z 
+2026-09-15T05:17:38.8268558Z NativeFractureTest > oracleScenariosThroughProductionSession() > mechanism-prefix PASSED
+2026-09-15T05:17:38.8268996Z 
+2026-09-15T05:17:38.8269321Z NativeFractureTest > oracleScenariosThroughProductionSession() > topology-B PASSED
+2026-09-15T05:17:38.8269953Z 
+2026-09-15T05:17:38.8270437Z NativeFractureTest > oracleScenariosThroughProductionSession() > topology-C PASSED
+2026-09-15T05:17:38.8271223Z 
+2026-09-15T05:17:38.8271785Z NativeFractureTest > oracleScenariosThroughProductionSession() > support-removed PASSED
+2026-09-15T05:17:38.8272445Z 
+2026-09-15T05:17:38.8273023Z NativeFractureTest > oracleScenariosThroughProductionSession() > support-retained PASSED
+2026-09-15T05:17:38.9131113Z 
+2026-09-15T05:17:38.9162612Z NativeFractureTest > oracleScenariosThroughProductionSession() > initial-mechanism PASSED
+2026-09-15T05:17:38.9191220Z 
+2026-09-15T05:17:38.9222864Z NativeFractureTest > foreignSessionAndStoredTokensCannotCommit() PASSED
+2026-09-15T05:17:38.9223562Z 
+2026-09-15T05:17:38.9224272Z NativeFractureTest > rejectedWorldAndOptionsPreserveLiveCandidateAndSource() PASSED
+2026-09-15T05:17:38.9224945Z 
+2026-09-15T05:17:38.9225486Z NativeGameRuntimeTest > loadsLazilyReusesTheSessionAndKeepsDimensionsSeparate() PASSED
+2026-09-15T05:17:38.9226162Z 
+2026-09-15T05:17:38.9226537Z NativeGameRuntimeTest > offNeverCallsTheLoader() PASSED
+2026-09-15T05:17:38.9226953Z 
+2026-09-15T05:17:38.9227475Z NativeGameRuntimeTest > concurrentSubmissionsNeverEnterTheSameSessionTogether() PASSED
+2026-09-15T05:17:38.9228448Z 
+2026-09-15T05:17:38.9229156Z NativeGameRuntimeTest > aLoadFailureStaysDisabledUntilExplicitReset() PASSED
+2026-09-15T05:17:38.9229777Z 
+2026-09-15T05:17:38.9230296Z NativeGameRuntimeTest > closeRevokesBlockedResultsWithoutClosingAnActiveNativeCall() PASSED
+2026-09-15T05:17:38.9231421Z 
+2026-09-15T05:17:38.9232059Z NativeGameRuntimeTest > timeoutRevokesAuthorityButDoesNotPretendToKillNativeWork() PASSED
+2026-09-15T05:17:38.9232821Z 
+2026-09-15T05:17:38.9233300Z NativeGameRuntimeTest > resetWaitsForTheOldCallAndOpensAFreshSession() PASSED
+2026-09-15T05:17:38.9233902Z 
+2026-09-15T05:17:38.9234642Z ProductFormTest > materialCellsNeverTurnLegacySectionNamesOrPanelAxesIntoPhysicalDimensions() PASSED
+2026-09-15T05:17:38.9235401Z 
+2026-09-15T05:17:38.9235928Z ProductFormTest > undeclaredMissingAndUnsupportedProductsRemainExplicitlyUnresolved() PASSED
+2026-09-15T05:17:38.9236682Z 
+2026-09-15T05:17:38.9237324Z ProductFormTest > changedCatalogueDimensionsReachTheShapeAndBothSamplingExtents() PASSED
+2026-09-15T05:17:38.9238033Z 
+2026-09-15T05:17:38.9238474Z ProductFormTest > onlyFullFaceContactHidesAScanSurface() PASSED
+2026-09-15T05:17:38.9267639Z 
+2026-09-15T05:17:38.9292153Z ProductFormTest > unequalDeclaredWidthsAndDepthsKeepTheirAxesInAllThreeOrientations() PASSED
+2026-09-15T05:17:38.9293022Z 
+2026-09-15T05:17:38.9332608Z ProductGeometryTest > anExplicitBindingWinsOverTheMaterialDefaultButAbsentBindingUsesTheDeclaredDefault() PASSED
+2026-09-15T05:17:38.9334068Z 
+2026-09-15T05:17:38.9334872Z ProductGeometryTest > missingPackagedCatalogueCannotPoisonTooltipClassInitialization() PASSED
+2026-09-15T05:17:38.9335811Z 
+2026-09-15T05:17:38.9336593Z ProductGeometryTest > legacyMonolithSectionNamesNeverBecomeDimensionsAndPanelAliasesUseThickness() PASSED
+2026-09-15T05:17:38.9337605Z 
+2026-09-15T05:17:38.9338382Z ProductGeometryTest > damagedOrAmbiguousDeclarationsRefuseWithoutFallbackDimensions() PASSED
+2026-09-15T05:17:38.9339242Z 
+2026-09-15T05:17:38.9340015Z ProductGeometryTest > dimensionsComeFromTheDeclarationEvenWhenTheTokenSaysSomethingElse() PASSED
+2026-09-15T05:17:38.9341273Z 
+2026-09-15T05:17:38.9341987Z ProductGeometryTest > catalogueExposesAllTenProductsIncludingTheUnplacedRebarDeclaration() PASSED
+2026-09-15T05:17:38.9342841Z 
+2026-09-15T05:17:38.9343442Z JsonTest > malformedInputParsesToNullRatherThanThrowing() PASSED
+2026-09-15T05:17:38.9344125Z 
+2026-09-15T05:17:38.9344736Z JsonTest > writerEscapesControlCharactersSoOneMessageStaysOneLine() PASSED
+2026-09-15T05:17:38.9345448Z 
+2026-09-15T05:17:38.9345902Z JsonTest > plainIntegersSurviveAbove2Pow53() PASSED
+2026-09-15T05:17:38.9346474Z 
+2026-09-15T05:17:38.9346929Z JsonTest > parsesTheProtocolShape() PASSED
+2026-09-15T05:17:38.9347417Z 
+2026-09-15T05:17:38.9347916Z JsonTest > invalidEscapesAreAParseErrorNotALiteral() PASSED
+2026-09-15T05:17:38.9348563Z 
+2026-09-15T05:17:38.9348983Z JsonTest > malformedNumbersAreAParseError() PASSED
+2026-09-15T05:17:38.9349510Z 
+2026-09-15T05:17:38.9349892Z JsonTest > nullInputIsSafe() PASSED
+2026-09-15T05:17:38.9350385Z 
+2026-09-15T05:17:38.9350960Z JsonTest > roundTripsNestedStructures() PASSED
+2026-09-15T05:17:38.9351548Z 
+2026-09-15T05:17:38.9352033Z JsonTest > trailingGarbageRejectsTheWholeLine() PASSED
+2026-09-15T05:17:38.9352682Z 
+2026-09-15T05:17:38.9353169Z JsonTest > deeplyNestedInputDoesNotBlowTheStack() PASSED
+2026-09-15T05:17:38.9353859Z 
+2026-09-15T05:17:38.9354385Z JsonTest > missingAndWrongTypedFieldsDegradeToDefaults() PASSED
+2026-09-15T05:17:38.9355023Z 
+2026-09-15T05:17:38.9355475Z JsonTest > nonPlainNumbersAreNotExactIntegers() PASSED
+2026-09-15T05:17:38.9356106Z 
+2026-09-15T05:17:38.9356978Z JsonTest > writerEmitsNullForNonFiniteDoubles() PASSED
+2026-09-15T05:17:38.9357535Z 
+2026-09-15T05:17:38.9357937Z BinaryCodecTest > aRevisionMismatchIsRejected() PASSED
+2026-09-15T05:17:38.9358396Z 
+2026-09-15T05:17:38.9358903Z BinaryCodecTest > aNonFiniteDemandCapacityIsRejected() PASSED
+2026-09-15T05:17:38.9359429Z 
+2026-09-15T05:17:38.9359935Z BinaryCodecTest > decodeNeverThrowsForAnyTruncationOfAValidFrame() PASSED
+2026-09-15T05:17:38.9361183Z 
+2026-09-15T05:17:38.9361923Z BinaryCodecTest > theBucklingFlagBitFollowsTheRequest() PASSED
+2026-09-15T05:17:38.9362568Z 
+2026-09-15T05:17:38.9363164Z BinaryCodecTest > aTokenOutsideTheCatalogueCannotTravelAsAnIndex() PASSED
+2026-09-15T05:17:38.9363863Z 
+2026-09-15T05:17:38.9364501Z BinaryCodecTest > aBadMagicIsRejected() PASSED
+2026-09-15T05:17:38.9365018Z 
+2026-09-15T05:17:38.9365562Z BinaryCodecTest > tokenRolesAreEnforcedNotJustRanges() PASSED
+2026-09-15T05:17:38.9366200Z 
+2026-09-15T05:17:38.9366632Z BinaryCodecTest > unknownShellFlagBitsAreRejected() PASSED
+2026-09-15T05:17:38.9367136Z 
+2026-09-15T05:17:38.9367590Z BinaryCodecTest > aFrameShorterThanItsContentIsRejected() PASSED
+2026-09-15T05:17:38.9368254Z 
+2026-09-15T05:17:38.9368702Z BinaryCodecTest > aNonOkFrameInTheRegionIsRejected() PASSED
+2026-09-15T05:17:38.9369310Z 
+2026-09-15T05:17:38.9369766Z BinaryCodecTest > aWellFormedFrameDecodesCompletely() PASSED
+2026-09-15T05:17:38.9370408Z 
+2026-09-15T05:17:38.9371008Z BinaryCodecTest > nanNeutralAxisMeansAbsentNotError() PASSED
+2026-09-15T05:17:38.9371618Z 
+2026-09-15T05:17:38.9372092Z BinaryCodecTest > aFrameLongerThanItsContentIsRejected() PASSED
+2026-09-15T05:17:38.9372724Z 
+2026-09-15T05:17:38.9373193Z BinaryCodecTest > aHostileCountFailsBeforeAllocating() PASSED
+2026-09-15T05:17:38.9373796Z 
+2026-09-15T05:17:38.9374315Z BinaryCodecTest > encodeReturnsTheExactByteCountTheDoorbellNeeds() PASSED
+2026-09-15T05:17:39.0152511Z 
+2026-09-15T05:17:39.0153700Z BinaryCodecTest > aNegativeCountIsRejected() PASSED
+2026-09-15T05:17:39.0154540Z 
+2026-09-15T05:17:39.0155297Z BinaryCodecTest > anUnknownFibreOrdinalIsRejectedNotMapped() PASSED
+2026-09-15T05:17:39.0156170Z 
+2026-09-15T05:17:39.0162268Z BinaryCodecTest > aBooleanWireFieldMustBeExactlyZeroOrOne() PASSED
+2026-09-15T05:17:39.0165206Z 
+2026-09-15T05:17:39.0167424Z ProtocolCodecTest > aCompleteHelloYieldsTheCatalogue() PASSED
+2026-09-15T05:17:39.0168309Z 
+2026-09-15T05:17:39.0168875Z ProtocolCodecTest > errorLineBecomesAFailedResult() PASSED
+2026-09-15T05:17:39.0169555Z 
+2026-09-15T05:17:39.0170220Z ProtocolCodecTest > unknownGoverningFibreFailsTheReplyRatherThanDegrading() PASSED
+2026-09-15T05:17:39.0171362Z 
+2026-09-15T05:17:39.0171908Z ProtocolCodecTest > wrongTypedRequiredFieldsFail() PASSED
+2026-09-15T05:17:39.0172553Z 
+2026-09-15T05:17:39.0173130Z ProtocolCodecTest > replyForTheWrongRevisionIsRejected() PASSED
+2026-09-15T05:17:39.0173945Z 
+2026-09-15T05:17:39.0174394Z ProtocolCodecTest > absentNeutralAxisStaysAbsent() PASSED
+2026-09-15T05:17:39.0175044Z 
+2026-09-15T05:17:39.0175631Z ProtocolCodecTest > solveRequestCarriesBlocksAndMaterialsOnly() PASSED
+2026-09-15T05:17:39.0176328Z 
+2026-09-15T05:17:39.0176963Z ProtocolCodecTest > unknownFailModeDegradesRatherThanThrowingInTheApiHelper() PASSED
+2026-09-15T05:17:39.0177730Z 
+2026-09-15T05:17:39.0178269Z ProtocolCodecTest > helloWithoutShmIsJsonOnlyNotRejected() PASSED
+2026-09-15T05:17:39.0178911Z 
+2026-09-15T05:17:39.0179497Z ProtocolCodecTest > aCompleteReplyDecodesWithEveryFieldCarried() PASSED
+2026-09-15T05:17:39.0180135Z 
+2026-09-15T05:17:39.0180934Z ProtocolCodecTest > helloIsRejectedWhenTheCatalogueCannotServeAsTheIndexAbi() PASSED
+2026-09-15T05:17:39.0181768Z 
+2026-09-15T05:17:39.0182420Z ProtocolCodecTest > truncatedReplyIsAFailureNotAnException() PASSED
+2026-09-15T05:17:39.0183145Z 
+2026-09-15T05:17:39.0183777Z ProtocolCodecTest > solveShmDoorbellCarriesRevisionAndByteCount() PASSED
+2026-09-15T05:17:39.0184542Z 
+2026-09-15T05:17:39.0185124Z ProtocolCodecTest > aRevisionWrittenAsADoubleIsRejected() PASSED
+2026-09-15T05:17:39.0185829Z 
+2026-09-15T05:17:39.0186405Z ProtocolCodecTest > helloIsRejectedWhenNotOk() PASSED
+2026-09-15T05:17:39.0187031Z 
+2026-09-15T05:17:39.0187536Z ProtocolCodecTest > bucklingIsWrittenOnlyWhenOff() PASSED
+2026-09-15T05:17:39.0188265Z 
+2026-09-15T05:17:39.0189006Z ProtocolCodecTest > missingRequiredFieldsFailTheReplyAndNameTheField() PASSED
+2026-09-15T05:17:39.0189837Z 
+2026-09-15T05:17:39.0191338Z ProtocolCodecTest > singularReplyIsOkButNotUsable() PASSED
+2026-09-15T05:17:39.0193948Z 
+2026-09-15T05:17:39.0196159Z TruncationTest > N14-b: a skipped block touching the request is on the truncation face PASSED
+2026-09-15T05:17:39.0198374Z 
+2026-09-15T05:17:39.0199222Z TruncationTest > touching is also six-faced: an element only cornering the face keeps its verdict PASSED
+2026-09-15T05:17:39.0200099Z 
+2026-09-15T05:17:39.0200894Z TruncationTest > N14-c: the element against the missing base is withheld, the far one is not PASSED
+2026-09-15T05:17:39.0201673Z 
+2026-09-15T05:17:39.0202330Z TruncationTest > the portal case from #74: the surviving column is withheld, the far one is not PASSED
+2026-09-15T05:17:39.0203173Z 
+2026-09-15T05:17:39.0204000Z TruncationTest > an element is withheld when ANY of its blocks touches the face, not only the first PASSED
+2026-09-15T05:17:39.0207376Z 
+2026-09-15T05:17:39.0208052Z TruncationTest > an empty request cannot be truncated by anything PASSED
+2026-09-15T05:17:39.0208828Z 
+2026-09-15T05:17:39.0209462Z TruncationTest > the face keeps the order it was given, so reported examples are stable PASSED
+2026-09-15T05:17:39.0210302Z 
+2026-09-15T05:17:39.0211123Z TruncationTest > N14-e: nothing skipped means nothing to say PASSED
+2026-09-15T05:17:39.0211945Z 
+2026-09-15T05:17:39.0212522Z TruncationTest > no face means no element is withheld, whatever was solved PASSED
+2026-09-15T05:17:39.0213249Z 
+2026-09-15T05:17:39.0213916Z TruncationTest > a skipped block nowhere near the request is a different structure, not a truncation PASSED
+2026-09-15T05:17:39.0214793Z 
+2026-09-15T05:17:39.0215416Z TruncationTest > adjacency is the six faces: a diagonal neighbour carries no load path PASSED
+2026-09-15T05:17:39.0216176Z 
+2026-09-15T05:17:39.0217106Z TruncationTest > ids are reported, not indices — the packet identifies elements by id PASSED
+2026-09-15T05:17:39.0217933Z 
+2026-09-15T05:17:39.0218765Z TruncationTest > all six faces are checked, none forgotten PASSED
+2026-09-15T05:17:39.0219662Z 
+2026-09-15T05:17:39.0220207Z BucklingReadoutTest > refusedWorldKeepsTheSuppliedLocalCriticalWarning() PASSED
+2026-09-15T05:17:39.0221126Z 
+2026-09-15T05:17:39.0221664Z BucklingReadoutTest > neverDerivesCriticalFromTheDisplayedFactor() PASSED
+2026-09-15T05:17:39.0223325Z 
+2026-09-15T05:17:39.0223976Z BucklingReadoutTest > everyWorldStateHasAnExplicitReadout() PASSED
+2026-09-15T05:17:39.0224692Z 
+2026-09-15T05:17:39.0225390Z DrawableCellsTest > occupancy follows, so a face the mined block was hiding becomes visible PASSED
+2026-09-15T05:17:39.0226177Z 
+2026-09-15T05:17:39.0226836Z DrawableCellsTest > the key packs the full build height and both horizontal extents PASSED
+2026-09-15T05:17:39.0227611Z 
+2026-09-15T05:17:39.0228215Z DrawableCellsTest > a block a member shares with a facet is one cell, not two PASSED
+2026-09-15T05:17:39.0228940Z 
+2026-09-15T05:17:39.0229618Z DrawableCellsTest > an emptied world draws nothing at all, rather than the last picture PASSED
+2026-09-15T05:17:39.0230445Z 
+2026-09-15T05:17:39.0231429Z DrawableCellsTest > plate blocks are in the set too, or a buried beam fights the floor above it PASSED
+2026-09-15T05:17:39.0240610Z 
+2026-09-15T05:17:39.0241819Z DrawableCellsTest > with the world unchanged, every cell of the answer is drawable PASSED
+2026-09-15T05:17:39.0253576Z 
+2026-09-15T05:17:39.0254521Z DrawableCellsTest > mining a slab block drops it as well; the rule is not member-only PASSED
+2026-09-15T05:17:39.0255368Z 
+2026-09-15T05:17:39.0256082Z DrawableCellsTest > a mined block leaves the drawable set the same frame, with no new packet PASSED
+2026-09-15T05:17:39.0257021Z 
+2026-09-15T05:17:39.0257621Z MemberPickTest > anEmptyWorldPicksNothingAndDoesNotThrow() PASSED
+2026-09-15T05:17:39.0258325Z 
+2026-09-15T05:17:39.0258908Z MemberPickTest > aMemberYouAreNotLookingAtDoesNotStealFocus() PASSED
+2026-09-15T05:17:39.0259632Z 
+2026-09-15T05:17:39.0260344Z MemberPickTest > aLongMemberIsSelectableByItsMiddleNotJustItsEnds() PASSED
+2026-09-15T05:17:39.0261236Z 
+2026-09-15T05:17:39.0265235Z MemberPickTest > picksTheMemberUnderTheCrosshair() PASSED
+2026-09-15T05:17:39.0266018Z 
+2026-09-15T05:17:39.0267459Z MemberPickTest > aDistantMemberIsContextNotASubject() PASSED
+2026-09-15T05:17:39.0291971Z 
+2026-09-15T05:17:39.0292705Z MemberPickTest > lookingAtNothingPicksNothing() PASSED
+2026-09-15T05:17:39.0293546Z 
+2026-09-15T05:17:39.0294128Z SectionDiagramTest > aStationWithoutTheYFibresProducesNothing() PASSED
+2026-09-15T05:17:39.0294798Z 
+2026-09-15T05:17:39.0295314Z SectionDiagramTest > axialForceMovesTheNeutralAxisOffCentre() PASSED
+2026-09-15T05:17:39.0296064Z 
+2026-09-15T05:17:39.0296899Z SectionDiagramTest > aSaggingSectionHasCompressionOnTopAndThatIsAlsoCorrect() PASSED
+2026-09-15T05:17:39.0297780Z 
+2026-09-15T05:17:39.0298293Z SectionDiagramTest > theProfileIsLinearAcrossTheDepth() PASSED
+2026-09-15T05:17:39.0299109Z 
+2026-09-15T05:17:39.0299736Z SectionDiagramTest > outOfRangeDepthsAreClampedRatherThanExtrapolated() PASSED
+2026-09-15T05:17:39.0300580Z 
+2026-09-15T05:17:39.0301401Z SectionDiagramTest > aSectionEntirelyInTensionHasNoNeutralAxis() PASSED
+2026-09-15T05:17:39.0302227Z 
+2026-09-15T05:17:39.0302798Z SectionDiagramTest > aHoggingSectionHasTensionOnTop() PASSED
+2026-09-15T05:17:39.0303463Z 
+2026-09-15T05:17:39.0304104Z StressPaletteTest > the material lens carries no magnitude: it is flat by construction PASSED
+2026-09-15T05:17:39.0304792Z 
+2026-09-15T05:17:39.0305473Z StressPaletteTest > every shipped material gets its own colour, so the lens says something PASSED
+2026-09-15T05:17:39.0309385Z 
+2026-09-15T05:17:39.0310197Z StressPaletteTest > teachingPaletteKeepsItsOwnTokens() PASSED
+2026-09-15T05:17:39.0311796Z 
+2026-09-15T05:17:39.0312337Z StressPaletteTest > saturationRisesWithMagnitude() PASSED
+2026-09-15T05:17:39.0312977Z 
+2026-09-15T05:17:39.0313644Z StressPaletteTest > the material legend names exactly the materials the lens can colour PASSED
+2026-09-15T05:17:39.0314494Z 
+2026-09-15T05:17:39.0315084Z StressPaletteTest > magnitudeMapsLinearlySoAFigureCanBeReadAgainstItsLegend() PASSED
+2026-09-15T05:17:39.0315856Z 
+2026-09-15T05:17:39.0316401Z StressPaletteTest > tensionIsBlueAndCompressionIsRed() PASSED
+2026-09-15T05:17:39.0317087Z 
+2026-09-15T05:17:39.0317657Z StressPaletteTest > equalAndOppositeStressesGiveDistinctColours() PASSED
+2026-09-15T05:17:39.0318570Z 
+2026-09-15T05:17:39.0319356Z StressPaletteTest > utilisationRampIsColdThenAmberThenFlatVermilion() PASSED
+2026-09-15T05:17:39.0320080Z 
+2026-09-15T05:17:39.0320882Z StressPaletteTest > linearLightInterpolationKeepsTheMidpointOutOfTheMud() PASSED
+2026-09-15T05:17:39.0321598Z 
+2026-09-15T05:17:39.0322261Z StressPaletteTest > failureRedIsNotTheSameAsCompressionRed() PASSED
+2026-09-15T05:17:39.0322908Z 
+2026-09-15T05:17:39.0323492Z StressPaletteTest > hatchAndUtilizationKeepNativeVerdictAuthority() PASSED
+2026-09-15T05:17:39.0324301Z 
+2026-09-15T05:17:39.0324906Z StressPaletteTest > an unknown token gets its OWN colour, not another material's PASSED
+2026-09-15T05:17:39.0325624Z 
+2026-09-15T05:17:39.0326129Z StressPaletteTest > degenerateInputsGiveNeutralRatherThanNaN() PASSED
+2026-09-15T05:17:39.0326793Z 
+2026-09-15T05:17:39.0327272Z StressPaletteTest > zeroStressIsNeutral() PASSED
+2026-09-15T05:17:39.0327792Z 
+2026-09-15T05:17:39.0328376Z StressRibbonBuilderTest > scenePeakMakesMembersComparableAndMemberPeakDoesNot() PASSED
+2026-09-15T05:17:39.0330241Z 
+2026-09-15T05:17:39.0331008Z StressRibbonBuilderTest > positionsComeOutInBlocksAndOffsetToTheRightFace() PASSED
+2026-09-15T05:17:39.0331767Z 
+2026-09-15T05:17:39.0332258Z StressRibbonBuilderTest > oneStripPerFibrePerSpan() PASSED
+2026-09-15T05:17:39.0333105Z 
+2026-09-15T05:17:39.0333859Z StressRibbonBuilderTest > stressFallsOffAlongTheMemberInsteadOfBeingOneFlatColour() PASSED
+2026-09-15T05:17:39.0334714Z 
+2026-09-15T05:17:39.0335275Z StressRibbonBuilderTest > topAndBottomFacesGetOppositeHues() PASSED
+2026-09-15T05:17:39.0336216Z 
+2026-09-15T05:17:39.0336834Z StressRibbonBuilderTest > neutralAxisIsOmittedWhereThereIsNone() PASSED
+2026-09-15T05:17:39.0337569Z 
+2026-09-15T05:17:39.0338575Z BundledEngineTest > aJarWhoseBytesDisagreeWithItsManifestUnpacksNothing(Path) PASSED
+2026-09-15T05:17:39.0339659Z 
+2026-09-15T05:17:39.0340537Z BundledEngineTest > aDevelopmentJarWithNoEngineSaysSoAndCarriesOn(Path) PASSED
+2026-09-15T05:17:39.0341474Z 
+2026-09-15T05:17:39.0341999Z BundledEngineTest > anUnsupportedPlatformIsToldWhatDidShip(Path) PASSED
+2026-09-15T05:17:39.0342716Z 
+2026-09-15T05:17:39.0343330Z BundledEngineTest > aReplaceRefusedByAnOpenHandleAdoptsWhatIsAlreadyThere(Path) PASSED
+2026-09-15T05:17:39.1119747Z 
+2026-09-15T05:17:39.1142805Z BundledEngineTest > firstUseUnpacksTheRightBytesUnderAHashNamedPath(Path) PASSED
+2026-09-15T05:17:39.1143905Z 
+2026-09-15T05:17:39.1144453Z BundledEngineTest > whatComesBackIsWhatIsONDISK(Path) PASSED
+2026-09-15T05:17:39.1144961Z 
+2026-09-15T05:17:39.1145410Z BundledEngineTest > aSecondLaunchDoesNotRewriteIt(Path) PASSED
+2026-09-15T05:17:39.1146064Z 
+2026-09-15T05:17:39.1146788Z BundledEngineTest > aManifestWithoutTheFileItPromisesUnpacksNothing(Path) PASSED
+2026-09-15T05:17:39.1147476Z 
+2026-09-15T05:17:39.1147985Z BundledEngineTest > theShippedLoaderReadsFromTheJarWhenThereIsOne() PASSED
+2026-09-15T05:17:39.1148613Z 
+2026-09-15T05:17:39.1148988Z BundledEngineTest > theUnpackedEngineIsExecutable(Path) PASSED
+2026-09-15T05:17:39.1149513Z 
+2026-09-15T05:17:39.1149957Z BundledEngineTest > unpackingNeverThrowsIntoTheModLoad(Path) PASSED
+2026-09-15T05:17:39.1150491Z 
+2026-09-15T05:17:39.1151094Z BundledEngineTest > aManifestThisCodeOnlyHalfUnderstandsIsAnError() PASSED
+2026-09-15T05:17:39.1151706Z 
+2026-09-15T05:17:39.1152184Z BundledEngineTest > aCorruptedOrTruncatedFileOnDiskIsReplaced(Path) PASSED
+2026-09-15T05:17:39.1152756Z 
+2026-09-15T05:17:39.1153266Z BundledEngineTest > platformSupportAnswersFromTheManifestAndNeverCriesWolf() PASSED
+2026-09-15T05:17:39.1154000Z 
+2026-09-15T05:17:39.1154380Z BundledEngineTest > darwinIsNotWindows() PASSED
+2026-09-15T05:17:39.1154814Z 
+2026-09-15T05:17:39.1155292Z BundledEngineTest > theManifestParsesAndCommentsAndBlanksAreSkipped() PASSED
+2026-09-15T05:17:39.1155986Z 
+2026-09-15T05:17:39.1156485Z BundledEngineTest > anOlderEngineIsRemovedButNothingElseIs(Path) PASSED
+2026-09-15T05:17:39.1157048Z 
+2026-09-15T05:17:39.1157501Z BundledEngineTest > theBinaryIsChosenByPlatformAndNeverByGuesswork() PASSED
+2026-09-15T05:17:39.1158112Z 
+2026-09-15T05:17:39.1158504Z BundledEngineTest > aFileNameThatIsAPathIsRefused() PASSED
+2026-09-15T05:17:39.1158990Z 
+2026-09-15T05:17:39.1159364Z ShmRegionTest > aClosedRegionRefusesToHandOutBuffers() PASSED
+2026-09-15T05:17:39.1159880Z 
+2026-09-15T05:17:39.1160244Z ShmRegionTest > independentViewsShareThePages() PASSED
+2026-09-15T05:17:39.1160817Z 
+2026-09-15T05:17:39.1161089Z ShmRegionTest > closeIsIdempotent() PASSED
+2026-09-15T05:17:39.1161458Z 
+2026-09-15T05:17:39.1161800Z ShmRegionTest > closeDeletesTheBackingFile() PASSED
+2026-09-15T05:17:39.1162232Z 
+2026-09-15T05:17:39.1162761Z SidecarEngineTest > theWorstSectionCanBeInTheMiddleAndTheScreenMustSeeIt() PASSED
+2026-09-15T05:17:39.1163385Z 
+2026-09-15T05:17:39.1163847Z SidecarEngineTest > aLoadInsideAMemberSplitsItAtThatPoint() PASSED
+2026-09-15T05:17:39.1164352Z 
+2026-09-15T05:17:39.1164787Z SidecarEngineTest > anUnknownSectionIsRefusedRatherThanDefaulted() PASSED
+2026-09-15T05:17:39.1165346Z 
+2026-09-15T05:17:39.1165859Z SidecarEngineTest > aSectionChangeSplitsTheMemberButKeepsItConnected() PASSED
+2026-09-15T05:17:39.3121573Z 
+2026-09-15T05:17:39.3138154Z SidecarEngineTest > theSupportMomentIsRecoveredAndNeverLowersADemand() PASSED
+2026-09-15T05:17:39.3152688Z 
+2026-09-15T05:17:39.3153834Z SidecarEngineTest > repeatedSolvesAtTheSameRevisionAreIdentical() PASSED
+2026-09-15T05:17:39.3154681Z 
+2026-09-15T05:17:39.3155381Z SidecarEngineTest > aFloorCarriesNoMembraneForceUnderItsOwnWeight() PASSED
+2026-09-15T05:17:39.3156112Z 
+2026-09-15T05:17:39.3156741Z SidecarEngineTest > aShearWallCarriesLoadInItsOwnPlane() PASSED
+2026-09-15T05:17:39.3157436Z 
+2026-09-15T05:17:39.3158014Z SidecarEngineTest > overloadingTheMemberPushesDemandOverCapacity() PASSED
+2026-09-15T05:17:39.3158992Z 
+2026-09-15T05:17:39.3159454Z SidecarEngineTest > shmAndJsonTransportsAgree() PASSED
+2026-09-15T05:17:39.4119517Z 
+2026-09-15T05:17:39.4120508Z SidecarEngineTest > everyBlockCentreIsInsideTheMeshAndOnlyTheOuterHalfBlockIsClamped() PASSED
+2026-09-15T05:17:39.4121315Z 
+2026-09-15T05:17:39.4122069Z SidecarEngineTest > aLoadOnNoElementAtAllIsStillRefused() PASSED
+2026-09-15T05:17:39.4122638Z 
+2026-09-15T05:17:39.4122982Z SidecarEngineTest > everySolveCarriesItsOwnEquilibriumCheck() PASSED
+2026-09-15T05:17:39.4123470Z 
+2026-09-15T05:17:39.4123804Z SidecarEngineTest > shmTransportCarriesShellsIdentically() PASSED
+2026-09-15T05:17:39.4124172Z 
+2026-09-15T05:17:39.4124502Z SidecarEngineTest > anUnsupportedStructureIsReportedAsAMechanism() PASSED
+2026-09-15T05:17:39.4125002Z 
+2026-09-15T05:17:39.4125324Z SidecarEngineTest > oneUnsupportedBuildingDoesNotSilenceTheOthers() PASSED
+2026-09-15T05:17:39.4125723Z 
+2026-09-15T05:17:39.4126024Z SidecarEngineTest > everyStationMatchesTheClosedFormBendingStress() PASSED
+2026-09-15T05:17:39.4126473Z 
+2026-09-15T05:17:39.4126766Z SidecarEngineTest > aRunOfBlocksBecomesOneMemberNotFive() PASSED
+2026-09-15T05:17:39.4127122Z 
+2026-09-15T05:17:39.4127409Z SidecarEngineTest > aSlabBecomesPlateFacetsAndNotAGridOfBeams() PASSED
+2026-09-15T05:17:39.4127858Z 
+2026-09-15T05:17:39.4128216Z SidecarEngineTest > aSlenderColumnIsCalledSafeByStressAndUnstableByBuckling() PASSED
+2026-09-15T05:17:39.4128657Z 
+2026-09-15T05:17:39.4128903Z SidecarEngineTest > handshakeReportsTheCatalogue() PASSED
+2026-09-15T05:17:39.6119506Z 
+2026-09-15T05:17:39.6120906Z SidecarEngineTest > theSpanMomentMatchesTimoshenko() PASSED
+2026-09-15T05:17:39.6121901Z 
+2026-09-15T05:17:39.6122229Z SidecarEngineTest > aSingleBlockIsNotABeam() PASSED
+2026-09-15T05:17:39.6122694Z 
+2026-09-15T05:17:39.6123094Z SidecarEngineTest > aColumnSharesItsTopNodeWithTheFloorItHoldsUp() PASSED
+2026-09-15T05:17:39.6123499Z 
+2026-09-15T05:17:39.6123768Z SidecarEngineTest > theFreeEndCarriesNoBendingStress() PASSED
+2026-09-15T05:17:39.6124144Z 
+2026-09-15T05:17:39.6124491Z SidecarEngineTest > aBeamHeldAtBothEndsHogsAtTheSupportAndSagsBetween() PASSED
+2026-09-15T05:17:39.6124965Z 
+2026-09-15T05:17:39.6125323Z SidecarEngineTest > theOverlayDrawnFromRealEngineOutputIsBlueOnTopAndRedBelow() PASSED
+2026-09-15T05:17:39.6125779Z 
+2026-09-15T05:17:39.6126078Z SidecarEngineTest > topFibreIsInTensionAndBottomInCompression() PASSED
+2026-09-15T05:17:39.6126465Z 
+2026-09-15T05:17:39.6126839Z SidecarLifecycleTest > closeOnANeverStartedClientIsSafeAndTerminal() PASSED
+2026-09-15T05:17:41.6118534Z 
+2026-09-15T05:17:41.6119832Z SidecarLifecycleTest > aCrashDuringAnalysisFailsThatRequestAndRecovers() PASSED
+2026-09-15T05:17:43.3118939Z 
+2026-09-15T05:17:43.3119873Z SidecarLifecycleTest > aStaleReplyLeftInThePipeDoesNotPoisonTheNextRequest() PASSED
+2026-09-15T05:17:43.3120463Z 
+2026-09-15T05:17:43.3121116Z SidecarLifecycleTest > resetRevivesADisabledClientOnceTheBinaryIsInstalled() PASSED
+2026-09-15T05:17:43.6151420Z 
+2026-09-15T05:17:43.6172634Z SidecarLifecycleTest > aWedgedSidecarTimesOutAndIsKilled() PASSED
+2026-09-15T05:17:43.6201810Z 
+2026-09-15T05:17:43.6263262Z SidecarLifecycleTest > aFloodingSidecarIsKilledNotBuffered() PASSED
+2026-09-15T05:17:43.6276526Z 
+2026-09-15T05:17:43.6278725Z SidecarLifecycleTest > missingBinaryDisablesAnalysisAndLeavesTheGamePlayable() PASSED
+2026-09-15T05:17:43.6279502Z 
+2026-09-15T05:17:43.6280382Z SidecarLifecycleTest > aProtocolMismatchIsRefusedOutrightAndNotRetried() PASSED
+2026-09-15T05:17:43.6281685Z 
+2026-09-15T05:17:43.6282456Z SidecarLifecycleTest > aShmDoorbellRevisionMismatchIsADesyncAndEndsTheConversation() PASSED
+2026-09-15T05:17:43.6283260Z 
+2026-09-15T05:17:43.6283904Z SidecarLifecycleTest > aClosedClientIsTerminalAndNeverRespawns() PASSED
+2026-09-15T05:17:43.6284654Z 
+2026-09-15T05:17:43.6285344Z SidecarLifecycleTest > growIsRetriedOnceGrownAndARefusalAfterGrowthIsAnAnswer() PASSED
+2026-09-15T05:17:43.6286141Z 
+2026-09-15T05:17:43.6286739Z SidecarLifecycleTest > closingSendsByeAndDoesNotLeaveAProcessBehind() PASSED
+2026-09-15T05:17:43.7119427Z 
+2026-09-15T05:17:43.7294078Z SidecarLifecycleTest > concurrentSolveResetStatusAndCloseNeverThrowAndCloseWins() PASSED
+2026-09-15T05:17:43.7294997Z 
+2026-09-15T05:17:43.7295412Z SidecarLifecycleTest > aRefusedShmMappingDowngradesToJsonAndTheSolveStillAnswers() PASSED
+2026-09-15T05:17:43.7295901Z 
+2026-09-15T05:17:43.7296191Z SidecarPathsTest > whatExplorersCopyAsPathGivesYouIsAPath() PASSED
+2026-09-15T05:17:43.7296601Z 
+2026-09-15T05:17:43.7296852Z SidecarPathsTest > blankAndNullAreSimplyAbsent() PASSED
+2026-09-15T05:17:43.7297297Z 
+2026-09-15T05:17:43.7297612Z SidecarPathsTest > aStringThatCannotBeAPathIsReportedAndNotThrown() SKIPPED
+2026-09-15T05:17:43.7298054Z 
+2026-09-15T05:17:43.7298332Z SidecarPathsTest > surroundingSpaceIsNotPartOfTheName() PASSED
+2026-09-15T05:17:43.7298692Z 
+2026-09-15T05:17:43.7299190Z AtomicConstructionCoordinatorTest > everyPrepareAndCommitStorageStageFailureEitherAbortsOrRetainsDurableCommit() PASSED
+2026-09-15T05:17:43.7299829Z 
+2026-09-15T05:17:43.7300442Z AtomicConstructionCoordinatorTest > decisionVerificationFailureDoesNotGuessRollbackAndMissingPreparedFileDoesNotReopenWrites() PASSED
+2026-09-15T05:17:43.8122855Z 
+2026-09-15T05:17:43.8132985Z AtomicConstructionCoordinatorTest > everyParticipantWriteAndFlushFailureRestoresAllBeforeImagesWithoutPublication() PASSED
+2026-09-15T05:17:43.8151535Z 
+2026-09-15T05:17:43.8152894Z AtomicConstructionCoordinatorTest > secondPlayerOnSameBaseIsRejectedAndOrderedNonconflictingCommitAdvancesOnlyOnce() PASSED
+2026-09-15T05:17:43.8154147Z 
+2026-09-15T05:17:43.8154569Z AtomicConstructionCoordinatorTest > unknownExternalValueOrRevisionPreventsAnyRecoveryWrite() PASSED
+2026-09-15T05:17:43.9119522Z 
+2026-09-15T05:17:43.9121690Z AtomicConstructionCoordinatorTest > abortDecisionFailuresKeepRestoredImagesAndRequireRecoveryUntilTheMarkerIsDurable() PASSED
+2026-09-15T05:17:43.9123130Z 
+2026-09-15T05:17:43.9124071Z AtomicConstructionCoordinatorTest > commitConsumesAllImagesOnceAndReplaySurvivesRestartAndLaterEdits() PASSED
+2026-09-15T05:17:43.9124976Z 
+2026-09-15T05:17:43.9125528Z AtomicConstructionCoordinatorTest > checkpointCannotHideChangedImagesOrRevision() PASSED
+2026-09-15T05:17:43.9126260Z 
+2026-09-15T05:17:43.9127017Z AtomicConstructionCoordinatorTest > collisionsBindActorSessionDomainPayloadAndBaseWithoutChangingOriginalDecision() PASSED
+2026-09-15T05:17:44.0119334Z 
+2026-09-15T05:17:44.0121366Z AtomicConstructionCoordinatorTest > lostPublicationKeepsCommittedDecisionAndRecoveryPublishesBaselineWithoutApplyingAgain() PASSED
+2026-09-15T05:17:44.0122150Z 
+2026-09-15T05:17:44.0122645Z AtomicConstructionCoordinatorTest > callbacksCannotReenterCoordinatorAndBaselineFailureLeavesItClosed() PASSED
+2026-09-15T05:17:44.0123184Z 
+2026-09-15T05:17:44.0123877Z AtomicConstructionCoordinatorTest > checkpointMakesUnsavedBaselineDurableBeforePreparedAndIsNeverRepeatedForReplay() PASSED
+2026-09-15T05:17:44.0124794Z 
+2026-09-15T05:17:44.0125516Z AtomicConstructionCoordinatorTest > corruptionCannotBeClearedByPublishingABaselineWithoutReopeningTheJournal() PASSED
+2026-09-15T05:17:44.0126319Z 
+2026-09-15T05:17:44.0126881Z AtomicConstructionCoordinatorTest > failedCheckpointCreatesNoIntentAndDoesNotChangeVisibleParticipants() PASSED
+2026-09-15T05:17:44.0127477Z 
+2026-09-15T05:17:44.0128205Z AtomicConstructionCoordinatorTest > validationStaleBaseAndConflictingImagesRefuseBeforeWritesAndRetainReplay() PASSED
+2026-09-15T05:17:44.0128784Z 
+2026-09-15T05:17:44.0129318Z AtomicConstructionCoordinatorTest > missingRevisionParticipantCannotCommitEvenWhenEverySuppliedImageMatches() PASSED
+2026-09-15T05:17:44.0129888Z 
+2026-09-15T05:17:44.0130381Z AtomicConstructionCoordinatorTest > failedRollbackRetainsPreparedAndBlocksUntilExplicitSuccessfulRecovery() PASSED
+2026-09-15T05:17:44.0131217Z 
+2026-09-15T05:17:44.0131717Z FileTransactionJournalTest > fullKeyAndByteQuotasRefuseNewKeysButStillAllowTheReservedDecisionAndReplay() PASSED
+2026-09-15T05:17:44.2119536Z 
+2026-09-15T05:17:44.2121197Z FileTransactionJournalTest > refusedAndAbortedKeysAreNeverEvictedAndClosedStoresCannotMutate() PASSED
+2026-09-15T05:17:44.3119563Z 
+2026-09-15T05:17:44.3122024Z FileTransactionJournalTest > everyAtomicWriteFaultIsResolvedFromRealFilesAndTempsRemainEvidence() PASSED
+2026-09-15T05:17:44.3122879Z 
+2026-09-15T05:17:44.3123338Z FileTransactionJournalTest > onlyOnePreparedIntentAndNoForeignDomainOrPrematureTerminalCreation() PASSED
+2026-09-15T05:17:44.3123897Z 
+2026-09-15T05:17:44.3124435Z FileTransactionJournalTest > corruptRecordsUnknownSchemaTruncationAndDomainMarkerArePreservedAndRefused() PASSED
+2026-09-15T05:17:44.3125073Z 
+2026-09-15T05:17:44.3125495Z FileTransactionJournalTest > exclusiveOwnerDomainPinAndLazyRestartReplayRetainOriginalImages() PASSED
+2026-09-15T05:17:44.3125987Z 
+2026-09-15T05:17:44.3126472Z FileTransactionJournalTest > readThroughDetectsDeletionAndCorruptionInsteadOfServingCachedSuccess() PASSED
+2026-09-15T05:17:44.4119243Z 
+2026-09-15T05:17:44.4120395Z JournalBootstrapTest > malformedManifestIsNeverAcceptedOrReplaced() PASSED
+2026-09-15T05:17:44.4121483Z 
+2026-09-15T05:17:44.4122236Z JournalBootstrapTest > inventoryResolvesAmbiguousReplacementAndRefusesClosedOrLatchedCorruption() PASSED
+2026-09-15T05:17:44.4123041Z 
+2026-09-15T05:17:44.4123649Z JournalBootstrapTest > missingManifestWithAnyEvidenceRefusesFreshIdentityAndLeavesFilesUntouched() PASSED
+2026-09-15T05:17:44.4124336Z 
+2026-09-15T05:17:44.4124777Z JournalBootstrapTest > inventoryIsImmutableSortedAndIndependentOfDecisionOrderAndLaterWrites() PASSED
+2026-09-15T05:17:44.4125370Z 
+2026-09-15T05:17:44.4126121Z JournalBootstrapTest > newDomainReopensWithoutASecondIdentityStoreAndPreservesPinnedCompatibility() PASSED
+2026-09-15T05:17:44.4126695Z 
+2026-09-15T05:17:44.4127158Z ManufacturedRegistryTest > validatedPendingContextCannotExposeForeignMetadataAsRecoveryAuthority() PASSED
+2026-09-15T05:17:44.4127702Z 
+2026-09-15T05:17:44.4128097Z ManufacturedRegistryTest > cutPreservesOriginalIdentityAndNeverRestoresUndoEligibility() PASSED
+2026-09-15T05:17:44.4128632Z 
+2026-09-15T05:17:44.4129135Z ManufacturedRegistryTest > forgedOwnershipCannotPublishOrReconstructEvenWithValidJournalChecksums() PASSED
+2026-09-15T05:17:44.5119463Z 
+2026-09-15T05:17:44.5120511Z ManufacturedRegistryTest > wholeBuildUndoRetiresAllIdsAndPreservesCreativeAndActorBinding() PASSED
+2026-09-15T05:17:44.5121790Z 
+2026-09-15T05:17:44.5122647Z ManufacturedRegistryTest > PrematureMissingAndForeignPublicationRefuseButVerificationFailureLatches() PASSED
+2026-09-15T05:17:44.5123349Z 
+2026-09-15T05:17:44.5123685Z ManufacturedRegistryTest > mixedPhasesNeverReplayOldWorldOrPlayerImages() PASSED
+2026-09-15T05:17:44.5124222Z 
+2026-09-15T05:17:44.5124842Z ManufacturedRegistryTest > wrongBeforeImagesBirthReceiptsRevisionAndOrderRefuseWithoutMutation() PASSED
+2026-09-15T05:17:44.6119392Z 
+2026-09-15T05:17:44.6120863Z ManufacturedRegistryTest > journalKeyOrderIsNotCommitOrderAndDuplicateSequenceIsRefused() PASSED
+2026-09-15T05:17:44.6121693Z 
+2026-09-15T05:17:44.6122233Z ManufacturedRegistryTest > dependencyMarkAndEmptyEditsRetainPermanentTombstones() PASSED
+2026-09-15T05:17:44.6122990Z 
+2026-09-15T05:17:44.6123470Z ManufacturedRegistryTest > planningConflictsAndLifetimeOrCellCapacityRefuseWithoutPartialAdmission() PASSED
+2026-09-15T05:17:44.6124018Z 
+2026-09-15T05:17:44.6124477Z ManufacturedRegistryTest > abortedBeforeRevisionSurvivesRepeatedReopenWithoutPromotingRejectedRequests() PASSED
+2026-09-15T05:17:44.6125082Z 
+2026-09-15T05:17:44.6125487Z ManufacturedRegistryTest > retiredIdCannotBeRebornEvenWithNewBirthFieldsAndAValidEnvelope() PASSED
+2026-09-15T05:17:44.6125971Z 
+2026-09-15T05:17:44.6126419Z ManufacturedRegistryTest > previewDoesNotPublishAndAdjacentEqualProductsRemainSeparateAcrossReopen() PASSED
+2026-09-15T05:17:44.6126978Z 
+2026-09-15T05:17:44.6127389Z ManufacturedRegistryTest > forgedPartialUndoCreativeModeAndActorCannotAuthorizeAnInverse() PASSED
+2026-09-15T05:17:44.6127880Z 
+2026-09-15T05:17:44.6128260Z ManufacturedRegistryTest > declaredBoundariesValidateRunsConnectedCellsAxesAndWorldLimits() PASSED
+2026-09-15T05:17:44.7119615Z 
+2026-09-15T05:17:44.7121977Z ManufacturedRegistryTest > dimensionsOwnSeparateCellsAndPermitOnlyMonotonicCommittedRevisionBindings() PASSED
+2026-09-15T05:17:44.7124031Z 
+2026-09-15T05:17:44.7125723Z ManufacturedRegistryTest > committedCoverageIsImmutableDimensionScopedAndTracksReleasedOwnership() PASSED
+2026-09-15T05:17:44.7153103Z 
+2026-09-15T05:17:44.7153705Z MetadataCodecTest > numericAndDimensionEncodingsAreBoundedAndUnambiguous() PASSED
+2026-09-15T05:17:44.7154365Z 
+2026-09-15T05:17:44.7155257Z MetadataCodecTest > allRecordStatesRoundTripCanonicallyAndNeverExposeCellArrays() PASSED
+2026-09-15T05:17:44.7155963Z 
+2026-09-15T05:17:44.7156542Z MetadataCodecTest > descriptorsBindOperationCreativeModeDimensionAndOriginalBuild() PASSED
+2026-09-15T05:17:44.7157247Z 
+2026-09-15T05:17:44.7157892Z MetadataCodecTest > everyTruncationTrailingDataSchemaAndUnsuitableFieldIsRejected() PASSED
+2026-09-15T05:17:44.7158581Z 
+2026-09-15T05:17:44.7159159Z NativeFractureTransactionsTest > interruptionsBeforeDecisionRestoreWholeSource() > checkpoint PASSED
+2026-09-15T05:17:44.7159850Z 
+2026-09-15T05:17:44.7160456Z NativeFractureTransactionsTest > interruptionsBeforeDecisionRestoreWholeSource() > write PASSED
+2026-09-15T05:17:44.7161266Z 
+2026-09-15T05:17:44.7161794Z NativeFractureTransactionsTest > interruptionsBeforeDecisionRestoreWholeSource() > flush PASSED
+2026-09-15T05:17:44.7162422Z 
+2026-09-15T05:17:44.7163070Z NativeFractureTransactionsTest > interruptionsBeforeDecisionRestoreWholeSource() > omitted-world PASSED
+2026-09-15T05:17:44.7163767Z 
+2026-09-15T05:17:44.7164454Z NativeFractureTransactionsTest > wrongPlanIsRejectedBeforeNativePreparationAndChangedKeyConflicts() PASSED
+2026-09-15T05:17:44.7165274Z 
+2026-09-15T05:17:44.7165893Z NativeFractureTransactionsTest > recoveryCannotPublishAnotherJournalsWorld() PASSED
+2026-09-15T05:17:44.8119677Z 
+2026-09-15T05:17:44.8122000Z NativeFractureTransactionsTest > committedDecisionSurvivesLostAckAndPublicationFailure() > decision-lost-ack PASSED
+2026-09-15T05:17:44.8124077Z 
+2026-09-15T05:17:44.8126502Z NativeFractureTransactionsTest > committedDecisionSurvivesLostAckAndPublicationFailure() > native-closed PASSED
+2026-09-15T05:17:44.8128531Z 
+2026-09-15T05:17:44.8129528Z NativeFractureTransactionsTest > committedDecisionSurvivesLostAckAndPublicationFailure() > publication PASSED
+2026-09-15T05:17:44.8130444Z 
+2026-09-15T05:17:44.8131187Z NativeFractureTransactionsTest > durableReceiptReplayAndFreshSessionRecovery() FAILED
+2026-09-15T05:17:44.8132683Z     org.opentest4j.AssertionFailedError: array contents differ at index [1952], expected: <-74> but was: <-87>
+2026-09-15T05:17:44.8134044Z         at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+2026-09-15T05:17:44.8135519Z         at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+2026-09-15T05:17:44.8136925Z         at app//org.junit.jupiter.api.AssertArrayEquals.failArraysNotEqual(AssertArrayEquals.java:440)
+2026-09-15T05:17:44.8138402Z         at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:209)
+2026-09-15T05:17:44.8139762Z         at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:63)
+2026-09-15T05:17:44.8141387Z         at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:59)
+2026-09-15T05:17:44.8142652Z         at app//org.junit.jupiter.api.Assertions.assertArrayEquals(Assertions.java:1229)
+2026-09-15T05:17:44.8144573Z         at app//com.blockreality.core.transaction.NativeFractureTransactionsTest.durableReceiptReplayAndFreshSessionRecovery(NativeFractureTransactionsTest.java:33)
+2026-09-15T05:17:45.1119483Z 
+2026-09-15T05:17:45.1122667Z PendingRequestStoreTest > reopensExactPendingRequestAndReceiptCannotEraseAnotherBinding() PASSED
+2026-09-15T05:17:45.2134441Z 
+2026-09-15T05:17:45.2135860Z PendingRequestStoreTest > capacitiesRefuseWithoutEvictionOrDataLoss() PASSED
+2026-09-15T05:17:45.2137066Z 
+2026-09-15T05:17:45.2137727Z PendingRequestStoreTest > anotherClientOwnerCannotRaceTheStorageBarrier() PASSED
+2026-09-15T05:17:45.2139004Z 
+2026-09-15T05:17:45.2139998Z PendingRequestStoreTest > corruptOversizedAndTruncatedFilesRefuseAndRetainOriginals() PASSED
+2026-09-15T05:17:45.2141422Z 
+2026-09-15T05:17:45.2142005Z PendingWorkTest > oldLeasesCannotReleaseAfterServerReset() PASSED
+2026-09-15T05:17:45.2142718Z 
+2026-09-15T05:17:45.2143276Z PendingWorkTest > concurrentNetworkThreadsCannotOverAdmit() PASSED
+2026-09-15T05:17:45.2144023Z 
+2026-09-15T05:17:45.2144587Z PendingWorkTest > identityLimitsTotalAndIdempotentRelease() PASSED
+2026-09-15T05:17:45.2145294Z 
+2026-09-15T05:17:45.2146260Z TransactionCodecTest > aggregateSizeAndIndividualResourcePieceAndBindingBoundsApplyBeforeEncoding() PASSED
+2026-09-15T05:17:45.2147319Z 
+2026-09-15T05:17:45.2147972Z TransactionCodecTest > imagesAndListsAreImmutableAndMissingIsNotEmpty() PASSED
+2026-09-15T05:17:45.2148822Z 
+2026-09-15T05:17:45.2149612Z TransactionCodecTest > resignedSchemaPhaseReasonRevisionCountsAndNoncanonicalKeysRefuse() PASSED
+2026-09-15T05:17:45.2150613Z 
+2026-09-15T05:17:45.2151570Z TransactionCodecTest > phasesRoundTripCanonicallyAndOnlyCommittedReceiptsExposePieceIds() PASSED
+2026-09-15T05:17:45.2152501Z 
+2026-09-15T05:17:45.2153221Z TransactionCodecTest > terminalPhasesCannotChangeOrSmuggleDifferentImages() PASSED
+2026-09-15T05:17:45.2154029Z 
+2026-09-15T05:17:45.2154744Z TransactionCodecTest > everyCorruptedByteEveryTruncationAndTrailingDataRefuse() PASSED
+2026-09-15T05:17:45.2155712Z 
+2026-09-15T05:17:45.2156517Z TransientOffersTest > capacityRefusesWithoutEvictingOthersAndAccountsReplacement() PASSED
+2026-09-15T05:17:45.2157403Z 
+2026-09-15T05:17:45.2158021Z TransientOffersTest > connectionIdentityReplacementAndExactExpiry() PASSED
+2026-09-15T05:17:45.2158779Z 
+2026-09-15T05:17:45.2159494Z TransientOffersTest > expirationSurvivesTickWrapAndInvalidSizesRefuse() PASSED
+2026-09-15T05:17:45.2160290Z 
+2026-09-15T05:17:45.2161214Z ArtifactAnalysisLinksTest > staleFailedOrPendingStateDoesNotPublishCurrentMappings() PASSED
+2026-09-15T05:17:45.2162155Z 
+2026-09-15T05:17:45.2163053Z ArtifactAnalysisLinksTest > oneObjectLinksToManyNativeElementsAndNeverChangesWithSolverNumbers() PASSED
+2026-09-15T05:17:45.2164042Z 
+2026-09-15T05:17:45.2165027Z ConstructionCodecTest > encoderPreservesCatalogueLineageAndModifiedUtfGolden() PASSED
+2026-09-15T05:17:45.2165999Z 
+2026-09-15T05:17:45.2166984Z ConstructionCodecTest > resignedUnknownSchemaAndInvalidEpochCounterAndCountsStillRefuse() PASSED
+2026-09-15T05:17:45.2168150Z 
+2026-09-15T05:17:45.2168938Z ConstructionCodecTest > corruptionTruncationAndTrailingDataAlwaysRefuse() PASSED
+2026-09-15T05:17:45.2169935Z 
+2026-09-15T05:17:45.2171159Z ConstructionCodecTest > duplicateIdsOwnershipAndOrphanParentsRefuseEvenWithValidChecksum() PASSED
+2026-09-15T05:17:45.6122391Z 
+2026-09-15T05:17:45.6125902Z ConstructionLedgerTest > cellAndEpochBoundsRefuseWithoutEvictionOrWraparound() PASSED
+2026-09-15T05:17:45.6126768Z 
+2026-09-15T05:17:45.6127523Z ConstructionLedgerTest > frameRunsKeepParallelCrossingProductAndUndeclaredAxesSeparate() PASSED
+2026-09-15T05:17:45.6128702Z 
+2026-09-15T05:17:45.6129509Z ConstructionLedgerTest > immutableWorkerInputAndStaleCompletionCannotOverwriteNewEdits() PASSED
+2026-09-15T05:17:45.9151587Z 
+2026-09-15T05:17:45.9174165Z ConstructionLedgerTest > historyAndLineageBoundsCannotEvictPublishedAncestors() PASSED
+2026-09-15T05:17:45.9202158Z 
+2026-09-15T05:17:45.9242382Z ConstructionLedgerTest > restoredRegistryIsIndependentOfLoadedObservationOrderAndEmptyWorldRetires() PASSED
+2026-09-15T05:17:45.9252782Z 
+2026-09-15T05:17:45.9302379Z ConstructionLedgerTest > splitRetiresParentEvenWhenOneChildWasCompletelyReplacedInTheBatch() PASSED
+2026-09-15T05:17:45.9354001Z 
+2026-09-15T05:17:45.9377923Z ConstructionLedgerTest > monolithAndPanelGroupsUseOnlyDeclaredProductsAndFaceAdjacency() PASSED
+2026-09-15T05:17:45.9391129Z 
+2026-09-15T05:17:45.9451921Z ConstructionLedgerTest > splitAndMergeCreateNewIdentitiesWithExactLineage() PASSED
+2026-09-15T05:17:45.9468032Z 
+2026-09-15T05:17:45.9479143Z ConstructionLedgerTest > fullDestructionAndSameTickReplacementCannotResurrectIdentityEvenAfterPendingSave() PASSED
+2026-09-15T05:17:45.9491203Z 
+2026-09-15T05:17:45.9492034Z ConstructionLedgerTest > noOpExtensionTrimAndUnrelatedObjectsRetainPublishedIdentity() PASSED
+2026-09-15T05:17:45.9492981Z 
+2026-09-15T05:17:45.9493627Z ConstructionSnapshotTest > workAndGraphViewsRejectEveryMutableEntryPoint() PASSED
+2026-09-15T05:17:46.0161712Z 
+2026-09-15T05:17:46.0196728Z ConstructionSnapshotTest > backgroundSnapshotRemainsStableDuringEditsAndStaleResultCannotPublish() PASSED
+2026-09-15T05:17:46.0197764Z 
+2026-09-15T05:17:46.0198467Z ConstructionSnapshotTest > snapshotNullRejectionSurvivesHashBackedStorage() PASSED
+2026-09-15T05:17:46.0199979Z 
+2026-09-15T05:17:46.0202099Z ConstructionSnapshotTest > workSnapshotDoesNotAliasCallerCollections() PASSED
+2026-09-15T05:17:46.0202836Z 
+2026-09-15T05:17:46.0203383Z ConstructionSnapshotTest > graphRecordsAndRangeViewsNeverExposeMutableEntries() PASSED
+2026-09-15T05:17:46.0221977Z 
+2026-09-15T05:17:46.0222790Z WorldCellIndexTest > coverageIncludesOnlyActualGroundBordersWithoutInventingDiagonalContacts() PASSED
+2026-09-15T05:17:46.0223641Z 
+2026-09-15T05:17:46.0224294Z WorldCellIndexTest > oppositeObservationOrdersAndReloadHaveIdenticalBytes() PASSED
+2026-09-15T05:17:46.0225038Z 
+2026-09-15T05:17:46.0225681Z WorldCellIndexTest > emptyReconciliationOnlyRemovesItsOwnChunkAndSnapshotsStayImmutable() PASSED
+2026-09-15T05:17:46.0226469Z 
+2026-09-15T05:17:46.0227086Z WorldCellIndexTest > encodedSnapshotsAreCallerOwnedAndInvalidateAfterCoverageEdits() PASSED
+2026-09-15T05:17:46.4119375Z 
+2026-09-15T05:17:46.4120914Z WorldCellIndexTest > capacityFailureDoesNotEvictAndSurvivesRestart() PASSED
+2026-09-15T05:17:46.4121563Z 
+2026-09-15T05:17:46.4121859Z WorldCellIndexTest > invalidChunkObservationsAreAtomic() PASSED
+2026-09-15T05:17:46.4122269Z 
+2026-09-15T05:17:46.4122604Z WorldCellIndexTest > damagedChecksumsAndEveryTruncationFailClosed() PASSED
+2026-09-15T05:17:46.4123050Z 
+2026-09-15T05:17:46.4123514Z WorldCellIndexTest > validDigestCannotAuthorizeUnknownSchemaDuplicatesOrderingOrOutOfWorldCells() PASSED
+2026-09-15T05:17:46.7119607Z 
+2026-09-15T05:17:46.7136860Z 561 tests completed, 3 failed, 1 skipped
+2026-09-15T05:17:46.8156211Z 
+2026-09-15T05:17:46.8212164Z > Task :core:test FAILED
+2026-09-15T05:17:46.8213238Z gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1789449445444.json
+2026-09-15T05:17:46.9118845Z 
+2026-09-15T05:17:46.9120076Z FAILURE: Build failed with an exception.
+2026-09-15T05:17:46.9120953Z 
+2026-09-15T05:17:46.9121389Z * What went wrong:
+2026-09-15T05:17:46.9122270Z Execution failed for task ':core:test'.
+2026-09-15T05:17:46.9123709Z > There were failing tests. See the report at: file:///home/runner/work/block-reality/block-reality/mod/core/build/reports/tests/test/index.html
+2026-09-15T05:17:46.9124875Z 
+2026-09-15T05:17:46.9125808Z * Try:
+2026-09-15T05:17:46.9126543Z > Run with --scan to get full insights.
+2026-09-15T05:17:46.9127155Z 
+2026-09-15T05:17:46.9127417Z BUILD FAILED in 27s
+2026-09-15T05:17:46.9128071Z 7 actionable tasks: 7 executed
+2026-09-15T05:17:47.2375655Z ##[error]Process completed with exit code 1.
+2026-09-15T05:17:47.2477692Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-15T05:17:47.2479100Z ##[group]Run actions/upload-artifact@v4
+2026-09-15T05:17:47.2479534Z with:
+2026-09-15T05:17:47.2479945Z   name: construction-core-recovery
+2026-09-15T05:17:47.2480435Z   path: /home/runner/work/_temp/construction-recovery
+2026-09-15T05:17:47.2481158Z   if-no-files-found: warn
+2026-09-15T05:17:47.2481562Z   compression-level: 6
+2026-09-15T05:17:47.2482148Z   overwrite: false
+2026-09-15T05:17:47.2482539Z   include-hidden-files: false
+2026-09-15T05:17:47.2483068Z env:
+2026-09-15T05:17:47.2483551Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+2026-09-15T05:17:47.2484326Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+2026-09-15T05:17:47.2484936Z   GRADLE_ACTION_ID: gradle/actions/setup-gradle
+2026-09-15T05:17:47.2485420Z   GRADLE_USER_HOME: /home/runner/.gradle
+2026-09-15T05:17:47.2485878Z   GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
+2026-09-15T05:17:47.2486360Z   GRADLE_BUILD_ACTION_CACHE_RESTORED: true
+2026-09-15T05:17:47.2486981Z   DEVELOCITY_INJECTION_INIT_SCRIPT_NAME: gradle-actions.inject-develocity.init.gradle
+2026-09-15T05:17:47.2487621Z   DEVELOCITY_INJECTION_CUSTOM_VALUE: gradle-actions
+2026-09-15T05:17:47.2488103Z   GITHUB_DEPENDENCY_GRAPH_ENABLED: false
+2026-09-15T05:17:47.2488651Z   BR_ENGINE: /home/runner/work/_temp/shipped-engine/libbsi_tectonic.so
+2026-09-15T05:17:47.2489191Z ##[endgroup]
+2026-09-15T05:17:47.4155235Z (node:2781) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-15T05:17:47.4156088Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-15T05:17:47.4172807Z ##[warning]No files were found with the provided path: /home/runner/work/_temp/construction-recovery. No artifacts will be uploaded.
+2026-09-15T05:17:47.4570914Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-15T05:17:47.4572683Z Post job cleanup.
+2026-09-15T05:17:47.6971065Z In post-action step
+2026-09-15T05:17:47.6979574Z Cache is read-only: will not save state for use in subsequent builds.
+2026-09-15T05:17:47.6985870Z Generating Job Summary
+2026-09-15T05:17:47.7003608Z Completed post-action step
+2026-09-15T05:17:47.7473464Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-15T05:17:47.7474724Z Post job cleanup.
+2026-09-15T05:17:47.8871788Z (node:2805) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-15T05:17:47.8872889Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-15T05:17:47.9036074Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-15T05:17:47.9037405Z Post job cleanup.
+2026-09-15T05:17:47.9948280Z [command]/usr/bin/git version
+2026-09-15T05:17:47.9988875Z git version 2.55.0
+2026-09-15T05:17:48.0025765Z Temporarily overriding HOME='/home/runner/work/_temp/720005d4-120b-432f-a132-b0a3a0643256' before making global git config changes
+2026-09-15T05:17:48.0026967Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-15T05:17:48.0042044Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/block-reality/block-reality
+2026-09-15T05:17:48.0072439Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-15T05:17:48.0107194Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-15T05:17:48.0341712Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-09-15T05:17:48.0373092Z http.https://github.com/.extraheader
+2026-09-15T05:17:48.0391904Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-09-15T05:17:48.0452536Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-09-15T05:17:48.0777139Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-15T05:17:48.0825003Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-15T05:17:48.1304885Z Cleaning up orphan processes
+2026-09-15T05:17:48.1551812Z Terminate orphan process: pid (2718) (sleep)
+2026-09-15T05:17:48.1563033Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-java@v4, actions/upload-artifact@v4, gradle/actions/setup-gradle@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

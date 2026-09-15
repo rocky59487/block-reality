@@ -1,0 +1,29 @@
+{
+  "core": {
+    "registered": 446,
+    "failed": 0,
+    "skipped": 12,
+    "skips": [
+      "com.blockreality.core.sidecar.BundledEngineTest.theUnpackedEngineIsExecutable(Path)",
+      "com.blockreality.core.sidecar.SidecarLifecycleTest.aCrashDuringAnalysisFailsThatRequestAndRecovers()",
+      "com.blockreality.core.sidecar.SidecarLifecycleTest.aStaleReplyLeftInThePipeDoesNotPoisonTheNextRequest()",
+      "com.blockreality.core.sidecar.SidecarLifecycleTest.resetRevivesADisabledClientOnceTheBinaryIsInstalled()",
+      "com.blockreality.core.sidecar.SidecarLifecycleTest.aWedgedSidecarTimesOutAndIsKilled()",
+      "com.blockreality.core.sidecar.SidecarLifecycleTest.aFloodingSidecarIsKilledNotBuffered()",
+      "com.blockreality.core.sidecar.SidecarLifecycleTest.aProtocolMismatchIsRefusedOutrightAndNotRetried()",
+      "com.blockreality.core.sidecar.SidecarLifecycleTest.aShmDoorbellRevisionMismatchIsADesyncAndEndsTheConversation()",
+      "com.blockreality.core.sidecar.SidecarLifecycleTest.aClosedClientIsTerminalAndNeverRespawns()",
+      "com.blockreality.core.sidecar.SidecarLifecycleTest.growIsRetriedOnceGrownAndARefusalAfterGrowthIsAnAnswer()",
+      "com.blockreality.core.sidecar.SidecarLifecycleTest.closingSendsByeAndDoesNotLeaveAProcessBehind()",
+      "com.blockreality.core.sidecar.SidecarLifecycleTest.aRefusedShmMappingDowngradesToJsonAndTheSolveStillAnswers()"
+    ],
+    "passed": 434
+  },
+  "forge": {
+    "registered": 109,
+    "failed": 0,
+    "skipped": 0,
+    "skips": [],
+    "passed": 109
+  }
+}

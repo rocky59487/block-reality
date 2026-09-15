@@ -1,0 +1,2 @@
+install-first.py failed before any installation with urllib.error.HTTPError: HTTP Error 403: Forbidden.
+The same official URL downloads with Windows curl; bytes match the SHA1 frozen from the official Forge page.

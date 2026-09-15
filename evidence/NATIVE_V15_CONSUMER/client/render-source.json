@@ -1,0 +1,13 @@
+{
+  "source": "98dbd54f67eab00a558d1971301370ce5eb7222e",
+  "sha256": "cb2435b5161487e6833e19359a1cdbc1407bfa06e1a2fce381b29661ac704137",
+  "paths": [
+    "mod",
+    "forge",
+    "contract",
+    "scripts",
+    "LICENSE",
+    "NOTICE",
+    "third_party"
+  ]
+}

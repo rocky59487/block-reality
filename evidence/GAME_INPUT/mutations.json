@@ -1,0 +1,17 @@
+{
+  "ID_ORDER": {
+    "registered": 1,
+    "failed": "usesReturnedIdsInsteadOfDeclarationOrder()",
+    "type": "org.opentest4j.AssertionFailedError"
+  },
+  "SWAP_YZ": {
+    "registered": 1,
+    "failed": "preservesDeclaredAxesRotationJointAndSiValues()",
+    "type": "org.opentest4j.AssertionFailedError"
+  },
+  "DROP_GROUND": {
+    "registered": 1,
+    "failed": "includesAllSixObservedContactsOnceInCanonicalOrder()",
+    "type": "org.opentest4j.AssertionFailedError"
+  }
+}

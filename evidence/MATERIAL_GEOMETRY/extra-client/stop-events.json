@@ -1,0 +1,6 @@
+[
+  {
+    "command": "stop",
+    "response": "Stopping the server\n"
+  }
+]

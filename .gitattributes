@@ -39,3 +39,9 @@ br-sidecar.exe binary
 
 # BSI pins hash exact contract bytes on every checkout platform.
 contract/** text=auto eol=lf
+evidence/NATIVE_FRACTURE_TYPED/CI/** -text whitespace=cr-at-eol
+evidence/NATIVE_FRACTURE_TRANSACTION/CI/** -text whitespace=cr-at-eol
+evidence/NATIVE_FRACTURE_TRANSACTION/CI/*.log -text -whitespace
+
+# Raw alpha receipts are hashed before Git; preserve every byte.
+evidence/ALPHA_RELEASE/** -text whitespace=cr-at-eol

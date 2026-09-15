@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.diagnostics.PipelineProfileTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-10T00:22:05" hostname="ROCKYLAPTOP" time="0.039">
+  <properties/>
+  <testcase name="stopAndRestartRejectOldWorkAndPreserveImmutableStoppedSnapshot()" classname="com.blockreality.core.diagnostics.PipelineProfileTest" time="0.018"/>
+  <testcase name="closeIsIdempotentAndInvalidDurationsAreNotRecorded()" classname="com.blockreality.core.diagnostics.PipelineProfileTest" time="0.001"/>
+  <testcase name="concurrentCompletionsAndCountersStayBounded()" classname="com.blockreality.core.diagnostics.PipelineProfileTest" time="0.008"/>
+  <testcase name="scheduledWorkKeepsItsOriginalSessionThroughWorkerAndDelivery()" classname="com.blockreality.core.diagnostics.PipelineProfileTest" time="0.008"/>
+  <testcase name="exactNearestRankQuantilesAndBoundedRollingWindow()" classname="com.blockreality.core.diagnostics.PipelineProfileTest" time="0.001"/>
+  <testcase name="disabledDoesNotReadClockAllocateSpansOrStoreSamples()" classname="com.blockreality.core.diagnostics.PipelineProfileTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

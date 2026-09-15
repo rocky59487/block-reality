@@ -1,0 +1,21 @@
+{
+  "command": [
+    "/usr/bin/python3",
+    "-X",
+    "utf8",
+    "/home/rocky/br-native-v15-consumer/contract/conformance/run.py",
+    "--adapter",
+    "capi",
+    "--lib",
+    "/home/rocky/br-native-v15-consumer/staged/linux-x86_64/libbsi_tectonic.so",
+    "--case",
+    "C14-shell-wall-buckling",
+    "--repeat",
+    "3",
+    "--record",
+    "/home/rocky/br-native-v15-consumer/qualification/c14-corpus.json"
+  ],
+  "cwd": "/home/rocky/br-native-v15-consumer",
+  "BR_ENGINE": "/home/rocky/br-native-v15-consumer/staged/linux-x86_64/libbsi_tectonic.so",
+  "source": "fc5424fc2b7a6376047ded560201d1eb0f0e69bc"
+}

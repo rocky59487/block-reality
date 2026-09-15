@@ -26,9 +26,9 @@ class UnassignedReportingTest {
     private static BlockKey k(int x, int y, int z) { return new BlockKey(x, y, z); }
 
     private static AnalysisResult with(List<UnassignedBlocks> groups) {
-        return new AnalysisResult(new WorldRevision(1), true, false, "", 0.2, -1, "",
-                1, 0, 1e-15, 0, BucklingState.NO_POSITIVE_EIGENVALUE,
-                List.of(), List.of(), groups);
+        return new AnalysisResult(
+                new WorldRevision(1), true, false, "", 0.2, -1, "", 1, 0, 1e-15, 0,
+                BucklingState.NO_POSITIVE_EIGENVALUE, List.of(), List.of(), groups, false, false);
     }
 
     // ------------------------------------------------------------------ codes
@@ -158,8 +158,9 @@ class UnassignedReportingTest {
     @Test
     @DisplayName("a reply that said nothing about buckling is UNKNOWN, not COMPUTED")
     void absentIsNotReassuring() {
-        AnalysisResult r = new AnalysisResult(new WorldRevision(1), true, false, "", 0, -1, "",
-                0, 0, 0, 0, null, List.of(), List.of(), List.of());
+        AnalysisResult r = new AnalysisResult(
+                new WorldRevision(1), true, false, "", 0, -1, "", 0, 0, 0, 0, null, List.of(), List.of(), List.of(),
+                false, false);
         assertSame(BucklingState.UNKNOWN, r.bucklingState());
         assertFalse(r.bucklingState().hasFactor());
     }

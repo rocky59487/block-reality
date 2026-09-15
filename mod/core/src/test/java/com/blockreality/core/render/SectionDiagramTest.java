@@ -25,7 +25,7 @@ class SectionDiagramTest {
     @Test
     void aHoggingSectionHasTensionOnTop() {
         // A cantilever pushed down at its tip. The support end hogs.
-        SectionDiagram d = SectionDiagram.of(station(+24.24, -24.24)).orElseThrow();
+        SectionDiagram d = com.blockreality.testlegacy.LegacySectionDiagram.of(station(+24.24, -24.24)).orElseThrow();
         assertEquals("br.section.tension", d.topLabelKey());
         assertEquals("br.section.compression", d.bottomLabelKey());
         assertTrue(d.isBending());
@@ -37,7 +37,7 @@ class SectionDiagramTest {
         // A beam on two supports. Opposite signs to the cantilever, same physics.
         // This is the case that makes colour alone unreadable: without the words, a
         // reader who has only ever seen the cantilever concludes the tool is inverted.
-        SectionDiagram d = SectionDiagram.of(station(-18.0, +18.0)).orElseThrow();
+        SectionDiagram d = com.blockreality.testlegacy.LegacySectionDiagram.of(station(-18.0, +18.0)).orElseThrow();
         assertEquals("br.section.compression", d.topLabelKey());
         assertEquals("br.section.tension", d.bottomLabelKey());
         assertEquals(0.5, d.neutralFraction().orElseThrow(), 1e-12);
@@ -46,14 +46,14 @@ class SectionDiagramTest {
     @Test
     void axialForceMovesTheNeutralAxisOffCentre() {
         // Bending plus tension: the zero crossing shifts towards the compression face.
-        SectionDiagram d = SectionDiagram.of(station(+30.0, -10.0)).orElseThrow();
+        SectionDiagram d = com.blockreality.testlegacy.LegacySectionDiagram.of(station(+30.0, -10.0)).orElseThrow();
         assertEquals(0.75, d.neutralFraction().orElseThrow(), 1e-12);
         assertEquals(0.0, d.sigmaAt(0.75), 1e-12);
     }
 
     @Test
     void aSectionEntirelyInTensionHasNoNeutralAxis() {
-        SectionDiagram d = SectionDiagram.of(station(+30.0, +10.0)).orElseThrow();
+        SectionDiagram d = com.blockreality.testlegacy.LegacySectionDiagram.of(station(+30.0, +10.0)).orElseThrow();
         assertFalse(d.isBending());
         assertTrue(d.neutralFraction().isEmpty());
         assertEquals("br.section.tension", d.topLabelKey());
@@ -62,7 +62,7 @@ class SectionDiagramTest {
 
     @Test
     void theProfileIsLinearAcrossTheDepth() {
-        SectionDiagram d = SectionDiagram.of(station(+20.0, -20.0)).orElseThrow();
+        SectionDiagram d = com.blockreality.testlegacy.LegacySectionDiagram.of(station(+20.0, -20.0)).orElseThrow();
         assertEquals(+20.0, d.sigmaAt(0.0), 1e-12);
         assertEquals(+10.0, d.sigmaAt(0.25), 1e-12);
         assertEquals(0.0, d.sigmaAt(0.5), 1e-12);
@@ -72,7 +72,7 @@ class SectionDiagramTest {
 
     @Test
     void outOfRangeDepthsAreClampedRatherThanExtrapolated() {
-        SectionDiagram d = SectionDiagram.of(station(+20.0, -20.0)).orElseThrow();
+        SectionDiagram d = com.blockreality.testlegacy.LegacySectionDiagram.of(station(+20.0, -20.0)).orElseThrow();
         assertEquals(+20.0, d.sigmaAt(-5), 1e-12);
         assertEquals(-20.0, d.sigmaAt(5), 1e-12);
     }
@@ -81,6 +81,6 @@ class SectionDiagramTest {
     void aStationWithoutTheYFibresProducesNothing() {
         StressStation s = new StressStation(0, Vec3d.ZERO, List.of(), 0, 0, 0,
                 Optional.empty(), Optional.empty());
-        assertTrue(SectionDiagram.of(s).isEmpty());
+        assertTrue(com.blockreality.testlegacy.LegacySectionDiagram.of(s).isEmpty());
     }
 }

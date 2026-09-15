@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "repository": "rocky59487/tectonic2",
+  "tag": "v2.0.0-alpha.1",
+  "version": "2.0.0",
+  "sourceCommit": "ddaaa92c930393051b67e75f7ccfbd5224580b16",
+  "sumsSha256": "1fabe312e70478359c8afdb8514f205a046339690abfc638313f632895f8d6a3",
+  "inventoryProfile": "sdk",
+  "modVersion": "0.4.0-alpha.1"
+}

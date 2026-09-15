@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.impl.net.AnalysisUpdatePacketTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-09T18:04:05" hostname="rockylaptop" time="2.286">
+  <properties/>
+  <testcase name="diagnosticClippingPreservesUnicodeAndFitsTheReserve()" classname="com.blockreality.impl.net.AnalysisUpdatePacketTest" time="1.065"/>
+  <testcase name="maximumIdentityAndSummaryShareTheExistingByteReserve()" classname="com.blockreality.impl.net.AnalysisUpdatePacketTest" time="0.308"/>
+  <testcase name="everyKindRoundTripsWithSourceAndRevision()" classname="com.blockreality.impl.net.AnalysisUpdatePacketTest" time="0.054"/>
+  <testcase name="malformedIdentityEnumsAndTrailingPayloadAreRejected()" classname="com.blockreality.impl.net.AnalysisUpdatePacketTest" time="0.005"/>
+  <testcase name="decodedNoticesCannotRollBackAnAcceptedResult()" classname="com.blockreality.impl.net.AnalysisUpdatePacketTest" time="0.002"/>
+  <testcase name="everyByteTruncationFailsClosedForEveryKind()" classname="com.blockreality.impl.net.AnalysisUpdatePacketTest" time="0.817"/>
+  <testcase name="senderRefusesContradictoryResultsBeforeWriting()" classname="com.blockreality.impl.net.AnalysisUpdatePacketTest" time="0.023"/>
+  <system-out><![CDATA[2026-09-10 02:04:06,215 Test worker WARN Advanced terminal features are not available in this environment
+notice bytes=1065
+notice bytes=554
+small bytes=6573 header=593 scalarAllowance=128
+dense bytes=260507 header=594 scalarAllowance=128
+oversize bytes=6574 header=594 scalarAllowance=128
+shell-heavy bytes=193876 header=595 scalarAllowance=128
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

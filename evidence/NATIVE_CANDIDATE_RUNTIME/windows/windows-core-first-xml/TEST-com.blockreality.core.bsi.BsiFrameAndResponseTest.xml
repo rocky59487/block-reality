@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blockreality.core.bsi.BsiFrameAndResponseTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-10T00:22:05" hostname="ROCKYLAPTOP" time="0.03">
+  <properties/>
+  <testcase name="headersCarryTheirKeysInSchemaOrder()" classname="com.blockreality.core.bsi.BsiFrameAndResponseTest" time="0.001"/>
+  <testcase name="sectionsAreReadWhereTheyLie()" classname="com.blockreality.core.bsi.BsiFrameAndResponseTest" time="0.016"/>
+  <testcase name="decodingNeverThrowsForAnyTruncationOfAValidFrame()" classname="com.blockreality.core.bsi.BsiFrameAndResponseTest" time="0.008"/>
+  <testcase name="theThreeBlockFlagsAreIndependentBits()" classname="com.blockreality.core.bsi.BsiFrameAndResponseTest" time="0.001"/>
+  <testcase name="badMagicAndInconsistentLengthsAreRefused()" classname="com.blockreality.core.bsi.BsiFrameAndResponseTest" time="0.0"/>
+  <testcase name="anErrorFrameCarriesItsTokenNotItsProse()" classname="com.blockreality.core.bsi.BsiFrameAndResponseTest" time="0.001"/>
+  <testcase name="aFrameRoundTrips()" classname="com.blockreality.core.bsi.BsiFrameAndResponseTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

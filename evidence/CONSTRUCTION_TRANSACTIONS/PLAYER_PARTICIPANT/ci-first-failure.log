@@ -1,0 +1,24 @@
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	﻿2026-09-10T04:46:10.8661311Z ##[group]Run python3 scripts/check_docs.py dist/br-sidecar
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:10.8661846Z [36;1mpython3 scripts/check_docs.py dist/br-sidecar[0m
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:10.8698111Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:10.8698510Z env:
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:10.8698868Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:10.8699421Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:10.8700179Z   GRADLE_ACTION_ID: gradle/actions/setup-gradle
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:10.8700571Z   GRADLE_USER_HOME: /home/runner/.gradle
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:10.8700920Z   GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:10.8701274Z   GRADLE_BUILD_ACTION_CACHE_RESTORED: true
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:10.8701785Z   DEVELOCITY_INJECTION_INIT_SCRIPT_NAME: gradle-actions.inject-develocity.init.gradle
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:10.8702316Z   DEVELOCITY_INJECTION_CUSTOM_VALUE: gradle-actions
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:10.8702678Z   GITHUB_DEPENDENCY_GRAPH_ENABLED: false
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:10.8703069Z ##[endgroup]
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:19.1371190Z measured: engine=330 closed_form=41 java_total=573 java_engine_backed=28
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:19.1371755Z 
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:19.1372060Z FAIL README.md: says 555 java_total checks, the suite reports 573
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:19.1372706Z FAIL README.md: says 555 java_total checks, the suite reports 573
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:19.1373382Z FAIL README.md: says 555 java_total checks, the suite reports 573
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:19.1373970Z FAIL QUICKSTART.md: says 555 java_total checks, the suite reports 573
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:19.1374626Z FAIL docs/RESEARCH_BRIEF.md: says 555 java_total checks, the suite reports 573
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:19.1375319Z FAIL docs/RESEARCH_BRIEF.md: says 555 java_total checks, the suite reports 573
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:19.1376058Z FAIL docs/outreach/LISTING.md: says 555 java_total checks, the suite reports 573
+Java suites, cross-language against the shipped engine	quoted check counts match the suites	2026-09-10T04:46:19.1430593Z ##[error]Process completed with exit code 1.

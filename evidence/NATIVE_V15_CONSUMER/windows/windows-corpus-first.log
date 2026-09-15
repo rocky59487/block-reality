@@ -1,0 +1,9 @@
+C:\Users\wmc02\Desktop\block-reality\contract\conformance\run.py:147: DeprecationWarning: ast.Num is deprecated and will be removed in Python 3.14; use ast.Constant instead
+  OK = (ast.Expression, ast.BinOp, ast.UnaryOp, ast.Num, ast.Constant, ast.Name, ast.Load, ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Pow, ast.USub, ast.UAdd)
+contract hash OK: 5d4367f40de8... (53 files)
+C:\Users\wmc02\Desktop\block-reality\contract\conformance\run.py:155: DeprecationWarning: ast.Num is deprecated and will be removed in Python 3.14; use ast.Constant instead
+  if not isinstance(node, Expr.OK):
+engine tectonic/1.5.0  capabilities ['bsi.buckling.eigen', 'bsi.buckling.eigen.shells', 'bsi.core', 'bsi.precision.f32', 'bsi.readback.memberGeometry', 'bsi.readback.members', 'bsi.readback.shells', 'bsi.readback.stationIdentity', 'bsi.readback.stations']  transports ['capi']  
+[C-14] C14-shell-wall-buckling              PASS
+summary: executed=1 skipped=0 hard_red=0 stale_account=0
+report written to C:\Users\wmc02\Desktop\block-reality\build\native-v1.5-consumer\c14-corpus.json

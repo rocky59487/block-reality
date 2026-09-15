@@ -1,0 +1,40 @@
+
+> Task :compileJava
+/home/rocky/br-world-registry/forge/src/main/java/com/blockreality/impl/BlockRealityMod.java:28: warning: [removal] get() in FMLJavaModLoadingContext has been deprecated and marked for removal
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+                                                ^
+/home/rocky/br-world-registry/forge/src/main/java/com/blockreality/impl/BlockRealityMod.java:32: warning: [removal] get() in ModLoadingContext has been deprecated and marked for removal
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                                                ^
+/home/rocky/br-world-registry/forge/src/main/java/com/blockreality/impl/net/BRNetwork.java:54: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation(BlockRealityMod.MOD_ID, "main"),
+            ^
+Note: /home/rocky/br-world-registry/forge/src/main/java/com/blockreality/impl/block/StructuralBlock.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+3 warnings
+
+> Task :bundleEngines FAILED
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file '/home/rocky/br-world-registry/forge/build.gradle' line: 175
+
+* What went wrong:
+Execution failed for task ':bundleEngines'.
+> java.io.FileNotFoundException: /home/rocky/br-world-registry/LICENSE (No such file or directory)
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 12s
+2 actionable tasks: 2 executed

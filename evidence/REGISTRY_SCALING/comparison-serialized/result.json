@@ -1,0 +1,26 @@
+{
+  "measured_pairs": 480,
+  "warmup_and_measured_digest_pairs": 600,
+  "digest_mismatches": [],
+  "budget_failures": [
+    {
+      "fixture": "D131072",
+      "pattern": "ONE",
+      "stage": "coverage_encode",
+      "kind": "timing",
+      "baseline_ns": 3129652,
+      "candidate_ns": 4240746,
+      "budget_ns": 4129652
+    },
+    {
+      "fixture": "F131072",
+      "pattern": "ONE",
+      "stage": "coverage_encode",
+      "kind": "timing",
+      "baseline_ns": 2269339,
+      "candidate_ns": 3777959,
+      "budget_ns": 3269339
+    }
+  ],
+  "pass": false
+}

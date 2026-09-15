@@ -1,0 +1,26 @@
+[
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":116,\"resultRevision\":116,\"kind\":\"MODEL_REFUSED\",\"detail\":\"undeclared placement axis at (0,200,36) (9 blocks); sneak-right-click with an empty hand to declare X/Y/Z\",\"objectsReady\":true,\"cells\":58,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "only known catalogue world",
+    "pass": true
+  },
+  {
+    "command": "fill 0 200 24 32 200 36 minecraft:air",
+    "response": "Successfully filled 36 block(s)\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":152,\"resultRevision\":116,\"kind\":\"PENDING\",\"detail\":\"\",\"objectsReady\":false,\"cells\":22,\"members\":0,\"shells\":0,\"maxDc\":0.0,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "command": "br_render_state",
+    "response": "{\"worldRevision\":152,\"resultRevision\":152,\"kind\":\"RESULT\",\"detail\":\"\",\"objectsReady\":true,\"cells\":22,\"members\":2,\"shells\":12,\"maxDc\":0.7597396436387274,\"overCapacity\":false,\"bucklingCritical\":false}\n"
+  },
+  {
+    "gate": "unchanged supported fixture payload",
+    "pass": true
+  }
+]

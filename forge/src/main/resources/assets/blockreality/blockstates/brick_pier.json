@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "axis=x": {
+      "model": "blockreality:block/brick_pier",
+      "y": 90
+    },
+    "axis=y": {
+      "model": "blockreality:block/brick_pier",
+      "x": 90,
+      "y": 90
+    },
+    "axis=z": {
       "model": "blockreality:block/brick_pier"
+    },
+    "axis=undeclared": {
+      "model": "blockreality:block/brick_pier_undeclared"
     }
   }
 }

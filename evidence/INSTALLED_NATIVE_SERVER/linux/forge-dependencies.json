@@ -1,0 +1,384 @@
+{
+  "verified_in_both_installs": [
+    {
+      "path": "com/electronwill/night-config/core/3.6.4/core-3.6.4.jar",
+      "bytes": 199834,
+      "sha1": "510f174abbf1c947494db50ef2445683bd52c230",
+      "sha256": "1bc71c67b54ba9c8e5030b3ddaef7dee16ae43fee6850368f76b0cffef819700"
+    },
+    {
+      "path": "com/electronwill/night-config/toml/3.6.4/toml-3.6.4.jar",
+      "bytes": 31816,
+      "sha1": "51d6cefb2b55ee55ee26b16391212fb2c7dfb4f4",
+      "sha256": "3cb3d0ef3352e204cda68215fbe41afdc7f56425ef4fd8e84006964a656117d4"
+    },
+    {
+      "path": "com/github/jponge/lzma-java/1.3/lzma-java-1.3.jar",
+      "bytes": 51041,
+      "sha1": "a25db9d4d385ccda4825ae1b47a7a61d86e595af",
+      "sha256": "75ccc0e24d37ed5b8916e1bcffad1e067c2b1cfa21b635287f968db5c3c1963a"
+    },
+    {
+      "path": "com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar",
+      "bytes": 19936,
+      "sha1": "25ea2e8b0c338a877313bd4672d3fe056ea78f0d",
+      "sha256": "766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7"
+    },
+    {
+      "path": "com/google/code/gson/gson/2.10.1/gson-2.10.1.jar",
+      "bytes": 283367,
+      "sha1": "b3add478d4382b78ea20b1671390a858002feb6c",
+      "sha256": "4241c14a7727c34feea6507ec801318a3d4a90f070e4525681079fb94ee4c593"
+    },
+    {
+      "path": "com/google/errorprone/error_prone_annotations/2.1.3/error_prone_annotations-2.1.3.jar",
+      "bytes": 13704,
+      "sha1": "39b109f2cd352b2d71b52a3b5a1a9850e1dc304b",
+      "sha256": "03d0329547c13da9e17c634d1049ea2ead093925e290567e1a364fd6b1fc7ff8"
+    },
+    {
+      "path": "com/google/guava/guava/25.1-jre/guava-25.1-jre.jar",
+      "bytes": 2734339,
+      "sha1": "6c57e4b22b44e89e548b5c9f70f0c45fe10fb0b4",
+      "sha256": "6db0c3a244c397429c2e362ea2837c3622d5b68bb95105d37c21c36e5bc70abf"
+    },
+    {
+      "path": "com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar",
+      "bytes": 8782,
+      "sha1": "ed28ded51a8b1c6b112568def5f4b455e6809019",
+      "sha256": "2994a7eb78f2710bd3d3bfb639b2c94e219cedac0d4d084d516e78c16dddecf6"
+    },
+    {
+      "path": "com/nothome/javaxdelta/2.0.1/javaxdelta-2.0.1.jar",
+      "bytes": 38995,
+      "sha1": "d4f5d077f1b15c6f67595015d69572303ad3f66d",
+      "sha256": "a661dfcb749053fc26eada2a0a8e619a8ead1ca9eda29e1698687aa2cdd80152"
+    },
+    {
+      "path": "commons-io/commons-io/2.4/commons-io-2.4.jar",
+      "bytes": 185140,
+      "sha1": "b1b6ea3b7e4aa4f492509a4952029cd8e48019ad",
+      "sha256": "cc6a41dc3eaacc9e440a6bd0d2890b20d36b4ee408fe2d67122f328bb6e01581"
+    },
+    {
+      "path": "cpw/mods/bootstraplauncher/1.1.2/bootstraplauncher-1.1.2.jar",
+      "bytes": 8284,
+      "sha1": "0c546e00443d8432cda6baa1c860346980742628",
+      "sha256": "853b61fd165caf4103b5b969afbc5b2b037abc310ed644518cd967b50d5189a4"
+    },
+    {
+      "path": "cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar",
+      "bytes": 130343,
+      "sha1": "06d9443f56f50bb85cea383686ff9c867391458b",
+      "sha256": "a9b3dcde1434d02702a251ef1d0671dbc90250b349778e1c27151d86c2a4aa81"
+    },
+    {
+      "path": "cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar",
+      "bytes": 88749,
+      "sha1": "51e6a22c6c716beb11e244bf5b8be480f51dd6b5",
+      "sha256": "7ec9207f47bc8847a16566b9a3b4ced8d073c49592897eb30ce2aaf643fdfcab"
+    },
+    {
+      "path": "de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/mcp_config-1.20.1-20230612.114412.zip",
+      "bytes": 1740711,
+      "sha1": "c7d29380ddb38becad7c0819b5b325e43bca23f0",
+      "sha256": "f46d1050d8bed9046886b90a0d2fb80b4c6b5120fc35d32e5d37498dbe0a6d2a"
+    },
+    {
+      "path": "de/siegmar/fastcsv/2.2.2/fastcsv-2.2.2.jar",
+      "bytes": 32060,
+      "sha1": "40562843510397296de200889d9ed5f3af155e52",
+      "sha256": "bfda71abcd7c2b62db498deba24c14aec0e9059a9c183477840ac1bae9c98ad2"
+    },
+    {
+      "path": "net/jodah/typetools/0.6.3/typetools-0.6.3.jar",
+      "bytes": 18281,
+      "sha1": "a01aaa6ddaea9ec07ec4f209487b7a46a526283a",
+      "sha256": "408300867804be05d1083cc0287dd3a21295a9e76090e288013ba5a4182dc96d"
+    },
+    {
+      "path": "net/minecraftforge/ForgeAutoRenamingTool/0.1.22/ForgeAutoRenamingTool-0.1.22-all.jar",
+      "bytes": 509933,
+      "sha1": "0b337aca253a6fe63f9c39d4e6272ca1b2e7cfd8",
+      "sha256": "c459a06a0ff995c31335100c84fb018f12b392bb0574b5cf9e448b10f7cb3679"
+    },
+    {
+      "path": "net/minecraftforge/JarJarFileSystems/0.3.19/JarJarFileSystems-0.3.19.jar",
+      "bytes": 32195,
+      "sha1": "2464eb7d6b9ddb9db36a82cf8a95193e5c6fe020",
+      "sha256": "beaa1875dd433f2dd152395c3e3c52ef2bb99f20b74860a07d70f7c4626e56d4"
+    },
+    {
+      "path": "net/minecraftforge/JarJarMetadata/0.3.19/JarJarMetadata-0.3.19.jar",
+      "bytes": 15895,
+      "sha1": "0083feaa9b770e6ac0e96ee4fc23fa89325c5fe2",
+      "sha256": "6141c710b5b7b673bd544740a31339f0754d7a794cc46b952b7ef7897b7ce265"
+    },
+    {
+      "path": "net/minecraftforge/JarJarSelector/0.3.19/JarJarSelector-0.3.19.jar",
+      "bytes": 17374,
+      "sha1": "376cc9c8ea60720cf027c01fc033de915699801c",
+      "sha256": "f7acfbafc9a715ee7d7ce2d539815b3ebccebc5064e0a7252c4a6a1c71d1e740"
+    },
+    {
+      "path": "net/minecraftforge/accesstransformers/8.0.4/accesstransformers-8.0.4.jar",
+      "bytes": 77756,
+      "sha1": "272d240aa73f42195b2a68e2ebd8b701ecf41f63",
+      "sha256": "3225e2a513f658df686fe8b2ae5b4808525851a2c238ce65e38847cc4ffc6441"
+    },
+    {
+      "path": "net/minecraftforge/binarypatcher/1.1.1/binarypatcher-1.1.1.jar",
+      "bytes": 21892,
+      "sha1": "23176c4f9fd7a8db961dc0b2ec32ad97ab08513c",
+      "sha256": "e6e85e0b78179d0683751f671e7dc8aee68668883c1b50a2036813a377868177"
+    },
+    {
+      "path": "net/minecraftforge/coremods/5.2.4/coremods-5.2.4.jar",
+      "bytes": 31872,
+      "sha1": "e30bab269d896613e38396274711410b3a0e4b87",
+      "sha256": "db32dc040af2eea1216a145a3f5fc6bc45d006740fe696da5a9a445006167c9f"
+    },
+    {
+      "path": "net/minecraftforge/eventbus/6.0.5/eventbus-6.0.5.jar",
+      "bytes": 53985,
+      "sha1": "699143dd438431d06b57416944f7cedbe52e1475",
+      "sha256": "ae8bd4ea6b32509ace6dba904698b52e13d222625488c8291a05ab870e66c1dd"
+    },
+    {
+      "path": "net/minecraftforge/fmlcore/1.20.1-47.4.13/fmlcore-1.20.1-47.4.13.jar",
+      "bytes": 118909,
+      "sha1": "f77e3021d1eb31d61f8d1b92d18ed4fb3c2806e5",
+      "sha256": "59efc5dc0f1226606a100f24c0fa4372ced417c13b32b80849dce01e49ec6b4b"
+    },
+    {
+      "path": "net/minecraftforge/fmlearlydisplay/1.20.1-47.4.13/fmlearlydisplay-1.20.1-47.4.13.jar",
+      "bytes": 170512,
+      "sha1": "ba7b07fcea003721c5cdbaa0f2d10d43db11daab",
+      "sha256": "83f9351fd237cda6f3f2c9a7111c62cf4c30a7e117fb58107d3e0845df37565e"
+    },
+    {
+      "path": "net/minecraftforge/fmlloader/1.20.1-47.4.13/fmlloader-1.20.1-47.4.13.jar",
+      "bytes": 269262,
+      "sha1": "b27b57b2f641bfe6ecdaf206ee54880d26bb9c10",
+      "sha256": "8c74f4deb7537b5d6dd4192d9ca8207c2edc51e94e60b78fcee780d4a19c5cac"
+    },
+    {
+      "path": "net/minecraftforge/forge/1.20.1-47.4.13/forge-1.20.1-47.4.13-universal.jar",
+      "bytes": 2506787,
+      "sha1": "3a664ce8e261a072b0983082b4f4feef59cbc698",
+      "sha256": "1d379ae985fbe84f46f5b632ce9344a2678032480b394f7c4d8ecfcf5fba6d4d"
+    },
+    {
+      "path": "net/minecraftforge/forgespi/7.0.1/forgespi-7.0.1.jar",
+      "bytes": 29831,
+      "sha1": "3b4972a0cdb135853dba219be61a79b22cff1309",
+      "sha256": "2298eaba25d066afd9b329de7f75e7bf78ef47f3045e6ecb0e40428d875e4b84"
+    },
+    {
+      "path": "net/minecraftforge/installertools/1.4.1/installertools-1.4.1.jar",
+      "bytes": 87401,
+      "sha1": "e28bc43bc9bef8a1620460938effc5b12684d825",
+      "sha256": "c475b48e225524f3358f569ca196fc1fe459575dba45a9317618661e30c4ed1c"
+    },
+    {
+      "path": "net/minecraftforge/jarsplitter/1.1.4/jarsplitter-1.1.4.jar",
+      "bytes": 7405,
+      "sha1": "57ce2d6564c1176b23a911ef57127ff3c45bffb3",
+      "sha256": "7b7b2882921900b74cad59008761cb18f7da1a5bca17cd7648251e0a65070067"
+    },
+    {
+      "path": "net/minecraftforge/javafmllanguage/1.20.1-47.4.13/javafmllanguage-1.20.1-47.4.13.jar",
+      "bytes": 16850,
+      "sha1": "0cf01e2179f72bd2829c65f5226d7dd0cfb6c686",
+      "sha256": "00c05edc134721c8e878b30705f4dcb2f904abdab51520865e925fd01ed3025d"
+    },
+    {
+      "path": "net/minecraftforge/lowcodelanguage/1.20.1-47.4.13/lowcodelanguage-1.20.1-47.4.13.jar",
+      "bytes": 7394,
+      "sha1": "e3f96129ea14eba84316f2d69816253e228e6e4c",
+      "sha256": "f38b714321440b94b0834a7af04933176d359f0858c895cf8db1e44a54eda724"
+    },
+    {
+      "path": "net/minecraftforge/mclanguage/1.20.1-47.4.13/mclanguage-1.20.1-47.4.13.jar",
+      "bytes": 4993,
+      "sha1": "85796906112d9b621a7b2996f8bfda49da991ef0",
+      "sha256": "43dc59ef58ffbf62c4d00e2dd48719f165409551d336c16d4fdf180cfb793df9"
+    },
+    {
+      "path": "net/minecraftforge/mergetool/1.1.5/mergetool-1.1.5-api.jar",
+      "bytes": 2572,
+      "sha1": "f3da18e12c696d35a47c82cbb2cc8b5aa15e1154",
+      "sha256": "39d9a3d9277c1402b8e7b97f917ce278241cf1796312aec85b87f19a376dd99a"
+    },
+    {
+      "path": "net/minecraftforge/srgutils/0.4.3/srgutils-0.4.3.jar",
+      "bytes": 69020,
+      "sha1": "84aecb8fc78bd0dd7299bd9963ac9eb83bd00aad",
+      "sha256": "94027d592a75d9437845c5c5a9b21708697e48ec2143b991bd264b4c7d2c0c51"
+    },
+    {
+      "path": "net/minecraftforge/srgutils/0.4.9/srgutils-0.4.9.jar",
+      "bytes": 69076,
+      "sha1": "7595dae3ad2554b1dac30ae3a9521bd026639e38",
+      "sha256": "362daead41b74baa84b51a98e6be9896c77ce15b37413ca1b367b01052f39ade"
+    },
+    {
+      "path": "net/minecraftforge/srgutils/0.5.6/srgutils-0.5.6.jar",
+      "bytes": 72082,
+      "sha1": "4844e46a377eebd8bb4da594e6b487126790b18e",
+      "sha256": "1aaf0178677961242c52e101c1ba8e1ee96dad054295e20eb15b98f4e6fe2e3d"
+    },
+    {
+      "path": "net/minecraftforge/unsafe/0.2.0/unsafe-0.2.0.jar",
+      "bytes": 2834,
+      "sha1": "54d7a0a5e8fdb71b973025caa46f341ae5904f39",
+      "sha256": "946937e182ab3b518b5b88264f367e1f35ac12bc83abed220490c60c717be239"
+    },
+    {
+      "path": "net/minecrell/terminalconsoleappender/1.2.0/terminalconsoleappender-1.2.0.jar",
+      "bytes": 15977,
+      "sha1": "96d02cd3b384ff015a8fef4223bcb4ccf1717c95",
+      "sha256": "912e432c9355c4b2025d788ed87fd72bb95542e2fc967ad6875fbbeb6e1c7a1c"
+    },
+    {
+      "path": "net/sf/jopt-simple/jopt-simple/5.0.4/jopt-simple-5.0.4.jar",
+      "bytes": 78146,
+      "sha1": "4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c",
+      "sha256": "df26cc58f235f477db07f753ba5a3ab243ebe5789d9f89ecf68dd62ea9a66c28"
+    },
+    {
+      "path": "net/sf/jopt-simple/jopt-simple/6.0-alpha-3/jopt-simple-6.0-alpha-3.jar",
+      "bytes": 79368,
+      "sha1": "02ab1a73e1e22d2b73469362a0908a98644b681d",
+      "sha256": "d440ceb839d6adb5cfa81aa321813d60255e68a3e9ca564c91126599310abde5"
+    },
+    {
+      "path": "org/antlr/antlr4-runtime/4.9.1/antlr4-runtime-4.9.1.jar",
+      "bytes": 337868,
+      "sha1": "428664f05d2b7f7b7610204b5aa7c1763f62011a",
+      "sha256": "a80502c3140ae7acfbb1f57847c8eb1c101461a969215ec38c3f1ebdff61ac29"
+    },
+    {
+      "path": "org/apache/maven/maven-artifact/3.8.5/maven-artifact-3.8.5.jar",
+      "bytes": 58077,
+      "sha1": "4433f50c07debefaed0553bd0068f4f48d449313",
+      "sha256": "91172bc294d6eab02fc9f45f4ea01fd0e418962d128cf489abea7b6957d988ee"
+    },
+    {
+      "path": "org/checkerframework/checker-qual/2.0.0/checker-qual-2.0.0.jar",
+      "bytes": 343222,
+      "sha1": "518929596ee3249127502a8573b2e008e2d51ed3",
+      "sha256": "fc8441632f5fa5537492c9f026d1c8b1adb6a7796f46031b04b4cc0622427995"
+    },
+    {
+      "path": "org/codehaus/mojo/animal-sniffer-annotations/1.14/animal-sniffer-annotations-1.14.jar",
+      "bytes": 3482,
+      "sha1": "775b7e22fb10026eed3f86e8dc556dfafe35f2d5",
+      "sha256": "2068320bd6bad744c3673ab048f67e30bef8f518996fa380033556600669905d"
+    },
+    {
+      "path": "org/jline/jline-reader/3.12.1/jline-reader-3.12.1.jar",
+      "bytes": 150765,
+      "sha1": "4382ab1382c7b6f379377ed5f665dc2f6e1218bc",
+      "sha256": "4d1037c7110027ed64816c510fad2afa0a5aa9bbc38fb9f0e772870823fcad2a"
+    },
+    {
+      "path": "org/jline/jline-terminal/3.12.1/jline-terminal-3.12.1.jar",
+      "bytes": 211712,
+      "sha1": "c777448314e050d980a6b697c140f3bfe9eb7416",
+      "sha256": "eb6115680f732562f0e8e6777f127dece81e23b25015925f3c4a2a900d48cc9e"
+    },
+    {
+      "path": "org/openjdk/nashorn/nashorn-core/15.4/nashorn-core-15.4.jar",
+      "bytes": 2167292,
+      "sha1": "f67f5ffaa5f5130cf6fb9b133da00c7df3b532a5",
+      "sha256": "6f816e84dfd63a81d4eaa7829c08337bbaff3ec683ff3bf6bbd90d017a00dc6f"
+    },
+    {
+      "path": "org/ow2/asm/asm-analysis/9.2/asm-analysis-9.2.jar",
+      "bytes": 34257,
+      "sha1": "7487dd756daf96cab9986e44b9d7bcb796a61c10",
+      "sha256": "878fbe521731c072d14d2d65b983b1beae6ad06fda0007b6a8bae81f73f433c4"
+    },
+    {
+      "path": "org/ow2/asm/asm-analysis/9.8/asm-analysis-9.8.jar",
+      "bytes": 35151,
+      "sha1": "b9747a320844b6cb1eacd90d8ecfd260a16c01d3",
+      "sha256": "e640732fbcd3c6271925a504f125e38384688f4dfbbf92c8622dfcee0d09edb9"
+    },
+    {
+      "path": "org/ow2/asm/asm-commons/9.2/asm-commons-9.2.jar",
+      "bytes": 72642,
+      "sha1": "f4d7f0fc9054386f2893b602454d48e07d4fbead",
+      "sha256": "be4ce53138a238bb522cd781cf91f3ba5ce2f6ca93ec62d46a162a127225e0a6"
+    },
+    {
+      "path": "org/ow2/asm/asm-commons/9.6/asm-commons-9.6.jar",
+      "bytes": 72194,
+      "sha1": "f1a9e5508eff490744144565c47326c8648be309",
+      "sha256": "7aefd0d5c0901701c69f7513feda765fb6be33af2ce7aa17c5781fc87657c511"
+    },
+    {
+      "path": "org/ow2/asm/asm-commons/9.8/asm-commons-9.8.jar",
+      "bytes": 73498,
+      "sha1": "36e4d212970388e5bd2c5180292012502df461bb",
+      "sha256": "3301a1c1cb4c59fcc5292648dac1d7c5aed4c0f067dfbe88873b8cdfe77404f4"
+    },
+    {
+      "path": "org/ow2/asm/asm-tree/9.2/asm-tree-9.2.jar",
+      "bytes": 52660,
+      "sha1": "d96c99a30f5e1a19b0e609dbb19a44d8518ac01e",
+      "sha256": "aabf9bd23091a4ebfc109c1f3ee7cf3e4b89f6ba2d3f51c5243f16b3cffae011"
+    },
+    {
+      "path": "org/ow2/asm/asm-tree/9.6/asm-tree-9.6.jar",
+      "bytes": 51935,
+      "sha1": "c0cdda9d211e965d2a4448aa3fd86110f2f8c2de",
+      "sha256": "c43ecf17b539c777e15da7b5b86553b377e2d39a683de6285567d5283888e7ef"
+    },
+    {
+      "path": "org/ow2/asm/asm-tree/9.8/asm-tree-9.8.jar",
+      "bytes": 51934,
+      "sha1": "018419ca5b77a2f81097c741e7872e6ab8d2f40d",
+      "sha256": "14b7880cb7c85eed101e2710432fc3ffb83275532a6a894dc4c4095d49ad59f1"
+    },
+    {
+      "path": "org/ow2/asm/asm-util/9.8/asm-util-9.8.jar",
+      "bytes": 94559,
+      "sha1": "395f1c1f035258511f27bc9b2583d76e4b143f59",
+      "sha256": "8ba0460ecb28fd0e2980e5f3ef3433a513a457bc077f81a53bdc75b587a08d15"
+    },
+    {
+      "path": "org/ow2/asm/asm/9.2/asm-9.2.jar",
+      "bytes": 122004,
+      "sha1": "81a03f76019c67362299c40e0ba13405f5467bff",
+      "sha256": "b9d4fe4d71938df38839f0eca42aaaa64cf8b313d678da036f0cb3ca199b47f5"
+    },
+    {
+      "path": "org/ow2/asm/asm/9.6/asm-9.6.jar",
+      "bytes": 123598,
+      "sha1": "aa205cf0a06dbd8e04ece91c0b37c3f5d567546a",
+      "sha256": "3c6fac2424db3d4a853b669f4e3d1d9c3c552235e19a319673f887083c2303a1"
+    },
+    {
+      "path": "org/ow2/asm/asm/9.8/asm-9.8.jar",
+      "bytes": 126113,
+      "sha1": "dc19ecb3f7889b7860697215cae99c0f9b6f6b4b",
+      "sha256": "876eab6a83daecad5ca67eb9fcabb063c97b5aeb8cf1fca7a989ecde17522051"
+    },
+    {
+      "path": "org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar",
+      "bytes": 1089277,
+      "sha1": "9d1c0c3a304ae6697ecd477218fa61b850bf57fc",
+      "sha256": "ca15a907e4d1f6b38cefed51d7df96a83347dcfb0bc8ced53111519e991d887d"
+    },
+    {
+      "path": "trove/trove/1.0.2/trove-1.0.2.jar",
+      "bytes": 361155,
+      "sha1": "112b40581ab9a4d3de4636d49985a7f686d181c8",
+      "sha256": "ad68a86cfd0255a2bc0525ce11ec49640caea7e34ff91eb89c3193dcccd77f05"
+    }
+  ],
+  "not_present_in_server_install": [],
+  "scope": "all present dependency artifacts listed by official installer profiles; generated patched Minecraft outputs validated by installer, not counted again"
+}

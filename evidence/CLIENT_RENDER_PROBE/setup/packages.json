@@ -1,0 +1,26 @@
+[
+  {
+    "file": "libfontenc1_1%3a1.1.4-1build3_amd64.deb",
+    "sha256": "fbc5eb07f445dae20152ea92e4edc352483f472b89578e5446edc40e491697ee"
+  },
+  {
+    "file": "libxfont2_1%3a2.0.5-1ubuntu0.2_amd64.deb",
+    "sha256": "b04bcf9cead27bd60fb3a00e571517f79fac80f762166e4d4e3981932d3ed33c"
+  },
+  {
+    "file": "mesa-utils-bin_8.4.0-1ubuntu1_amd64.deb",
+    "sha256": "21cf6e357c073f2bb9b5f0f86b34a3dd8e240225276c2fd6a8e3c5a63466fc6c"
+  },
+  {
+    "file": "xfonts-base_1%3a1.0.5_all.deb",
+    "sha256": "db3d735d9aaa938b5cf6ebfcdb1a8837fad394ae198b51e74b9f0544bbe4635b"
+  },
+  {
+    "file": "xserver-common_2%3a21.1.4-2ubuntu1.7~22.04.16_all.deb",
+    "sha256": "169067621e3e3e95f74bf2d881b928933885706cc1b9ae72042f3cd595e61fe0"
+  },
+  {
+    "file": "xvfb_2%3a21.1.4-2ubuntu1.7~22.04.16_amd64.deb",
+    "sha256": "f857020815dd091b4331cc45b37550a92480178c2931c76b486af2202e4271ec"
+  }
+]

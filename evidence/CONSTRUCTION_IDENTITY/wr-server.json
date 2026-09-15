@@ -1,0 +1,230 @@
+{
+  "commands": [
+    {
+      "phase": "prepare",
+      "command": "forceload add 4096 0",
+      "response": "No chunks were marked for force loading\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "forceload add 4144 0",
+      "response": "No chunks were marked for force loading\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "setblock 4103 200 8 minecraft:stone",
+      "response": "Could not set the block\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "fill 4104 200 8 4152 200 8 blockreality:steel_beam[axis=x]",
+      "response": "Successfully filled 9 block(s)\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "execute positioned 4104 200 8 run br scan 8",
+      "response": "Scanned 17x17 chunks: 49 structural blocks now tracked (49 total).\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        23   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        PENDING\n  result revision 4  STALE — world changed; values below describe the previous model\n  last result     1 members, 0 plate facets, max D/C 2.5099  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 3.634e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        23   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 23  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br_registry_probe",
+      "response": "WR cells=49 index=c6605d647133c88074758d662dbdcf789f44ce81653a5e1581e65e0ab9d23450 bootstrap=RESULT payload=true detail= native=3550de307d4911e0efeeaabd53cdd700cf80ee678d8c39d7ed0de2e9aa21aea7\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "forceload remove 4144 0",
+      "response": "Unmarked chunk [259, 0] in minecraft:overworld for force loading\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        23   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 23  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        24   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        PENDING — Waiting for unloaded input: 9 cell(s)\n  result revision 23  STALE — world changed; values below describe the previous model\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "br_registry_probe",
+      "response": "WR cells=49 index=c6605d647133c88074758d662dbdcf789f44ce81653a5e1581e65e0ab9d23450 bootstrap=PENDING payload=false detail=Waiting for unloaded input: 9 cell(s) native=3550de307d4911e0efeeaabd53cdd700cf80ee678d8c39d7ed0de2e9aa21aea7\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "save-all flush",
+      "response": "Saving the game (this may take a moment!)\nSaved the game\n"
+    },
+    {
+      "phase": "prepare",
+      "command": "stop",
+      "response": "Stopping the server\n"
+    },
+    {
+      "phase": "restart",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          IDLE\n  native engine not loaded yet\n  revision        4   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        PENDING — Waiting for unloaded input: 9 cell(s)\n  last result     none yet\n"
+    },
+    {
+      "phase": "restart",
+      "command": "br_registry_probe",
+      "response": "WR cells=49 index=c6605d647133c88074758d662dbdcf789f44ce81653a5e1581e65e0ab9d23450 bootstrap=PENDING payload=false detail=Waiting for unloaded input: 9 cell(s) native=absent\n"
+    },
+    {
+      "phase": "recover",
+      "command": "forceload add 4144 0",
+      "response": "Marked chunk [259, 0] in minecraft:overworld to be force loaded\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          IDLE\n  native engine not loaded yet\n  revision        5   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        PENDING\n  last result     none yet\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        6   (rejected as stale: 0)\n  blocks          49   test loads: 0\n  analysis        RESULT\n  result revision 6  CURRENT\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br_registry_probe",
+      "response": "WR cells=49 index=c6605d647133c88074758d662dbdcf789f44ce81653a5e1581e65e0ab9d23450 bootstrap=RESULT payload=true detail= native=3550de307d4911e0efeeaabd53cdd700cf80ee678d8c39d7ed0de2e9aa21aea7\n"
+    },
+    {
+      "phase": "recover",
+      "command": "fill 4144 200 8 4152 200 8 minecraft:air",
+      "response": "Successfully filled 9 block(s)\n"
+    },
+    {
+      "phase": "recover",
+      "command": "execute positioned 4104 200 8 run br scan 8",
+      "response": "Scanned 17x17 chunks: 40 structural blocks now tracked (40 total).\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        17   (rejected as stale: 0)\n  blocks          40   test loads: 0\n  analysis        PENDING\n  result revision 6  STALE — world changed; values below describe the previous model\n  last result     1 members, 0 plate facets, max D/C 3.8020  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 1.968e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        17   (rejected as stale: 0)\n  blocks          40   test loads: 0\n  analysis        RESULT\n  result revision 17  CURRENT\n  last result     1 members, 0 plate facets, max D/C 2.5099  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 3.634e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br_registry_probe",
+      "response": "WR cells=40 index=610be71e366453910ec2e2ad14dbdc92130fc5053e67897f7b0bdec9db2bad8f bootstrap=RESULT payload=true detail= native=901b0af457ad6b41c8efc702a87754ccfa0c5165ef4b7c4bbef93dbc3b7b0d67\n"
+    },
+    {
+      "phase": "recover",
+      "command": "forceload remove 4144 0",
+      "response": "Unmarked chunk [259, 0] in minecraft:overworld for force loading\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        17   (rejected as stale: 0)\n  blocks          40   test loads: 0\n  analysis        RESULT\n  result revision 17  CURRENT\n  last result     1 members, 0 plate facets, max D/C 2.5099  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 3.634e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        18   (rejected as stale: 0)\n  blocks          40   test loads: 0\n  analysis        PENDING — Waiting for unloaded input: 1 cell(s)\n  result revision 17  STALE — world changed; values below describe the previous model\n  last result     1 members, 0 plate facets, max D/C 2.5099  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 3.634e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br_registry_probe",
+      "response": "WR cells=40 index=610be71e366453910ec2e2ad14dbdc92130fc5053e67897f7b0bdec9db2bad8f bootstrap=PENDING payload=false detail=Waiting for unloaded input: 1 cell(s) native=901b0af457ad6b41c8efc702a87754ccfa0c5165ef4b7c4bbef93dbc3b7b0d67\n"
+    },
+    {
+      "phase": "recover",
+      "command": "forceload add 4144 0",
+      "response": "Marked chunk [259, 0] in minecraft:overworld to be force loaded\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        18   (rejected as stale: 0)\n  blocks          40   test loads: 0\n  analysis        PENDING — Waiting for unloaded input: 1 cell(s)\n  result revision 17  STALE — world changed; values below describe the previous model\n  last result     1 members, 0 plate facets, max D/C 2.5099  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 3.634e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "recover",
+      "command": "br status",
+      "response": "Block Reality\n  dimension       minecraft:overworld\n  engine          READY   (transport: BSI/JNA in-process)\n  native engine READY: tectonic 1.3.0 contract=4b11cc738790d32d576ac71ecd1cb57f04d3ed9186a9e43f89492ae13c258801\n  revision        19   (rejected as stale: 0)\n  blocks          40   test loads: 0\n  analysis        RESULT\n  result revision 19  CURRENT\n  last result     1 members, 0 plate facets, max D/C 2.5099  (member #0)  OVER CAPACITY\n  structures      1 solved, 0 unrestrained\n  equilibrium     residual 3.634e-16\nNo positive buckling eigenvalue for this load\n"
+    },
+    {
+      "phase": "recover",
+      "command": "save-all flush",
+      "response": "Saving the game (this may take a moment!)\nSaved the game\n"
+    },
+    {
+      "phase": "recover",
+      "command": "stop",
+      "response": "Stopping the server\n"
+    }
+  ],
+  "gates": [
+    {
+      "name": "WR-9 complete native baseline",
+      "pass": true
+    },
+    {
+      "name": "WR-8 current bootstrap carries cached result",
+      "pass": true
+    },
+    {
+      "name": "WR-9 unloading retains 49 cells and defers new result",
+      "pass": true
+    },
+    {
+      "name": "WR-8 waiting bootstrap has explanation and no result",
+      "pass": true
+    },
+    {
+      "name": "WR-9 unloaded index and previous native result unchanged",
+      "pass": true
+    },
+    {
+      "name": "WR-9 restart remembers unloaded cells and waits",
+      "pass": true
+    },
+    {
+      "name": "WR-9 restart preserves exact index without fresh partial native result",
+      "pass": true
+    },
+    {
+      "name": "WR-9 reload resumes complete native result",
+      "pass": true
+    },
+    {
+      "name": "WR-9 recovered native packet bytes identical after revision normalization",
+      "pass": true
+    },
+    {
+      "name": "WR-6 40-cell ground-border baseline",
+      "pass": true
+    },
+    {
+      "name": "WR-6 unreadable ground alone defers all 40 retained cells",
+      "pass": true
+    },
+    {
+      "name": "WR-6 ground deferral leaves index and old result unchanged",
+      "pass": true
+    },
+    {
+      "name": "WR-6 ground availability resumes analysis",
+      "pass": true
+    }
+  ],
+  "index": "c6605d647133c88074758d662dbdcf789f44ce81653a5e1581e65e0ab9d23450",
+  "native": "3550de307d4911e0efeeaabd53cdd700cf80ee678d8c39d7ed0de2e9aa21aea7"
+}

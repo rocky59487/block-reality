@@ -1,0 +1,46 @@
+> Task :api:compileJava UP-TO-DATE
+> Task :api:processResources NO-SOURCE
+> Task :api:classes UP-TO-DATE
+> Task :api:jar UP-TO-DATE
+> Task :core:compileJava UP-TO-DATE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:compileTestJava
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:testClasses
+
+> Task :core:test FAILED
+
+ProductGeometryTest > missingPackagedCatalogueCannotPoisonTooltipClassInitialization() FAILED
+    java.lang.ExceptionInInitializerError
+        at com.blockreality.core.engine.GameVocabulary.declaration(GameVocabulary.java:43)
+        at com.blockreality.core.engine.GameVocabulary$Geometry.lambda$read$0(GameVocabulary.java:56)
+        at java.base/java.util.Map.forEach(Map.java:713)
+        at com.blockreality.core.engine.GameVocabulary$Geometry.read(GameVocabulary.java:54)
+        at com.blockreality.core.engine.GameVocabulary$Geometry.<clinit>(GameVocabulary.java:51)
+        at com.blockreality.core.engine.GameVocabulary.geometry(GameVocabulary.java:47)
+        at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+        at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+        at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+        at com.blockreality.core.engine.ProductGeometryTest.missingPackagedCatalogueCannotPoisonTooltipClassInitialization(ProductGeometryTest.java:84)
+
+        Caused by:
+        java.lang.IllegalStateException: missing game vocabulary resource
+            at com.blockreality.core.engine.GameVocabulary$Declaration.read(GameVocabulary.java:69)
+            at com.blockreality.core.engine.GameVocabulary$Declaration.<clinit>(GameVocabulary.java:66)
+            ... 11 more
+7 actionable tasks: 2 executed, 5 up-to-date
+
+1 test completed, 1 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:test'.
+> There were failing tests. See the report at: file:///C:/Users/wmc02/Desktop/block-reality/mod/core/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 4s

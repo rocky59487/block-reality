@@ -1,0 +1,15 @@
+{
+  "source": "5d1fb6f4a02d3f082fd879690a04c216b5b319fa",
+  "files": {
+    "forge/src/main/java/com/blockreality/impl/server/construction/CanonicalNbt.java": "5f0ead8e0f2ae1292ef87d427b16246c41875b51fbb561e233bcd7978c6da785",
+    "forge/src/main/java/com/blockreality/impl/server/construction/PlayerFileParticipant.java": "fbfb87408fa08b9fb96573ee723140cc1ba1291ff5d54a25f2b3a48158c88d89",
+    "forge/src/main/java/com/blockreality/impl/server/construction/PlayerInventoryImage.java": "eac73c59ef54b783a4df9a5c5a2a546032e9268689610a3c33cf24a2e3af259f",
+    "forge/src/test/java/com/blockreality/impl/server/construction/CanonicalNbtTest.java": "8286aa015cee9b91917fbaa9f856bc208280e2db1289ee5aa33bc3f6cc0eb1af",
+    "forge/src/test/java/com/blockreality/impl/server/construction/PlayerFileParticipantTest.java": "4ce46feae50a357dcc20bbce31f2242ce39dd507b250c6bf9dfb2ffed536b222",
+    "forge/src/test/java/com/blockreality/impl/server/construction/PlayerInventoryImageTest.java": "d1148533d0f84574eb96c5deea0a152daafe43db8fdf1169b99308a194f1ab2e",
+    "mod/core/src/main/java/com/blockreality/core/transaction/AtomicConstructionCoordinator.java": "8cbcf81f46aa76789b5386fe997afc5d33a726781fe89250dfbb497b2f043b5c",
+    "mod/core/src/test/java/com/blockreality/core/transaction/AtomicConstructionCoordinatorTest.java": "a6940af8d95129967551c5b7881c58a67dead581116da16e3b63678f439adc58",
+    "mod/core/src/test/java/com/blockreality/core/transaction/TransactionFixtures.java": "723a01a7439cf9016f2824a3439c2d4958f01c1a4d019a6006df367428a06d55",
+    "mod/core/src/test/java/com/blockreality/core/transaction/TransactionProcessDriver.java": "3d440edf8cada85d6723fca65d3c9395bdd4bbfea7082aff68d5484d597075f5"
+  }
+}

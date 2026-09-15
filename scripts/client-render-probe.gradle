@@ -1,0 +1,17 @@
+// Isolated development client only: gradlew -I ../scripts/client-render-probe.gradle runClient.
+// Ordinary builds never include the source directory or these launch settings.
+allprojects { afterEvaluate { p ->
+    if (p.plugins.hasPlugin('net.minecraftforge.gradle')) {
+        def output = System.getProperty('br.clientProbeOutput')
+        if (!output) throw new GradleException('Explicit probe-owned output directory is required')
+        p.sourceSets.main.java.srcDir('src/clientProbe/java')
+        p.minecraft.runs.client {
+            workingDirectory p.file('run-client-probe')
+            property 'br.clientRenderProbe', 'true'
+            property 'br.clientProbeOutput', output
+            jvmArgs '-Xms512m', '-Xmx2g'
+            args '--username', 'BRRenderProbe', '--uuid', '00000000-0000-0000-0000-000000000042',
+                    '--width', '1280', '--height', '720'
+        }
+    }
+} }
