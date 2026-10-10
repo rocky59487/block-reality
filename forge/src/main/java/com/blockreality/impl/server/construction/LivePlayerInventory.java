@@ -51,6 +51,9 @@ final class LivePlayerInventory {
     static CompoundTag player(ServerPlayer actor) throws IOException {
         if (actor.containerMenu != actor.inventoryMenu || !actor.containerMenu.getCarried().isEmpty())
             throw new IOException("Close the inventory/container before placement");
+        return serializedPlayer(actor);
+    }
+    static CompoundTag serializedPlayer(ServerPlayer actor) throws IOException {
         try {
             CompoundTag inventory = inventory(actor);
             CompoundTag full = actor.saveWithoutId(new CompoundTag());
@@ -71,10 +74,7 @@ final class LivePlayerInventory {
             CanonicalNbt.encode(full,CanonicalNbt.MAX_DOCUMENT_BYTES); return full;
         } catch (RuntimeException invalid) { throw new IOException("Live player capture failed",invalid); }
     }
-    static void requirePreservableBaseline(CompoundTag previous, CompoundTag live) throws IOException {
-        // A transaction may checkpoint current live data, but cannot silently drop an unrepresented
-        // saved extension. Normal game saves own legitimate schema removal, not this adapter.
-        requirePreservableStructure(previous,live);
+    static void requirePreservableBaseline(CompoundTag previous) throws IOException {
         for (int slot=0;slot<41;slot++) decode(PlayerInventoryImage.read(previous,slot));
     }
     static void requirePreservableStructure(CompoundTag previous, CompoundTag live) throws IOException {

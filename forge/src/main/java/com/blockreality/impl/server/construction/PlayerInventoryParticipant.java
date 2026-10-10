@@ -34,7 +34,10 @@ final class PlayerInventoryParticipant {
             if(!actual.equals(before) && !actual.equals(after))throw new IOException("Foreign saved inventory participant");
         } else {
             baseline=LivePlayerInventory.player(live);inventoryBefore=LivePlayerInventory.inventory(live);working=baseline.copy();
-            if(snapshot.exists())LivePlayerInventory.requirePreservableBaseline(snapshot.data(),baseline);
+            if(snapshot.exists()) {
+                PlayerGameFileBaseline.requireTrusted(directory,actorId,snapshot);
+                LivePlayerInventory.requirePreservableBaseline(snapshot.data());
+            }
             if(!PlayerInventoryImage.read(baseline,slot).equals(before))throw new IOException("Live player no longer matches the offer");
         }
     }
@@ -75,6 +78,8 @@ final class PlayerInventoryParticipant {
             boolean known=actual.exists() && (snapshot.exists() && same(actual.data(),snapshot.data()) || attempted!=null && same(actual.data(),attempted));
             if(!known)throw new IOException("Player file changed after an uncertain write");
             files=reopened;snapshot=actual;uncertain=false;
+        } else if(live!=null && snapshot.exists()) {
+            PlayerGameFileBaseline.requireTrusted(directory,actorId,files.capture(actorId));
         }
         attempted=desired.copy();
         try {
@@ -84,6 +89,7 @@ final class PlayerInventoryParticipant {
                 if(!verified.exists() || !same(verified.data(),desired))throw new IOException("Player file changed before the barrier");
                 snapshot=verified;
             } else snapshot=files.write(snapshot,desired);
+            PlayerGameFileBaseline.acknowledgeWrite(directory,actorId,snapshot,live!=null);
         } catch(IOException|RuntimeException|Error failed) {uncertain=true;throw failed;}
         attempted=null;
     }

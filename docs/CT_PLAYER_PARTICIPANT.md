@@ -126,3 +126,12 @@ record and mismatched digest refuse via focused unit tests; a compiled negative
 that removes the digest comparison must fail a behavioral assertion. Retain all
 original B2 nested-shape, NBT and exact inventory tests as pure structural
 oracles, not as a stale checkpoint policy; no SKIP is a PASS.
+
+Boundary serialization is not placement permission: an ordinary game save may
+occur while a container/cursor stack is open. The boundary still witnesses the
+complete saved player document; construction retains its closed-menu/cursor
+requirement. Live participant persistence rechecks the raw digest at its barrier,
+including canonical-NBT-equal raw rewrites after participant capture. A failed
+write is acknowledged only after the existing uncertain-write recovery verifies
+and forces a known complete document; offline writes never create game-owned
+trust or clear an unrepresented marker.

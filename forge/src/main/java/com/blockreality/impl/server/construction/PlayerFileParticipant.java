@@ -5,6 +5,8 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.zip.*;
 import static java.nio.file.StandardOpenOption.*;
@@ -61,6 +63,11 @@ final class PlayerFileParticipant {
             this.actor = actor; this.directory = directory; this.compressed = compressed; this.data = data;
         }
         boolean exists() { return compressed != null; }
+        byte[] rawDigest() throws IOException {
+            if (compressed == null) throw new IOException("Player baseline file missing");
+            try { return MessageDigest.getInstance("SHA-256").digest(compressed); }
+            catch (NoSuchAlgorithmException unavailable) { throw new IOException("SHA-256 unavailable",unavailable); }
+        }
         CompoundTag data() throws IOException {
             if (data == null) throw new IOException("Player baseline file missing");
             return data.copy();
