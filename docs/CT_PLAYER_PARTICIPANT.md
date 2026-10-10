@@ -53,3 +53,32 @@ files. Retain at most1024 such files and1GiB total; refuse writes that cannot re
 their full temporary bytes. Reopen scans and validates retained temporary files;
 unknown temporary sizes/types refuse, never auto-delete evidence. Exercise reduced
 package-local quotas against real files; production callers cannot raise these caps.
+
+## Nested live baseline preservation — frozen B2 criteria (2026-10-10)
+
+Construction must fail closed before checkpoint/PREPARED when the live serializer
+cannot represent a saved field. Recursively require every saved compound key and
+the same tag type in the live document, including ForgeData/ForgeCaps and every
+compound/list element. Scalar values (Health, coordinates, Count, etc.) may change;
+byte/int/long array lengths/values and pure scalar-list lengths/values may change,
+but nonempty scalar lists must retain their element type. Empty lists contain no
+old element shape to preserve. New live keys/elements are not saved extensions.
+
+Nonempty compound/nested-list containers require equal lengths and per-index
+recursive shape correspondence; do not search/reorder/match elements by guessed
+identity. If this correspondence loses a key/type, truncates, clears or changes
+container shape, refuse. Normal game saves, not this construction adapter, own
+legitimate schema removal/reordering. Never merge saved-only data into live state,
+automatically save the player, or invent schema-migration authority to allow it.
+Validate both complete documents under CanonicalNbt's existing 64-depth/262144-tag/
+16MiB bounds before recursive comparison, including newly added live subtrees.
+
+Required focused evidence: saved-only nested ForgeData/ForgeCaps keys, later
+compound-list elements, nested lists, changed tag/container types and ambiguous
+container lengths refuse with IOException. Changed scalar/array/scalar-list values
+and Count-only inventory updates remain valid; all existing exact NBT/item rules
+remain unchanged. In transformed Forge, participant construction/checkpoint must
+refuse the saved-only extension with original player.dat raw bytes, journal keys
+and live inventory unchanged, while normal numeric/Count updates checkpoint.
+Exercise depth/size/tag bounds without StackOverflowError and catch a compiled
+negative that omits the recursive check. Preserve the original audit failures.
