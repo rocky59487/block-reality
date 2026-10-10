@@ -38,9 +38,9 @@ class BsiNativeSerializationTest {
     private static final byte[] FOUR_THREADS = solve("four", 4);
 
     enum Entry {
-        CALL("bsi_capi_call"), ERROR("bsi_capi_last_error"), CLOSE("bsi_capi_close");
-        final String symbol;
-        Entry(String symbol) { this.symbol = symbol; }
+        CALL("bsi_capi_call", "call"), ERROR("bsi_capi_last_error", "lastError"), CLOSE("bsi_capi_close", "close");
+        final String symbol, method;
+        Entry(String symbol, String method) { this.symbol = symbol; this.method = method; }
         Object invoke(BsiNative session) {
             return switch (this) {
                 case CALL -> session.call(FOUR_THREADS);
@@ -65,7 +65,7 @@ class BsiNativeSerializationTest {
             Pending<Object> a = workers.start(() -> holder == Entry.CALL ? first.call(ONE_THREAD) : holder.invoke(first));
             await(probe.entered);
             Pending<Object> b = workers.start(() -> contender.invoke(second));
-            assertBlockedBy(b, a);
+            assertBlockedBy(b, a, contender.method);
             assertEquals(1, probe.max.get());
             assertEquals(1, probe.entries.get());
             probe.release.countDown();
@@ -97,7 +97,7 @@ class BsiNativeSerializationTest {
                 }
                 return null;
             });
-            assertBlockedBy(b, a);
+            assertBlockedBy(b, a, "open");
             probe.release.countDown();
             a.get();
             b.get();
@@ -105,6 +105,7 @@ class BsiNativeSerializationTest {
     }
 
     @Test
+    @SuppressWarnings("try") // Deliberately exercise idempotent close before automatic cleanup.
     void lastErrorWaitsForCloseAndNeverDereferencesAFreedHandle() throws Exception {
         Probe probe = new Probe(Entry.CLOSE);
         try (BsiNative session = probe.session(1, "library");
@@ -112,7 +113,7 @@ class BsiNativeSerializationTest {
             Pending<Object> close = workers.start(() -> Entry.CLOSE.invoke(session));
             await(probe.entered);
             Pending<String> error = workers.start(session::lastError);
-            assertBlockedBy(error, close);
+            assertBlockedBy(error, close, "lastError");
             probe.release.countDown();
             close.get();
             assertEquals("", error.get());
@@ -153,10 +154,10 @@ class BsiNativeSerializationTest {
             Pending<byte[]> first = workers.start(() -> session.call(ONE_THREAD));
             await(probe.entered);
             Pending<byte[]> second = workers.start(() -> session.call(FOUR_THREADS));
-            assertBlockedBy(second, first);
+            assertBlockedBy(second, first, "call");
             probe.release.countDown();
             await(retryEntered);
-            assertBlockedBy(second, first);
+            assertBlockedBy(second, first, "call");
             retryRelease.countDown();
             assertArrayEquals(reply, first.get());
             assertArrayEquals(FOUR_THREADS, second.get());
@@ -250,7 +251,7 @@ class BsiNativeSerializationTest {
         catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new AssertionError(e); }
     }
 
-    private static void assertBlockedBy(Pending<?> contender, Pending<?> holder) throws Exception {
+    private static void assertBlockedBy(Pending<?> contender, Pending<?> holder, String method) throws Exception {
         await(contender.started);
         var threads = ManagementFactory.getThreadMXBean();
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
@@ -258,7 +259,9 @@ class BsiNativeSerializationTest {
             var info = threads.getThreadInfo(contender.thread.getId(), 20);
             if (info != null && info.getThreadState() == Thread.State.BLOCKED
                     && info.getLockOwnerId() == holder.thread.getId()
-                    && Stream.of(info.getStackTrace()).anyMatch(frame -> frame.getClassName().equals(BsiNative.class.getName()))) {
+                    && info.getStackTrace().length > 0
+                    && info.getStackTrace()[0].getClassName().equals(BsiNative.class.getName())
+                    && info.getStackTrace()[0].getMethodName().equals(method)) {
                 return;
             }
             if (contender.result.isDone()) {

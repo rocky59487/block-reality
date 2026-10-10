@@ -189,8 +189,9 @@ wire 上必須有一份雙方同意的材料/角色詞彙表。這跑不掉。
   押著：兩傳輸的回覆**逐位元相同**。
 
 半雙工、一問一答;JVM 側每個 dimension 一個 client、一條分析執行緒,**不在 tick
-thread 上等**（送出 → 下一個 tick 收,見 `AnalysisExecutor`）。這同時滿足了
-OpenBLAS 執行緒數 process-global 的序列化要求。
+thread 上等**（送出 → 下一個 tick 收,見 `AnalysisExecutor`）。這在舊 sidecar
+每維度獨立 process 的形狀才足以隔離 OpenBLAS 設定；進程內多維度 session
+共用 process，僅有各自的 worker／instance 鎖不足以序列化 native entry。
 
 `frame_capi_v2`（D-002 原案的 in-process C ABI）仍是日後換裝方向之一;屆時 wire
 概念不變——門鈴變函式呼叫,映射區變 `MemorySegment`。
@@ -221,6 +222,13 @@ OpenBLAS 執行緒數 process-global 的序列化要求。
 `OpenBLAS` 的執行緒數是 **process-global**。多個 context 同時跑 supernodal session 會互相競爭。
 
 Java 側必須**序列化引擎呼叫**，或全程走 LDLT lane。這不是效能建議，是正確性要求——競爭會破壞決定論，而決定論是多人同步的前提。
+
+進程內路徑由 `BsiNative` 的單一 static monitor 序列化所有 session／library path
+的 load、ABI、open、call（含 NEED_BIGGER 重送）、last_error 與 close。
+鎖順序固定為 instance → global；open 只取 global，不反向取得其他 instance 鎖。
+lastError 與 close 共用 instance 鎖，close 後不再把已釋放 handle 傳入 native。
+等待仍在既有 worker／daemon cleanup，不移到 server tick；這不能強殺不返回的
+native 工作，也不提供 native crash 隔離。
 
 ## 打包
 
