@@ -74,8 +74,31 @@ final class LivePlayerInventory {
     static void requirePreservableBaseline(CompoundTag previous, CompoundTag live) throws IOException {
         // A transaction may checkpoint current live data, but cannot silently drop an unrepresented
         // saved extension. Normal game saves own legitimate schema removal, not this adapter.
-        if (!live.getAllKeys().containsAll(previous.getAllKeys())) throw new IOException("Saved player fields are not represented by the live baseline");
+        requirePreservableStructure(previous,live);
         for (int slot=0;slot<41;slot++) decode(PlayerInventoryImage.read(previous,slot));
+    }
+    static void requirePreservableStructure(CompoundTag previous, CompoundTag live) throws IOException {
+        CanonicalNbt.encode(previous,CanonicalNbt.MAX_DOCUMENT_BYTES);
+        CanonicalNbt.encode(live,CanonicalNbt.MAX_DOCUMENT_BYTES);
+        requireRepresented(previous,live,0);
+    }
+    private static void requireRepresented(Tag previous, Tag live, int depth) throws IOException {
+        if (depth>=CanonicalNbt.MAX_DEPTH) throw new IOException("Player baseline nesting capacity exceeded");
+        if (live==null || previous.getId()!=live.getId()) throw unrepresentedBaseline();
+        if (previous instanceof CompoundTag saved) {
+            CompoundTag current=(CompoundTag)live;
+            for (String key:saved.getAllKeys()) requireRepresented(saved.get(key),current.get(key),depth+1);
+        } else if (previous instanceof ListTag saved && !saved.isEmpty()) {
+            ListTag current=(ListTag)live;
+            int type=saved.getElementType();
+            if (type==Tag.TAG_COMPOUND || type==Tag.TAG_LIST) {
+                if (saved.size()!=current.size() || type!=current.getElementType()) throw unrepresentedBaseline();
+                for (int i=0;i<saved.size();i++) requireRepresented(saved.get(i),current.get(i),depth+1);
+            } else if (!current.isEmpty() && type!=current.getElementType()) throw unrepresentedBaseline();
+        }
+    }
+    private static IOException unrepresentedBaseline() {
+        return new IOException("Saved player fields have no unambiguous live representation; normal game saves own schema removal");
     }
     static void apply(ServerPlayer actor, int slot, Value desired) throws IOException {
         ItemStack replacement = decode(desired);
