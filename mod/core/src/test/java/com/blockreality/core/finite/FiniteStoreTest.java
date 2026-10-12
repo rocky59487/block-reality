@@ -96,11 +96,16 @@ class FiniteStoreTest {
         assertThrows(IOException.class, () -> store.readHead(domain));
     }
 
-    @Test void adjacentOpenLandsInsideJournalDirectory() throws Exception {
+    @Test void adjacentOpenLandsBesideJournalDirectory() throws Exception {
         var journalDir = root.resolve("journal");
+        var journal = com.blockreality.core.transaction.FileTransactionJournal.open(journalDir);
+        journal.close();
         try (var store = FiniteStore.openAdjacentTo(journalDir)) {
-            assertEquals(journalDir.resolve("finite"), store.root());
+            assertEquals(journalDir.resolveSibling("finite"), store.root());
             assertTrue(Files.isDirectory(store.root().resolve("objects")));
         }
+        // The store must not poison the journal: scan() rejects unknown entries, so
+        // anything FiniteStore creates inside the journal directory breaks the next open.
+        com.blockreality.core.transaction.FileTransactionJournal.open(journalDir).close();
     }
 }

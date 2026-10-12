@@ -92,7 +92,7 @@ public final class FiniteStore implements AutoCloseable {
 
     /** The conventional location beside a construction journal directory. */
     public static FiniteStore openAdjacentTo(Path journalDirectory) throws IOException {
-        return open(journalDirectory.resolve("finite"));
+        return open(journalDirectory.resolveSibling("finite"));
     }
 
     public Path root() { return root; }
