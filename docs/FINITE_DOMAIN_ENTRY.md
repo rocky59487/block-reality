@@ -142,14 +142,15 @@ harness（`@TempDir`、scripted lanes、AtomicBoolean 旗標；製造件經真 j
 | `bootstrapIsIdempotentOnSecondRun` | 二次 bootstrap：0 新 bind、mint lane 不重開（open 計數==1）、commit worldRevision=1、bindings 集合不變 |
 | `unadmittedDimensionRefused` / `emptyAdmittedRefusesEverything` | §2 閘門：具名拒絕、journal 無新 entry、無 lane 開啟 |
 | `unloadedCellWaits` | `Unloaded` probe → `Waiting(missing≥1)`、Observation==WAITING_CHUNKS、無 lane、無 commit entry |
-| `worldDriftRefuses` | live `Air`／`Other`／declaration 不等 → 具名 drift 拒絕（drift 訊息含 cell 座標）；source 未提交 |
-| `panelMaterialRefuses` | bound material 角色 `panel` → 具名拒絕且 mint lane 未開（role 預檢先於 lane） |
+| `airCellDriftRefuses` / `foreignBlockDriftRefuses` / `declarationMismatchDriftRefuses` | live `Air`／`Other`／declaration 不等 → 具名 drift 拒絕（drift 訊息含 `cell/x/y/z` 座標）；source 未提交、lane 未開 |
+| `nonSturdyNeighbourIsNotASupport` | `Other` 鄰格接觸面不 sturdy → 不成支承；source 只含 bound cells |
+| `panelMaterialRefusesBeforeAnyLane` | bound material 角色 `panel` → 具名拒絕且 mint lane 未開（role 預檢先於 lane） |
 | `noBoundCellsRefuses` | 空域 → 「no bound cells」具名拒絕，無 mint、無 commit |
 | `nonServerThreadRefused` / `closedServiceRefuses` | entryGuard／closed → IllegalStateException |
 | `mintRunsOnPrivateLaneThread` | 所有 lane 呼叫執行緒名為 `br-entry-lane-*`／`br-finite-lane-*`；caller thread 零 native |
 | `laneWithoutCorotRefuses` / `vocabRefusalRefuses` | `has("bsi.corot")` false／錯誤回覆 → 具名 IOException、無 commit、journal 不增長 |
 | `statusReportsDomainState` | status 於 adopted/waiting/sourced 各態回傳一致快照 |
-| `axislessPieceRefuses` | `declaration.axis()<0` 的 piece → `unboundPlans` 具名拒絕、無 bind intent |
+| `axislessPieceRefusedAtCommit` | `declaration.axis()<0` 的 piece 在 `prepareBuild` admission 即被拒絕（footprint 驗證要求 axis≥0）——axis 不變式在 manufactured 層咬合，`unboundPlans` 的同名檢查為防禦性重複 |
 | 權限表 | `finite`→LEVEL_OP 經 `BrPermissionsTest` 枚舉測試＋privileged 名單斷言 |
 
 ## §8 測試命令與計數（凍結）
