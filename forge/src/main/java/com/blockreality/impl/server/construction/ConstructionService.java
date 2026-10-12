@@ -31,12 +31,18 @@ import static com.blockreality.core.transaction.ConstructionTransaction.*;
 
 /** Server owner of module construction. The first gameplay entry edits an existing product's axis. */
 public final class ConstructionService {
+    /** Routes a pending journal record to the participant host that owns it (finite runtime). */
+    @FunctionalInterface public interface PendingHostRouter {
+        AtomicConstructionCoordinator.Host route(Entry pending) throws IOException;
+    }
     private static final Map<MinecraftServer,ConstructionService> SERVERS = new ConcurrentHashMap<>();
     private final MinecraftServer server;
     private final UUID session = UUID.randomUUID();
+    private java.nio.file.Path journalDirectory;
     private FileTransactionJournal journal;
     private ManufacturedRegistry metadata;
     private AtomicConstructionCoordinator coordinator;
+    private volatile PendingHostRouter pendingRouter;
     private volatile boolean busy = true, ready, publishing;
     private volatile String failure = "", exclusionFailure = "";
     private boolean bootstrapping = true;
@@ -64,7 +70,8 @@ public final class ConstructionService {
     private ConstructionService(MinecraftServer server) {
         this.server = server;
         try {
-            journal = FileTransactionJournal.open(server.getWorldPath(LevelResource.ROOT).resolve("blockreality/construction"));
+            journalDirectory = server.getWorldPath(LevelResource.ROOT).resolve("blockreality/construction");
+            journal = FileTransactionJournal.open(journalDirectory);
             metadata = ManufacturedRegistry.load(journal);
             coordinator = new AtomicConstructionCoordinator(journal);
         } catch (Exception problem) { fail(problem); busy = false; }
@@ -98,11 +105,25 @@ public final class ConstructionService {
             checkThread(); busy = true;
             Optional<UUID> pending = journal.pending();
             Entry entry = pending.isPresent() ? journal.verify(pending.get()).orElseThrow(() -> new IOException("Prepared entry disappeared")) : null;
-            Host host = new Host(entry,true);
+            AtomicConstructionCoordinator.Host host = pendingRouter == null ? null : pendingRouter.route(entry);
+            if (host == null) host = new Host(entry,true);
             coordinator.recover(host); ready = true;
         } catch (Exception problem) { fail(problem); }
         finally { bootstrapping = false; busy = false; ownedLevel = null; ownedCells = Set.of(); drainSnapshots(); }
     }
+
+    /** The service instance bound to this server, or null before ServerAboutToStart. */
+    public static ConstructionService of(MinecraftServer server) { return SERVERS.get(server); }
+    public FileTransactionJournal journal() { return journal; }
+    public java.nio.file.Path journalDirectory() { return journalDirectory; }
+    public AtomicConstructionCoordinator coordinator() { return coordinator; }
+    public ManufacturedRegistry metadata() { return metadata; }
+    public UUID session() { return session; }
+    /** Installed once by the finite runtime before recovery; null routing falls back to construction. */
+    public void setPendingRouter(PendingHostRouter router) { this.pendingRouter = router; }
+    public void assertServerThread() { checkThread(); }
+    /** Instance form of {@link #available(MinecraftServer)} for the finite entry guard. */
+    public boolean availableInstance() { return ready && !busy && failure.isEmpty(); }
 
     public static boolean busy(MinecraftServer server) {
         ConstructionService service = SERVERS.get(server); return service == null || service.busy;

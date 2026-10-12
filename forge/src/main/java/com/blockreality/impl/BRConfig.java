@@ -26,6 +26,7 @@ public final class BRConfig {
     public final ForgeConfigSpec.IntValue minTicksBetweenSolves;
     public final ForgeConfigSpec.IntValue requestTimeoutMs;
     public final ForgeConfigSpec.DoubleValue demoLoadNewtons;
+    public final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> finiteTestDimensions;
 
     private BRConfig(ForgeConfigSpec.Builder b) {
         b.comment("Block Reality — structural analysis").push("engine");
@@ -61,6 +62,13 @@ public final class BRConfig {
                 .comment("Test load applied by sneak-right-clicking a structural block, in newtons.",
                         "A demo affordance; it disappears once real loads exist.")
                 .defineInRange("testLoadNewtons", 20_000.0, 1.0, 1.0e9);
+
+        b.pop().push("finite");
+
+        finiteTestDimensions = b
+                .comment("Dimensions admitted as finite test domains by adoptDomain.",
+                        "Empty means no dimension may be adopted; survival worlds stay unadmitted.")
+                .defineList("testDimensions", java.util.List.of(), o -> o instanceof String);
 
         b.pop();
     }

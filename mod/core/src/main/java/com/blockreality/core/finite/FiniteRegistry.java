@@ -620,6 +620,12 @@ public final class FiniteRegistry {
         return Optional.ofNullable(domains.get(dimensionHash(dimension)));
     }
 
+    /** All committed domains — the fold's complete domain set for startup re-sync. */
+    public synchronized List<FiniteDomain> domains() {
+        healthy();
+        return List.copyOf(domains.values());
+    }
+
     public synchronized Optional<ArtifactBinding> binding(UUID artifactNamespace, long ownerId) {
         healthy();
         FiniteDomainId.nonzero(artifactNamespace);
