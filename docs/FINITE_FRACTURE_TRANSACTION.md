@@ -61,60 +61,98 @@ loads(144B)、rules(40B)、shellLaws(56B)、shellLayers(16B)——長度恰為�
    corotRetiredPoints=120、corotRetiredShellProfiles=88、
    corotRetiredShellLayers=16、corotRetiredTensorPoints=472）；offset+bytes
    不得溢出 payload；總長恰等於 payload。
-3. 物理群：fractureCells 恰為 `nCells=nOwners`；每格 sourceKey 必為該 cell 索引，
-   原 40B 位元組必須等於 committed source 的 canonical block image
-   （每個 cell 各檢一次）；`group∈{0,1}`、`element∈{member,shell}`、
-   `unrepresented∈{0,1}`、保留位元組為零、八個慣性/品質 f64 有限、
-   `mass>0`、質心有限、慣性對角非負。`physicalTotals` 恰一筆：十個 f64 有限、
-   品質非負、對角慣性非負。fragments `element∈{0,1}`、其父 cell 索引在界內
-   且該 cell 恰有 `group==1`；parents 遞增、恰覆蓋 group==1 且無 fragment 的
-   cell；`fractureCells.count == removedCells + retainedCells`。
-4. 事件群：events `start<=end`、cellFirst/cellCount 鏈結且完全覆蓋
-   fractureEventCells、被覆蓋 cell 皆 `group==1` 且不重複；mechanism 恰一筆，
-   `remainingCellCount` 有限且 ∈[0, remainingBlocks]，軸/向量有限，保留位零。
-5. 判定群（鏡像 fracture_judgement + phases 鏈）：`nDecisions == nEvents +
-   (pending!=-1 ? 1 : 0)`；pending==-1 或恰等於最後一筆判定索引；
-   `nDecisionCells == nEventCells + (pending!=-1 ? cLast : 0)`；前 nEvents 筆
-   判定的 cell 窗口依序等於各事件的 cell 窗口且 cell 索引逐 byte 相同；
-   `microStep<steps`、`member` 為解析後構件索引（不作跨步對應宣稱）、
-   `station∈[0,1024]`、`coordinate∈[-1,1]`、`flags≤3`、`mode≤3`、
-   `utilization∈[1,2048]`、fNext/fragments≥0、新增 cell/fragment/節點數非負、
-   事件 reference 為每事件恰一且 ∈[0,events)。`corotFailures` 恰覆蓋剩餘世界
-   成員序：`failure.member==i`；`flags≤7`；`phaseFirst/phaseCount` 鏈在全部
-   判定之後接續且完全覆蓋 corotPhases；每個 phase `microStep<steps`、
-   `constituent`、`flags≤3`、`mode≤3`、`station∈[0,1024]`、fNext/fragments≥0、
-   `fiber≥-1`、utilization/loadingIndex/separationEnergy/peakForce/
-   crackTipRadius 有限（crackTipRadius≥0）、displacement/rotation/peakStress/
-   stressRange 有限且非負。`corotFractureLoads` 每筆位元組恰等於輸入
-   cellLoads 的對應列（72B 全域負載記錄逐一比對），其 sourceKey 為
-   fractureCells 索引且該 cell `group==key.group`。
+3. 物理群（鏡像 `fracture_wire::receipt`）：`physicalTotals` 恰 3 筆
+   （beforeMass/remainingMass/brokenMass），各 80B，`physical()` 規則＝十個
+   f64 全有限、mass≥0、inertia 對角（xx,yy,zz）非負；`fractureCells` 恰
+   `nCells=nOwners`，序對應 structural（role∈member/panel/monolith）的
+   canonical 格序；每格 40B `source` 位元組逐 byte 等於 committed source 的
+   canonical block image、`artifact` 等於 committed owner、`panelNormal` 於
+   panel 材料 ∈[0,2]、其餘==-1、`reserved==0`、`flags∈{0,1}` 且
+   `flags&1 ⇒ group==0`（unrepresented 永不斷裂）、`group ≤ nFragments+1`、
+   cell 的 `physical()` 同規則；`nFragments≤nCells`、`nMechanismCells≤nCells`、
+   `steps ≤ budget+1`（native 以 request.budget+1 為上限）。
+   fragments：`reserved==0`、`flags≤7`、`physical()` 同規則、`parentFirst`
+   遞增鏈結且每 fragment 至少一個 parent；`fractureParents` 為各 fragment 的
+   排序唯一 artifact id 串接、恰好完全覆蓋；`group>=2` 的 cell 歸入
+   `parents[group-2]`，各 fragment 的首格按 (x,y,z) 嚴格遞增。
+   `remainingBlocks` header 欄位恰等於 before 格數減去 `group!=0` 的 cell 數
+   （非 structural 格永遠留存）。
+4. 事件群：events `cellFirst` 嚴格鏈結、`cellCount≠0`、完全覆蓋
+   fractureEventCells；每個 eventCell 索引 <nCells、該 cell `group==1` 且
+   不重複，全部 `group==1` cell 恰被事件覆蓋一次；event `utilization` 有限
+   且 ≥0、`face≤5`、`reserved[7]` 全零。fractureMechanism 每個 (x,y,z)
+   必須是 committed owners 中存在的格座標。
+5. 判定群（鏡像 `corot_wire::fracture` 判定段）：
+   `nEvents ≤ budget`；`nDecisions == nEvents + (pending!=-1 ? 1 : 0)`；
+   `pending==-1` 或恰 `== nEvents`（最後一筆判定索引）；
+   `nDecisionCells` 由判定 cellFirst/cellCount 鏈結完全覆蓋；
+   每筆判定 `microStep==i`（序號即索引）、`member≥0`、`station≥0`、
+   `coordinate∈[0,1]`、`utilization` 有限且 `≥1`、`cellCount≠0`；
+   `i<nEvents` 時其 cell 窗口必須與事件 i 的窗口等長且逐 cell 相同、
+   `utilization==event.utilization`、該批 cell `group==1`；
+   `i==nEvents`（pending 筆）時其 cell `group==0`；
+   `phaseFirst` 嚴格鏈結。`corotFailures` 恰 `==remaining.nMembers` 筆且
+   `failure.member==i` 依序覆蓋；`station≥-1`、`flags≤7`、`reserved==0`、
+   `coordinate∈[0,1]`、`utilization≥0`，`(flags&4)⇒(flags&1)&&station≥0
+   &&utilization≥1`；failure 的 `phaseFirst` 鏈接續在全部判定之後且完全覆蓋
+   `corotPhases`。phase 記錄為 `bsi_corot_phase_failure`（88B）：
+   `constituent`（u32）、`flags≤3`、`mode≤3`、`station≥0`、`fiber≥-1`、
+   `coordinate∈[0,1]`、`value≥0`、`limit≥0`、`utilization≥0`、
+   `failedArea≥0`、`totalArea>0`、`failedArea≤totalArea`、`fraction∈[0,1]`、
+   `requiredFraction∈(0,1]`、`(flags&2)⇒(flags&1)`、隱含對齊位元組全零。
+   `corotFractureLoads` 恰為 `nCellLoads` 筆、依序與輸入 `bsi_load`(64B)
+   逐 byte 相同，`cell` 為 fractureCells 索引、`group==cells[cell].group`、
+   且 `input` 的 (x,y,z) 恰為該 cell 的 sourceKey。
+   `corotFlags` bit1（reusedInitial）成立僅當請求攜 `initialAnalysis`；
+   本單元永不發送，故該位恆為零——置位即違約。
 6. 剩餘分析群：鏡像 `corot_wire::analysis`（與 `BsiCorot.AnalysisView` 同一套檢
    查），但世界戳記為 after stamp、`corotSources` 必須逐 byte 等於由 §1.3 推
    得的剩餘世界 canonical block image、每列 artifact>0 且仍持格、disposition=0；
    `corotFailures` 的 member 序與剩餘成員序一致（§5 條）。
-7. 封存群（鏡像 archiveValid）：每筆 archive `flags≤7`；bit0 時 before/after
-   同 domain 且 `before.revision<=after.revision`；`after.domain` 非零、
-   `after.revision>=0`、`artifactNamespace==命名空間`；`beforeGeneration/
-   afterGeneration` u64；`memberFirst/memberCount`、`shellFirst/shellCount`、
-   `cellFirst/cellCount`、`profileFirst/profileCount`、
-   `shellProfileFirst/shellProfileCount`（無退役殼材視圖時必為零）、
-   `removedFirst/removedCount/installedFirst/installedCount` 全部依序鏈結且
-   完全覆蓋對應段，無重疊無缺漏。retiredMembers 每列 `mechanics` 為合法
-   member 記錄（`available∈{0,4,6,7}`、長度>0、有限向量/慣性/能量、
-   release 旗標≤3；available 時 nodes/材料/section/profile 範圍檢查與
-   referenceNodes/orientation/frame 單位性），`member>=0`（原索引）；
-   retiredShells 同理（nodes 四元、厚度>0、幾何面積>0）；retiredCells 為
-   owner 記錄（x,y,z,artifact>0）；退役材質視圖逐 profile/fiber/station/
-   point 鏡像 materialValid；退役殼材視圖鏡像 tensorMaterial；
-   `retiredCells[i].artifact` 的歸屬由 archiveOwners 的 removed/installed
-   各列 `artifact>0` 承擔。`corotFailures` 見 §3.5。
-8. `unrepresented`：任一 cell `unrepresented==1` 當且僅當 header
-   `corotFlags` bit1 成立（`BSI_COROT_FRACTURE_UNREPRESENTED`）；
-   `corotFlags` bit3（`BSI_COROT_FRACTURE_SHELL_MATERIAL_UNAVAILABLE`）成立時
-   永不合格。`end`：0=限內完成、1=不合格、2=budget 用盡；物理 `flags`
-   bit0=budget 耗盡、bit1=機構回滾。承諾合格條件凍結為
-   `end==0 && pending==-1 && flags==0 && (corotFlags&(1|8))==0`；
-   其餘情況回傳具名未完成狀態、不產出 after 物件、不寫日誌意圖。
+7. 封存群（逐行鏡像 `corot_wire::archiveValid`）：`corotArchives`（592B
+   `bsi_corot_archive`）：`flags≤7`（hasBefore=1、sourcesEquilibrated=2、
+   completeMechanicalFields=4）、`reserved==0`、`artifactNamespace` 等於
+   回應命名空間、`after.domain` 非零、`after.revision≥0`；`flags&1` 時
+   `before.domain==after.domain && before.revision<=after.revision`。
+   封存**不**綁定本交易的 before/after stamp（僅自相一致＋命名空間）。
+   `memberFirst/memberCount` 在 `corotRetiredMembers` 上依序鏈結且完全
+   覆蓋；`shellFirst/…` 同理覆蓋 `corotRetiredShells`；`removedFirst/
+   removedCount` 與緊隨的 `installedFirst/installedCount` 在
+   `corotArchiveOwners` 上串接（`installedFirst == 累計 owners +
+   removedCount`）並完全覆蓋；`energy[8]` 全部有限且 ≥0；五個
+   `bsi_physical_properties`（before/retained/after/removed/installed
+   Mass）各自有限、mass≥0、慣性對角非負。
+   retired member（1248B）：`archive==歸檔索引`、`member≥0`、`island≥0`、
+   `reserved==0`、`cellFirst/cellCount` 依序鏈結且完全覆蓋
+   `corotRetiredCells`（member 先、shell 後）、`mechanics` 經
+   memberValid（`available≤7`、`active≤1`、`length/storedEnergy≥0`、
+   frame+localDisplacement+localAction+action+external 全有限、
+   `available&1 ⇒ length>0 && rotation(frame)`）、referenceMaterial[4]/
+   referenceSection[10]/referenceVector[3] 有限；每一端（2×）：
+   referenceNodes/position 有限、orientation 為旋轉四元數，
+   `releases[end].available!=0 ⇒ jointValid`（available==0 的 release
+   欄位內容不檢查）。`profile!=-1 ⇒ profile<nRetiredProfiles`、未被
+   其他 member 指名、且 `retiredMaterial.profiles[profile].member ==
+   此 member 的原索引`；全部 retiredMaterial profiles 必被各 member
+   指名恰好一次。retired shell（1624B）同型（`archive`、`shell≥0`、
+   `island≥0`、`reserved==0`、cell 鏈、shellValid、referenceMaterial[4]
+   有限、四端 referenceNodes/position 有限且 orientation 為旋轉）。
+   `corotRetiredCells`/`corotArchiveOwners` 為 20B owner 記錄，各列
+   `artifact>0`。retired 材質視圖（`corotRetiredProfiles/Fibers/
+   Stations/Points`，恆輸出、可全空）逐列鏡像 `materialValid`；
+   退役殼材視圖（`corotRetiredShellProfiles/Layers/TensorPoints`）
+   存在時鏡像 `tensorMaterial`（profile.shell 為 retired shell 索引、
+   唯一、available∈{0,6,7}、layer 鏈/point 鏈完全覆蓋、point 數
+   `==available?4*layerCount:0`、層權重總合=1/一階矩=0/二階矩=1/12、
+   逐點張量守門），整組存在或整組缺席；`corotFlags&8` 成立時
+   Java 不額外要求該群缺席（native 僅以視圖存在與否編碼，不交叉旗標）。
+   `corotFailures` 見 §3.5。
+8. `corotFlags` bit2（unrepresented）成立當且僅當任一 physical cell
+   `flags&1`；該旗標為資訊性，不影響承諾資格。`end`：0=限內完成、1=不合格、
+   2=budget 用盡；物理 `flags` bit0=budget 耗盡、bit1=機構回滾。
+   承諾合格條件凍結為 `end==0 && pending==-1 && flags==0
+   && (corotFlags&8)==0 && fullyConverged`；其餘情況回傳具名未完成狀態、
+   不產出 after 物件、不寫日誌意圖。
 
 ## §4 Session 與私有 staging
 
