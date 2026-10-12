@@ -287,4 +287,92 @@ class FiniteArcWireTest {
         assertFalse(census.reported());
         assertFalse(census.materialPresent());
     }
+
+    // ------------------------------------------------- contract-parity legs (B1–B3)
+
+    private static BsiCorot.ArcResult richCheck(String header, byte[] payload,
+                                                BsiFracture.Token previous) {
+        return BsiCorot.checkArc(respond(header, payload), "f4", REV, DOM, REV, NS,
+                richWorld(), arcOptions(), previous);
+    }
+
+    private static String richReply(BsiFracture.Token token) {
+        return arcReply("f4", REV, DOM, NS, GENERATION, token, 1.25, 0.5, 1e-12, richDirectory());
+    }
+
+    private static byte[] richMutateInt(String section, int relative, int value) {
+        var p = richPayload(DOM, REV);
+        ByteBuffer.wrap(p).order(ByteOrder.LITTLE_ENDIAN).putInt(richOffset(section) + relative, value);
+        return p;
+    }
+
+    private static byte[] richMutateDouble(String section, int relative, double value) {
+        var p = richPayload(DOM, REV);
+        ByteBuffer.wrap(p).order(ByteOrder.LITTLE_ENDIAN).putDouble(richOffset(section) + relative, value);
+        return p;
+    }
+
+    @Test void richReplyValidatesMultiBlockMemberJointsAndShellTail() {
+        // The rich image is deliberately legal everywhere the old checks were wrong:
+        // a member spanning two same-artifact source blocks, a kind≥2 joint with a
+        // non-unit orientation, and a first shell layer exactly at -0.5.
+        var result = richCheck(richReply(TOKEN_B), richPayload(DOM, REV), TOKEN_A);
+        assertEquals(TOKEN_B, result.token());
+        var census = result.availability();
+        assertEquals(2, census.memberProfiles());
+        assertEquals(2, census.memberMaterial());
+        assertEquals(1, census.shellProfiles());
+        assertEquals(1, census.shellMaterial());
+    }
+
+    @Test void jointRotationFollowsKind() {
+        String header = richReply(TOKEN_B);
+        // B1 fail-open direction: an available kind≤1 joint with a non-unit quaternion
+        // must refuse — the old check only looked at kind>1.
+        assertThrows(IllegalArgumentException.class,
+                () -> richCheck(header, richMutateDouble("corotJoints", 48, 2.0), TOKEN_A));
+        assertThrows(IllegalArgumentException.class,
+                () -> richCheck(header,
+                        richMutateDouble("corotJoints", BsiCorot.JOINT_BYTES + 80, 2.0), TOKEN_A));
+        assertThrows(IllegalArgumentException.class,
+                () -> richCheck(header, richMutateDouble("corotJoints", 48, Double.NaN), TOKEN_A));
+        // B1 fail-closed direction: the canonical kind 2 joint carries a non-unit finite
+        // orientation and is legal; flipping it to a strict kind makes those same bytes
+        // refuse — the old check did exactly this for every kind≥2 joint.
+        assertThrows(IllegalArgumentException.class,
+                () -> richCheck(header, richMutateInt("corotJoints", 2 * BsiCorot.JOINT_BYTES, 1), TOKEN_A));
+    }
+
+    @Test void artifactMembershipCountsDistinctElements() {
+        String header = richReply(TOKEN_B);
+        // Positive leg is the canonical reply itself (member 0 owns two same-artifact
+        // source blocks but is listed once); the per-row counter refused it.
+        assertDoesNotThrow(() -> richCheck(header, richPayload(DOM, REV), TOKEN_A));
+        // A duplicated member row violates strict increase.
+        assertThrows(IllegalArgumentException.class,
+                () -> richCheck(header, richMutateInt("corotArtifactMembers", 4, 0), TOKEN_A));
+        // A member the artifact provably owns but the table omits is refused: artifact 1
+        // expects {0,1}, shrinking memberCount to 1 drops member 1.
+        assertThrows(IllegalArgumentException.class,
+                () -> richCheck(header, richMutateInt("corotArtifacts", 12, 1), TOKEN_A));
+        // A member index beyond the table is refused outright.
+        assertThrows(IllegalArgumentException.class,
+                () -> richCheck(header, richMutateInt("corotArtifactMembers", 4, 5), TOKEN_A));
+    }
+
+    @Test void shellLayersAdmitTheGaussLobattoEndpoint() {
+        String header = richReply(TOKEN_B);
+        // Positive leg: first layer exactly -0.5 is legal (contract previous=-1, closed
+        // bound); the old open sentinel refused it.
+        assertDoesNotThrow(() -> richCheck(header, richPayload(DOM, REV), TOKEN_A));
+        // Below the closed bound, above it, and a non-increasing order all refuse.
+        assertThrows(IllegalArgumentException.class,
+                () -> richCheck(header, richMutateDouble("corotShellLayers", 0, -0.6), TOKEN_A));
+        assertThrows(IllegalArgumentException.class,
+                () -> richCheck(header,
+                        richMutateDouble("corotShellLayers", BsiCorot.SHELL_LAYER_BYTES, -0.5), TOKEN_A));
+        assertThrows(IllegalArgumentException.class,
+                () -> richCheck(header,
+                        richMutateDouble("corotShellLayers", 2 * BsiCorot.SHELL_LAYER_BYTES, 0.6), TOKEN_A));
+    }
 }

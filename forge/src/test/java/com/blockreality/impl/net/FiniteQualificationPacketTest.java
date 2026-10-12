@@ -106,6 +106,21 @@ class FiniteQualificationPacketTest {
         assertTrue(good.valid());
     }
 
+    @Test void retainedMayExceedMaterial() {
+        // material (&4) and retained (&2 without &4) are disjoint subsets of the profile
+        // rows — retained > material is a legitimate census, bounded by their union.
+        var p = FiniteQualificationPacket.of(DIM, 3, 1, true, false, 0, List.of(),
+                true, 4, 1, 3, 2, 0, 2, false, 0, 0);
+        assertTrue(p.valid(), p.invalidReason());
+        var q = decode(bytes(p));
+        assertTrue(q.valid(), q.invalidReason());
+        assertEquals(3, q.memberRetained());
+        assertEquals(2, q.shellRetained());
+        // The union may not exceed the profile count, though.
+        assertFalse(FiniteQualificationPacket.of(DIM, 3, 1, true, false, 0, List.of(),
+                true, 4, 2, 3, 2, 0, 0, false, 0, 0).valid());
+    }
+
     @Test void emptyIslandTableIsAValidNotAssessedSignal() {
         var p = FiniteQualificationPacket.of(DIM, 0, 0, false, false, 0, List.of(),
                 false, 0, 0, 0, 0, 0, 0, false, 0, 0);
