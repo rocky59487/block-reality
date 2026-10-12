@@ -28,13 +28,16 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -348,6 +351,49 @@ public final class FiniteRuntime implements AutoCloseable {
             plans.add(Operation.BindingPlan.manufactured(id, piece.declaration(), piece.cells()));
         }
         return List.copyOf(plans);
+    }
+
+    /**
+     * Enumerate binding plans for every unbound, non-retired manufactured piece committed in
+     * this domain's dimension (finite bootstrap). Deterministic order: birth order, then id,
+     * so owner minting is replay-stable. A piece without a declared wire axis can never enter
+     * a finite domain — the whole enumeration refuses rather than silently skipping it.
+     */
+    public @Nonnull List<Operation.BindingPlan> unboundPlans(FiniteDomainId domain) {
+        Objects.requireNonNull(domain);
+        var bound = new HashSet<UUID>();
+        for (ArtifactBinding binding : registry.activeBindings(domain.artifactNamespace()))
+            if (binding.pieceId() != null) bound.add(binding.pieceId());
+        var pieces = new TreeMap<UUID, ManufacturedPiece>();
+        for (BlockKey cell : metadata.ownedCells(domain.dimension())) {
+            UUID owner = metadata.owner(domain.dimension(), cell).orElseThrow(
+                    () -> new IllegalStateException("Manufactured coverage names no owner " + cell));
+            var piece = metadata.piece(owner).orElseThrow(
+                    () -> new IllegalStateException("Manufactured owner is not a piece " + owner));
+            if (!piece.dimension().equals(domain.dimension())) continue;
+            pieces.putIfAbsent(owner, piece);
+        }
+        var sorted = new ArrayList<>(pieces.values());
+        sorted.sort(Comparator.comparingLong(ManufacturedPiece::birthOrder)
+                .thenComparing(piece -> piece.id().toString()));
+        var plans = new ArrayList<Operation.BindingPlan>();
+        for (ManufacturedPiece piece : sorted) {
+            if (bound.contains(piece.id()) || piece.status() == ManufacturedPiece.Status.RETIRED) continue;
+            if (piece.declaration().axis() < 0)
+                throw new IllegalArgumentException("Piece has no declared wire axis " + piece.id());
+            plans.add(Operation.BindingPlan.manufactured(piece.id(), piece.declaration(), piece.cells()));
+        }
+        return List.copyOf(plans);
+    }
+
+    /**
+     * Mark a domain waiting on world observation — the same record {@link #commitSource}
+     * writes for an incomplete observation, without requiring a source proposal.
+     */
+    public void markWaiting(FiniteDomainId domain, int missingChunks) {
+        Objects.requireNonNull(domain);
+        if (missingChunks < 1) throw new IllegalArgumentException("waiting needs a positive count");
+        observations.put(domain.dimension(), Observation.WAITING_CHUNKS);
     }
 
     /** RETIRE: permanently drop the named owner ids; minted ids are never reused. */
