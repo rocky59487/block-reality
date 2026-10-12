@@ -1,0 +1,221 @@
+﻿2026-09-15T05:24:43.8215701Z Current runner version: '2.337.0'
+2026-09-15T05:24:43.8240678Z ##[group]Runner Image Provisioner
+2026-09-15T05:24:43.8241583Z Hosted Compute Agent
+2026-09-15T05:24:43.8242216Z Version: 20260828.587
+2026-09-15T05:24:43.8242970Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+2026-09-15T05:24:43.8243729Z Build Date: 2026-08-28T16:44:25Z
+2026-09-15T05:24:43.8244505Z Worker ID: {c27cb4bf-2e84-41ca-90e7-38f0b19ba417}
+2026-09-15T05:24:43.8245545Z Azure Region: westus
+2026-09-15T05:24:43.8246134Z ##[endgroup]
+2026-09-15T05:24:43.8247892Z ##[group]Operating System
+2026-09-15T05:24:43.8248574Z Ubuntu
+2026-09-15T05:24:43.8249092Z 24.04.5
+2026-09-15T05:24:43.8249678Z LTS
+2026-09-15T05:24:43.8250236Z ##[endgroup]
+2026-09-15T05:24:43.8250852Z ##[group]Runner Image
+2026-09-15T05:24:43.8251523Z Image: ubuntu-24.04
+2026-09-15T05:24:43.8252123Z Version: 20260907.300.1
+2026-09-15T05:24:43.8253384Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260907.300/images/ubuntu/Ubuntu2404-Readme.md
+2026-09-15T05:24:43.8255279Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260907.300
+2026-09-15T05:24:43.8256353Z ##[endgroup]
+2026-09-15T05:24:43.8257479Z ##[group]GITHUB_TOKEN Permissions
+2026-09-15T05:24:43.8259392Z Contents: write
+2026-09-15T05:24:43.8260021Z Metadata: read
+2026-09-15T05:24:43.8261106Z ##[endgroup]
+2026-09-15T05:24:43.8263223Z Secret source: Actions
+2026-09-15T05:24:43.8264302Z Cache mode: write
+2026-09-15T05:24:43.8265531Z Prepare workflow directory
+2026-09-15T05:24:43.8608602Z Prepare all required actions
+2026-09-15T05:24:43.8658297Z Getting action download info
+2026-09-15T05:24:44.2164839Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-09-15T05:24:44.4217195Z Complete job name: release
+2026-09-15T05:24:44.5086313Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-15T05:24:44.5095576Z ##[group]Run actions/checkout@v4
+2026-09-15T05:24:44.5096683Z with:
+2026-09-15T05:24:44.5097227Z   repository: rocky59487/block-reality
+2026-09-15T05:24:44.5101108Z   token: ***
+2026-09-15T05:24:44.5101575Z   ssh-strict: true
+2026-09-15T05:24:44.5102028Z   ssh-user: git
+2026-09-15T05:24:44.5102475Z   persist-credentials: true
+2026-09-15T05:24:44.5103007Z   clean: true
+2026-09-15T05:24:44.5103467Z   sparse-checkout-cone-mode: true
+2026-09-15T05:24:44.5104011Z   fetch-depth: 1
+2026-09-15T05:24:44.5104450Z   fetch-tags: false
+2026-09-15T05:24:44.5105181Z   show-progress: true
+2026-09-15T05:24:44.5105661Z   lfs: false
+2026-09-15T05:24:44.5106141Z   submodules: false
+2026-09-15T05:24:44.5106666Z   set-safe-directory: true
+2026-09-15T05:24:44.5107187Z   allow-unsafe-pr-checkout: false
+2026-09-15T05:24:44.5108048Z ##[endgroup]
+2026-09-15T05:24:44.6161794Z Syncing repository: rocky59487/block-reality
+2026-09-15T05:24:44.6164342Z ##[group]Getting Git version info
+2026-09-15T05:24:44.6165880Z Working directory is '/home/runner/work/block-reality/block-reality'
+2026-09-15T05:24:44.6167677Z [command]/usr/bin/git version
+2026-09-15T05:24:44.6216891Z git version 2.55.0
+2026-09-15T05:24:44.6238077Z ##[endgroup]
+2026-09-15T05:24:44.6252998Z Temporarily overriding HOME='/home/runner/work/_temp/99fa30e5-9b49-412c-9144-fe38f1f18ca0' before making global git config changes
+2026-09-15T05:24:44.6255608Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-15T05:24:44.6258777Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/block-reality/block-reality
+2026-09-15T05:24:44.6320332Z Deleting the contents of '/home/runner/work/block-reality/block-reality'
+2026-09-15T05:24:44.6325490Z ##[group]Initializing the repository
+2026-09-15T05:24:44.6329508Z [command]/usr/bin/git init /home/runner/work/block-reality/block-reality
+2026-09-15T05:24:44.6438490Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-09-15T05:24:44.6440402Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-09-15T05:24:44.6442327Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-09-15T05:24:44.6444088Z hint: call:
+2026-09-15T05:24:44.6445184Z hint:
+2026-09-15T05:24:44.6446326Z hint: 	git config --global init.defaultBranch <name>
+2026-09-15T05:24:44.6447590Z hint:
+2026-09-15T05:24:44.6448714Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-09-15T05:24:44.6450423Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-09-15T05:24:44.6451957Z hint:
+2026-09-15T05:24:44.6453816Z hint: 	git branch -m <name>
+2026-09-15T05:24:44.6455129Z hint:
+2026-09-15T05:24:44.6456415Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-09-15T05:24:44.6458100Z Initialized empty Git repository in /home/runner/work/block-reality/block-reality/.git/
+2026-09-15T05:24:44.6462085Z [command]/usr/bin/git remote add origin https://github.com/rocky59487/block-reality
+2026-09-15T05:24:44.6500528Z ##[endgroup]
+2026-09-15T05:24:44.6501859Z ##[group]Disabling automatic garbage collection
+2026-09-15T05:24:44.6507180Z [command]/usr/bin/git config --local gc.auto 0
+2026-09-15T05:24:44.6538764Z ##[endgroup]
+2026-09-15T05:24:44.6540139Z ##[group]Setting up auth
+2026-09-15T05:24:44.6546700Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-15T05:24:44.6584221Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-15T05:24:44.6954267Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-09-15T05:24:44.6997886Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-09-15T05:24:44.7252658Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-15T05:24:44.7289940Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-15T05:24:44.7517460Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-09-15T05:24:44.7558361Z ##[endgroup]
+2026-09-15T05:24:44.7559830Z ##[group]Fetching the repository
+2026-09-15T05:24:44.7570144Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +f19b834e9c5fb5cc1ac23c62caddbc4be56268b0:refs/tags/v0.4.0-alpha.1
+2026-09-15T05:24:47.3529297Z From https://github.com/rocky59487/block-reality
+2026-09-15T05:24:47.3531718Z  * [new ref]         f19b834e9c5fb5cc1ac23c62caddbc4be56268b0 -> v0.4.0-alpha.1
+2026-09-15T05:24:47.3562988Z ##[endgroup]
+2026-09-15T05:24:47.3564330Z ##[group]Determining the checkout info
+2026-09-15T05:24:47.3566258Z ##[endgroup]
+2026-09-15T05:24:47.3574485Z [command]/usr/bin/git sparse-checkout disable
+2026-09-15T05:24:47.3630169Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-09-15T05:24:47.3665815Z ##[group]Checking out the ref
+2026-09-15T05:24:47.3669200Z [command]/usr/bin/git checkout --progress --force refs/tags/v0.4.0-alpha.1
+2026-09-15T05:24:47.9710101Z Note: switching to 'refs/tags/v0.4.0-alpha.1'.
+2026-09-15T05:24:47.9711342Z 
+2026-09-15T05:24:47.9711949Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-09-15T05:24:47.9713410Z changes and commit them, and you can discard any commits you make in this
+2026-09-15T05:24:47.9714432Z state without impacting any branches by switching back to a branch.
+2026-09-15T05:24:47.9716745Z 
+2026-09-15T05:24:47.9717092Z If you want to create a new branch to retain commits you create, you may
+2026-09-15T05:24:47.9718081Z do so (now or later) by using -c with the switch command. Example:
+2026-09-15T05:24:47.9718427Z 
+2026-09-15T05:24:47.9718601Z   git switch -c <new-branch-name>
+2026-09-15T05:24:47.9718869Z 
+2026-09-15T05:24:47.9719028Z Or undo this operation with:
+2026-09-15T05:24:47.9719260Z 
+2026-09-15T05:24:47.9719395Z   git switch -
+2026-09-15T05:24:47.9719640Z 
+2026-09-15T05:24:47.9719937Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-09-15T05:24:47.9720383Z 
+2026-09-15T05:24:47.9720752Z HEAD is now at f19b834 Merge alpha mainline: native SDK packaging and transactional construction
+2026-09-15T05:24:47.9752341Z ##[endgroup]
+2026-09-15T05:24:47.9800969Z [command]/usr/bin/git log -1 --format=%H
+2026-09-15T05:24:47.9827845Z f19b834e9c5fb5cc1ac23c62caddbc4be56268b0
+2026-09-15T05:24:48.0074220Z ##[group]Run set -o pipefail
+2026-09-15T05:24:48.0075037Z [36;1mset -o pipefail[0m
+2026-09-15T05:24:48.0075503Z [36;1m# ci.yml now runs on tag pushes too, so it is usually still going when this[0m
+2026-09-15T05:24:48.0076150Z [36;1m# starts. Wait for both required checks to CONCLUDE, then insist they concluded[0m
+2026-09-15T05:24:48.0076747Z [36;1m# green. A timeout is a refusal, not a pass — "we could not tell" and "it was[0m
+2026-09-15T05:24:48.0077236Z [36;1m# fine" must never be the same outcome.[0m
+2026-09-15T05:24:48.0077591Z [36;1mdeadline=$(( $(date +%s) + 1500 ))[0m
+2026-09-15T05:24:48.0077933Z [36;1mwhile :; do[0m
+2026-09-15T05:24:48.0078457Z [36;1m  gh api "repos/rocky59487/block-reality/commits/f19b834e9c5fb5cc1ac23c62caddbc4be56268b0/check-runs" \[0m
+2026-09-15T05:24:48.0079217Z [36;1m    --paginate --jq '.check_runs[] | [.name, (.conclusion // "pending")] | @tsv' > runs.tsv[0m
+2026-09-15T05:24:48.0079699Z [36;1m  pending=0[0m
+2026-09-15T05:24:48.0079994Z [36;1m  fail=0[0m
+2026-09-15T05:24:48.0080323Z [36;1m  for name in "engine acceptance suite vs shipped binary" \[0m
+2026-09-15T05:24:48.0080822Z [36;1m              "Java suites, cross-language against the shipped engine"; do[0m
+2026-09-15T05:24:48.0081340Z [36;1m    got=$(awk -F'\t' -v n="$name" '$1 == n { print $2; exit }' runs.tsv)[0m
+2026-09-15T05:24:48.0081750Z [36;1m    case "${got:-missing}" in[0m
+2026-09-15T05:24:48.0082055Z [36;1m      success) ;;[0m
+2026-09-15T05:24:48.0082350Z [36;1m      pending|missing) pending=1 ;;[0m
+2026-09-15T05:24:48.0082881Z [36;1m      *) echo "::error::'$name' concluded '$got' on f19b834e9c5fb5cc1ac23c62caddbc4be56268b0"; fail=1 ;;[0m
+2026-09-15T05:24:48.0083388Z [36;1m    esac[0m
+2026-09-15T05:24:48.0083624Z [36;1m  done[0m
+2026-09-15T05:24:48.0083867Z [36;1m  [ "$fail" = 1 ] && exit 1[0m
+2026-09-15T05:24:48.0084174Z [36;1m  [ "$pending" = 0 ] && break[0m
+2026-09-15T05:24:48.0084515Z [36;1m  if [ "$(date +%s)" -ge "$deadline" ]; then[0m
+2026-09-15T05:24:48.0085332Z [36;1m    echo "::error::the required checks did not conclude within 25 minutes"[0m
+2026-09-15T05:24:48.0085773Z [36;1m    cat runs.tsv[0m
+2026-09-15T05:24:48.0086044Z [36;1m    exit 1[0m
+2026-09-15T05:24:48.0086295Z [36;1m  fi[0m
+2026-09-15T05:24:48.0086558Z [36;1m  echo "waiting for the suite..."[0m
+2026-09-15T05:24:48.0086881Z [36;1m  sleep 20[0m
+2026-09-15T05:24:48.0087125Z [36;1mdone[0m
+2026-09-15T05:24:48.0087361Z [36;1mcat runs.tsv[0m
+2026-09-15T05:24:48.0128496Z shell: /usr/bin/bash -e {0}
+2026-09-15T05:24:48.0128840Z env:
+2026-09-15T05:24:48.0131654Z   GH_TOKEN: ***
+2026-09-15T05:24:48.0131923Z ##[endgroup]
+2026-09-15T05:24:48.5674556Z waiting for the suite...
+2026-09-15T05:25:09.0364307Z waiting for the suite...
+2026-09-15T05:25:29.4735698Z waiting for the suite...
+2026-09-15T05:25:49.8969431Z waiting for the suite...
+2026-09-15T05:26:10.3391880Z waiting for the suite...
+2026-09-15T05:26:30.7475572Z waiting for the suite...
+2026-09-15T05:26:51.1542034Z waiting for the suite...
+2026-09-15T05:27:11.5327604Z waiting for the suite...
+2026-09-15T05:27:31.9387561Z waiting for the suite...
+2026-09-15T05:27:52.3561000Z BSI contract, host, corpus, and the packaging rules	success
+2026-09-15T05:27:52.3561908Z Java suites, cross-language against the shipped engine	success
+2026-09-15T05:27:52.3562319Z engine acceptance suite vs shipped binary	success
+2026-09-15T05:27:52.3562700Z build the engine library, then the jar that carries it	success
+2026-09-15T05:27:52.3563061Z engine acceptance suite vs shipped binary	success
+2026-09-15T05:27:52.3563449Z build the engine library, then the jar that carries it	success
+2026-09-15T05:27:52.3563852Z BSI contract, host, corpus, and the packaging rules	success
+2026-09-15T05:27:52.3564171Z release	pending
+2026-09-15T05:27:52.3564951Z Java suites, cross-language against the shipped engine	pending
+2026-09-15T05:27:52.3614320Z ##[group]Run git fetch origin Main --no-tags
+2026-09-15T05:27:52.3615068Z [36;1mgit fetch origin Main --no-tags[0m
+2026-09-15T05:27:52.3615415Z [36;1mgit merge-base --is-ancestor HEAD origin/Main[0m
+2026-09-15T05:27:52.3615732Z [36;1mpython3 - <<'PY'[0m
+2026-09-15T05:27:52.3616005Z [36;1mimport json, os, pathlib, subprocess[0m
+2026-09-15T05:27:52.3616364Z [36;1mlock = json.load(open('native-release.json'))[0m
+2026-09-15T05:27:52.3616841Z [36;1massert os.environ['RELEASE_TAG'] == 'v' + lock['modVersion'], 'tag must match mod version'[0m
+2026-09-15T05:27:52.3617408Z [36;1msubprocess.run(['python3', 'scripts/prepare_shipped_engine.py', '--out',[0m
+2026-09-15T05:27:52.3617940Z [36;1m  str(pathlib.Path(os.environ['RUNNER_TEMP']) / 'release-native')], check=True)[0m
+2026-09-15T05:27:52.3618340Z [36;1mPY[0m
+2026-09-15T05:27:52.3618632Z [36;1mgit fetch origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG"[0m
+2026-09-15T05:27:52.3619210Z [36;1mtest "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")" = "$(git rev-parse HEAD)"[0m
+2026-09-15T05:27:52.3657682Z shell: /usr/bin/bash -e {0}
+2026-09-15T05:27:52.3657977Z env:
+2026-09-15T05:27:52.3658173Z   RELEASE_TAG: v0.4.0-alpha.1
+2026-09-15T05:27:52.3658412Z ##[endgroup]
+2026-09-15T05:27:52.7362249Z From https://github.com/rocky59487/block-reality
+2026-09-15T05:27:52.7362955Z  * branch            Main       -> FETCH_HEAD
+2026-09-15T05:27:52.7363504Z  * [new branch]      Main       -> origin/Main
+2026-09-15T05:27:53.1088510Z blockreality-0.4.0-alpha.1.jar: the library shape: windows-x86_64, linux-x86_64, jar == manifest, contract pin agrees, zero executables
+2026-09-15T05:27:53.2506677Z {
+2026-09-15T05:27:53.2507006Z   "classes": 308,
+2026-09-15T05:27:53.2507260Z   "errors": [],
+2026-09-15T05:27:53.2507669Z   "sha256": "e50615244b5f33dfcf0e3a414fb482ed074218daa00a65f7d93db2f75d20abf7"
+2026-09-15T05:27:53.2508145Z }
+2026-09-15T05:27:53.5019699Z SHIPPED-ENGINE PASS /home/runner/work/_temp/release-native/libbsi_tectonic.so
+2026-09-15T05:27:54.0639147Z From https://github.com/rocky59487/block-reality
+2026-09-15T05:27:54.0639663Z  ! [rejected] v0.4.0-alpha.1 -> v0.4.0-alpha.1  (would clobber existing tag)
+2026-09-15T05:27:54.0665783Z ##[error]Process completed with exit code 1.
+2026-09-15T05:27:54.0807196Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-15T05:27:54.0808706Z Post job cleanup.
+2026-09-15T05:27:54.1632558Z [command]/usr/bin/git version
+2026-09-15T05:27:54.1677770Z git version 2.55.0
+2026-09-15T05:27:54.1716269Z Temporarily overriding HOME='/home/runner/work/_temp/e374221d-391b-4936-a400-e3fc6195645d' before making global git config changes
+2026-09-15T05:27:54.1717697Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-15T05:27:54.1722569Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/block-reality/block-reality
+2026-09-15T05:27:54.1762458Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-15T05:27:54.1797331Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-15T05:27:54.2060038Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-09-15T05:27:54.2098629Z http.https://github.com/.extraheader
+2026-09-15T05:27:54.2113395Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-09-15T05:27:54.2154010Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-09-15T05:27:54.2421983Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-15T05:27:54.2461710Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-15T05:27:54.2859534Z Cleaning up orphan processes
+2026-09-15T05:27:54.3143081Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

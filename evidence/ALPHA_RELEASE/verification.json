@@ -65,12 +65,14 @@
     "linux-jar-commands.json": "0a8fb6d4a6f882eb2bc82cc2283fe97a055f9dfe2c6f701e7f0f9bd994a70758",
     "linux-mount-first-failure.log": "deb94f7715bca7fee1327ca69d21801470d8351d0bbd25fc0ab34320b9f506ba",
     "ci-native-first-failure.log": "19c1602e7fc3e71ba54c4253f9a9ef113b137c54b548290b056dc02951a605eb",
-    "linux-fracture-focused.log": "bb17f4c897828e60c6b93bc5285a60b374adf68d490a346298018b4f5838fabc"
+    "linux-fracture-focused.log": "bb17f4c897828e60c6b93bc5285a60b374adf68d490a346298018b4f5838fabc",
+    "release-workflow-first-failure.log": "91318056aee060f0836c37c4eccc46daa6052d19c02e0d201b9cb3376dea5070"
   },
   "native_ci_environment": {
     "OPENBLAS_CORETYPE": "Haswell",
     "OPENBLAS_NUM_THREADS": "4",
     "first_failure": "CI omitted the qualified BLAS profile; 3 byte-comparison failures",
     "linux_focused_replay": "unchanged fracture/transaction tests PASS with qualified environment"
-  }
+  },
+  "release_workflow_fix": "Fetch remote annotated tag into a separate verification ref; workflow_dispatch checks out the requested tag and verifies checks on its actual HEAD. Original release tag retained."
 }
