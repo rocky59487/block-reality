@@ -671,7 +671,10 @@ public final class BsiCorot {
             if (kind == 1 && (index >= members.count() || (end != 0 && end != 1)))
                 throw invalid("corot joint release");
             checkFinite(data, at + 24, 23);               // position..action
-            if (available != 0 && kind > 1) { checkRotation(data, at + 48); checkRotation(data, at + 80); }
+            // bsi_corot_validate.hpp jointValid: unit quaternions are required only when
+            // the joint is available AND kind ∈ {0 node chart, 1 member release}; a
+            // kind ≥ 2 joint carries an arbitrary finite orientation.
+            if (available != 0 && kind <= 1) { checkRotation(data, at + 48); checkRotation(data, at + 80); }
         }
 
         var found = new java.util.HashSet<Pos>();
@@ -709,7 +712,10 @@ public final class BsiCorot {
         var artifacts = sections.get("corotArtifacts");
         var artifactMembers = sections.get("corotArtifactMembers");
         var artifactShells = sections.get("corotArtifactShells");
-        var expected = new java.util.TreeMap<Long, long[]>();
+        // bsi_pdelta_wire.hpp: each element resolves to a DISTINCT set of member/shell
+        // indices per owning artifact — one member spanning several source blocks of the
+        // same artifact is listed once, not once per block.
+        var expected = new java.util.TreeMap<Long, Links>();
         for (int i = 0; i < members.count(); i++) {
             int at = members.offset() + i * MEMBER_BYTES;
             if (data.getInt(at + 36) == 0) continue;
@@ -717,7 +723,7 @@ public final class BsiCorot {
             for (int s = 0; s < count; s++) {
                 int src = data.getInt(sourceIndices.offset() + 4 * (first + s));
                 long a = data.getLong(sources.offset() + src * SOURCE_BYTES + 40);
-                if (a != 0) expected.computeIfAbsent(a, k -> new long[2])[0]++;
+                if (a != 0) expected.computeIfAbsent(a, k -> new Links()).members.add(i);
             }
         }
         for (int i = 0; i < shells.count(); i++) {
@@ -727,7 +733,7 @@ public final class BsiCorot {
             for (int s = 0; s < count; s++) {
                 int src = data.getInt(sourceIndices.offset() + 4 * (first + s));
                 long a = data.getLong(sources.offset() + src * SOURCE_BYTES + 40);
-                if (a != 0) expected.computeIfAbsent(a, k -> new long[2])[1]++;
+                if (a != 0) expected.computeIfAbsent(a, k -> new Links()).shells.add(i);
             }
         }
         if (artifacts.count() != expected.size()) throw invalid("corot artifact set");
@@ -747,8 +753,9 @@ public final class BsiCorot {
                     || sFirst != shellCursor || sFirst + sCount > artifactShells.count())
                 throw invalid("corot artifact range");
             memberCursor = mFirst + mCount; shellCursor = sFirst + sCount;
-            long[] linked = expected.get(artifact);
-            if (linked[0] != mCount || linked[1] != sCount) throw invalid("corot artifact membership");
+            var linked = expected.get(artifact);
+            if (linked.members.size() != mCount || linked.shells.size() != sCount)
+                throw invalid("corot artifact membership");
             int previousMember = -1;
             for (int k = 0; k < mCount; k++) {
                 int member = data.getInt(artifactMembers.offset() + 4 * (mFirst + k));
@@ -893,7 +900,10 @@ public final class BsiCorot {
                         || lCount == 0 || pCount != (available != 0 ? 4 * lCount : 0))
                     throw invalid("corot shell profile range");
                 layerCursor = (int) (lFirst + lCount); tensorCursor = (int) (pFirst + pCount);
-                double previous = -0.5, sumW = 0, sumWP = 0, sumWPP = 0;
+                // bsi_corot_tensor_wire.hpp: the open lower sentinel is -1, so a first
+                // layer exactly at the Gauss–Lobatto endpoint -0.5 is legal; bounds are
+                // the closed interval [-0.5, 0.5] and the order is strictly increasing.
+                double previous = -1.0, sumW = 0, sumWP = 0, sumWPP = 0;
                 for (long k = lFirst; k < lFirst + lCount; k++) {
                     int lat = shellLayers.offset() + (int) k * SHELL_LAYER_BYTES;
                     double position = data.getDouble(lat), weight = data.getDouble(lat + 8);
@@ -937,6 +947,12 @@ public final class BsiCorot {
                 memberRetained, shellProfiles, shellMaterial, shellRetained));
     }
 
+    /** The distinct element-index sets one artifact owns (bsi_pdelta_wire expectedLinks). */
+    private static final class Links {
+        final java.util.Set<Integer> members = new java.util.HashSet<>();
+        final java.util.Set<Integer> shells = new java.util.HashSet<>();
+    }
+
     private static boolean memberLinks(ByteBuffer data, int memberAt, BsiResponse.Section sourceIndices,
                                        BsiResponse.Section sources, long artifact) {
         int first = data.getInt(memberAt + 28), count = data.getInt(memberAt + 32);
@@ -978,7 +994,8 @@ public final class BsiCorot {
     private static void checkRotation(ByteBuffer data, int offset) {
         double w = data.getDouble(offset), x = data.getDouble(offset + 8),
                 y = data.getDouble(offset + 16), z = data.getDouble(offset + 24);
-        if (Math.abs(w * w + x * x + y * y + z * z - 1) > 1e-8) throw invalid("corot rotation");
+        double norm = w * w + x * x + y * y + z * z;
+        if (!Double.isFinite(norm) || Math.abs(norm - 1) > 1e-8) throw invalid("corot rotation");
     }
 
     private static boolean nonnegative(double v) { return Double.isFinite(v) && v >= 0; }

@@ -70,10 +70,12 @@ public record FiniteQualificationPacket(String dimension, long worldRevision, lo
             if (island.reason == null || island.reason.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > MAX_REASON)
                 throw new IllegalArgumentException("invalid island reason");
         }
+        // material (&4) and retained (&2 without &4) are disjoint subsets of the
+        // profile rows: retained > material is legal, the bound is the union.
         if (p.memberProfiles < 0 || p.memberMaterial < 0 || p.memberMaterial > p.memberProfiles
-                || p.memberRetained < 0 || p.memberRetained > p.memberMaterial
+                || p.memberRetained < 0 || p.memberMaterial + p.memberRetained > p.memberProfiles
                 || p.shellProfiles < 0 || p.shellMaterial < 0 || p.shellMaterial > p.shellProfiles
-                || p.shellRetained < 0 || p.shellRetained > p.shellMaterial)
+                || p.shellRetained < 0 || p.shellMaterial + p.shellRetained > p.shellProfiles)
             throw new IllegalArgumentException("invalid availability census");
         if (p.arcReported && (!(p.arcRadius > 0) || !Double.isFinite(p.arcRadius)
                 || !Double.isFinite(p.arcResidual) || p.arcResidual < 0 || p.arcResidual > 1e-10))

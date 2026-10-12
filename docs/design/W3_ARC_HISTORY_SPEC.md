@@ -134,6 +134,13 @@ corotStations, corotPoints
   即使未收斂）、&4 MATERIAL（材料歷史可用）。**不可用記錄的力學/歷史欄位必須為 0，
   不得把「不可用」當成「零力=安全」**。
 
+## Errata 2026-10-13
+
+- 上文 corotJoints 條原寫「available 時 kind>1 要單位四元數」，方向錯誤。權威實作
+  （`contract/host/bsi_corot_validate.hpp` `jointValid`）的語意是：available 且
+  **kind≤1**（0=node chart、1=member release）才要求 orientation/relativeOrientation
+  為單位四元數；kind≥2 只要求各欄位有限。原句一字不改保留於上，本段為有效規格。
+
 ## 4. Session / Preview / History
 
 ### 4.1 權威 session（`FiniteSession` 擴充）
