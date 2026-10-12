@@ -53,3 +53,85 @@ files. Retain at most1024 such files and1GiB total; refuse writes that cannot re
 their full temporary bytes. Reopen scans and validates retained temporary files;
 unknown temporary sizes/types refuse, never auto-delete evidence. Exercise reduced
 package-local quotas against real files; production callers cannot raise these caps.
+
+## Nested live baseline preservation — frozen B2 criteria (2026-10-10)
+
+Construction must fail closed before checkpoint/PREPARED when the live serializer
+cannot represent a saved field. Recursively require every saved compound key and
+the same tag type in the live document, including ForgeData/ForgeCaps and every
+compound/list element. Scalar values (Health, coordinates, Count, etc.) may change;
+byte/int/long array lengths/values and pure scalar-list lengths/values may change,
+but nonempty scalar lists must retain their element type. Empty lists contain no
+old element shape to preserve. New live keys/elements are not saved extensions.
+
+Nonempty compound/nested-list containers require equal lengths and per-index
+recursive shape correspondence; do not search/reorder/match elements by guessed
+identity. If this correspondence loses a key/type, truncates, clears or changes
+container shape, refuse. Normal game saves, not this construction adapter, own
+legitimate schema removal/reordering. Never merge saved-only data into live state,
+automatically save the player, or invent schema-migration authority to allow it.
+Validate both complete documents under CanonicalNbt's existing 64-depth/262144-tag/
+16MiB bounds before recursive comparison, including newly added live subtrees.
+
+Required focused evidence: saved-only nested ForgeData/ForgeCaps keys, later
+compound-list elements, nested lists, changed tag/container types and ambiguous
+container lengths refuse with IOException. Changed scalar/array/scalar-list values
+and Count-only inventory updates remain valid; all existing exact NBT/item rules
+remain unchanged. In transformed Forge, participant construction/checkpoint must
+refuse the saved-only extension with original player.dat raw bytes, journal keys
+and live inventory unchanged, while normal numeric/Count updates checkpoint.
+Exercise depth/size/tag bounds without StackOverflowError and catch a compiled
+negative that omits the recursive check. Preserve the original audit failures.
+
+## Game-owned player file boundary — dated replacement criteria (2026-10-10)
+
+The preceding B2 criteria remain historical: comparing a *stale* player.dat to
+the current live player is not a legitimate test of representation. On facbafb,
+the transformed Forge server rejected three ordinary operations: vanilla pickup
+into a new Inventory slot, consumption of the last stack, and expiry of the last
+ActiveEffects entry. These were expected construction checkpoint successes, but
+each raised IOException. Preserve the first-failure log; facbafb is not accepted.
+
+Instead, observe actual Forge PlayerEvent.LoadFromFile/SaveToFile at LOWEST
+priority, after normal mod handlers, on the owning server thread. At that
+*same boundary*, compare the on-disk complete document with saveWithoutId via
+the bounded recursive B2 structural check. A mismatch marks this actor as
+unrepresented, blocking construction until a subsequent *consistent* boundary.
+Record the raw player.dat bytes' SHA-256 as a game-owned, in-memory digest per
+actor; clear it on logout/server stop. An unreadable/missing file or failed
+serialization must not be treated as consistent. No implicit game-save, saved
+extension merge, schema migration, or exemption is allowed: the exemption
+table is empty; only an unavoidable vanilla difference reproduced on a real
+server may be appended here explicitly before changing this criterion.
+
+Before a live participant checkpoint/PREPARED, if the file exists, require a
+digest record, that the current raw file digest equals the record, and that
+the actor is not marked unrepresented. Do not compare stale-disk structure to
+current live structure. Preserve the saved inventory's existing exact 41-slot
+decode validation. Participant writes (checkpoint/flush/rollback) update the
+in-memory digest only after durable success; failed/uncertain writes do not
+authorize a new digest. Offline recovery preserves the existing exact-file
+rules and must not create a live actor. Missing digest fails closed; subsequent
+valid Load/Save boundary may re-establish trust.
+
+Required transformed-server evidence: on facbafb all three ordinary operations
+first fail as above; after this change pickup, last-stack consumption and potion
+expiry can checkpoint/commit, and two consecutive constructions succeed as
+checkpoint/flush refreshes the digest. External ForgeData.audit_saved_only
+injected after a boundary refuses with raw file bytes, inventory, journal and
+world unchanged. A test mod adding an unrepresented field during SaveToFile
+marks actor unrepresented and refuses construction. Logout/login/server restart
+must rebuild a valid digest only at the real file boundary. Prove no digest
+record and mismatched digest refuse via focused unit tests; a compiled negative
+that removes the digest comparison must fail a behavioral assertion. Retain all
+original B2 nested-shape, NBT and exact inventory tests as pure structural
+oracles, not as a stale checkpoint policy; no SKIP is a PASS.
+
+Boundary serialization is not placement permission: an ordinary game save may
+occur while a container/cursor stack is open. The boundary still witnesses the
+complete saved player document; construction retains its closed-menu/cursor
+requirement. Live participant persistence rechecks the raw digest at its barrier,
+including canonical-NBT-equal raw rewrites after participant capture. A failed
+write is acknowledged only after the existing uncertain-write recovery verifies
+and forces a known complete document; offline writes never create game-owned
+trust or clear an unrepresented marker.
