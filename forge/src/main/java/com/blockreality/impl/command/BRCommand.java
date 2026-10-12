@@ -286,6 +286,14 @@ public final class BRCommand {
                 return "part of a structure nothing is holding up (not a modelling fault)";
             case FULLY_SUPPORTED:
                 return "fully supported: in the model, but with no freedom to respond";
+            case NON_STRUCTURAL:
+                return "not a structural element (decoration, terrain fill)";
+            case BULK_UNSUPPORTED:
+                return "bulk block with no support beneath it";
+            case BULK_GROUND:
+                return "bulk block resting on the ground";
+            case REFUSED:
+                return "extraction refused: isolated cell or invalid geometry";
             default:
                 return "reason \"" + g.label() + "\" is not one this build knows";
         }
