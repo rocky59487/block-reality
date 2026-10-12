@@ -16,6 +16,25 @@ public final class GameNativeLoader {
 
     public static NativeGameRuntime.Session open(String configured, Path root, int threads, Consumer<String> log,
                                                 PipelineProfile profile) {
+        InProcessEngine engine = openEngine(configured, root, threads, log, profile);
+        try {
+            return new NativeGameRuntime.Session() {
+                @Override public AnalysisResult analyze(GameWorldSnapshot world, Integer count, BsiHeaders.EigenBuckling buckling) {
+                    return engine.analyze(world, count, BsiHeaders.Storage.F64, buckling);
+                }
+                @Override public boolean ready() { return engine.status() == InProcessEngine.Status.READY; }
+                @Override public void close() { engine.close(); }
+            };
+        } catch (RuntimeException | LinkageError e) { engine.close(); throw e; }
+    }
+
+    /**
+     * The raw in-process engine with the game vocabulary already declared. Used by hosts
+     * that drive more than the analysis session shape (e.g. the finite lane); the caller
+     * owns {@link InProcessEngine#close()}. Invoke only on a background worker.
+     */
+    public static InProcessEngine openEngine(String configured, Path root, int threads,
+                                             Consumer<String> log, PipelineProfile profile) {
         EngineLocator.Located located = EngineLocator.locateFromSystem(configured, root, null);
         if (located.source() == EngineLocator.Source.NONE) {
             Path bundled = BundledNatives.ensure(root, BundledNatives.class::getResourceAsStream,
@@ -36,13 +55,7 @@ public final class GameNativeLoader {
                 throw new IllegalStateException("native game vocabulary refused: " + engine.disabledReason());
             log.accept("native engine READY: " + engine.engineName() + " " + engine.engineVersion()
                     + " contract=" + com.blockreality.core.bsi.BsiContract.sha256());
-            return new NativeGameRuntime.Session() {
-                @Override public AnalysisResult analyze(GameWorldSnapshot world, Integer count, BsiHeaders.EigenBuckling buckling) {
-                    return engine.analyze(world, count, BsiHeaders.Storage.F64, buckling);
-                }
-                @Override public boolean ready() { return engine.status() == InProcessEngine.Status.READY; }
-                @Override public void close() { engine.close(); }
-            };
+            return engine;
         } catch (RuntimeException | LinkageError e) { engine.close(); throw e; }
     }
 }
