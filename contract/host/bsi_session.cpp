@@ -89,11 +89,12 @@ public:
         const bool identifiedRequest = rq.body && rq.body->find("identity") &&
             (rq.method == "bsi.world.declare" || rq.method == "bsi.world.edit");
         const bool fractureRequest = rq.method == "bsi.fracture.prepare" || rq.method == "bsi.fracture.finish";
-        const bool motion = rq.method == "bsi.rigid.declare" || rq.method == "bsi.rigid.step";
+        const bool motion = rq.method == "bsi.rigid.declare" || rq.method == "bsi.rigid.step" || rq.method == "bsi.rigid.scene.declare";
         const bool pdelta = rq.method=="bsi.pdelta.solve" || rq.method=="bsi.pdelta.station" || rq.method=="bsi.pdelta.fracture.prepare";
         const bool checkpoint = rq.method=="bsi.corot.checkpoint.export" || rq.method=="bsi.corot.checkpoint.import";
         const bool arc = rq.method=="bsi.corot.arc.advance";
-        const bool corot = rq.method=="bsi.corot.solve" || rq.method=="bsi.corot.fracture.prepare" || rq.method=="bsi.corot.rigid.declare" || checkpoint || arc;
+        const bool corot = rq.method=="bsi.corot.solve" || rq.method=="bsi.corot.fracture.prepare" || rq.method=="bsi.corot.rigid.declare" ||
+            rq.method=="bsi.corot.rigid.source.export" || checkpoint || arc;
         if (identifiedRequest || fractureRequest || motion || pdelta || corot) {
             if (
 #ifndef BSI_TEST_NFW_LIMIT

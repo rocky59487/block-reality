@@ -1,6 +1,30 @@
 // Included in SessionImpl: all transports and pending replies share this path.
     void corotRequest(const Request& rq,const uint8_t* payload,size_t n,Reply& out) {
         const bool fracture=rq.method=="bsi.corot.fracture.prepare",motion=rq.method=="bsi.corot.rigid.declare";
+        const bool sourceExport=rq.method=="bsi.corot.rigid.source.export";
+        if(sourceExport){
+            if(!has("bsi.corot.rigid")||!has("bsi.rigid.finite.sources")||engine_.vt->abi_version<11||!engine_.vt->corot_rigid_source_export)
+                {wireError(rq,out,"UNSUPPORTED","engine lacks finite rigid source export");return;}
+            if(!fractureBody(rq,out,"corot.rigid.source.export.body",n,false))return;
+            if(!identified_){wireError(rq,out,"NO_WORLD","no identified world");return;}
+            ReplyBuilder builder(uint32_t(world_.size()),0,BSI_STORAGE_F64);bsi_writer writer{&builder};json::Writer jw;
+            corot_wire::SourceExport input;
+            if(!corot_wire::sourceExport(*rq.body,payload,n,input)){wireError(rq,out,"PROTOCOL_ERROR","invalid finite source export payload");return;}
+            if(!fracture_||!fracture_->committed||!fracture_wire::same(fracture_->token,input.input.fracture)){wireError(rq,out,"EXTRACT_FAILED","finite source export requires the committed fracture");return;}
+            const bsi_rigid_source_batch* view=nullptr;nativeFault_=true;
+            const int status=engine_.vt->corot_rigid_source_export(inst_,&input.input,&view,&writer);
+            if(status!=BSI_OK){nativeFault_=false;errorFromBuilder(out,rq,status,builder);return;}
+            if(builder.hasError()||!view||view->struct_size<offsetof(bsi_rigid_source_batch,nSources)+sizeof(view->nSources)||view->format!=1||
+               !fracture_wire::same(view->fracture,input.input.fracture)||!fracture_wire::same(view->basis,fracture_->before)||!view->nSources||
+               view->nSources!=input.input.nBodies||!view->data||view->bytes<36||view->bytes>uint64_t(input.input.byteBudget)*input.input.nBodies+4){
+                wireError(rq,out,"INTERNAL","invalid native finite source batch; reopen session");return;}
+            std::vector<uint8_t> bytes(view->data,view->data+view->bytes);
+            beginResponse(jw,rq,"response");jw.kv("status","exported");jw.key("basis");fracture_wire::writeStamp(jw,view->basis);
+            jw.key("fracture");fracture_wire::writeToken(jw,view->fracture);jw.kv("format",1);
+            jw.kv("sources",(unsigned long long)view->nSources);jw.kv("bytes",(unsigned long long)bytes.size());jw.endObj();
+            if(!wireHeader(rq,out,jw))return;
+            out.payload=std::move(bytes);nativeFault_=false;return;
+        }
         if(!has("bsi.corot")||(fracture&&!has("bsi.corot.fracture"))||(motion&&!has("bsi.corot.rigid"))||engine_.vt->abi_version<7||!engine_.vt->corot_solve||
            (fracture&&(!engine_.vt->corot_fracture_prepare||!engine_.vt->fracture_finish))||(motion&&(!engine_.vt->corot_motion_declare||!engine_.vt->motion_step))) {wireError(rq,out,"UNSUPPORTED","engine lacks finite native delivery");return;}
         if(!fractureBody(rq,out,motion?"corot.rigid.declare.body":fracture?"corot.fracture.prepare.body":"corot.solve.body",n,false))return;
