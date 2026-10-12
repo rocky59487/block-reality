@@ -149,7 +149,16 @@ public final class InProcessEngine implements AutoCloseable {
 
     /** A rejected declaration retains the preceding identified world and candidate. */
     public boolean declareIdentifiedWorld(BsiFracture.World world) {
-        if (status != Status.READY || vocabulary == null || !has("bsi.world.identity") || !has("bsi.fracture")) return false;
+        return declareIdentifiedWorld(world, true);
+    }
+
+    /**
+     * The identified world declaration shared by the fracture and finite flows. The finite
+     * flow needs the world identity but not the fracture capability itself.
+     */
+    public boolean declareIdentifiedWorld(BsiFracture.World world, boolean requireFracture) {
+        if (status != Status.READY || vocabulary == null || !has("bsi.world.identity")
+                || (requireFracture && !has("bsi.fracture"))) return false;
         String id=nextId(); BsiResponse response=send(BsiFracture.declare(id,world),world.payload());
         if (!ok(response)) return false;
         try { BsiFracture.checkWorld(response,id,world); }
@@ -186,6 +195,36 @@ public final class InProcessEngine implements AutoCloseable {
     }
     public BsiFracture.World identifiedWorld() { return identifiedWorld; }
     private void forgetFracture() { identifiedWorld=null; fractureCandidate=null; fractureRemaining=null; }
+
+    // ---------------------------------------------------------------- finite (ABI7+) surface
+
+    /**
+     * The serialised send the finite session uses for corot methods. Ordering (vocab →
+     * world → optional checkpoint import → solve) is {@code FiniteSession}'s contract;
+     * this lane just carries the frames over {@link BsiNative}'s global gate.
+     */
+    public BsiResponse finiteRequest(String headerJson, byte[] payload) {
+        if (status != Status.READY) return null;
+        return send(headerJson, payload);
+    }
+
+    /** Install a vocabulary the finite session has already validated against its durable mapping. */
+    public boolean adoptVocabulary(BsiVocabulary accepted) {
+        if (status != Status.READY || accepted == null) return false;
+        forgetFracture();
+        worldDeclared = false;
+        vocabulary = accepted;
+        return true;
+    }
+
+    /** Finite world declaration: the same identified world-declare wire, gated on corot capability. */
+    public boolean declareFiniteWorld(BsiFracture.World world) {
+        if (!has("bsi.corot")) return false;
+        return declareIdentifiedWorld(world, false);
+    }
+
+    /** The {@code analyzed}/{@code restored} responses are only meaningful while the world stands. */
+    public boolean finiteWorldDeclared() { return worldDeclared; }
 
     /** Complete commit analysis for the declared world; never falls back to a previous result. */
     public AnalysisResult analyze(GameWorldSnapshot snapshot, Integer numThreads,

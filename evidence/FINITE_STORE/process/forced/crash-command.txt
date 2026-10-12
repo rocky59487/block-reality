@@ -1,0 +1,7 @@
+C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot\bin\java.exe
+-cp
+E:\br-v2a\br\mod\core\build\classes\java\test;E:\br-v2a\br\mod\core\build\classes\java\main;E:\br-v2a\br\mod\api\build\libs\api-0.4.0-alpha.1.jar
+com.blockreality.core.finite.FiniteProcessDriver
+crash
+forced
+E:\br-v2a\br\evidence\FINITE_STORE\process\forced

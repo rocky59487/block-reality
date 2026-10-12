@@ -80,3 +80,17 @@ tasks.register('nativeFractureRecoveryGate', JavaExec) {
         args System.getProperty('br.engine', ''), System.getProperty('br.fractureEvidence', '')
     }
 }
+
+// Real JVM interruption/recovery of the finite object store (W2). This is not Minecraft restart qualification.
+tasks.register('finiteRecoveryGate', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.blockreality.core.finite.FiniteProcessGate'
+    doFirst {
+        def output = System.getProperty('br.finiteEvidence', '')
+        if (!output || !new File(output).isAbsolute()) {
+            throw new GradleException('finiteRecoveryGate requires absolute -Dbr.finiteEvidence=<fresh output directory>')
+        }
+        args output
+    }
+}

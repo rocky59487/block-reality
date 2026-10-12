@@ -41,6 +41,9 @@ public final class ManufacturedRegistry {
                 for (UUID id : journal.entryIds()) {
                     Entry entry = journal.read(id).orElseThrow(() -> new IOException("Metadata record disappeared"));
                     if (entry.phase() == Phase.REJECTED) continue;
+                    if (!manufactured(entry) && finite(entry)) continue;  // finite/* folds elsewhere
+                    // Anything else that is not a manufactured batch still reaches parse(),
+                    // so malformed histories keep failing closed instead of being skipped.
                     Batch batch = parse(entry);
                     if (entry.phase() == Phase.COMMITTED && sequence.putIfAbsent(batch.order(),id) != null) throw invalid();
                     if (entry.phase() == Phase.ABORTED)
@@ -237,6 +240,23 @@ public final class ManufacturedRegistry {
         Descriptor d = batch.descriptor(); Request r = batch.entry().request();
         if (d.operation() == Operation.BUILD) births.put(r.id(),new Birth(d.dimension(),r.actor(),d.creative(),batch.entry().intent().created()));
         order = batch.order(); revisions.put(d.dimension(),r.baseRevision()+1); failed = false;
+    }
+    /** A manufactured transaction always carries its {@code transaction/<id>} descriptor. */
+    static boolean manufactured(Entry entry) {
+        return describes(entry, "transaction/" + entry.request().id());
+    }
+
+    /** A finite-domain transaction always carries its {@code finite/tx/<id-hex32>} descriptor. */
+    static boolean finite(Entry entry) {
+        return describes(entry, "finite/tx/" + entry.request().id().toString().replace("-", ""));
+    }
+
+    private static boolean describes(Entry entry, String descriptor) {
+        Intent intent = entry.intent();
+        if (intent == null) return false;
+        for (Change change : intent.changes())
+            if (change.resource().equals(descriptor)) return true;
+        return false;
     }
     private static Batch parse(Entry entry) {
         Intent intent = Objects.requireNonNull(entry.intent());
