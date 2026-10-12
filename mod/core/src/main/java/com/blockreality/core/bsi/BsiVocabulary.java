@@ -23,6 +23,32 @@ public record BsiVocabulary(int version, Map<Integer, String> materials, Map<Int
         return Map.copyOf(source);
     }
 
+    /**
+     * The complete accepted reply: the decoded mapping plus the exact header text a finite
+     * source persists. The durable mapping is replayed by identity — a later session must
+     * reproduce these tables, not these request ids.
+     */
+    public record Reply(BsiVocabulary vocabulary, String headerText) { }
+
+    /** Decode + retain the reply; identical checks to {@link #decode}. */
+    public static Reply decodeReply(BsiResponse reply, String requestId, long revision, int version) {
+        return new Reply(decode(reply, requestId, revision, version), reply.headerText());
+    }
+
+    /** Table equality is the durable vocabulary contract; request id and revision are not. */
+    public boolean sameMapping(BsiVocabulary other) {
+        return other != null && version == other.version
+                && materials.equals(other.materials) && sections.equals(other.sections);
+    }
+
+    /**
+     * The tables of a previously captured reply header, without envelope binding: the durable
+     * vocabulary replay path needs only the engine-assigned id→name mapping.
+     */
+    public static BsiVocabulary decodeStored(JsonValue header, int version) {
+        return new BsiVocabulary(version, table(header, "materials"), table(header, "sections"));
+    }
+
     public static BsiVocabulary decode(BsiResponse reply, String requestId, long revision, int version) {
         if (reply == null || reply.isError()) throw new IllegalArgumentException("vocabulary declaration refused");
         var h = reply.header();
