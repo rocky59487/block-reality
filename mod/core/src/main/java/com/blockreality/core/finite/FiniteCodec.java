@@ -1,6 +1,7 @@
 package com.blockreality.core.finite;
 
 import com.blockreality.api.geom.BlockKey;
+import com.blockreality.core.bsi.BsiFracture;
 import com.blockreality.core.transaction.ConstructionTransaction;
 import com.blockreality.core.world.ConstructionDeclaration;
 import java.io.ByteArrayOutputStream;
@@ -42,7 +43,8 @@ public final class FiniteCodec {
     public static final int SCHEMA = 1;
 
     public static final int KIND_SOURCE = 1, KIND_CHECKPOINT = 2;
-    public static final int VAL_DOMAIN = 1, VAL_BINDING = 2, VAL_ROOT = 3, VAL_OPERATION = 4;
+    public static final int VAL_DOMAIN = 1, VAL_BINDING = 2, VAL_ROOT = 3, VAL_OPERATION = 4,
+            VAL_FRACTURE_PLAN = 5;
 
     private FiniteCodec() { }
 
@@ -86,11 +88,11 @@ public final class FiniteCodec {
 
     private static final int S_VOCAB_REQUEST = 1, S_VOCAB_REPLY = 2, S_BLOCKS = 3, S_OWNERS = 4,
             S_MATERIALS = 5, S_SHELL_LAWS = 6, S_SHELL_LAYERS = 7, S_CELL_LOADS = 8,
-            S_PRESCRIBED = 9, S_LOADS = 10, S_OPTIONS = 11, S_SUPPORT = 12;
+            S_PRESCRIBED = 9, S_LOADS = 10, S_OPTIONS = 11, S_SUPPORT = 12, S_FAILURE_RULES = 13;
 
     static byte[] encodeSource(FiniteSource source) {
         var out = new W();
-        out.raw(SOURCE_MAGIC).u32(SCHEMA).u32(12);
+        out.raw(SOURCE_MAGIC).u32(SCHEMA).u32(13);
         section(out, S_VOCAB_REQUEST, source.vocabRequest());
         section(out, S_VOCAB_REPLY, source.vocabReply());
         section(out, S_BLOCKS, source.blocks40());
@@ -105,34 +107,44 @@ public final class FiniteCodec {
         var support = new W();
         for (int id : source.supportMaterialIds()) support.u32(id);
         section(out, S_SUPPORT, support.bytes());
+        section(out, S_FAILURE_RULES, source.failureRules());
         return out.bytes();
     }
 
     private static void section(W out, int tag, byte[] bytes) { out.u32(tag).u64(bytes.length).raw(bytes); }
 
+    /**
+     * Decode both persisted source schemas: 12 sections (pre-W4, rules empty) or 13 (rules
+     * present). The decoded source retains the original payload bytes so {@code serialize()}
+     * round-trips the stored object exactly.
+     */
     static FiniteSource decodeSource(byte[] payload) {
         var r = new R(payload);
         for (byte m : SOURCE_MAGIC) if (r.u8() != (m & 0xFF)) throw fail();
-        if (r.u32() != SCHEMA || r.u32() != 12) throw fail();
-        byte[][] sections = new byte[13][];
+        long schema = r.u32(), count = r.u32();
+        if (schema != SCHEMA || (count != 12 && count != 13)) throw fail();
+        byte[][] sections = new byte[14][];
         int previous = 0;
-        for (int i = 0; i < 12; i++) {
+        for (int i = 0; i < count; i++) {
             int tag = (int) r.u32();
             long length = r.u64();
-            if (tag <= previous || tag < S_VOCAB_REQUEST || tag > S_SUPPORT || length > Integer.MAX_VALUE) throw fail();
+            if (tag <= previous || tag < S_VOCAB_REQUEST || tag > S_FAILURE_RULES || length > Integer.MAX_VALUE) throw fail();
             previous = tag;
             sections[tag] = r.raw((int) length);
         }
         r.done();
-        for (int tag = S_VOCAB_REQUEST; tag <= S_SUPPORT; tag++) if (sections[tag] == null) throw fail();
+        int maxTag = count == 12 ? S_SUPPORT : S_FAILURE_RULES;
+        for (int tag = S_VOCAB_REQUEST; tag <= maxTag; tag++) if (sections[tag] == null) throw fail();
         var support = sections[S_SUPPORT];
         if (support.length % 4 != 0 || support.length > 4L * (1 << 24)) throw fail();
         var ids = new int[support.length / 4];
         var buffer = ByteBuffer.wrap(support).order(ByteOrder.LITTLE_ENDIAN);
         for (int i = 0; i < ids.length; i++) ids[i] = buffer.getInt();
+        var rules = sections[S_FAILURE_RULES] == null ? new byte[0] : sections[S_FAILURE_RULES];
         return FiniteSource.of(sections[S_VOCAB_REQUEST], sections[S_VOCAB_REPLY], sections[S_BLOCKS],
                 sections[S_OWNERS], sections[S_MATERIALS], sections[S_SHELL_LAWS], sections[S_SHELL_LAYERS],
-                sections[S_CELL_LOADS], sections[S_PRESCRIBED], sections[S_LOADS], sections[S_OPTIONS], ids);
+                sections[S_CELL_LOADS], sections[S_PRESCRIBED], sections[S_LOADS], sections[S_OPTIONS],
+                rules, ids, payload);
     }
 
     // ---------------------------------------------------------------- journal values
@@ -268,6 +280,30 @@ public final class FiniteCodec {
         record CommitHistory(FiniteRoot.Next next) implements Operation {
             public CommitHistory { java.util.Objects.requireNonNull(next); }
         }
+        /**
+         * W4-A finite fracture commit (FINITE_FRACTURE_TRANSACTION §5): the after-root
+         * descriptor, the sorted unique retired owner ids, the {@code FiniteFracturePlan}
+         * hash and the chunked {@code plan/request/wire} resource names under
+         * {@code finite/fracture/<tx>/{plan,request,wire}/<i>}. {@code intentHash} binds
+         * the durable intent to the effective inputs; {@code request.planHash()} must
+         * equal it byte for byte.
+         */
+        record CommitFracture(FiniteRoot.Next next, java.util.List<Long> retiredOwnerIds,
+                              String planHash, int planParts, int requestParts, int wireParts,
+                              String intentHash) implements Operation {
+            public CommitFracture {
+                java.util.Objects.requireNonNull(next);
+                retiredOwnerIds = java.util.List.copyOf(retiredOwnerIds);
+                long previous = 0;
+                for (long id : retiredOwnerIds) {
+                    if (id <= 0 || id <= previous) throw fail();
+                    previous = id;
+                }
+                FiniteBasis.hash(planHash); FiniteBasis.hash(intentHash);
+                if (planParts < 1 || requestParts < 1 || wireParts < 1
+                        || planParts > 4096 || requestParts > 4096 || wireParts > 4096) throw fail();
+            }
+        }
     }
 
     static byte[] encodeOperation(Operation op) {
@@ -297,6 +333,14 @@ public final class FiniteCodec {
         } else if (op instanceof Operation.CommitHistory history) {
             out.u32(6);
             encodeNext(out, history.next());
+        } else if (op instanceof Operation.CommitFracture fracture) {
+            out.u32(7);
+            encodeNext(out, fracture.next());
+            out.u32(fracture.retiredOwnerIds().size());
+            for (long id : fracture.retiredOwnerIds()) out.u64(id);
+            out.hash(fracture.planHash()).u32(fracture.planParts())
+                    .u32(fracture.requestParts()).u32(fracture.wireParts())
+                    .hash(fracture.intentHash());
         } else throw fail();
         return out.bytes();
     }
@@ -359,9 +403,146 @@ public final class FiniteCodec {
             op = new Operation.CommitRoot(decodeNext(r));
         } else if (tag == 6) {
             op = new Operation.CommitHistory(decodeNext(r));
+        } else if (tag == 7) {
+            var next = decodeNext(r);
+            long retiredCount = r.u32();
+            if (retiredCount > 4096) throw fail();
+            var retired = new ArrayList<Long>((int) retiredCount);
+            for (int i = 0; i < retiredCount; i++) retired.add(r.i64());
+            var planHash = r.hash();
+            int planParts = (int) r.u32(), requestParts = (int) r.u32(), wireParts = (int) r.u32();
+            var intentHash = r.hash();
+            op = new Operation.CommitFracture(next, retired, planHash,
+                    planParts, requestParts, wireParts, intentHash);
         } else throw fail();
         r.done();
         return op;
+    }
+
+    // ---------------------------------------------------------------- fracture plan
+
+    /**
+     * The W4-A durable fracture plan ({@code VAL_FRACTURE_PLAN=5}) — every field of
+     * {@link FiniteFracturePlan} in canonical order. The plan hash is derived by the caller:
+     * {@code sha256} of these exact bytes.
+     */
+    static byte[] encodeFracturePlan(FiniteFracturePlan plan) {
+        var out = header(VAL_FRACTURE_PLAN);
+        var domain = plan.domain();
+        out.uuid(domain.journalDomain()).utf8(domain.dimension())
+                .uuid(domain.bsiDomain()).uuid(domain.artifactNamespace());
+        out.uuid(plan.request()).uuid(plan.actor()).utf8(plan.actorProvenance());
+        var before = plan.before();
+        out.i64(before.worldRevision()).i64(before.historySequence())
+                .hash(before.sourceHash()).hash(before.vocabHash()).hash(before.ownersHash());
+        var after = plan.after();
+        out.i64(after.worldRevision()).i64(after.historySequence())
+                .hash(after.sourceHash()).ref(after.source());
+        encodeCheckpoint(out, after.checkpoint());
+        out.hash(plan.requestFrameHash()).hash(plan.wireFrameHash());
+        out.uuid(plan.token().context()).utf8(plan.token().sequence());
+        out.u64(plan.steps()).u32(plan.flags()).u64(plan.remainingBlocks())
+                .u32(plan.end()).u32(plan.corotFlags()).i32(plan.pending())
+                .u8(plan.fullyConverged() ? 1 : 0).utf8(plan.remainingGeneration());
+        out.u64(plan.beforeCells());
+        out.u32(plan.retiredOwnership().size());
+        for (long id : plan.retiredOwnership()) out.u64(id);
+        out.u32(plan.bornBodies().size());
+        for (var owner : plan.bornBodies()) {
+            out.i32(owner.position().x()).i32(owner.position().y()).i32(owner.position().z())
+                    .u64(owner.artifact());
+        }
+        out.u64(plan.loadLedger().length).raw(plan.loadLedger());
+        out.u64(plan.archiveRecords().length).raw(plan.archiveRecords());
+        return out.bytes();
+    }
+
+    private static void encodeCheckpoint(W out, FiniteRoot.Checkpoint checkpoint) {
+        out.u32(1).ref(checkpoint.blob()).u32(checkpoint.format())
+                .utf8(checkpoint.engineBuild()).utf8(checkpoint.contractSha256())
+                .u64(checkpoint.byteBudget()).u64(checkpoint.allocationBudget())
+                .u64(checkpoint.elementBudget());
+    }
+
+    static FiniteFracturePlan decodeFracturePlan(byte[] data) {
+        var r = value(data, VAL_FRACTURE_PLAN);
+        var domain = new FiniteDomainId(r.uuid(), r.utf8(256), r.uuid(), r.uuid());
+        var request = r.uuid();
+        var actor = r.uuid();
+        var provenance = r.utf8(256);
+        var before = new FiniteFracturePlan.Basis(r.i64(), r.i64(), r.hash(), r.hash(), r.hash());
+        long afterRevision = r.i64(), afterSequence = r.i64();
+        var afterHash = r.hash();
+        var sourceRef = r.ref();
+        if (r.u32() != 1) throw fail();
+        var checkpoint = new FiniteRoot.Checkpoint(r.ref(), (int) r.u32(), r.utf8(256), r.utf8(64),
+                r.i64(), r.i64(), r.i64());
+        var after = new FiniteFracturePlan.After(afterRevision, afterSequence, afterHash,
+                sourceRef, checkpoint);
+        var requestFrameHash = r.hash();
+        var wireFrameHash = r.hash();
+        var token = new BsiFracture.Token(r.uuid(), r.utf8(16));
+        long steps = r.u64(), flags = r.u32(), remainingBlocks = r.u64();
+        int end = (int) r.u32(), corotFlags = (int) r.u32(), pending = r.i32();
+        boolean converged = r.u8() == 1;
+        var generation = r.utf8(16);
+        long beforeCells = r.u64();
+        long retired = r.u32();
+        if (retired > 4096) throw fail();
+        var retiredIds = new ArrayList<Long>((int) retired);
+        for (int i = 0; i < retired; i++) retiredIds.add(r.i64());
+        long born = r.u32();
+        if (born > FiniteSource.MAX_BLOCKS) throw fail();
+        var bornBodies = new ArrayList<BsiFracture.Owner>((int) born);
+        for (int i = 0; i < born; i++) {
+            bornBodies.add(new BsiFracture.Owner(new BlockKey(r.i32(), r.i32(), r.i32()), r.i64()));
+        }
+        long ledger = r.u64(), archives = r.u64();
+        if (ledger > FiniteFracturePlan.MAX_LEDGER_BYTES
+                || archives > FiniteFracturePlan.MAX_LEDGER_BYTES) throw fail();
+        var loadLedger = r.raw((int) ledger);
+        var archiveRecords = r.raw((int) archives);
+        var plan = new FiniteFracturePlan(domain, request, actor, provenance, before, after,
+                requestFrameHash, wireFrameHash, token,
+                (int) steps, (int) flags, (int) remainingBlocks, end, corotFlags, pending,
+                converged, generation, (int) beforeCells, retiredIds, bornBodies,
+                loadLedger, archiveRecords);
+        r.done();
+        return plan;
+    }
+
+    /**
+     * The durable fracture intent hash (doc §5.3): {@code sha256} over the frozen input
+     * tuple — magic, the full domain identity, the committed before basis, the request
+     * identity (id, actor, provenance), the checkpoint format and budgets, and
+     * {@code sha256(requestFrame)}. The caller stores it as {@code Request.planHash}; the
+     * registry recomputes it from the journaled plan before trusting anything it names.
+     */
+    static String fractureIntentHash(FiniteFracturePlan plan) {
+        var before = plan.before();
+        var checkpoint = plan.after().checkpoint();
+        return fractureIntentHash(plan.domain(), before.worldRevision(), before.historySequence(),
+                before.sourceHash(), before.vocabHash(), before.ownersHash(),
+                plan.request(), plan.actor(), plan.actorProvenance(),
+                checkpoint.format(), checkpoint.byteBudget(), checkpoint.allocationBudget(),
+                checkpoint.elementBudget(), plan.requestFrameHash());
+    }
+
+    static String fractureIntentHash(FiniteDomainId domain, long worldRevision,
+                                     long historySequence, String sourceHash, String vocabHash,
+                                     String ownersHash, UUID request, UUID actor,
+                                     String actorProvenance, int format, long byteBudget,
+                                     long allocationBudget, long elementBudget,
+                                     String requestFrameHash) {
+        var out = new W().raw("br.finite.fracture.intent".getBytes(StandardCharsets.UTF_8));
+        out.uuid(domain.journalDomain()).utf8(domain.dimension())
+                .uuid(domain.bsiDomain()).uuid(domain.artifactNamespace());
+        out.i64(worldRevision).i64(historySequence)
+                .hash(sourceHash).hash(vocabHash).hash(ownersHash);
+        out.uuid(request).uuid(actor).utf8(actorProvenance);
+        out.u32(format).u64(byteBudget).u64(allocationBudget).u64(elementBudget);
+        out.hash(requestFrameHash);
+        return FiniteSource.sha256(out.bytes());
     }
 
     // ---------------------------------------------------------------- HEAD cache

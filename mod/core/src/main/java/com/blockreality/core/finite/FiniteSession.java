@@ -1,15 +1,20 @@
 package com.blockreality.core.finite;
 
 import com.blockreality.core.bsi.BsiCorot;
+import com.blockreality.core.bsi.BsiCorotFracture;
+import com.blockreality.core.bsi.BsiFrame;
 import com.blockreality.core.bsi.BsiFracture;
+import com.blockreality.core.bsi.BsiRecords;
 import com.blockreality.core.bsi.BsiHeaders;
 import com.blockreality.core.bsi.BsiResponse;
 import com.blockreality.core.bsi.BsiVocabulary;
 import com.blockreality.core.engine.InProcessEngine;
 import com.blockreality.core.json.JsonValue;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * One finite BSI session over {@link InProcessEngine} (design §5 lifecycle):
@@ -35,7 +40,7 @@ public final class FiniteSession implements AutoCloseable {
 
     private final FiniteLane lane;
     private final FiniteDomainId domain;
-    private final FiniteSource source;
+    private FiniteSource source;
     private final long sessionGeneration;
     private Step step = Step.NEW;
     private BsiVocabulary vocabulary;
@@ -50,6 +55,18 @@ public final class FiniteSession implements AutoCloseable {
     private boolean liveConverged;
     /** The historySequence the live token corresponds to (the checkpoint basis on import). */
     private long historyBasis;
+    /**
+     * The in-memory corot fracture candidate — a strict receipt plus its binding, alive only
+     * between {@link #fracturePrepare} and {@link #fractureFinish} on this session. It is
+     * never durable authority: the durable record is the journal entry plus plan objects.
+     */
+    private BsiCorotFracture.Prepared fractureCandidate;
+    /** The exact {@code bsi.corot.fracture.prepare} request frame bytes, kept as evidence. */
+    private byte[] fractureRequestFrame;
+    /** A finish ran on this session — further solve/arc/prepare are forbidden (doc §4.2). */
+    private boolean fractureFinished;
+    /** The candidate committed — checkpoint export stays legal without a live token. */
+    private boolean fractureCommitted;
 
     private FiniteSession(FiniteLane lane, FiniteDomainId domain, FiniteSource source, long sessionGeneration) {
         this.lane = Objects.requireNonNull(lane);
@@ -160,7 +177,7 @@ public final class FiniteSession implements AutoCloseable {
     /** The finite solve for the declared world and this source's complete input payload. */
     public FiniteResult solve() {
         if (step != Step.WORLD && step != Step.RESTORED) { refuse("solve out of order at " + step); return null; }
-        if (step == Step.DISABLED) return null;
+        if (fractureFinished || step == Step.DISABLED) { seal("solve after fracture finish"); return null; }
         try {
             var options = BsiCorot.options(source.options());
             if (!options.expectedDomain().equals(domain.bsiDomain())
@@ -195,6 +212,7 @@ public final class FiniteSession implements AutoCloseable {
      */
     public FiniteResult arcAdvance(BsiCorot.ArcOptions options) {
         Objects.requireNonNull(options);
+        if (fractureFinished) { seal("arc after fracture finish"); return null; }
         if (step != Step.RESTORED || liveToken == null) {
             refuse("arc out of order at " + step);
             return null;
@@ -226,13 +244,146 @@ public final class FiniteSession implements AutoCloseable {
     }
 
     /**
+     * The private {@code bsi.corot.fracture.prepare} (FINITE_FRACTURE_TRANSACTION §4.1):
+     * only on a declared world or restored history, with no live candidate and no previous
+     * finish. Capabilities are proved first — a missing one refuses before the wire. The
+     * reply goes through {@link BsiCorotFracture#checkPrepared} in full; any refusal or
+     * malformed success poisons this session. The returned candidate is memory-only.
+     */
+    public BsiCorotFracture.Prepared fracturePrepare(UUID requestId,
+                                                   List<BsiCorotFracture.Rule> rules,
+                                                   int budget) {
+        Objects.requireNonNull(requestId); Objects.requireNonNull(rules);
+        if (fractureFinished || fractureCandidate != null) {
+            seal("fracture prepare after a fracture decision");
+            return null;
+        }
+        if (step != Step.WORLD && step != Step.RESTORED) {
+            refuse("fracture prepare out of order at " + step);
+            return null;
+        }
+        try {
+            for (String capability : List.of("bsi.corot", "bsi.corot.fracture", "bsi.fracture"))
+                if (!lane.has(capability)) throw new IllegalArgumentException("missing capability " + capability);
+            if (source.loads().length > 0 && !lane.has("bsi.corot.fracture.loads"))
+                throw new IllegalArgumentException("missing capability bsi.corot.fracture.loads");
+            if (source.hasShellMaterials() && !lane.has("bsi.corot.shell.materials"))
+                throw new IllegalArgumentException("missing capability bsi.corot.shell.materials");
+            if (requestId.equals(new UUID(0, 0)) || budget < 0 || budget > BsiCorotFracture.MAX_EVENTS)
+                throw new IllegalArgumentException("invalid fracture request identity or budget");
+            var roles = source.materialRoles();
+            for (var rule : rules)
+                if (!roles.containsKey(rule.material()))
+                    throw new IllegalArgumentException("fracture rule names an unknown material");
+            var options = BsiCorot.options(source.options());
+            if (!options.expectedDomain().equals(domain.bsiDomain())
+                    || options.expectedRevision() != worldRevision)
+                throw new IllegalArgumentException("options name a different world stamp");
+            // The prepare frame's id is the request-bound deterministic one: the durable
+            // requestFrame must be re-derivable without this session's local sequence.
+            String id = BsiCorotFracture.prepareId(requestId);
+            byte[] ruleBytes = BsiCorotFracture.encodeRules(rules);
+            String header = BsiCorotFracture.prepare(id, worldRevision, source.options(),
+                    source.materials().length / BsiCorot.MATERIAL_BYTES,
+                    source.cellLoads().length / 64,
+                    source.prescribed().length / BsiCorot.PRESCRIBED_BYTES,
+                    source.loads().length / BsiCorot.LOAD_BYTES,
+                    requestId, rules.size(), budget,
+                    source.shellLaws().length / BsiCorot.SHELL_LAW_BYTES,
+                    source.shellLayers().length / BsiCorot.SHELL_LAYER_BYTES);
+            byte[] payload = source.fracturePayload(ruleBytes);
+            var response = lane.request(header, payload);
+            var prepared = BsiCorotFracture.checkPrepared(response, id, worldRevision,
+                    domain.bsiDomain(), worldRevision, domain.artifactNamespace(),
+                    fractureWorld(), requestId, budget);
+            fractureCandidate = prepared;
+            fractureRequestFrame = BsiFrame.encode(header, payload);
+            return prepared;
+        } catch (IllegalArgumentException failure) {
+            refuse(failure.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * {@code bsi.fracture.finish} on the live candidate (§4.2): strict echo through
+     * {@link BsiCorotFracture#checkFinish}. On commit the session's source becomes the
+     * receipt's remaining world ({@code afterSource} must match it byte for byte — blocks,
+     * owners and the receipt's options record), the world revision becomes the after
+     * revision, the live analysis token clears and the step stays {@code RESTORED} so a
+     * checkpoint export can capture the after state. On discard the world is untouched.
+     * Either way the session is sealed: no further prepare/solve/arc ever runs on it.
+     */
+    public BsiFracture.Finish fractureFinish(BsiCorotFracture.Prepared candidate,
+                                             boolean commit, FiniteSource afterSource) {
+        Objects.requireNonNull(candidate);
+        if (fractureFinished) {
+            seal("fracture finish after a fracture decision");
+            return null;
+        }
+        if (candidate != fractureCandidate || step == Step.DISABLED) {
+            refuse("fracture finish without the live candidate at " + step);
+            return null;
+        }
+        try {
+            if (commit) {
+                Objects.requireNonNull(afterSource);
+                if (!Arrays.equals(afterSource.blocks40(),
+                        BsiRecords.encodeBlocks(candidate.remaining()))
+                        || !Arrays.equals(afterSource.owners20(), ownersImage(candidate.remainingOwners()))
+                        || !Arrays.equals(afterSource.options(), candidate.afterOptions()))
+                    throw new IllegalArgumentException("after source is not the receipt's remaining world");
+            }
+            String id = nextId();
+            var response = lane.request(
+                    BsiCorotFracture.finish(id, worldRevision, candidate, commit), new byte[0]);
+            var finish = BsiCorotFracture.checkFinish(response, id, worldRevision, candidate, commit);
+            if (commit && finish != BsiFracture.Finish.DISCARDED) {
+                this.source = afterSource;
+                worldRevision = candidate.after().revision();
+                liveToken = null;
+                fractureCommitted = true;
+                step = Step.RESTORED;
+            }
+            fractureCandidate = null;
+            fractureFinished = true;
+            return finish;
+        } catch (IllegalArgumentException failure) {
+            refuse(failure.getMessage());
+            return null;
+        }
+    }
+
+    /** The current in-memory fracture candidate, or null. Never durable authority. */
+    public BsiCorotFracture.Prepared fractureCandidate() { return fractureCandidate; }
+    /** The exact request frame the accepted prepare sent, or null. Evidence only. */
+    public byte[] fractureRequestFrame() {
+        return fractureRequestFrame == null ? null : fractureRequestFrame.clone();
+    }
+
+    private static byte[] ownersImage(List<BsiFracture.Owner> owners) {
+        var out = java.nio.ByteBuffer.allocate(owners.size() * FiniteSource.OWNER_BYTES)
+                .order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        for (var owner : owners)
+            out.putInt(owner.position().x()).putInt(owner.position().y())
+                    .putInt(owner.position().z()).putLong(owner.artifact());
+        return out.array();
+    }
+
+    /** The declared world as the fracture receipt validator needs it (doc §1.2/§3). */
+    private BsiCorotFracture.FractureWorld fractureWorld() {
+        return new BsiCorotFracture.FractureWorld(source.blocks(), source.owners(), vocabulary,
+                defaultSections(), source.materialRoles(), source.cellLoads(), source.shellLaws());
+    }
+
+    /**
      * The opaque checkpoint export of the live analysis (design §4.3): format 1 for pure
      * solve state, format ≥2 once arc direction history exists. The engine arbitrates;
      * Java carries the blob untouched.
      */
     public BsiCorot.Exported exportCheckpoint(int format, long byteBudget,
                                               long allocationBudget, long elementBudget) {
-        if (step != Step.RESTORED || liveToken == null) {
+        if (step != Step.RESTORED || (liveToken == null && !fractureCommitted)) {
             refuse("checkpoint export out of order at " + step);
             return null;
         }
@@ -306,6 +457,15 @@ public final class FiniteSession implements AutoCloseable {
 
     private void refuse(String detail) {
         step = Step.DISABLED;
+        refusal = detail == null ? "" : detail;
+    }
+
+    /**
+     * Post-decision sealing is not a protocol violation: work after the fracture
+     * decision is refused in place, but the committed after-state stays exportable
+     * (doc §4.4 — the session is sealed, not poisoned).
+     */
+    private void seal(String detail) {
         refusal = detail == null ? "" : detail;
     }
 

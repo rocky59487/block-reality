@@ -33,6 +33,10 @@ class FiniteSessionTest {
         record Call(String method, String header, byte[] payload) { }
         final List<Call> calls = new ArrayList<>();
         final Deque<Scripted> script = new ArrayDeque<>();
+        /** The scripted engine's declared capabilities — the W4-A core set by default. */
+        final java.util.Set<String> capabilities = new java.util.HashSet<>(List.of(
+                "bsi.corot", "bsi.corot.fracture", "bsi.fracture",
+                "bsi.corot.fracture.loads", "bsi.corot.shell.materials"));
         boolean vocabularyAdopted;
         boolean worldDeclared;
         int worldSequence;
@@ -78,6 +82,8 @@ class FiniteSessionTest {
         }
 
         @Override public boolean ready() { return true; }
+
+        @Override public boolean has(String capability) { return capabilities.contains(capability); }
 
         static BsiResponse respond(String header, byte[] payload) {
             return BsiResponse.of(new BsiFrame.Decoded(0, header, payload));

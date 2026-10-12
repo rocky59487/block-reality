@@ -90,7 +90,7 @@ public final class BsiCorot {
     /** Signed finite — physical vectors carry direction. */
     private static void anyFinite(double v) { if (!Double.isFinite(v)) throw invalid("invalid corot options number"); }
 
-    private static void options(JsonWriter w, Options o) {
+    static void options(JsonWriter w, Options o) {
         w.key("options").beginObj().key("expected").beginObj()
                 .kv("domain", BsiFracture.hex(o.expectedDomain())).kv("revision", o.expectedRevision()).endObj()
                 .kv("loadFactor", o.loadFactor())
@@ -430,9 +430,9 @@ public final class BsiCorot {
                 h.num("constraintResidual", 0), view.availability());
     }
 
-    private record AnalysisView(List<Island> islands, Availability availability) { }
+    record AnalysisView(List<Island> islands, Availability availability) { }
 
-    private static int sectionStride(String name) {
+    static int sectionStride(String name) {
         return switch (name) {
             case "corotOptions" -> OPTIONS_BYTES; case "corotPhysical" -> PHYSICAL_BYTES;
             case "corotIslands" -> ISLAND_BYTES; case "corotText" -> 1;
@@ -446,21 +446,55 @@ public final class BsiCorot {
             case "corotShellProfiles" -> SHELL_PROFILE_BYTES;
             case "corotShellLayers" -> SHELL_LAYER_BYTES;
             case "corotTensorPoints" -> TENSOR_POINT_BYTES;
+            // bsi.corot.fracture.prepare reply groups (contract strides, packed verbatim).
+            case "physicalTotals" -> PHYSICAL_BYTES; case "fractureCells" -> 144;
+            case "fractureFragments" -> 96; case "fractureParents" -> 8;
+            case "fractureEvents" -> 24; case "fractureEventCells" -> 4;
+            case "fractureMechanism" -> 12;
+            case "corotDecisions" -> 48; case "corotPhases" -> 88;
+            case "corotFailures" -> 40; case "corotDecisionCells" -> 4;
+            case "corotFractureLoads" -> 72;
+            case "corotArchives" -> 592;
+            case "corotRetiredMembers" -> 1248; case "corotRetiredShells" -> 1624;
+            case "corotRetiredCells", "corotArchiveOwners" -> 20;
+            case "corotRetiredProfiles" -> PROFILE_BYTES;
+            case "corotRetiredFibers" -> FIBER_BYTES;
+            case "corotRetiredStations" -> STATION_BYTES;
+            case "corotRetiredPoints" -> POINT_BYTES;
+            case "corotRetiredShellProfiles" -> SHELL_PROFILE_BYTES;
+            case "corotRetiredShellLayers" -> SHELL_LAYER_BYTES;
+            case "corotRetiredTensorPoints" -> TENSOR_POINT_BYTES;
             default -> throw invalid("unknown corot section " + name);
         };
     }
 
-    private record Pos(int x, int y, int z) {
+    record Pos(int x, int y, int z) {
         static Pos of(ByteBuffer b, int offset) { return new Pos(b.getInt(offset), b.getInt(offset + 4), b.getInt(offset + 8)); }
     }
 
     /** The whole canonical directory plus every record the native validator checks. */
     private static AnalysisView validateAnalysis(BsiResponse response, CorotWorld world,
                                                  UUID expectedDomain, long expectedRevision) {
-        var payload = response.payload();
-        var sections = response.sections();
+        checkDirectory(response.payload(), response.sections(), world.shellMaterials());
+        return viewBody(response.payload(), response.sections(), world, expectedDomain,
+                expectedRevision, true, null);
+    }
+
+    /**
+     * The canonical section directory check shared by every corot analysis view: the exact
+     * mandatory order (plus the ABI10 tail when the world declared shell laws), contiguous
+     * non-overlapping sections with {@code bytes == count * stride} and no trailing payload.
+     */
+    static void checkDirectory(byte[] payload, Map<String, BsiResponse.Section> sections,
+                               boolean shellTail) {
         var order = new ArrayList<>(COROT_ORDER);
-        if (world.shellMaterials()) order.addAll(COROT_TAIL);
+        if (shellTail) order.addAll(COROT_TAIL);
+        checkDirectory(payload, sections, order);
+    }
+
+    /** The ordered-directory walk used by every strict corot view (including fracture). */
+    static void checkDirectory(byte[] payload, Map<String, BsiResponse.Section> sections,
+                               List<String> order) {
         if (sections.size() != order.size()) throw invalid("corot section set");
         int cursor = 0;
         var names = sections.values().iterator();
@@ -473,6 +507,19 @@ public final class BsiCorot {
             cursor += s.bytes();
         }
         if (cursor != payload.length) throw invalid("corot payload trailing bytes");
+    }
+
+    /**
+     * Every record rule {@code corot_wire::analysis} enforces (bsi_corot_validate.hpp),
+     * evaluated over {@code payload} whose analysis sections are already directory-checked.
+     * {@code strictConvergence} is the live-path rule (every island must report
+     * {@code CONVERGED|INACTIVE}); the fracture remaining view relaxes it to the native
+     * rule — any island status in {@code [0,4]} is legal as long as {@code claimedConverged}
+     * equals the computed convergence (the response header carries the view's flag).
+     */
+    static AnalysisView viewBody(byte[] payload, Map<String, BsiResponse.Section> sections,
+                                 CorotWorld world, UUID expectedDomain, long expectedRevision,
+                                 boolean strictConvergence, Boolean claimedConverged) {
         var data = ByteBuffer.wrap(payload).order(ByteOrder.LITTLE_ENDIAN);
 
         // The world the response must account for, exactly once each — the 40-byte block
@@ -508,12 +555,16 @@ public final class BsiCorot {
         var text = sections.get("corotText");
         var verdicts = new ArrayList<Island>();
         var statuses = new int[islands.count()];
+        boolean computedConverged = true;
         for (int i = 0; i < islands.count(); i++) {
             int at = islands.offset() + i * ISLAND_BYTES;
             int status = data.getInt(at);
             if (status < 0 || status > 4) throw invalid("corot island status");
-            // The reply claims full convergence; any island that says otherwise contradicts it.
-            if (status != 0 && status != 4) throw invalid("corot island convergence");
+            // corot_wire::analysis: convergence is data — the view's fullyConverged flag
+            // must equal it. The live path is stricter (the reply already claimed it).
+            if (strictConvergence) {
+                if (status != 0 && status != 4) throw invalid("corot island convergence");
+            } else if (status != 0 && status != 4) computedConverged = false;
             int flags = data.getInt(at + 8);
             if (flags < 0 || flags > 7) throw invalid("corot island flags");
             if (!nonnegative(data.getDouble(at + 40)) || !nonnegative(data.getDouble(at + 48))
@@ -532,6 +583,8 @@ public final class BsiCorot {
                     new String(payload, text.offset() + (int) first, (int) count,
                             java.nio.charset.StandardCharsets.UTF_8)));
         }
+        if (claimedConverged != null && claimedConverged != computedConverged)
+            throw invalid("corot convergence flag");
 
         var nodes = sections.get("corotNodes");
         for (int i = 0; i < nodes.count(); i++) {
@@ -970,7 +1023,7 @@ public final class BsiCorot {
         return memberLinks(data, shellAt, sourceIndices, sources, artifact);
     }
 
-    private static void checkLaw(ByteBuffer data, int at) {
+    static void checkLaw(ByteBuffer data, int at) {
         int kind = data.getInt(at);
         if (kind < 0 || kind > 2 || data.getInt(at + 4) != 0) throw invalid("corot law kind");
         checkFinite(data, at + 8, 8);
@@ -988,19 +1041,19 @@ public final class BsiCorot {
         }
     }
 
-    private static void checkFinite(ByteBuffer data, int offset, int count) {
+    static void checkFinite(ByteBuffer data, int offset, int count) {
         for (int i = 0; i < count; i++)
             if (!Double.isFinite(data.getDouble(offset + 8 * i))) throw invalid("nonfinite corot value");
     }
 
-    private static void checkRotation(ByteBuffer data, int offset) {
+    static void checkRotation(ByteBuffer data, int offset) {
         double w = data.getDouble(offset), x = data.getDouble(offset + 8),
                 y = data.getDouble(offset + 16), z = data.getDouble(offset + 24);
         double norm = w * w + x * x + y * y + z * z;
         if (!Double.isFinite(norm) || Math.abs(norm - 1) > 1e-8) throw invalid("corot rotation");
     }
 
-    private static boolean nonnegative(double v) { return Double.isFinite(v) && v >= 0; }
+    static boolean nonnegative(double v) { return Double.isFinite(v) && v >= 0; }
 
     /**
      * Best-effort {@code available}-bit census for the lenient solve path: profile sections
@@ -1034,7 +1087,7 @@ public final class BsiCorot {
                 shells, shellMaterial, shellRetained);
     }
 
-    private static UUID readUuid(String hex) {
+    static UUID readUuid(String hex) {
         return BsiFractureUuid(hex);
     }
 
