@@ -1,6 +1,7 @@
 package com.blockreality.core.finite;
 
 import com.blockreality.api.geom.BlockKey;
+import com.blockreality.core.bsi.BsiCorotFracture;
 import com.blockreality.core.bsi.BsiFracture;
 import com.blockreality.core.bsi.BsiRecords;
 import com.blockreality.core.json.JsonValue;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -47,22 +49,30 @@ public final class FiniteSource {
     public static final int SHELL_LAYER_BYTES = 16;
     public static final int PRESCRIBED_BYTES = 64;
     public static final int GENERALIZED_LOAD_BYTES = 144;
+    public static final int RULE_BYTES = 40;        // bsi_corot_failure_rule
+    public static final int MAX_RULES = 4096;       // failure-rule declaration bound
 
     private final byte[] vocabRequest, vocabReply;
     private final byte[] blocks40, owners20;
     private final byte[] materials, shellLaws, shellLayers, cellLoads, prescribed, loads, options;
+    private final byte[] failureRules;
     private final int[] supportIds;
     private final int blockCount, ownerCount;
+    /** The exact stored payload a decoded source retains so {@link #serialize()} is stable. */
+    private final byte[] persisted;
 
     private FiniteSource(byte[] vocabRequest, byte[] vocabReply, byte[] blocks40, byte[] owners20,
                          byte[] materials, byte[] shellLaws, byte[] shellLayers,
-                         byte[] cellLoads, byte[] prescribed, byte[] loads, byte[] options, int[] supportIds) {
+                         byte[] cellLoads, byte[] prescribed, byte[] loads, byte[] options,
+                         byte[] failureRules, int[] supportIds, byte[] persisted) {
         this.vocabRequest = vocabRequest.clone(); this.vocabReply = vocabReply.clone();
         this.blocks40 = blocks40.clone(); this.owners20 = owners20.clone();
         this.materials = materials.clone(); this.shellLaws = shellLaws.clone(); this.shellLayers = shellLayers.clone();
         this.cellLoads = cellLoads.clone(); this.prescribed = prescribed.clone();
         this.loads = loads.clone(); this.options = options.clone();
+        this.failureRules = failureRules.clone();
         this.supportIds = supportIds.clone();
+        this.persisted = persisted == null ? null : persisted.clone();
         this.blockCount = blocks40.length / BsiRecords.BLOCK_BYTES;
         this.ownerCount = owners20.length / OWNER_BYTES;
     }
@@ -77,6 +87,17 @@ public final class FiniteSource {
                                      Set<Integer> supportMaterialIds,
                                      byte[] materials, byte[] shellLaws, byte[] shellLayers,
                                      byte[] cellLoads, byte[] prescribed, byte[] loads, byte[] options) {
+        return build(vocabRequestJson, vocabReplyJson, blocks, owners, supportMaterialIds,
+                materials, shellLaws, shellLayers, cellLoads, prescribed, loads, options, null);
+    }
+
+    /** {@link #build} plus the durable {@code bsi_corot_failure_rule} section (40 B each). */
+    public static FiniteSource build(String vocabRequestJson, String vocabReplyJson,
+                                     List<BsiRecords.Block> blocks, List<BsiFracture.Owner> owners,
+                                     Set<Integer> supportMaterialIds,
+                                     byte[] materials, byte[] shellLaws, byte[] shellLayers,
+                                     byte[] cellLoads, byte[] prescribed, byte[] loads, byte[] options,
+                                     byte[] failureRules) {
         Objects.requireNonNull(supportMaterialIds);
         canonicalSupport(supportMaterialIds);
         byte[] request = vocab(vocabRequestJson, true), reply = vocab(vocabReplyJson, false);
@@ -89,9 +110,10 @@ public final class FiniteSource {
         for (var owner : sortedOwners)
             out.putInt(owner.position().x()).putInt(owner.position().y()).putInt(owner.position().z()).putLong(owner.artifact());
         byte[] owners20 = out.array();
-        sections(materials, shellLaws, shellLayers, cellLoads, prescribed, loads, options);
+        sections(materials, shellLaws, shellLayers, cellLoads, prescribed, loads, options, failureRules);
         return new FiniteSource(request, reply, blocks40, owners20, copy(materials), copy(shellLaws), copy(shellLayers),
-                copy(cellLoads), copy(prescribed), copy(loads), copy(options), canonicalSupport(supportMaterialIds));
+                copy(cellLoads), copy(prescribed), copy(loads), copy(options), copy(failureRules),
+                canonicalSupport(supportMaterialIds), null);
     }
 
     /** The persisted support-material id set, ascending. */
@@ -127,13 +149,23 @@ public final class FiniteSource {
                            byte[] materials, byte[] shellLaws, byte[] shellLayers,
                            byte[] cellLoads, byte[] prescribed, byte[] loads, byte[] options,
                            int[] supportIds) {
+        return of(vocabRequest, vocabReply, blocks40, owners20, materials, shellLaws, shellLayers,
+                cellLoads, prescribed, loads, options, new byte[0], supportIds, null);
+    }
+
+    /** {@link #of} plus the decoded failure-rules section and the retained original payload. */
+    static FiniteSource of(byte[] vocabRequest, byte[] vocabReply, byte[] blocks40, byte[] owners20,
+                           byte[] materials, byte[] shellLaws, byte[] shellLayers,
+                           byte[] cellLoads, byte[] prescribed, byte[] loads, byte[] options,
+                           byte[] failureRules, int[] supportIds, byte[] persisted) {
         var blocks = decodeBlocks(blocks40);
         var owners = decodeOwners(owners20);
         var support = supportSet(supportIds);
         checkCoverage(blocks, owners, support);
-        sections(materials, shellLaws, shellLayers, cellLoads, prescribed, loads, options);
+        sections(materials, shellLaws, shellLayers, cellLoads, prescribed, loads, options, failureRules);
         return new FiniteSource(vocabRequest, vocabReply, blocks40, owners20, materials,
-                shellLaws, shellLayers, cellLoads, prescribed, loads, options, supportIds);
+                shellLaws, shellLayers, cellLoads, prescribed, loads, options, failureRules,
+                supportIds, persisted);
     }
 
     static List<BsiRecords.Block> decodeBlocks(byte[] blocks40) {
@@ -193,6 +225,12 @@ public final class FiniteSource {
 
     static void sections(byte[] materials, byte[] shellLaws, byte[] shellLayers,
                          byte[] cellLoads, byte[] prescribed, byte[] loads, byte[] options) {
+        sections(materials, shellLaws, shellLayers, cellLoads, prescribed, loads, options, null);
+    }
+
+    static void sections(byte[] materials, byte[] shellLaws, byte[] shellLayers,
+                         byte[] cellLoads, byte[] prescribed, byte[] loads, byte[] options,
+                         byte[] failureRules) {
         stride(materials, MATERIAL_BYTES, 1, (1 << 24));
         stride(shellLaws, SHELL_LAW_BYTES, 0, (1 << 24));
         stride(shellLayers, SHELL_LAYER_BYTES, 0, (1 << 24));
@@ -201,6 +239,7 @@ public final class FiniteSource {
         stride(cellLoads, BsiRecords.LOAD_BYTES, 0, (1 << 24));
         stride(prescribed, PRESCRIBED_BYTES, 0, (1 << 24));
         stride(loads, GENERALIZED_LOAD_BYTES, 0, (1 << 24));
+        stride(failureRules, RULE_BYTES, 0, MAX_RULES);
         if (options == null || options.length != OPTIONS_BYTES) throw invalid();
         var buffer = ByteBuffer.wrap(options).order(ByteOrder.LITTLE_ENDIAN);
         if (buffer.getInt(0) != OPTIONS_BYTES || buffer.getInt(172) != 0) throw invalid();
@@ -244,11 +283,67 @@ public final class FiniteSource {
     public byte[] prescribed() { return prescribed.clone(); }
     public byte[] loads() { return loads.clone(); }
     public byte[] options() { return options.clone(); }
+    /** The durable {@code bsi_corot_failure_rule} section applied by the last committed fracture. */
+    public byte[] failureRules() { return failureRules.clone(); }
     public int blockCount() { return blockCount; }
     public int ownerCount() { return ownerCount; }
     public boolean hasShellMaterials() { return shellLaws.length != 0; }
     public List<BsiRecords.Block> blocks() { return decodeBlocks(blocks40); }
     public List<BsiFracture.Owner> owners() { return decodeOwners(owners20); }
+
+    /**
+     * Every declared material's bsi_role ordinal, as material id → {@code nonstructural=0,
+     * member=1, panel=2, support=3, monolith=4}. Derived, never persisted separately: the
+     * vocabulary request's {@code materials[].role} names plus the reply's id→name table
+     * already carry the binding, so the map is rebuilt by identity on every access.
+     */
+    public java.util.Map<Integer, Integer> materialRoles() {
+        var reply = JsonValue.parseStrict(vocabReplyJson());
+        var request = JsonValue.parseStrict(vocabRequestJson());
+        var names = new java.util.HashMap<String, Integer>();
+        for (JsonValue row : reply.arr("materials")) names.put(row.str("name", ""), (int) row.exactI64("id"));
+        var roles = java.util.Map.of("nonstructural", 0, "member", 1, "panel", 2, "support", 3, "monolith", 4);
+        var out = new java.util.HashMap<Integer, Integer>();
+        for (JsonValue material : request.arr("materials")) {
+            var name = material.str("name", "");
+            Integer id = names.get(name), role = roles.get(material.str("role", ""));
+            if (id == null || role == null) throw invalid();   // reply/request drift
+            out.put(id, role);
+        }
+        return Map.copyOf(out);
+    }
+
+    /**
+     * The vocabulary's material id → default section id map — the {@code defaultSections}
+     * view every corot world validation needs. Rebuilt from the persisted vocabulary
+     * request on every access; a section or material the vocabulary does not know is a
+     * hard error, never a guess.
+     */
+    public java.util.Map<Integer, Integer> defaultSections(com.blockreality.core.bsi.BsiVocabulary vocabulary) {
+        Objects.requireNonNull(vocabulary);
+        var out = new java.util.HashMap<Integer, Integer>();
+        for (JsonValue material : JsonValue.parseStrict(vocabRequestJson()).arr("materials")) {
+            var name = material.str("name", "");
+            var section = material.str("defaultSection", "");
+            if (name.isEmpty() || section.isEmpty()) continue;
+            try {
+                out.put(vocabulary.materialId(name), vocabulary.sectionId(section));
+            } catch (IllegalArgumentException unknown) {
+                throw new IllegalArgumentException("vocabulary default section drift", unknown);
+            }
+        }
+        return Map.copyOf(out);
+    }
+
+    /**
+     * The {@code bsi.vocab.declare} vocabulary this source's bytes encode, decoded offline
+     * for validators that need it (receipt re-verification, rule material lookup).
+     */
+    public com.blockreality.core.bsi.BsiVocabulary vocabulary() {
+        int version = (int) JsonValue.parseStrict(vocabRequestJson()).exactI64("version");
+        return com.blockreality.core.bsi.BsiVocabulary.decodeStored(
+                JsonValue.parseStrict(vocabReplyJson()), version);
+    }
 
     /** The exact {@code bsi.world.declare} payload: blocks40 then owners20. */
     public byte[] worldPayload() {
@@ -269,8 +364,52 @@ public final class FiniteSource {
         return out;
     }
 
-    /** The canonical serialized form stored under {@code objects/}; {@link #sourceHash} hashes it. */
-    public byte[] serialize() { return FiniteCodec.encodeSource(this); }
+    /**
+     * The exact ordered {@code bsi.corot.fracture.prepare} input payload:
+     * {@code materials ‖ cellLoads ‖ prescribed ‖ loads ‖ rules ‖ shellLaws ‖ shellLayers}
+     * — the rules group is the request's own encoded rules (its bytes, not persisted state).
+     */
+    public byte[] fracturePayload(byte[] rules) {
+        stride(rules, RULE_BYTES, 0, MAX_RULES);
+        var out = new byte[materials.length + cellLoads.length + prescribed.length + loads.length
+                + rules.length + shellLaws.length + shellLayers.length];
+        int p = 0;
+        for (byte[] section : List.of(materials, cellLoads, prescribed, loads, rules, shellLaws, shellLayers)) {
+            System.arraycopy(section, 0, out, p, section.length); p += section.length;
+        }
+        return out;
+    }
+
+    /**
+     * The after source of a committed fracture: the receipt's remaining world and owners,
+     * the same effective input sections, the receipt's after-stamped options record, and the
+     * request's rules persisted as the durable {@code failureRules} section. No receipt
+     * content is re-derived; the receipt validator already byte-matched every retained cell.
+     */
+    public static FiniteSource afterFracture(FiniteSource source,
+                                             BsiCorotFracture.Prepared prepared, byte[] rules) {
+        Objects.requireNonNull(source); Objects.requireNonNull(prepared);
+        stride(rules, RULE_BYTES, 0, MAX_RULES);
+        var blocks40 = BsiRecords.encodeBlocks(prepared.remaining());
+        var out = ByteBuffer.allocate(prepared.remainingOwners().size() * OWNER_BYTES)
+                .order(ByteOrder.LITTLE_ENDIAN);
+        for (var owner : prepared.remainingOwners())
+            out.putInt(owner.position().x()).putInt(owner.position().y()).putInt(owner.position().z())
+                    .putLong(owner.artifact());
+        return of(source.vocabRequest, source.vocabReply, blocks40, out.array(), source.materials,
+                source.shellLaws, source.shellLayers, source.cellLoads, source.prescribed,
+                source.loads, prepared.afterOptions(), rules, source.supportIds, null);
+    }
+
+    /**
+     * The canonical serialized form stored under {@code objects/}; {@link #sourceHash} hashes it.
+     * A decoded source retains its original payload bytes (pre-13-section objects keep their
+     * 12-section encoding — hashes already committed are never rewritten); a source built in
+     * memory always serializes the current 13-section schema.
+     */
+    public byte[] serialize() {
+        return persisted != null ? persisted.clone() : FiniteCodec.encodeSource(this);
+    }
 
     public String sourceHash() { return sha256(serialize()); }
     public String vocabHash() {
@@ -293,9 +432,17 @@ public final class FiniteSource {
                 && Arrays.equals(materials, that.materials) && Arrays.equals(shellLaws, that.shellLaws)
                 && Arrays.equals(shellLayers, that.shellLayers) && Arrays.equals(cellLoads, that.cellLoads)
                 && Arrays.equals(prescribed, that.prescribed) && Arrays.equals(loads, that.loads)
-                && Arrays.equals(options, that.options) && Arrays.equals(supportIds, that.supportIds);
+                && Arrays.equals(options, that.options) && Arrays.equals(failureRules, that.failureRules)
+                && Arrays.equals(supportIds, that.supportIds);
     }
-    @Override public int hashCode() { return Arrays.hashCode(sourceHash().getBytes()); }
+    /** Field-tuple hash — never {@link #sourceHash()}, whose bytes differ between 12/13-section encodings of equal content. */
+    @Override public int hashCode() {
+        return Objects.hash(Arrays.hashCode(vocabRequest), Arrays.hashCode(vocabReply),
+                Arrays.hashCode(blocks40), Arrays.hashCode(owners20), Arrays.hashCode(materials),
+                Arrays.hashCode(shellLaws), Arrays.hashCode(shellLayers), Arrays.hashCode(cellLoads),
+                Arrays.hashCode(prescribed), Arrays.hashCode(loads), Arrays.hashCode(options),
+                Arrays.hashCode(failureRules), Arrays.hashCode(supportIds));
+    }
     static IllegalArgumentException invalid() { return new IllegalArgumentException("Invalid finite source"); }
 }
 

@@ -24,6 +24,12 @@ public interface FiniteLane {
     /** The engine handshake completed and the lane is usable. */
     boolean ready();
 
+    /**
+     * True when the engine declares {@code capability}. A capability the engine never
+     * announced is a refusal — the lane must never be assumed to have one.
+     */
+    boolean has(String capability);
+
     /** The production lane over a real {@link InProcessEngine}. */
     static FiniteLane inProcess(InProcessEngine engine) {
         return new FiniteLane() {
@@ -38,6 +44,9 @@ public interface FiniteLane {
             }
             @Override public boolean ready() {
                 return engine.status() == InProcessEngine.Status.READY;
+            }
+            @Override public boolean has(String capability) {
+                return engine.has(capability);
             }
         };
     }

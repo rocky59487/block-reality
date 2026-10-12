@@ -1,6 +1,7 @@
 package com.blockreality.core.finite;
 
 import com.blockreality.core.finite.FiniteCodec.Operation;
+import com.blockreality.core.transaction.ConstructionTransaction;
 import com.blockreality.core.transaction.ConstructionTransaction.Change;
 import com.blockreality.core.transaction.ConstructionTransaction.Entry;
 import com.blockreality.core.transaction.ConstructionTransaction.Intent;
@@ -237,6 +238,7 @@ public final class FiniteRegistry {
         else if (op instanceof Operation.Observe) validateObserve(byResource, allowed);
         else if (op instanceof Operation.CommitRoot commit) validateCommit(byResource, allowed, commit.next(), entry.request().id(), false);
         else if (op instanceof Operation.CommitHistory history) validateCommit(byResource, allowed, history.next(), entry.request().id(), true);
+        else if (op instanceof Operation.CommitFracture fracture) validateCommitFracture(byResource, allowed, fracture, entry.request());
         else throw invalid();
         for (String key : byResource.keySet())
             if (!allowed.contains(key)) throw invalid();  // unexpected finite resource — fail closed
@@ -411,6 +413,200 @@ public final class FiniteRegistry {
         allowed.add(key);
     }
 
+    // ---------------------------------------------------------------- fracture commit
+
+    /** The chunked durable-evidence key: {@code finite/fracture/<txid>/{plan,request,wire}/<i>}. */
+    public static String fractureKey(UUID requestId, String group, int part) {
+        FiniteDomainId.nonzero(requestId);
+        if (part < 0) throw invalid();
+        return "finite/fracture/" + FiniteCodec.BsiHex(requestId) + "/" + group + "/" + part;
+    }
+
+    /**
+     * The complete W4-A commit validation (doc §5.3): reassemble every chunked resource,
+     * re-decode the plan and both frames, replay the request against the committed source
+     * byte for byte, re-run the full receipt validator on the stored wire frame and
+     * cross-check every plan field, then recompute the intent hash. Anything short of
+     * byte-exact reproduction refuses the whole intent.
+     */
+    private void validateCommitFracture(Map<String, Change> byResource, Set<String> allowed,
+                                        Operation.CommitFracture fracture, Request request) {
+        // ---- root change: the world boundary, always with a committed before-root ----
+        String rootChangeKey = null;
+        UUID bsi = null;
+        for (var e : byResource.entrySet()) {
+            if (e.getKey().startsWith("finite/root/")) {
+                if (rootChangeKey != null) throw invalid();
+                rootChangeKey = e.getKey();
+                bsi = hexUuid(e.getKey().substring("finite/root/".length()));
+            }
+        }
+        if (rootChangeKey == null || bsi == null || !dimensionByBsi.containsKey(bsi)) throw invalid();
+        var domain = domains.get(dimensionHash(dimensionByBsi.get(bsi)));
+        var committed = roots.get(bsi);
+        var next = fracture.next();
+        if (domain == null || committed == null || next.checkpoint() == null) throw invalid();
+        var rootChange = byResource.get(rootChangeKey);
+        if (!rootChange.after().present() || !rootChange.before().present()
+                || !FiniteCodec.decodeRoot(rootChange.before().bytes()).equals(committed))
+            throw invalid();
+        var expectedRoot = new FiniteRoot(next.worldRevision(), next.historySequence(), next.source(),
+                next.checkpoint(), FiniteSource.sha256(FiniteCodec.encodeRoot(committed)), request.id());
+        if (!expectedRoot.equals(FiniteCodec.decodeRoot(rootChange.after().bytes()))) throw invalid();
+        if (next.worldRevision() != committed.worldRevision() + 1
+                || next.historySequence() != committed.historySequence() + 1) throw invalid();
+        allowed.add(rootChangeKey);
+
+        // ---- reassemble chunked durable evidence ----
+        var plan = FiniteCodec.decodeFracturePlan(
+                chunks(byResource, allowed, request.id(), "plan", fracture.planParts()));
+        if (!plan.planHash().equals(fracture.planHash())) throw invalid();
+        byte[] requestFrame = chunks(byResource, allowed, request.id(), "request", fracture.requestParts());
+        byte[] wireFrame = chunks(byResource, allowed, request.id(), "wire", fracture.wireParts());
+
+        // ---- plan vs committed basis and journal request ----
+        FiniteSource beforeSource;
+        try { beforeSource = source(domain.id()); }
+        catch (IOException unavailable) {
+            throw new IllegalArgumentException("Committed finite source unavailable", unavailable);
+        }
+        if (!plan.domain().equals(domain.id()) || !plan.request().equals(request.id())
+                || !plan.actor().equals(request.actor())) throw invalid();
+        var before = plan.before();
+        if (before.worldRevision() != committed.worldRevision()
+                || before.historySequence() != committed.historySequence()
+                || !before.sourceHash().equals(beforeSource.sourceHash())
+                || !before.vocabHash().equals(beforeSource.vocabHash())
+                || !before.ownersHash().equals(beforeSource.ownersHash())) throw invalid();
+        var after = plan.after();
+        if (after.worldRevision() != next.worldRevision()
+                || after.historySequence() != next.historySequence()
+                || !after.source().equals(next.source()) || !after.checkpoint().equals(next.checkpoint()))
+            throw invalid();
+
+        // ---- the request frame must be the canonical bytes of the committed source ----
+        var decoded = com.blockreality.core.bsi.BsiFrame.decode(requestFrame, requestFrame.length);
+        var requestHeader = com.blockreality.core.json.JsonValue.parseStrict(decoded.header());
+        if (!"request".equals(requestHeader.str("kind", ""))
+                || !"bsi.corot.fracture.prepare".equals(requestHeader.str("method", ""))
+                || !requestHeader.isExactInt("bsi")
+                || requestHeader.exactI64("bsi") != com.blockreality.core.bsi.BsiContract.MAJOR
+                || !requestHeader.isExactInt("revision")
+                || requestHeader.exactI64("revision") != committed.worldRevision())
+            throw invalid();
+        var requestBody = requestHeader.objField("body");
+        if (!requestBody.isObject() || !requestBody.isExactInt("budget")) throw invalid();
+        long budget = requestBody.exactI64("budget");
+        if (budget < 0 || budget > com.blockreality.core.bsi.BsiCorotFracture.MAX_EVENTS) throw invalid();
+        var payload = decoded.payload();
+        int head = beforeSource.materials().length + beforeSource.cellLoads().length
+                + beforeSource.prescribed().length + beforeSource.loads().length;
+        int tail = beforeSource.shellLaws().length + beforeSource.shellLayers().length;
+        if (payload.length < head + tail || (payload.length - head - tail)
+                % com.blockreality.core.bsi.BsiCorotFracture.RULE_BYTES != 0) throw invalid();
+        var rulesBytes = java.util.Arrays.copyOfRange(payload, head, payload.length - tail);
+        var rules = com.blockreality.core.bsi.BsiCorotFracture.decodeRules(rulesBytes);
+        var roles = beforeSource.materialRoles();
+        for (var rule : rules) if (!roles.containsKey(rule.material())) throw invalid();
+        var expectedId = com.blockreality.core.bsi.BsiCorotFracture.prepareId(plan.request());
+        if (!expectedId.equals(requestHeader.str("id", ""))) throw invalid();
+        var canonicalRequest = com.blockreality.core.bsi.BsiFrame.encode(
+                com.blockreality.core.bsi.BsiCorotFracture.prepare(
+                        expectedId, committed.worldRevision(), beforeSource.options(),
+                        beforeSource.materials().length / com.blockreality.core.bsi.BsiCorot.MATERIAL_BYTES,
+                        beforeSource.cellLoads().length / 64,
+                        beforeSource.prescribed().length / com.blockreality.core.bsi.BsiCorot.PRESCRIBED_BYTES,
+                        beforeSource.loads().length / com.blockreality.core.bsi.BsiCorot.LOAD_BYTES,
+                        plan.request(), rules.size(), (int) budget,
+                        beforeSource.shellLaws().length / com.blockreality.core.bsi.BsiCorot.SHELL_LAW_BYTES,
+                        beforeSource.shellLayers().length / com.blockreality.core.bsi.BsiCorot.SHELL_LAYER_BYTES),
+                beforeSource.fracturePayload(rulesBytes));
+        if (!java.util.Arrays.equals(canonicalRequest, requestFrame)) throw invalid();
+        if (!FiniteSource.sha256(requestFrame).equals(plan.requestFrameHash())) throw invalid();
+
+        // ---- the wire frame must survive the complete §3 receipt validation ----
+        var wire = com.blockreality.core.bsi.BsiFrame.decode(wireFrame, wireFrame.length);
+        var receipt = com.blockreality.core.bsi.BsiCorotFracture.checkPrepared(
+                com.blockreality.core.bsi.BsiResponse.of(wire),
+                expectedId, committed.worldRevision(), bsi,
+                committed.worldRevision(), domain.id().artifactNamespace(),
+                fractureWorld(beforeSource), plan.request(), (int) budget);
+        if (!receipt.qualified()) throw invalid();
+        if (!FiniteSource.sha256(wireFrame).equals(plan.wireFrameHash())
+                || !plan.token().equals(receipt.token())
+                || plan.steps() != receipt.steps() || plan.flags() != receipt.flags()
+                || plan.remainingBlocks() != receipt.remainingBlocks()
+                || plan.end() != receipt.end() || plan.corotFlags() != receipt.corotFlags()
+                || plan.pending() != receipt.pending()
+                || plan.fullyConverged() != receipt.fullyConverged()
+                || !plan.remainingGeneration().equals(receipt.remainingGeneration())
+                || plan.beforeCells() != receipt.cells().size()
+                || !plan.retiredOwnership().equals(receipt.retiredOwnership())
+                || !plan.bornBodies().equals(receipt.bornBodies())
+                || !java.util.Arrays.equals(plan.loadLedger(), receipt.loadLedger())
+                || !java.util.Arrays.equals(plan.archiveRecords(), receipt.archiveRecords()))
+            throw invalid();
+
+        // ---- the after source must be exactly the receipt's remaining world ----
+        var afterSource = FiniteSource.afterFracture(beforeSource, receipt, rulesBytes);
+        if (!afterSource.sourceHash().equals(after.sourceHash())) throw invalid();
+        var envelope = FiniteCodec.pack(FiniteCodec.KIND_SOURCE, afterSource.serialize());
+        var rebuiltRef = new FiniteBlobRef(FiniteSource.sha256(envelope), envelope.length);
+        if (!rebuiltRef.equals(next.source())) throw invalid();
+        verifySourceRef(next.source());
+        verifyBlobRef(next.checkpoint().blob(), FiniteCodec.KIND_CHECKPOINT);
+
+        // ---- retired set: the committed active owners the receipt dissolved ----
+        var surviving = new HashSet<Long>();
+        for (var owner : afterSource.owners()) surviving.add(owner.artifact());
+        var expectedRetired = new ArrayList<Long>();
+        for (var binding : activeBindings(domain.id().artifactNamespace()))
+            if (!surviving.contains(binding.ownerId())) expectedRetired.add(binding.ownerId());
+        if (!fracture.retiredOwnerIds().equals(expectedRetired)
+                || !plan.retiredOwnership().equals(expectedRetired)) throw invalid();
+        for (long id : fracture.retiredOwnerIds()) {
+            var key = ownerKey(domain.id().artifactNamespace(), id);
+            var change = byResource.get(key);
+            if (change == null || !change.before().present() || !change.after().present())
+                throw invalid();
+            var bindingBefore = FiniteCodec.decodeBinding(change.before().bytes());
+            var bindingAfter = FiniteCodec.decodeBinding(change.after().bytes());
+            var committedBinding = bindingsByNs.getOrDefault(domain.id().artifactNamespace(), Map.of()).get(id);
+            if (committedBinding == null || !committedBinding.equals(bindingBefore)
+                    || !committedBinding.active()
+                    || !bindingAfter.equals(bindingBefore.retired(request.id()))) throw invalid();
+            allowed.add(key);
+        }
+
+        // ---- the intent hash binds everything durable ----
+        if (!FiniteCodec.fractureIntentHash(plan).equals(fracture.intentHash())
+                || !request.planHash().equals(fracture.intentHash())) throw invalid();
+    }
+
+    /** Reassemble one chunked {@code finite/fracture/<tx>/<group>/<i>} group, contiguous and complete. */
+    private byte[] chunks(Map<String, Change> byResource, Set<String> allowed,
+                          UUID requestId, String group, int parts) {
+        var out = new java.io.ByteArrayOutputStream();
+        for (int i = 0; i < parts; i++) {
+            var key = fractureKey(requestId, group, i);
+            var change = byResource.get(key);
+            if (change == null || change.before().present() || !change.after().present())
+                throw invalid();
+            try { out.write(change.after().bytes()); }
+            catch (java.io.IOException impossible) { throw new AssertionError(impossible); }
+            allowed.add(key);
+        }
+        return out.toByteArray();
+    }
+
+    /** The {@code FractureWorld} a committed source implies — the same view the session built live. */
+    private static com.blockreality.core.bsi.BsiCorotFracture.FractureWorld fractureWorld(FiniteSource source) {
+        var vocabulary = source.vocabulary();
+        return new com.blockreality.core.bsi.BsiCorotFracture.FractureWorld(
+                source.blocks(), source.owners(), vocabulary, source.defaultSections(vocabulary),
+                source.materialRoles(), source.cellLoads(), source.shellLaws());
+    }
+
     private void verifySourceRef(FiniteBlobRef ref) {
         try {
             var body = store.read(ref);
@@ -542,8 +738,68 @@ public final class FiniteRegistry {
         return prove(request, op, changes);
     }
 
+    /**
+     * Propose a W4-A fracture commit (doc §5.2): the world boundary root change, one
+     * RETIRED after-image per retired owner, and the complete durable evidence —
+     * plan / request frame / wire frame — chunked under
+     * {@code finite/fracture/<txid>/}. The request's {@code planHash} carries the
+     * intent hash; the validator re-derives every byte before the intent may apply.
+     */
+    public synchronized Prepared prepareCommitFracture(Request request, FiniteDomainId domain,
+                                                       FiniteFracturePlan plan,
+                                                       byte[] requestFrame, byte[] wireFrame) {
+        healthy(); ready(request);
+        Objects.requireNonNull(plan); Objects.requireNonNull(requestFrame);
+        Objects.requireNonNull(wireFrame);
+        requireCurrent(domain);
+        if (roots.get(domain.bsiDomain()) == null) throw invalid();
+        byte[] planBytes = plan.encode();
+        var op = new Operation.CommitFracture(plan.after().next(), plan.retiredOwnership(),
+                plan.planHash(), parts(planBytes.length), parts(requestFrame.length),
+                parts(wireFrame.length), FiniteCodec.fractureIntentHash(plan));
+        var changes = base(request, op);
+        var committed = roots.get(domain.bsiDomain());
+        var root = new FiniteRoot(plan.after().worldRevision(), plan.after().historySequence(),
+                plan.after().source(), plan.after().checkpoint(),
+                FiniteSource.sha256(FiniteCodec.encodeRoot(committed)), request.id());
+        changes.add(new Change(rootKey(domain.bsiDomain()),
+                Value.of(FiniteCodec.encodeRoot(committed)), Value.of(FiniteCodec.encodeRoot(root))));
+        var existing = bindingsByNs.getOrDefault(domain.artifactNamespace(), Map.of());
+        for (long id : plan.retiredOwnership()) {
+            var binding = existing.get(id);
+            if (binding == null || !binding.active()) throw invalid();
+            changes.add(new Change(ownerKey(domain.artifactNamespace(), id),
+                    Value.of(FiniteCodec.encodeBinding(binding)),
+                    Value.of(FiniteCodec.encodeBinding(binding.retired(request.id())))));
+        }
+        chunk(changes, request.id(), "plan", planBytes);
+        chunk(changes, request.id(), "request", requestFrame);
+        chunk(changes, request.id(), "wire", wireFrame);
+        return prove(request, op, changes);
+    }
+
+    private static int parts(long length) {
+        if (length < 1 || length > ConstructionTransaction.MAX_VALUE_BYTES * 4096L) throw invalid();
+        return (int) ((length + ConstructionTransaction.MAX_VALUE_BYTES - 1)
+                / ConstructionTransaction.MAX_VALUE_BYTES);
+    }
+
+    private static void chunk(List<Change> changes, UUID requestId, String group, byte[] bytes) {
+        for (int offset = 0, part = 0; offset < bytes.length; part++) {
+            int end = (int) Math.min((long) bytes.length,
+                    (long) offset + ConstructionTransaction.MAX_VALUE_BYTES);
+            changes.add(new Change(fractureKey(requestId, group, part), Value.missing(),
+                    Value.of(java.util.Arrays.copyOfRange(bytes, offset, end))));
+            offset = end;
+        }
+    }
+
     private Prepared prove(Request request, Operation op, List<Change> changes) {
-        if (!request.planHash().equals(planHash(op))) throw invalid();
+        // CommitFracture carries the intent hash, not the raw plan hash: the durable
+        // binding is the effective-input digest the driver derived from the request.
+        var expected = op instanceof Operation.CommitFracture fracture
+                ? fracture.intentHash() : planHash(op);
+        if (!request.planHash().equals(expected)) throw invalid();
         var prepared = new Prepared(request, op, changes);
         // Re-run the full validator on the proposal: a prepare that cannot pass its own fold is a bug.
         validate(Entry.prepared(prepared.intent()), new FoldedTx(order + 1, op));
@@ -598,6 +854,25 @@ public final class FiniteRegistry {
             failed = true;
             throw new IOException("Committed finite record is inconsistent", malformed);
         }
+    }
+
+    /**
+     * Fold-forward (doc §6.3): apply every committed finite operation whose order is
+     * greater than the in-memory fold, in order. Used after a restart — or after a
+     * coordinator commit — to make this registry match the durable journal exactly.
+     */
+    public synchronized void sync(FileTransactionJournal journal) throws IOException {
+        healthy();
+        if (!journalDomain.equals(journal.domain())) throw new IOException("Foreign construction journal");
+        var pending = new TreeMap<Long, UUID>();
+        for (UUID id : journal.entryIds()) {
+            Entry entry = journal.read(id).orElseThrow(() -> new IOException("Finite record disappeared"));
+            if (entry.phase() != Phase.COMMITTED) continue;
+            var tx = finiteTx(entry);
+            if (tx == null || tx.order() <= order) continue;
+            if (pending.putIfAbsent(tx.order(), id) != null) throw invalid();
+        }
+        for (var step : pending.entrySet()) applyCommitted(journal, step.getValue());
     }
 
     /** Validate a pending entry against committed authority before its images are trusted. */
