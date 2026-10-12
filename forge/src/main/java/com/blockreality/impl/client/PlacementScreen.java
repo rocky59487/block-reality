@@ -71,8 +71,11 @@ final class PlacementScreen extends Screen {
         rows=new ArrayList<>();
         for(Component line:details()){rows.addAll(font.split(line,textWidth));rows.add(Component.empty().getVisualOrderText());}
         int controlHeight=state.terminal?48:72;
-        bottom=Math.min(height-6,bodyTop+rows.size()*12+controlHeight+4);
-        int controls=bottom-controlHeight;bodyBottom=controls-4;
+        // Controls anchor to a fixed offset, not the floating content bottom: row-count changes
+        // (offer arrival, expiry, refresh) must never teleport buttons out from under the pointer.
+        int controls=Math.min(height-6-controlHeight-4,top+120);
+        bottom=Math.min(height-6,Math.max(controls+controlHeight+4,bodyTop+rows.size()*12+4));
+        bodyBottom=controls-4;
         for(Button axis:axes)axis.setY(controls);
         primary.setY(controls+24);close.setY(controls+(state.terminal?24:48));
         int viewport=Math.max(0,bodyBottom-bodyTop);
