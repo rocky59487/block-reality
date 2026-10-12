@@ -278,3 +278,119 @@ loads(144B)、rules(40B)、shellLaws(56B)、shellLayers(16B)——長度恰為�
 - 不改 `Forge/`、不實作真 Level 移除/碎塊/碰撞/W4a 非阻塞 runtime。
 - 不削弱既有 W2/W3 驗證；不在 Java 推導力學；來源與封存只搬運原生位元組。
 - 規格文件與實作分開提交；不 push、不開 PR；首失敗與原始輸出保留。
+
+## §9 W4-B 凍結判準（criteria，先於實作凍結）
+
+本節是 W4-B Forge 主機腿的凍結判準。任務書的測試腿與不變式逐項保留；本節只把任務書留給實作者的選項（revision 鐘、資源鍵、路由策略、私有 lane 形狀、world before-image 語意）固定下來，實作中不得改寫。
+
+### 9.1 revision 鐘（凍結）
+
+`ForgeFiniteFractureHost.revision()` 回傳**已提交 finite root 的 `worldRevision`**（`finite/root/<bsiDomain>` 折疊值的 `worldRevision` 欄位）——與 W4-A `FiniteFractureDriver.Publication.revision()` 完全同源：
+
+- 恢復路由交出的是 `driver.recoveryHost(host)` 回傳的 `Publication`；CAS 檢查讀到的 revision 一律是折疊 root 的 `worldRevision`，與執行路徑一致；
+- `StructureManager` 世界閘門（`gate().current()`）是**獨立時鐘**：construction 交易用它做 CAS，fracture 不混入，避免兩條時鐘互相誤判 STALE；
+- `FiniteFracturePlan` 本來就把 `after.worldRevision = before+1` 釘死（world/history 各自 +1）——root `worldRevision` 即天然結果鐘；
+- finite 領域的世界修訂權威掛在 `finite/root/...`，不掛在 Forge world 閘門上。
+
+### 9.2 資源命名與值語意（凍結）
+
+| 資源鍵 | 語意 |
+|---|---|
+| `cell/<x>/<y>/<z>` | `Value.missing()` ⇔ 該格為 air／已移除；present = `CellStateImage` canonical BlockState NBT。`read()` 在 air 上回傳 missing。 |
+| `body/<ns-hex32>/<artifact>` | 誕生體 durable 記錄（§9.4 新增）。before 必為 missing；after = 28B 記錄。 |
+| `finite/`、`fracture/` | journal/registry 私有命名空間，主機 `prepareImages`/`read`/`write`/`checkpoint`/`flush` 不得發出（driver 於接收端已拒絕；主機同樣 fail-closed）。 |
+| `chunk/<x>/<z>` | **不**做為 journal 資源：chunk NBT after-image 在 durable COMMIT 前不存在（§9.3 shadow 語意）。被影響 chunk 的完整 before NBT 經 `captureBaseline` 寫成 durable baseline，是 before-witness 而非 CAS 資源。 |
+| `player/` | W4-B 破碎不產生物品／庫存效果——retired cell 移除不退料、bornBody 不是物品。此命名保留給既有 construction 慣例，fracture host 不發出、不消費。 |
+
+### 9.3 世界 before-image 與 staged 語意（凍結）
+
+採 **shadow-write** 語意，比 construction Host 的「write 即變異世界＋排除視窗」更強：
+
+1. `prepareImages(request, staged)` 純捕捉：逐 removed cell `readCell` 取 live before-image、檢查 `uncapturable(cell)`、計算 affected chunk 集合、組裝 `body/` 記錄——**不觸碰世界**（不 setBlock、不 spawn、不送封包、不做原生呼叫）；
+2. `checkpoint(resources)` 把 affected chunk 的完整 live NBT（含 block entities、scheduled tick 資料）經 `ChunkFileParticipant` 持久化為 durable before-baseline，並重核對 live 值仍等於 before；
+3. `write(resource, value)` 只寫入**主機私有 staged 陰影**（記憶體 map），並校驗 value ∈ {before, after}；世界維持 before 態直到 COMMIT；
+4. `flush(resources)` 校驗陰影覆蓋全部參與者且 baseline 已 durable；**不**把 after 寫進世界；
+5. `publish(receipt, plan)` 是**唯一**的世界變異點：逐 cell 套用 after（missing → 移除＋block entity 清理）、`markBody` 記 pending-body、`persistAfter` 持久化 after chunk、`publishNotice` 送 S2C；
+6. PREPARED 崩潰 ⇒ 世界本來就在 before 態（變異從未發生）——rollback 的 before-image 寫回陰影即滿足「before-images 恢復世界」的最強形式；
+7. COMMITTED 崩潰 ⇒ `publishRecoveredState()` 逐條重放 COMMITTED fracture entry 的非 finite 變更：live==after → skip（冪等）；live==before → 重套 after；live 既非 before 亦非 after → `IOException` fail-closed。
+
+### 9.4 誕生體記錄（凍結）
+
+- 資源鍵：`body/<ns-hex32>/<artifact-id>`，`ns` = `domain.artifactNamespace()` 的 UUID hex；
+- 記錄值：28 bytes `[x:i32][y:i32][z:i32][artifact:i64][state:i32][flags:i32]`，`state=0`（`PENDING_BODY`）、`flags=0`；
+- before 必為 `Value.missing()`（新 durable 記錄）；`publish` 時 `markBody` 做世界側標記（生產：bornBody 座標為 air 時放 `minecraft:structure_void` 不可見 marker——保留空間、無碰撞、誠實宣稱「待生成體」而非剛體）；
+- `prepareImages` 拒絕：bornBody anchor 座標既不在移除集合內、live 格也非 air（佔用格不可被 marker 覆寫）；
+- **沒有任何 placeholder 假裝是剛體**：`markBody` 是 named `PENDING_BODY` 標記＋durable 記錄，不產生 entity、不報體積/質量。
+
+### 9.5 私有 lane（凍結）
+
+`openLane()` 回傳 **marshaling 私有 lane**：一個 `FiniteLane`，其 `request/has/adoptVocabulary/declareFiniteWorld/ready` 全部轉送到該 lane 專屬的 daemon 執行緒（`br-fracture-lane-*`）上執行——`OpenedLane`（lane＋engine closer＋engineBuild＋contractSha256）也在該執行緒上開啟與關閉；呼叫執行緒以 `CountDownLatch` 回覆槽同步等待（同步 lane 契約的實作細節）。
+
+凍結語義：
+
+- **server thread / tick 不執行 JNA**——所有原生呼叫只在私有 lane 自己的執行緒上跑，可由呼叫執行緒名稱斷言；
+- **絕不回傳 authority session 的 lane**（`FiniteLaneWorker` 的 `br-finite-lane-*`）；`sessionGeneration()` 恆大於 `runtime.sessionGeneration()`（`max(counter+1, authority+1)`）；
+- 「不 join worker future」的凍結解讀：server thread **不**對 `FiniteLaneWorker` 的 posted async API（`call()`/`sync()`）做 `get/join`；私有 lane 是同步契約（與 `ChunkFileParticipant.await(future)` 於 transaction 路徑的既有慣例同型），阻塞在 lane 回覆上屬 §5.2 已命名的 slow path——不裝快、不隱藏並行；
+- execute 結束（任何結果）後由 service 關閉 `OpenedLane`（engine＋執行緒一起死）；staged `FiniteSession` 一律 close（authority session 由 `runtime.syncAll()` 非同步重建，不阻塞 server thread）。
+
+### 9.6 混合 intent 路由（凍結）
+
+雙重判別（任務書 §4.3 的兩個命名選項同時落地）：
+
+1. `FiniteJournalHost.isFinite(entry)` 改為「**全部** changes 都是 `finite/`」⇒ 混合 intent 不再被誤判為純 finite；
+2. 新增 `FiniteJournalHost.isFracture(entry)`：任何 change 的 resource 以 `finite/fracture/` 開頭 ⇒ fracture 意圖；
+3. `pendingRouter`（由 `FiniteFractureService` 於 `aboutToStart` NORMAL 安裝，覆寫 `ForgeFiniteService` 於 HIGH 安裝者）：
+
+   ```
+   pending == null          → null
+   isFracture(pending)      → FiniteFractureService.recoveryHost(pending)
+                              （runtime/service 不可用 → IOException 具名失敗，fail-closed）
+   runtime == null          → isFinite(pending) ? IOException : null
+   其餘                     → runtime.recoveryHost(pending)
+   ```
+
+   ⇒ 純 finite → `FiniteJournalHost`；混合／純 fracture → `driver.recoveryHost(host)` 的 `Publication`；manufactured → `null`（回退 construction Host）——永不誤送。
+
+### 9.7 驅動入口與維度閘門（凍結）
+
+`FiniteFractureService` 提供唯一 test-mode 入口：
+
+```java
+Receipt fracture(ServerLevel level, FiniteDomainId domain,
+                 List<BsiCorotFracture.Rule> rules, int budget, UUID requestId)
+```
+
+- server thread＋`entryGuard`＋`armed`＋domain 已收養＋dimension ∈ `finiteTestDimensions`（空集 ⇒ 生存維度一律拒絕；**沒有任何預設觸發點**，無 event hook 接 fracture）；
+- request：`actor` = `FRACTURE_ACTOR`（`nameUUIDFromBytes("blockreality/fracture-system")`）、`actorProvenance="server/fracture"`、`session` = service session、`journal.domain()`、`baseRevision` = committed root `worldRevision`、`intentHash` 經 `FiniteFractureDriver.intentHash`；
+- budgets：`format=1, byteBudget=1<<20, allocationBudget=4096, elementBudget=4096`；
+- 整個 `driver.execute` 同步跑在 server thread（§9.5 的 named slow path；§5.2 的 async 移交屬 W4a）。
+
+### 9.8 測試腿 ↔ 不變式對照（凍結）
+
+`forge/src/test/java/.../ForgeFiniteFractureTest.java`，沿用 `ForgeFiniteRuntimeTest` 風格（`@TempDir`、scripted lane、`onServerThread`/`entryOpen` 旗標）：
+
+| 測試 | 覆蓋不變式 |
+|---|---|
+| `fractureCommitsAndPublishesOnce` | replay 一次世界變異（同 request 重放不再 publish、cell removal 計數==1、host publish 計數==1）；世界變異只在 COMMITTED 之後（fake world `applyCell` 內斷言 journal phase==COMMITTED）；retired owner 一次；私有 lane 執行緒名斷言；`sessionGeneration` 相異 |
+| `prepareImagesCapturesWithoutMutating` | prepareImages 純捕捉（世界 mutation 計數==0、讀取發生、無 native 呼叫） |
+| `pendingPreparedFractureRestoresBeforeImage` | PREPARED 崩潰 → 路由 rollback → ABORTED＋世界仍 before 態（shadow 語意下最強形式） |
+| `committedCrashFoldsForwardAndRepublishes` | COMMITTED 未 publish 崩潰 → `driver.recover` fold-forward＋republish → 世界 after 態、owner retired、body 記錄齊 |
+| `pendingRouterRoutesThreeKinds` | 純 finite → FiniteJournalHost；fracture／mixed → Publication（fracture host）；manufactured → null |
+| `foreignFiniteImageRefused` | `prepareImages` 產生 `finite/` 資源 → driver 拒絕（namespace 保留）；host `read/write/checkpoint/flush` 收到 `finite/`、`fracture/` 鍵 → fail-closed |
+| `uncapturableMutationRefused` | `uncapturable(cell)` 回報具名來源（moving-piston／scheduled-tick／explosion-queue／non-capturable block entity）→ `ValidationRefused` → durable `REJECTED`（request id 已耗），絕不靜默 |
+| `bornBodiesBecomePendingRecords` | synthetic `Staged` 帶 bornBodies → `body/` Change（before missing、after 28B、state=0）；publish → `markBody` 每體一次、不產生 entity 偽造；anchor 被非移除格佔用 → 拒絕 |
+| `staleBasisRejected` / `replayConflictRejected` | driver CAS 腿在 Forge host 上的對應（basis mismatch → STALE；同 id 異 request → conflict） |
+| 服務殼斷言 | `admittedDimensions` 空集拒絕生存維度、無預設觸發（`FiniteFractureService` 檔案斷言＋`Core` 閘門單測） |
+
+### 9.9 測試命令與計數（凍結）
+
+```bash
+# mod/（core 契約不變式回歸）
+./gradlew :core:test
+# forge/（W4-B 主機腿）
+./gradlew compileJava test
+# 文件釘數
+python3 scripts/check_docs.py sidecar/legacy-dist/br-sidecar.exe
+```
+
+交付時以實測數字更新 `java_total` 釘點（`README-pre-alpha.md` ×2 位置、`QUICKSTART-pre-alpha.md`、`RESEARCH_BRIEF.md` ×2、`LISTING.md`），不得憑估計填數。SKIP 不算綠，首次失敗輸出必須保留並誠實報告差異。
