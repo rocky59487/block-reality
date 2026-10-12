@@ -134,5 +134,22 @@
   "br.build.status.rate_limited": "Too many requests. Wait a moment, then retry.",
   "br.build.status.committed": "Placed. Material and component identity are saved.",
   "br.build.status.aborted": "Placement cancelled; world and materials restored.",
-  "br.build.status.rejected": "Placement refused. No construction was applied."
+  "br.build.status.rejected": "Placement refused. No construction was applied.",
+  "br.finite.title": "Finite analysis",
+  "br.finite.basis": "world rev %s · history %s",
+  "br.finite.partial": "not fully converged — a step ended short",
+  "br.finite.load_factor": "load factor %s",
+  "br.finite.load_factor.missing": "load factor not reported",
+  "br.finite.island": "island %s: %s",
+  "br.finite.island.more": "…%s more islands",
+  "br.finite.status.converged": "converged",
+  "br.finite.status.mechanism": "mechanism",
+  "br.finite.status.not_converged": "not converged",
+  "br.finite.status.unsupported": "unsupported",
+  "br.finite.status.inactive": "inactive",
+  "br.finite.status.unknown": "unknown status %s",
+  "br.finite.material": "material history: %s/%s members, %s/%s panels",
+  "br.finite.material.none": "no material history reported",
+  "br.finite.arc": "static continuation — radius %s, residual %s",
+  "br.finite.not_assessed": "not assessed — no island results"
 }

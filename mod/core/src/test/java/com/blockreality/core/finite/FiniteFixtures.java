@@ -39,7 +39,7 @@ final class FiniteFixtures {
 
     static byte[] options176(UUID bsiDomain, long revision) {
         var b = ByteBuffer.allocate(176).order(ByteOrder.LITTLE_ENDIAN);
-        b.putInt(176).putInt(1);                          // struct_size, flags bit0 selfWeight
+        b.putInt(176).putInt(5);                          // struct_size, flags bit0 selfWeight | bit2 retainLoadPath
         b.putLong(bsiDomain.getMostSignificantBits()).putLong(bsiDomain.getLeastSignificantBits());
         b.putLong(revision);
         b.putDouble(1.0);                                 // loadFactor
@@ -49,7 +49,7 @@ final class FiniteFixtures {
         b.putDouble(1e-8).putDouble(1e-4);                // linear/path tolerance
         b.putInt(1 << 20).putInt(0);                      // budgetDof, numThreads (host)
         b.putInt(50).putInt(4).putInt(8).putInt(25).putInt(1); // iterations/attempts/backtracks/linear/restart
-        b.putInt(4096).putInt(32).putInt(4).putInt(8);    // point/fiber/radial/angular budgets
+        b.putInt(4096).putInt(8).putInt(2).putInt(8);     // point/fiber/radial/angular budgets
         b.putInt(0);                                      // trailing pad
         return b.array();
     }

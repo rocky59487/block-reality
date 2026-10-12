@@ -339,10 +339,11 @@ public final class ClientStressState {
     /** Logout or a new connection retires both the picture and its ordering domain. */
     public static void clear() {
         clearView(); deliveryClock.resetConnection(); connection = null;
+        ClientFiniteState.clear();
     }
 
     /** Same-connection travel/respawn retires the binding, while old sequence numbers stay retired. */
-    public static void leaveDimension() { clearView(); deliveryClock.leaveDimension(); }
+    public static void leaveDimension() { clearView(); deliveryClock.leaveDimension(); ClientFiniteState.leaveDimension(); }
 
     public static void acceptUpdate(AnalysisUpdatePacket p, net.minecraft.network.Connection sender) {
         Minecraft mc = Minecraft.getInstance();

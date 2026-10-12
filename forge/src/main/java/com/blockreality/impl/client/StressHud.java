@@ -63,6 +63,7 @@ public final class StressHud {
                 Component.translatable("br.scan.mode." + mode.name().toLowerCase(Locale.ROOT)))
                 .withStyle(net.minecraft.ChatFormatting.BOLD), HudPanel.PRIMARY);
         panel.gap();
+        drawFinite(panel);
 
         var notice = ClientStressState.notice();
         if (notice != null && (notice != com.blockreality.impl.net.AnalysisUpdatePacket.Kind.PENDING
@@ -193,6 +194,72 @@ public final class StressHud {
         panel.line(Component.translatable("br.hud.aim"), HudPanel.DETAIL);
         panel.gap();
         drawLegend(panel, mode);
+    }
+
+    /**
+     * The finite lane's qualification block (W3). It shows the native verdicts verbatim —
+     * basis clocks, per-island status names, the material-history census and the arc
+     * scalars — and it is careful about the two things a display must not do: report a
+     * non-converged step as a collapse, or let one island's verdict speak for a world the
+     * engine did not assess. Arc is labelled as what it is: static continuation, not
+     * physical time and not a collapse trajectory.
+     */
+    private static void drawFinite(HudPanel panel) {
+        var q = ClientFiniteState.qualification();
+        if (q == null) return;
+        panel.line(Component.translatable("br.finite.title"), HudPanel.FOCUS);
+        panel.line(Component.translatable("br.finite.basis",
+                q.worldRevision(), q.historySequence()), HudPanel.DETAIL);
+        if (q.islands().isEmpty()) {
+            // No island rows came back: nothing was assessed, so nothing may look safe.
+            panel.line(Component.translatable("br.finite.not_assessed"), HudPanel.WARNING);
+        } else {
+            if (!q.fullyConverged())
+                panel.line(Component.translatable("br.finite.partial"), HudPanel.WARNING);
+            int shown = Math.min(q.islands().size(), 4);
+            for (int i = 0; i < shown; i++) {
+                var island = q.islands().get(i);
+                String key = switch ((int) island.status()) {
+                    case 0 -> "br.finite.status.converged";
+                    case 1 -> "br.finite.status.mechanism";
+                    case 2 -> "br.finite.status.not_converged";
+                    case 3 -> "br.finite.status.unsupported";
+                    case 4 -> "br.finite.status.inactive";
+                    default -> "br.finite.status.unknown";
+                };
+                Component status = (int) island.status() <= 4
+                        ? Component.translatable(key)
+                        : Component.translatable(key, island.status());
+                int colour = switch ((int) island.status()) {
+                    case 0, 4 -> HudPanel.DETAIL;
+                    case 1 -> HudPanel.MECHANISM;
+                    case 2, 3 -> HudPanel.WARNING;
+                    default -> HudPanel.WARNING;
+                };
+                panel.line(Component.translatable("br.finite.island", i, status), colour);
+            }
+            if (q.islands().size() > shown)
+                panel.line(Component.translatable("br.finite.island.more", q.islands().size() - shown),
+                        HudPanel.DETAIL);
+        }
+        if (q.loadFactorReported())
+            panel.line(Component.translatable("br.finite.load_factor",
+                    String.format(Locale.ROOT, "%.4f", q.loadFactor())), HudPanel.DETAIL);
+        else
+            panel.line(Component.translatable("br.finite.load_factor.missing"), HudPanel.DETAIL);
+        if (q.availabilityReported()) {
+            if (q.memberMaterial() + q.shellMaterial() > 0)
+                panel.line(Component.translatable("br.finite.material",
+                        q.memberMaterial(), q.memberProfiles(),
+                        q.shellMaterial(), q.shellProfiles()), HudPanel.DETAIL);
+            else
+                panel.line(Component.translatable("br.finite.material.none"), HudPanel.DETAIL);
+        }
+        if (q.arcReported())
+            panel.line(Component.translatable("br.finite.arc",
+                    String.format(Locale.ROOT, "%.4g", q.arcRadius()),
+                    String.format(Locale.ROOT, "%.2e", q.arcResidual())), HudPanel.DETAIL);
+        panel.gap();
     }
 
     /**

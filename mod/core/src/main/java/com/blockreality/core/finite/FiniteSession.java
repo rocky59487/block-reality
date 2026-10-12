@@ -42,6 +42,14 @@ public final class FiniteSession implements AutoCloseable {
     private long worldRevision = -1;
     private String refusal = "";
     private long sequence;
+    /**
+     * The token of the newest accepted analysis (solve, import or arc). Arc can only start
+     * from it, and any reply replaces it — an older token is stale and never valid again.
+     */
+    private BsiFracture.Token liveToken;
+    private boolean liveConverged;
+    /** The historySequence the live token corresponds to (the checkpoint basis on import). */
+    private long historyBasis;
 
     private FiniteSession(FiniteLane lane, FiniteDomainId domain, FiniteSource source, long sessionGeneration) {
         this.lane = Objects.requireNonNull(lane);
@@ -75,6 +83,8 @@ public final class FiniteSession implements AutoCloseable {
     public BsiVocabulary vocabulary() { return vocabulary; }
     public long worldRevision() { return worldRevision; }
     public long sessionGeneration() { return sessionGeneration; }
+    /** The historySequence of the state the live token refers to. */
+    public long historySequence() { return historyBasis; }
 
     /**
      * Step 3 of the lifecycle: replay the durable vocabulary body and require the engine's
@@ -136,8 +146,11 @@ public final class FiniteSession implements AutoCloseable {
                     ref.allocationBudget(), ref.elementBudget(), blob.length), blob);
             var identity = BsiCorot.checkAnalysis(response, id, "bsi.corot.checkpoint.import",
                     worldRevision, domain.bsiDomain(), worldRevision, domain.artifactNamespace());
+            liveToken = identity.token();
+            liveConverged = identity.fullyConverged();
+            historyBasis = ref.basis().historySequence();
             step = Step.RESTORED;
-            return result(identity, Double.NaN);
+            return result(identity, Double.NaN, null);
         } catch (IllegalArgumentException failure) {
             refuse(failure.getMessage());
             return null;
@@ -164,22 +177,125 @@ public final class FiniteSession implements AutoCloseable {
                     source.corotPayload());
             var identity = BsiCorot.checkAnalysis(response, id, "bsi.corot.solve",
                     worldRevision, domain.bsiDomain(), worldRevision, domain.artifactNamespace());
+            liveToken = identity.token();
+            liveConverged = identity.fullyConverged();
             step = Step.RESTORED;
-            return result(identity, Double.NaN);
+            return result(identity, Double.NaN, null);
         } catch (IllegalArgumentException failure) {
             refuse(failure.getMessage());
             return null;
         }
     }
 
-    private FiniteResult result(BsiCorot.Identity identity, double loadFactor) {
-        var basis = new FiniteBasis(domain, worldRevision, 0, source.sourceHash(),
+    /**
+     * One static arc-continuation step (design §7): the wire body carries no binary payload,
+     * starts from the live fully-converged token, and mints a new one. A world whose
+     * declared {@code prescribed} carries any nonzero value is a prescribed-displacement
+     * path and is refused before the wire — those paths belong to solve.
+     */
+    public FiniteResult arcAdvance(BsiCorot.ArcOptions options) {
+        Objects.requireNonNull(options);
+        if (step != Step.RESTORED || liveToken == null) {
+            refuse("arc out of order at " + step);
+            return null;
+        }
+        try {
+            if (!liveConverged) throw new IllegalArgumentException("arc requires a fully converged source");
+            rejectPrescribedPaths();
+            var token = liveToken;
+            String id = nextId();
+            var response = lane.request(BsiCorot.arcAdvance(id, worldRevision, domain.bsiDomain(),
+                    worldRevision, token, options), new byte[0]);
+            var advanced = BsiCorot.checkArc(response, id, worldRevision, domain.bsiDomain(),
+                    worldRevision, domain.artifactNamespace(), corotWorld(), options, token);
+            liveToken = advanced.token();
+            liveConverged = true;
+            var basis = new FiniteBasis(domain, worldRevision, historyBasis, source.sourceHash(),
+                    source.vocabHash(), source.ownersHash(), sessionGeneration);
+            var islands = advanced.islands().stream()
+                    .map(i -> new FiniteResult.Island(i.index(), i.status(), i.flags(), i.reason())).toList();
+            return new FiniteResult(basis, true, islands, advanced.sections(), advanced.payload(),
+                    advanced.loadFactor(), domain.artifactNamespace(), advanced.generation(),
+                    advanced.token(), Map.of(),
+                    new FiniteResult.ArcStep(advanced.radius(), advanced.constraintResidual()),
+                    advanced.availability());
+        } catch (IllegalArgumentException failure) {
+            refuse(failure.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * The opaque checkpoint export of the live analysis (design §4.3): format 1 for pure
+     * solve state, format ≥2 once arc direction history exists. The engine arbitrates;
+     * Java carries the blob untouched.
+     */
+    public BsiCorot.Exported exportCheckpoint(int format, long byteBudget,
+                                              long allocationBudget, long elementBudget) {
+        if (step != Step.RESTORED || liveToken == null) {
+            refuse("checkpoint export out of order at " + step);
+            return null;
+        }
+        try {
+            String id = nextId();
+            var response = lane.request(BsiCorot.checkpointExport(id, worldRevision,
+                    domain.bsiDomain(), worldRevision, format, byteBudget, allocationBudget,
+                    elementBudget), new byte[0]);
+            return BsiCorot.checkExport(response, id, worldRevision, domain.bsiDomain(), worldRevision);
+        } catch (IllegalArgumentException failure) {
+            refuse(failure.getMessage());
+            return null;
+        }
+    }
+
+    /** Any nonzero prescribed displacement makes this world a solve-only path (§7). */
+    private void rejectPrescribedPaths() {
+        var prescribed = source.prescribed();
+        var data = java.nio.ByteBuffer.wrap(prescribed).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        // bsi_corot_prescribed: int32 node[4] then double value[6] — the values start at +16.
+        for (int at = 0; at + BsiCorot.PRESCRIBED_BYTES <= prescribed.length; at += BsiCorot.PRESCRIBED_BYTES)
+            for (int k = 0; k < 6; k++)
+                if (data.getDouble(at + 16 + 8 * k) != 0)
+                    throw new IllegalArgumentException("arc refuses a nonzero prescribed path");
+    }
+
+    /** The declared world as the strict validator needs it (design §7, doc §3). */
+    private BsiCorot.CorotWorld corotWorld() {
+        return new BsiCorot.CorotWorld(source.blocks(), source.owners(), vocabulary,
+                defaultSections(), source.hasShellMaterials());
+    }
+
+    /**
+     * Each material's vocabulary-declared default section, as material id → section id.
+     * The request's {@code materials[].defaultSection} names a section row; supports and
+     * materials without one simply do not appear.
+     */
+    private Map<Integer, Integer> defaultSections() {
+        var out = new java.util.HashMap<Integer, Integer>();
+        var request = JsonValue.parseStrict(source.vocabRequestJson());
+        for (JsonValue material : request.arr("materials")) {
+            var name = material.str("name", "");
+            var section = material.str("defaultSection", "");
+            if (name.isEmpty() || section.isEmpty()) continue;
+            try {
+                out.put(vocabulary.materialId(name), vocabulary.sectionId(section));
+            } catch (IllegalArgumentException unknown) {
+                throw new IllegalArgumentException("vocabulary default section drift", unknown);
+            }
+        }
+        return out;
+    }
+
+    private FiniteResult result(BsiCorot.Identity identity, double loadFactor,
+                                FiniteResult.ArcStep arc) {
+        var basis = new FiniteBasis(domain, worldRevision, historyBasis, source.sourceHash(),
                 source.vocabHash(), source.ownersHash(), sessionGeneration);
         var islands = identity.islands().stream()
                 .map(i -> new FiniteResult.Island(i.index(), i.status(), i.flags(), i.reason())).toList();
         return new FiniteResult(basis, identity.fullyConverged(), islands,
                 identity.sections(), identity.payload(), loadFactor,
-                domain.artifactNamespace(), identity.generation(), identity.token(), Map.of());
+                domain.artifactNamespace(), identity.generation(), identity.token(), Map.of(),
+                arc, BsiCorot.availability(identity.sections(), identity.payload()));
     }
 
     private boolean ready(Step expected) {

@@ -204,6 +204,13 @@ public final class FiniteSource {
         if (options == null || options.length != OPTIONS_BYTES) throw invalid();
         var buffer = ByteBuffer.wrap(options).order(ByteOrder.LITTLE_ENDIAN);
         if (buffer.getInt(0) != OPTIONS_BYTES || buffer.getInt(172) != 0) throw invalid();
+        // corot_world_builder.h: materials (primary or shell laws), any prescribed record
+        // and the transferTopology flag each require the retained load path — the engine
+        // answers PROTOCOL_ERROR otherwise, so refuse the source before it reaches the wire.
+        int flags = buffer.getInt(4);
+        boolean hasMaterials = materials.length > 0 || shellLaws.length > 0;
+        if ((flags & 4) == 0 && (hasMaterials || prescribed.length > 0 || (flags & 8) != 0))
+            throw invalid();
     }
 
     private static void stride(byte[] section, int stride, int min, int max) {

@@ -37,7 +37,8 @@ public final class BRNetwork {
     // "8": precise station side identities. "9": f64 global values and supplied verdicts.
     // "10": bounded whole-element delivery and explicit governing omission.
     // "11": one source/sequence/world-revision envelope for results and notices.
-    private static final String PROTOCOL = "11";
+    // "12": the W3 finite qualification packet (native arc/history state, verbatim).
+    private static final String PROTOCOL = "12";
     private static final java.util.concurrent.atomic.AtomicLong SEQUENCE = new java.util.concurrent.atomic.AtomicLong();
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
@@ -52,6 +53,10 @@ public final class BRNetwork {
         event.enqueueWork(() -> {
             CHANNEL.registerMessage(0, AnalysisUpdatePacket.class,
                     AnalysisUpdatePacket::encode, AnalysisUpdatePacket::decode, AnalysisUpdatePacket::handle,
+                    Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+            CHANNEL.registerMessage(1, FiniteQualificationPacket.class,
+                    FiniteQualificationPacket::encode, FiniteQualificationPacket::decode,
+                    FiniteQualificationPacket::handle,
                     Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         });
     }
@@ -70,6 +75,23 @@ public final class BRNetwork {
     public static void sendTo(ServerPlayer player, AnalysisUpdatePacket packet) {
         if (!packet.valid()) {
             BlockRealityMod.LOG.warn("refusing invalid analysis snapshot: {}", packet.invalidReason());
+            return;
+        }
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
+    }
+
+    /** W3 finite qualification delivery (design §7.4): same guards as analysis updates. */
+    public static void broadcast(ServerLevel level, FiniteQualificationPacket packet) {
+        if (!packet.valid()) {
+            BlockRealityMod.LOG.warn("refusing invalid finite qualification: {}", packet.invalidReason());
+            return;
+        }
+        for (ServerPlayer player : level.players()) sendTo(player, packet);
+    }
+
+    public static void sendTo(ServerPlayer player, FiniteQualificationPacket packet) {
+        if (!packet.valid()) {
+            BlockRealityMod.LOG.warn("refusing invalid finite qualification snapshot: {}", packet.invalidReason());
             return;
         }
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
