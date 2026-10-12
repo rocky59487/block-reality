@@ -209,6 +209,7 @@ public final class StructureManager {
         if (ConstructionService.suppressStructuralChange(level,pos)) return;
         StructureManager manager = of(level);
         manager.structural.remove(pos); manager.loaded.remove(pos); manager.markDirty();
+        ConstructionService.queueRetire(level,pos);
     }
 
     /** Forces the next tick to re-analyse, for {@code /br resolve}. */
@@ -536,6 +537,7 @@ public final class StructureManager {
             }
             dirty = false; return;
         }
+        ConstructionService.processRetire(server);
         if (!deferredChunks.isEmpty()) {
             int waiting = deferredChunks.size(); reconcileDeferredChunks(level);
             if (deferredChunks.size() < waiting) markDirty();

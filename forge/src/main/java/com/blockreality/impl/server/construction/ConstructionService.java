@@ -47,6 +47,8 @@ public final class ConstructionService {
     private record RateWindow(int started,int count) { }
     private final TransientOffers<ServerPlayer,Offered> offers = new TransientOffers<>();
     private final IdentityHashMap<ServerPlayer,RateWindow> requestRates = new IdentityHashMap<>();
+    /** Cells whose blocks were removed by world events (break/explosion/piston) awaiting identity retirement. */
+    private final Map<String,Set<BlockPos>> pendingRetire = new HashMap<>();
     private net.minecraftforge.common.util.BlockSnapshot validatingPlacement;
     private ServerPlayer validatingActor;
     private Runnable committedPlacementEffects;
@@ -128,6 +130,79 @@ public final class ConstructionService {
         return true;
     }
 
+    /**
+     * Queues a cell for manufactured-identity retirement after a world-side removal.
+     * The world edit already happened; only the durable metadata update is outstanding.
+     */
+    public static void queueRetire(ServerLevel level, BlockPos pos) {
+        ConstructionService service = SERVERS.get(level.getServer());
+        if (service == null) return;
+        service.pendingRetire.computeIfAbsent(
+                level.dimension().location().toString(),k -> new LinkedHashSet<>()).add(pos.immutable());
+    }
+
+    /** Drains queued identity retirements: safe to call from preview paths and ticks. */
+    public static void processRetire(MinecraftServer server) {
+        ConstructionService service = SERVERS.get(server);
+        if (service != null) service.drainRetire();
+    }
+
+    private void drainRetire() {
+        if (pendingRetire.isEmpty()) return;
+        checkThread(); if (busy || !ready || !failure.isEmpty()) return;
+        for (var dimEntry : pendingRetire.entrySet()) {
+            String dim = dimEntry.getKey(); Set<BlockPos> positions = dimEntry.getValue();
+            var released = new LinkedHashSet<BlockKey>();
+            for (BlockPos pos : positions) {
+                BlockKey key = new BlockKey(pos.getX(),pos.getY(),pos.getZ());
+                if (metadata.owner(dim,key).isPresent()) released.add(key);
+            }
+            if (released.isEmpty()) { positions.clear(); continue; }
+            ResourceLocation loc = ResourceLocation.tryParse(dim);
+            if (loc == null) continue;
+            ServerLevel level = server.getLevel(ResourceKey.create(Registries.DIMENSION,loc));
+            if (level == null) continue;
+            UUID actor = null;
+            for (BlockKey key : released) {
+                var owner = metadata.owner(dim,key);
+                if (owner.isPresent()) {
+                    var piece = metadata.piece(owner.get());
+                    if (piece.isPresent()) { actor = piece.get().actor(); break; }
+                }
+            }
+            if (actor == null) continue;
+            long base = StructureManager.of(level).gate().current().value();
+            try {
+                Request request = new Request(UUID.randomUUID(),actor,session,
+                        journal.domain(),base,retireHash(dim,released));
+                var prepared = metadata.prepareEdit(request,dim,released,Set.of());
+                Intent intent = prepared.withParticipants(List.of());
+                busy = true; ownedLevel = level; ownedCells = Set.copyOf(positions); exclusionFailure = "";
+                try {
+                    Receipt receipt = coordinator.execute(request,ignored -> intent,
+                            new Host(Entry.prepared(intent),false));
+                    if (receipt.phase() == Phase.COMMITTED) positions.clear();
+                } finally {
+                    busy = false; ownedLevel = null; ownedCells = Set.of(); drainSnapshots();
+                }
+            } catch (Exception problem) {
+                BlockRealityMod.LOG.warn("Construction retire failed for cells in {}",dim,problem);
+            }
+        }
+        pendingRetire.entrySet().removeIf(e -> e.getValue().isEmpty());
+    }
+
+    private static String retireHash(String dimension, Set<BlockKey> released) throws Exception {
+        var bytes = new ByteArrayOutputStream(); var out = new DataOutputStream(bytes);
+        out.writeUTF("retire-v1"); out.writeUTF(dimension);
+        for (BlockKey key : released.stream()
+                .sorted(Comparator.comparingInt(BlockKey::x).thenComparingInt(BlockKey::y).thenComparingInt(BlockKey::z))
+                .toList()) {
+            out.writeInt(key.x()); out.writeInt(key.y()); out.writeInt(key.z());
+        }
+        return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes.toByteArray()));
+    }
+
     /** Login callbacks cannot send a private revision, even if a foreign hook invokes them reentrantly. */
     public static boolean deferSnapshot(ServerPlayer player) {
         ConstructionService service = SERVERS.get(player.getServer());
@@ -199,6 +274,7 @@ public final class ConstructionService {
         if(!admit(actor))return new OfferReply(request.query(),Status.RATE_LIMITED,null);
         offers.remove(actor);
         if(!available(server))return new OfferReply(request.query(),failure.isEmpty()?Status.BUSY:Status.RECOVERY,null);
+        drainRetire();
         try {
             long revision=StructureManager.of(actor.serverLevel()).gate().current().value();
             if(revision==Long.MAX_VALUE)return new OfferReply(request.query(),Status.CAPACITY,null);
@@ -413,8 +489,9 @@ public final class ConstructionService {
                 before.put(pos,CellStateImage.decode(change.before())); after.put(pos,CellStateImage.decode(change.after()));
                 if (before.size() > MAX_CELLS) throw new IOException("Construction cell capacity exceeded");
             }
-            if (before.isEmpty()) throw new IOException("Construction cell participants missing");
-            if (placement != null) validateBuild();
+            if (before.isEmpty()) {
+                if (!context.operation().equals("EDIT")) throw new IOException("Construction cell participants missing");
+            } else if (placement != null) validateBuild();
             else validateAxis();
             chunks = before.keySet().stream().map(ChunkPos::new).distinct().toList();
             if (chunks.size() > ChunkFileParticipant.MAX_CHUNKS) throw new IOException("Construction chunk capacity exceeded");
@@ -535,6 +612,7 @@ public final class ConstructionService {
             checkAccess();
         }
         private void persistCurrent() throws IOException {
+            if (chunks.isEmpty()) return;
             if (storageUncertain) {
                 ChunkFileParticipant recovered = ChunkFileParticipant.bind(level);
                 var actual = recovered.read(chunks);
