@@ -834,7 +834,9 @@ public final class BsiCorot {
             }
             // Station positions/weights are always checked; only the section rows zero out
             // when the profile carries no material state (native rule, not a relaxation).
-            double previousStation = 0;
+            // bsi_corot_validate.hpp:22 — the open lower sentinel is -1, so a station at
+            // the member end 0 is legal; the interval is (-1, 1] strictly increasing.
+            double previousStation = -1;
             for (long k = sFirst; k < sFirst + sCount; k++) {
                 int sat = stations.offset() + (int) k * STATION_BYTES;
                 double station = data.getDouble(sat), weight = data.getDouble(sat + 8);

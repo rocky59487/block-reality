@@ -375,4 +375,19 @@ class FiniteArcWireTest {
                 () -> richCheck(header,
                         richMutateDouble("corotShellLayers", 2 * BsiCorot.SHELL_LAYER_BYTES, 0.6), TOKEN_A));
     }
+
+    @Test void stationOrderAdmitsMemberEndAndInteriorGaussPoints() {
+        String header = richReply(TOKEN_B);
+        // Positive legs: the member-end station 0 and a negative interior Gauss point are
+        // both inside the contract's (-1, 1] interval - the old open sentinel at 0
+        // refused real engine replies whose first station is exactly 0.
+        assertDoesNotThrow(() -> richCheck(header, richMutateDouble("corotStations", 0, 0.0), TOKEN_A));
+        assertDoesNotThrow(() -> richCheck(header, richMutateDouble("corotStations", 0, -0.5), TOKEN_A));
+        // The boundary is open below: -1 and anything under it refuse.
+        assertThrows(IllegalArgumentException.class,
+                () -> richCheck(header, richMutateDouble("corotStations", 0, -1.0), TOKEN_A));
+        assertThrows(IllegalArgumentException.class,
+                () -> richCheck(header, richMutateDouble("corotStations", 0, -1.5), TOKEN_A));
+    }
+
 }
