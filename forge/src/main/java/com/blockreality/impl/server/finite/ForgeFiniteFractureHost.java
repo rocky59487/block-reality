@@ -635,13 +635,18 @@ public final class ForgeFiniteFractureHost implements FiniteFractureHost {
             Task(Callable<?> job) { this.job = job; }
         }
 
-        private PrivateLane(String name) {
-            this.thread = new Thread(this::loop, "br-fracture-lane-" + name);
+        private PrivateLane(String threadName) {
+            this.thread = new Thread(this::loop, threadName);
             this.thread.setDaemon(true);
         }
 
         static PrivateLane open(String name, LaneSource source) throws IOException {
-            var lane = new PrivateLane(name);
+            return openNamed("br-fracture-lane-" + name, source);
+        }
+
+        /** Open a marshaling lane under a caller-owned thread name (finite entry mint lanes). */
+        static PrivateLane openNamed(String threadName, LaneSource source) throws IOException {
+            var lane = new PrivateLane(threadName);
             lane.thread.start();
             Task task;
             try {

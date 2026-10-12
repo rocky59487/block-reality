@@ -9,6 +9,8 @@ import com.blockreality.core.render.BucklingReadout;
 import com.blockreality.core.world.ArtifactAnalysisLinks;
 import com.blockreality.api.geom.BlockKey;
 import com.blockreality.impl.server.StructureManager;
+import com.blockreality.impl.server.finite.FiniteEntryService;
+import com.blockreality.impl.server.finite.FiniteLaneWorker;
 import com.blockreality.impl.block.StructuralBlock;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -98,6 +100,9 @@ public final class BRCommand {
                 .then(lit("loads").executes(c -> loads(c.getSource())))
                 .then(lit("reset")
                         .executes(c -> reset(c.getSource())))
+                .then(lit("finite")
+                        .then(Commands.literal("status").executes(c -> finiteStatus(c.getSource())))
+                        .then(Commands.literal("bootstrap").executes(c -> finiteBootstrap(c.getSource()))))
                 .executes(c -> status(c.getSource())));
     }
 
@@ -487,6 +492,75 @@ public final class BRCommand {
         line(src, "  result revision " + result.revision().value()
                 + (stale ? "  STALE — world changed; values below describe the previous model" : "  CURRENT"),
                 stale ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY);
+    }
+
+    /**
+     * {@code /br finite status} — a read-only snapshot of this dimension's finite
+     * domain: admission, adoption, observation state, bindings, committed root and the
+     * authority lane's last event.
+     */
+    private static int finiteStatus(CommandSourceStack src) {
+        ServerLevel level = src.getLevel();
+        FiniteEntryService.FiniteStatus status;
+        try {
+            status = FiniteEntryService.status(level);
+        } catch (Exception failure) {
+            line(src, "finite status failed: " + failure.getMessage(), ChatFormatting.RED);
+            return 0;
+        }
+        line(src, "finite domain", ChatFormatting.AQUA);
+        line(src, "  dimension   " + status.dimension()
+                + (status.admitted() ? "  (admitted)" : "  (not admitted)"), ChatFormatting.GRAY);
+        line(src, "  adopted     " + (status.adopted() ? "yes" : "no"), ChatFormatting.GRAY);
+        line(src, "  observation " + status.observation(), ChatFormatting.GRAY);
+        line(src, "  bindings    " + status.bindings() + " pieces / " + status.boundCells() + " cells",
+                ChatFormatting.GRAY);
+        line(src, "  root        " + (status.worldRevision() < 0 ? "none"
+                : "rev " + status.worldRevision() + " seq " + status.historySequence()), ChatFormatting.GRAY);
+        line(src, "  source      " + (status.sourceBlocks() < 0 ? "none"
+                : status.sourceBlocks() + " blocks"), ChatFormatting.GRAY);
+        var lane = status.laneEvent();
+        line(src, "  lane        " + (lane == null ? "no events" : lane.kind()
+                + (lane.detail() == null || lane.detail().isEmpty() ? "" : " — " + lane.detail())),
+                lane == null ? ChatFormatting.GRAY
+                        : lane.kind() == FiniteLaneWorker.Kind.SYNCED ? ChatFormatting.GREEN
+                        : ChatFormatting.RED);
+        return 1;
+    }
+
+    /**
+     * {@code /br finite bootstrap} — the gated finite-domain entry: adopt this
+     * dimension, bind its unbound manufactured pieces, verify the live world against
+     * the durable declarations, gather sturdy supports, and commit one source. The
+     * dimension must be configured in {@code finiteTestDimensions}; there is no
+     * default trigger.
+     */
+    private static int finiteBootstrap(CommandSourceStack src) {
+        ServerLevel level = src.getLevel();
+        FiniteEntryService.Bootstrap outcome;
+        try {
+            outcome = FiniteEntryService.bootstrap(level);
+        } catch (Exception failure) {
+            line(src, "finite bootstrap refused: " + failure.getMessage(), ChatFormatting.RED);
+            return 0;
+        }
+        if (outcome instanceof FiniteEntryService.Bootstrap.Committed committed) {
+            line(src, "finite bootstrap committed rev " + committed.worldRevision()
+                    + " — new bindings " + committed.boundPieces()
+                    + ", supports " + committed.supports()
+                    + ", receipt " + committed.receipt().request().id(), ChatFormatting.GREEN);
+            return 1;
+        }
+        if (outcome instanceof FiniteEntryService.Bootstrap.Waiting waiting) {
+            line(src, "finite bootstrap waiting on " + waiting.missingChunks()
+                    + " unloaded chunk(s) — load them and retry", ChatFormatting.YELLOW);
+            return 0;
+        }
+        if (outcome instanceof FiniteEntryService.Bootstrap.Refused refused) {
+            line(src, "finite bootstrap refused: " + refused.reason(), ChatFormatting.RED);
+            return 0;
+        }
+        return 0;
     }
 
     private static void line(CommandSourceStack src, String text, ChatFormatting colour) {

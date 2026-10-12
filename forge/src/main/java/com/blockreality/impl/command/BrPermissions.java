@@ -27,6 +27,8 @@ import java.util.TreeMap;
  *   <li><strong>{@code resolve}</strong> forces a full re-analysis — cheap once, a
  *       denial-of-service lever repeated.
  *   <li><strong>{@code reset}</strong> restarts the engine process.
+ *   <li><strong>{@code finite}</strong> mints durable domain identity and commits
+ *       finite sources — a write path into the shared construction journal.
  * </ul>
  *
  * <p>No Minecraft imports, so the table is testable from a plain JUnit run.
@@ -63,6 +65,7 @@ public final class BrPermissions {
         m.put("unload", LEVEL_OP);
         m.put("reset", LEVEL_OP);
         m.put("profile", LEVEL_OP);
+        m.put("finite", LEVEL_OP);
         LITERALS = Map.copyOf(m);
     }
 

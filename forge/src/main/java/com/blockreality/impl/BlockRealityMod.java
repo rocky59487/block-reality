@@ -43,6 +43,7 @@ public final class BlockRealityMod {
         MinecraftForge.EVENT_BUS.register(com.blockreality.impl.server.construction.ConstructionService.class);
         MinecraftForge.EVENT_BUS.register(com.blockreality.impl.server.finite.ForgeFiniteService.class);
         MinecraftForge.EVENT_BUS.register(com.blockreality.impl.server.finite.FiniteFractureService.class);
+        MinecraftForge.EVENT_BUS.register(com.blockreality.impl.server.finite.FiniteEntryService.class);
         MinecraftForge.EVENT_BUS.register(com.blockreality.impl.net.ConstructionChannel.class);
         MinecraftForge.EVENT_BUS.register(com.blockreality.impl.command.BRCommand.class);
         MinecraftForge.EVENT_BUS.addListener(BlockRealityMod::onServerStopping);
