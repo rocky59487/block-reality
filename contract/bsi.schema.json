@@ -25,10 +25,12 @@
     "bsi.corot.rigid.declare",
     "bsi.corot.checkpoint.export",
     "bsi.corot.checkpoint.import",
-    "bsi.corot.arc.advance"
+    "bsi.corot.arc.advance",
+    "bsi.corot.rigid.source.export",
+    "bsi.rigid.scene.declare"
   ],
 
-  "x-capabilities": ["bsi.core","bsi.world.edit","bsi.mass.physical","bsi.world.identity","bsi.readback.members","bsi.readback.stations","bsi.readback.shells","bsi.readback.memberGeometry","bsi.readback.stationIdentity","bsi.buckling.eigen","bsi.buckling.eigen.shells","bsi.buckling.screen","bsi.precision.display","bsi.precision.f32","bsi.precision.warmstart","bsi.precision.timeout","bsi.material.orthotropic","bsi.material.composite","bsi.material.rope","bsi.section.custom","bsi.block.shape","bsi.block.attrs","bsi.fracture","bsi.rigid.motion","bsi.pdelta","bsi.pdelta.fracture","bsi.corot","bsi.corot.fracture","bsi.corot.rigid","bsi.corot.fracture.loads","bsi.corot.checkpoint","bsi.corot.arc","bsi.corot.shell.materials"],
+  "x-capabilities": ["bsi.core","bsi.world.edit","bsi.mass.physical","bsi.world.identity","bsi.readback.members","bsi.readback.stations","bsi.readback.shells","bsi.readback.memberGeometry","bsi.readback.stationIdentity","bsi.buckling.eigen","bsi.buckling.eigen.shells","bsi.buckling.screen","bsi.precision.display","bsi.precision.f32","bsi.precision.warmstart","bsi.precision.timeout","bsi.material.orthotropic","bsi.material.composite","bsi.material.rope","bsi.section.custom","bsi.block.shape","bsi.block.attrs","bsi.fracture","bsi.rigid.motion","bsi.rigid.finite.sources","bsi.rigid.coverage","bsi.pdelta","bsi.pdelta.fracture","bsi.corot","bsi.corot.fracture","bsi.corot.rigid","bsi.corot.fracture.loads","bsi.corot.checkpoint","bsi.corot.arc","bsi.corot.shell.materials"],
 
   "x-errors": ["BSI_VERSION", "EXPECTED_HELLO", "UNKNOWN_METHOD", "UNSUPPORTED", "UNSUPPORTED_ATTR",
     "PROTOCOL_ERROR", "VOCAB_AFTER_WORLD", "VOCAB_ALREADY_DECLARED", "VOCAB_INVALID",
@@ -566,7 +568,9 @@
         "maxPairs": {"type": "integer", "minimum": 1, "maximum": 16777216},
         "maxPoints": {"type": "integer", "minimum": 1, "maximum": 16777216},
         "maxSurfaceTests": {"type": "integer", "minimum": 1, "maximum": 16777216},
-        "maxSweeps": {"type": "integer", "minimum": 1, "maximum": 4096}, "enableSleep": {"type": "boolean"}
+        "maxSweeps": {"type": "integer", "minimum": 1, "maximum": 4096}, "enableSleep": {"type": "boolean"},
+        "coverage": {"type": "integer", "minimum": 0, "maximum": 65536},
+        "coverageQuery": {"type": "boolean"}
       }, "additionalProperties": false
     },
     "rigid.sections": {
@@ -584,13 +588,20 @@
         "scene": {"$ref": "#/$defs/world.stamp"}, "sections": {"$ref": "#/$defs/rigid.sections"}
       }, "additionalProperties": false
     },
+    "rigid.coverage.sections": {
+      "type": "array", "minItems": 1, "maxItems": 1, "items": {
+        "type": "object", "required": ["name", "offset", "bytes", "count"],
+        "properties": {"name": {"const": "motionCoverage"}, "offset": {"type": "integer", "minimum": 0},
+          "bytes": {"type": "integer", "minimum": 0}, "count": {"type": "integer", "minimum": 0}}, "additionalProperties": false
+      }
+    },
     "rigid.step.response": {
       "type": "object", "required": ["bsi", "kind", "id", "method", "revision", "status", "scene", "requestId", "sections"],
       "properties": {
         "bsi": {"const": 1}, "kind": {"const": "response"}, "id": {"type": "string"},
-        "method": {"const": "bsi.rigid.step"}, "revision": {"type": "integer"}, "status": {"const": "stepped"},
+        "method": {"const": "bsi.rigid.step"}, "revision": {"type": "integer"}, "status": {"enum": ["stepped", "suspended", "required"]},
         "scene": {"$ref": "#/$defs/world.stamp"}, "requestId": {"$ref": "#/$defs/id128"},
-        "sections": {"$ref": "#/$defs/rigid.sections"}
+        "sections": {"oneOf": [{"$ref": "#/$defs/rigid.sections"}, {"$ref": "#/$defs/rigid.coverage.sections"}]}
       }, "additionalProperties": false
     },
     "xyz": {"type": "array", "items": {"type": "integer"}, "minItems": 3, "maxItems": 3},
@@ -694,7 +705,9 @@
             "bsi.corot.rigid.declare",
             "bsi.corot.checkpoint.export",
             "bsi.corot.checkpoint.import",
-            "bsi.corot.arc.advance"
+            "bsi.corot.arc.advance",
+            "bsi.corot.rigid.source.export",
+            "bsi.rigid.scene.declare"
           ]},
         "revision": {"type": "integer"},
         "body": {"type": "object"},
@@ -1156,7 +1169,12 @@
     "corot.checkpoint.export.body": {"type":"object","required":["expected","format","byteBudget","allocationBudget","elementBudget"],"properties":{"expected":{"$ref":"#/$defs/world.stamp"},"format":{"type":"integer","enum":[1,2,3]},"byteBudget":{"type":"integer","minimum":32,"maximum":268431360},"allocationBudget":{"type":"integer","minimum":1,"maximum":536870912},"elementBudget":{"type":"integer","minimum":1,"maximum":16777216}},"additionalProperties":false},
     "corot.checkpoint.export.response": {"type":"object","required":["bsi","kind","id","method","revision","status","basis","format","bytes"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.checkpoint.export"},"revision":{"type":"integer"},"status":{"const":"exported"},"basis":{"$ref":"#/$defs/world.stamp"},"format":{"type":"integer","enum":[1,2,3]},"bytes":{"type":"integer","minimum":32,"maximum":268431360}},"additionalProperties":false},
     "corot.checkpoint.import.body": {"type":"object","required":["expected","format","byteBudget","allocationBudget","elementBudget","bytes"],"properties":{"expected":{"$ref":"#/$defs/world.stamp"},"format":{"type":"integer","enum":[1,2,3]},"byteBudget":{"type":"integer","minimum":32,"maximum":268431360},"allocationBudget":{"type":"integer","minimum":1,"maximum":536870912},"elementBudget":{"type":"integer","minimum":1,"maximum":16777216},"bytes":{"type":"integer","minimum":32,"maximum":268431360}},"additionalProperties":false},
-    "corot.checkpoint.import.response": {"type":"object","required":["bsi","kind","id","method","revision","status","basis","artifactNamespace","generation","token","sections","fullyConverged"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.checkpoint.import"},"revision":{"type":"integer"},"status":{"const":"restored"},"basis":{"$ref":"#/$defs/world.stamp"},"artifactNamespace":{"$ref":"#/$defs/id128"},"generation":{"type":"string","pattern":"^[0-9a-f]{16}$"},"token":{"$ref":"#/$defs/fracture.token"},"fullyConverged":{"type":"boolean"},"sections":{"$ref":"#/$defs/corot.sections"}},"additionalProperties":false}
+    "corot.checkpoint.import.response": {"type":"object","required":["bsi","kind","id","method","revision","status","basis","artifactNamespace","generation","token","sections","fullyConverged"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.checkpoint.import"},"revision":{"type":"integer"},"status":{"const":"restored"},"basis":{"$ref":"#/$defs/world.stamp"},"artifactNamespace":{"$ref":"#/$defs/id128"},"generation":{"type":"string","pattern":"^[0-9a-f]{16}$"},"token":{"$ref":"#/$defs/fracture.token"},"fullyConverged":{"type":"boolean"},"sections":{"$ref":"#/$defs/corot.sections"}},"additionalProperties":false},
+    "corot.rigid.source.export.body": {"type":"object","required":["expected","fracture","format","bodies","velocities","relativeTolerance","absoluteTolerance","maxRefinements","maxSamples","byteBudget","allocationBudget","elementBudget"],"properties":{"expected":{"$ref":"#/$defs/world.stamp"},"fracture":{"$ref":"#/$defs/fracture.token"},"format":{"const":1},"bodies":{"type":"integer","minimum":1,"maximum":65536},"velocities":{"type":"integer","minimum":0,"maximum":1048576},"relativeTolerance":{"type":"number","exclusiveMinimum":0},"absoluteTolerance":{"type":"number","exclusiveMinimum":0},"maxRefinements":{"type":"integer","minimum":0,"maximum":24},"maxSamples":{"type":"integer","minimum":1,"maximum":16777216},"byteBudget":{"type":"integer","minimum":32,"maximum":268431360},"allocationBudget":{"type":"integer","minimum":1,"maximum":536870912},"elementBudget":{"type":"integer","minimum":1,"maximum":16777216}},"additionalProperties":false},
+    "corot.rigid.source.export.response": {"type":"object","required":["bsi","kind","id","method","revision","status","basis","fracture","format","sources","bytes"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.corot.rigid.source.export"},"revision":{"type":"integer"},"status":{"const":"exported"},"basis":{"$ref":"#/$defs/world.stamp"},"fracture":{"$ref":"#/$defs/fracture.token"},"format":{"const":1},"sources":{"type":"integer","minimum":1,"maximum":65536},"bytes":{"type":"integer","minimum":32,"maximum":268435456}},"additionalProperties":false},
+    "rigid.scene.declare.body": {"type":"object","required":["scene","sources","sourceBytes","terrain","chordTolerance","maxBodies","maxCells","maxColliders","maxVertices","byteBudget","allocationBudget","elementBudget"],"properties":{"scene":{"$ref":"#/$defs/world.stamp"},"sources":{"type":"integer","minimum":1,"maximum":65536},"sourceBytes":{"type":"integer","minimum":36,"maximum":268431360},"terrain":{"type":"integer","minimum":0,"maximum":1048576},"chordTolerance":{"type":"number","exclusiveMinimum":0},"maxBodies":{"type":"integer","minimum":1,"maximum":65536},"maxCells":{"type":"integer","minimum":1,"maximum":1048576},"maxColliders":{"type":"integer","minimum":1,"maximum":1048576},"maxVertices":{"type":"integer","minimum":1,"maximum":16777216},"byteBudget":{"type":"integer","minimum":32,"maximum":268431360},"allocationBudget":{"type":"integer","minimum":1,"maximum":536870912},"elementBudget":{"type":"integer","minimum":1,"maximum":16777216}},"additionalProperties":false},
+    "rigid.scene.sections": {"type":"array","minItems":6,"maxItems":6,"items":{"type":"object","required":["name","offset","bytes","count"],"properties":{"name":{"type":"string"},"offset":{"type":"integer","minimum":0},"bytes":{"type":"integer","minimum":0},"count":{"type":"integer","minimum":0}},"additionalProperties":false}},
+    "rigid.scene.declare.response": {"type":"object","required":["bsi","kind","id","method","revision","status","scene","sections"],"properties":{"bsi":{"const":1},"kind":{"const":"response"},"id":{"type":"string"},"method":{"const":"bsi.rigid.scene.declare"},"revision":{"type":"integer"},"status":{"const":"declared"},"scene":{"$ref":"#/$defs/world.stamp"},"sections":{"$ref":"#/$defs/rigid.scene.sections"}},"additionalProperties":false}
   },
 
   "x-records": {
@@ -1282,7 +1300,14 @@
     "corotRetiredFibers": {"bytes":104,"fields":[["y","f64"],["z","f64"],["area","f64"],["constituent","u32"],["reserved","u32"],["law","bsi_corot_law"]],"offsets":{"y":0,"z":8,"area":16,"constituent":24,"reserved":28,"law":32},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
     "corotRetiredStations": {"bytes":40,"fields":[["station","f64"],["weight","f64"],["section","f64[3]"]],"offsets":{"station":0,"weight":8,"section":16},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
     "corotRetiredPoints": {"bytes":120,"fields":[["strain","f64"],["plasticStrain","f64"],["accumulatedPlastic","f64"],["plasticDissipation","f64"],["maximumT","f64"],["maximumC","f64"],["damageDissipation","f64"],["stress","f64"],["tangent","f64"],["storedEnergy","f64"],["dissipatedEnergy","f64"],["workPotential","f64"],["damageT","f64"],["damageC","f64"],["loading","i32"],["reserved","u32"]],"offsets":{"strain":0,"plasticStrain":8,"accumulatedPlastic":16,"plasticDissipation":24,"maximumT":32,"maximumC":40,"damageDissipation":48,"stress":56,"tangent":64,"storedEnergy":72,"dissipatedEnergy":80,"workPotential":88,"damageT":96,"damageC":104,"loading":112,"reserved":116},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
-    "corotBodyEnergies": {"bytes":48,"fields":[["id","u64"],["kinetic","f64"],["rigidKinetic","f64"],["internalKinetic","f64"],["estimatedError","f64"],["samples","u64"]],"offsets":{"id":0,"kinetic":8,"rigidKinetic":16,"internalKinetic":24,"estimatedError":32,"samples":40},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."}
+    "corotBodyEnergies": {"bytes":48,"fields":[["id","u64"],["kinetic","f64"],["rigidKinetic","f64"],["internalKinetic","f64"],["estimatedError","f64"],["samples","u64"]],"offsets":{"id":0,"kinetic":8,"rigidKinetic":16,"internalKinetic":24,"estimatedError":32,"samples":40},"description":"ABI7 little-endian fixed record; all padding and reserved bytes zero."},
+
+    "corotBodies": {"bytes":72,"fields":[["id","u64"],["revision","u64"],["fragment","u32"],["velocityFirst","u32"],["velocityCount","u32"],["reserved","u32"],["time","f64"],["surface","surface"]],"description":"bsi_corot_body little-endian record; surface is the 32-byte bsi_motion_surface."},
+    "corotVelocities": {"bytes":64,"fields":[["node","i32[4]"],["linear","f64[3]"],["angular","f64[3]"]],"description":"bsi_corot_velocity little-endian record; endpoint linear and angular velocity."},
+    "rigidSceneIds": {"bytes":8,"fields":[["id","u64"]],"description":"ABI11 positive signed-i64 body id pairing a sealed rigid source packet."},
+    "rigidSourceBlobs": {"bytes":1,"fields":[["bytes","u8"]],"description":"ABI11 concatenated u32 little-endian length + sealed source packet stream; count is bytes."},
+    "motionCoverageBox": {"bytes":48,"fields":[["minimum","f64[3]"],["maximum","f64[3]"]],"description":"ABI11 closed axis-aligned coverage box appended to rigid.step payload when coverage is declared."},
+    "motionCoverage": {"bytes":56,"fields":[["id","u64"],["minimum","f64[3]"],["maximum","f64[3]"]],"description":"ABI11 per-body required swept region row in suspended/required rigid.step replies."}
   },
 
   "x-arena": {
@@ -1293,7 +1318,8 @@
     "x-identified-payload": "declare: blocks in world, owners in attrs; edit: complete edits+owners in world; fracture verbs: empty payload",
     "x-retry": "After needBigger, resend identical header and payload; seq may change. A different request is refused while the original reply is pending. The original operation is never dispatched twice.",
     "x-arc-payload": "corotArcAdvance: empty; load catalog retained from initialAnalysis",
-    "x-checkpoint-payload": "corotCheckpointExport: empty; corotCheckpointImport: complete opaque checkpoint in loads"
+    "x-checkpoint-payload": "corotCheckpointExport: empty; corotCheckpointImport: complete opaque checkpoint in loads",
+    "x-rigid-source-payload": "corotRigidSourceExport: bodies+velocities in loads (not a door verb); rigidSceneDeclare: ids+terrain+length-prefixed packets in world+loads (not a door verb)"
   },
 
   "x-capi": {

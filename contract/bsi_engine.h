@@ -17,7 +17,9 @@ extern "C" {
 #endif
 
 #define BSI_MAJOR 1
-#define BSI_ENGINE_ABI 10u
+#define BSI_ENGINE_ABI 11u
+#define BSI_ENGINE_ABI_FINITE_SOURCES 11u
+#define BSI_ENGINE_ABI_SHELL 10u
 #define BSI_ENGINE_ABI_ARC 9u
 #define BSI_ENGINE_ABI_CHECKPOINT 8u
 #define BSI_ENGINE_ABI_COROT 7u
@@ -268,6 +270,7 @@ BSI_EXPORT int bsi_writer_error(bsi_writer*, const char* code, const char* messa
 #include "bsi_corot_checkpoint.h"
 #include "bsi_corot_arc.h"
 #include "bsi_corot_shell.h"
+#include "bsi_rigid_source.h"
 typedef struct bsi_engine_vtable {
   uint32_t abi_version;                                        /* = BSI_ENGINE_ABI */
   const char* (*name)(void);
@@ -314,6 +317,10 @@ typedef struct bsi_engine_vtable {
   /* ABI10: additive wrappers around the same analysis/fracture authority. */
   int (*corot_shell_solve)(bsi_engine*, const bsi_corot_shell_request*, const bsi_corot_view**, bsi_writer*);
   int (*corot_shell_fracture_prepare)(bsi_engine*, const bsi_corot_shell_fracture_options*, const bsi_corot_fracture_view**, bsi_writer*);
+  /* ABI11: portable finite rigid source packets and a common multi-birth scene.
+   * motion_step gains opt-in coverage through its struct_size tail instead. */
+  int (*corot_rigid_source_export)(bsi_engine*, const bsi_rigid_source_export*, const bsi_rigid_source_batch**, bsi_writer*);
+  int (*rigid_scene_declare)(bsi_engine*, const bsi_rigid_scene_declare*, const bsi_rigid_scene_view**, bsi_writer*);
 } bsi_engine_vtable;
 
 /* The single exported symbol an engine must provide. Returns NULL when

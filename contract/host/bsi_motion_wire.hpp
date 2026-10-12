@@ -57,20 +57,49 @@ struct Step {
     bsi_motion_step input{};
     std::vector<bsi_motion_state> states;
     std::vector<bsi_motion_force> forces;
+    std::vector<bsi_motion_coverage_box> coverage;
+    bool query=false;
 };
 inline bool step(const json::Value& body,const uint8_t* payload,size_t n,Step& d) {
     auto& o=d.input; o.struct_size=sizeof o; o.scene=fracture_wire::stamp(*body.find("scene"));
     o.request=fracture_wire::id(*body.find("requestId")); o.nStates=count(body,"states"); o.nForces=count(body,"forces");
-    if (uint64_t(o.nStates)*128+uint64_t(o.nForces)*56!=n || n>kPayloadLimit || o.nForces>o.nStates ||
+    const auto* cov=body.find("coverage");const auto* query=body.find("coverageQuery");
+    const uint32_t nc=cov?count(body,"coverage"):0;d.query=query&&query->b;
+    if (cov&&d.query) return false;  // declare and query are mutually exclusive
+    if (uint64_t(o.nStates)*128+uint64_t(o.nForces)*56+uint64_t(nc)*48!=n || n>kPayloadLimit || o.nForces>o.nStates ||
         !nonzero(o.scene.domain) || !nonzero(o.request)) return false;
-    size_t offset=0; read(payload,offset,o.nStates,d.states); read(payload,offset,o.nForces,d.forces);
+    size_t offset=0; read(payload,offset,o.nStates,d.states); read(payload,offset,o.nForces,d.forces); read(payload,offset,nc,d.coverage);
     std::sort(d.states.begin(),d.states.end(),[](const bsi_motion_state& a,const bsi_motion_state& b){return a.id<b.id;});
     o.states=d.states.data(); o.forces=d.forces.data(); o.dt=body.find("dt")->num; o.maxStep=body.find("maxStep")->num;
     for (int i=0;i<3;++i) o.gravity[i]=body.find("gravity")->arr[size_t(i)].num;
     o.maxSubsteps=count(body,"maxSubsteps"); o.maxTrials=count(body,"maxTrials");
     o.maxPairs=count(body,"maxPairs"); o.maxPoints=count(body,"maxPoints");
     o.maxSurfaceTests=count(body,"maxSurfaceTests"); o.maxSweeps=count(body,"maxSweeps");
-    o.enableSleep=uint8_t(body.find("enableSleep")->b); return true;
+    o.enableSleep=uint8_t(body.find("enableSleep")->b);
+    if (cov||d.query){o.coverage=d.coverage.data();o.nCoverage=nc;o.coverageFlags=(cov?2u:0u)|(d.query?1u:0u);}
+    return true;
+}
+// ABI11 bsi.rigid.scene.declare: ids + length-prefixed sealed packets + terrain.
+struct SceneDeclare {
+    bsi_rigid_scene_declare input{};
+    std::vector<uint64_t> ids;
+    std::vector<uint8_t> sources;
+    std::vector<bsi_motion_box> terrain;
+};
+inline bool sceneDeclare(const json::Value& body,const uint8_t* payload,size_t n,SceneDeclare& d) {
+    auto& o=d.input;o.struct_size=sizeof(o);o.scene=fracture_wire::stamp(*body.find("scene"));
+    o.nIds=count(body,"sources");o.sourceBytes=count(body,"sourceBytes");o.nTerrain=count(body,"terrain");
+    const uint64_t bytes=uint64_t(o.nIds)*8+o.sourceBytes+uint64_t(o.nTerrain)*sizeof(bsi_motion_box);
+    if (bytes!=n||n>kPayloadLimit||!nonzero(o.scene.domain)) return false;
+    size_t offset=0;read(payload,offset,o.nIds,d.ids);
+    d.sources.assign(payload+offset,payload+offset+o.sourceBytes);offset+=o.sourceBytes;
+    read(payload,offset,o.nTerrain,d.terrain);
+    o.ids=d.ids.data();o.sources=d.sources.data();o.terrain=d.terrain.data();
+    o.chordTolerance=body.find("chordTolerance")->num;
+    o.maxBodies=count(body,"maxBodies");o.maxCells=count(body,"maxCells");
+    o.maxColliders=count(body,"maxColliders");o.maxVertices=count(body,"maxVertices");
+    o.byteBudget=count(body,"byteBudget");o.allocationBudget=count(body,"allocationBudget");o.elementBudget=count(body,"elementBudget");
+    return true;
 }
 struct Span { const char* name; const void* data; uint64_t count, stride; };
 template<size_t N> bool pack(const Span (&spans)[N],std::vector<SectionInfo>& table,std::vector<uint8_t>& payload) {
@@ -87,23 +116,28 @@ template<size_t N> bool pack(const Span (&spans)[N],std::vector<SectionInfo>& ta
         std::memcpy(payload.data()+table[i].offset,spans[i].data,size_t(table[i].bytes));
     return true;
 }
-inline bool geometry(const bsi_motion_geometry_view* ptr,const Declaration& d,
-                     std::vector<SectionInfo>& table,std::vector<uint8_t>& payload) {
+// Shared geometry validation. When bodies/cells are NULL the caller only knows
+// body ids (bsi.rigid.scene.declare: the finite material lives inside sealed
+// packets), so source-cell membership and physical-record equality are skipped;
+// every structural, budget and finiteness check still runs.
+inline bool geometryChecked(const bsi_motion_geometry_view* ptr,const std::vector<uint64_t>& ids,
+    const bsi_motion_source* bodies,const bsi_fracture_cell* cells,const bsi_world_stamp& scene,
+    double chordTolerance,uint32_t maxColliders,uint32_t maxVertices) {
     if (!ptr || ptr->struct_size<offsetof(bsi_motion_geometry_view,nTriangles)+sizeof(ptr->nTriangles)) return false;
-    const auto& v=*ptr; const auto& o=d.input;
-    if (!same(v.scene,o.scene)||v.nBodies!=o.nBodies||v.nPieces>o.maxColliders||v.nVertices>o.maxVertices||
-        uint64_t(v.nTriangles)>uint64_t(o.maxVertices)*2 || (v.nBodies&&!v.bodies)||(v.nPieces&&!v.pieces)||
+    const auto& v=*ptr;
+    if (!same(v.scene,scene)||v.nBodies!=ids.size()||v.nPieces>maxColliders||v.nVertices>maxVertices||
+        uint64_t(v.nTriangles)>uint64_t(maxVertices)*2 || (v.nBodies&&!v.bodies)||(v.nPieces&&!v.pieces)||
         (v.nVertices&&!v.vertices)||(v.nTriangles&&!v.triangles)) return false;
     // Bound the entire response before following any variable-length span.
     if (uint64_t(v.nBodies)*104+uint64_t(v.nPieces)*48+uint64_t(v.nVertices)*24+uint64_t(v.nTriangles)*12>kPayloadLimit) return false;
     uint32_t piece=0,vertex=0,triangle=0;
     for (uint32_t i=0;i<v.nBodies;++i) {
-        const auto& b=v.bodies[i]; const auto& source=d.bodies[i];
-        if (b.id!=source.id||!nonnegative(b.surfaceError)||b.surfaceError>o.chordTolerance||
-            !fracture_wire::physical(b.physical)||std::memcmp(&b.physical,&source.physical,sizeof b.physical)||
+        const auto& b=v.bodies[i];
+        if (b.id!=ids[i]||!nonnegative(b.surfaceError)||b.surfaceError>chordTolerance||
+            !fracture_wire::physical(b.physical)||(bodies&&std::memcmp(&b.physical,&bodies[i].physical,sizeof b.physical))||
             b.pieceFirst!=piece||!b.pieceCount||b.pieceCount>v.nPieces-piece) return false;
-        std::set<Key> cells;
-        for (uint32_t c=source.cellFirst;c<source.cellFirst+source.cellCount;++c) cells.insert(fracture_wire::key(d.cells[c].source));
+        std::set<Key> owned;
+        if (bodies&&cells)for (uint32_t c=bodies[i].cellFirst;c<bodies[i].cellFirst+bodies[i].cellCount;++c) owned.insert(fracture_wire::key(cells[c].source));
         uint64_t previous=0;
         for (uint32_t j=0;j<b.pieceCount;++j,++piece) {
             const auto& p=v.pieces[piece];
@@ -111,7 +145,7 @@ inline bool geometry(const bsi_motion_geometry_view* ptr,const Declaration& d,
                 p.vertexCount<4||p.vertexCount>v.nVertices-vertex||p.triangleCount<4||p.triangleCount>v.nTriangles-triangle) return false;
             previous=p.part;
 #ifndef BSI_TEST_RMW_SOURCE
-            if (!cells.count({{p.source[0],p.source[1],p.source[2]}})) return false;
+            if (cells&&!owned.count({{p.source[0],p.source[1],p.source[2]}})) return false;
 #endif
             for (uint32_t k=0;k<p.vertexCount;++k) if (!finite(v.vertices[vertex+k].xyz)) return false;
             for (uint32_t k=0;k<p.triangleCount;++k) {
@@ -126,9 +160,35 @@ inline bool geometry(const bsi_motion_geometry_view* ptr,const Declaration& d,
             vertex+=p.vertexCount; triangle+=p.triangleCount;
         }
     }
-    if (piece!=v.nPieces||vertex!=v.nVertices||triangle!=v.nTriangles) return false;
+    return piece==v.nPieces&&vertex==v.nVertices&&triangle==v.nTriangles;
+}
+inline bool geometry(const bsi_motion_geometry_view* ptr,const Declaration& d,
+                     std::vector<SectionInfo>& table,std::vector<uint8_t>& payload) {
+    std::vector<uint64_t> ids;ids.reserve(d.bodies.size());for(const auto& b:d.bodies)ids.push_back(b.id);
+    const auto& o=d.input;
+    if (!geometryChecked(ptr,ids,d.bodies.data(),d.cells.data(),o.scene,o.chordTolerance,o.maxColliders,o.maxVertices)) return false;
+    const auto& v=*ptr;
     const Span spans[]={{"motionBodies",v.bodies,v.nBodies,104},{"motionPieces",v.pieces,v.nPieces,48},
         {"motionVertices",v.vertices,v.nVertices,24},{"motionTriangles",v.triangles,v.nTriangles,12}};
+    return pack(spans,table,payload);
+}
+// bsi.rigid.scene.declare response: geometry + birth states + energies.
+inline bool sceneResult(const bsi_rigid_scene_view* ptr,const SceneDeclare& d,const std::vector<uint64_t>& ids,
+                        std::vector<SectionInfo>& table,std::vector<uint8_t>& payload) {
+    if (!ptr||ptr->struct_size<offsetof(bsi_rigid_scene_view,nEnergies)+sizeof(ptr->nEnergies)) return false;
+    const auto& v=*ptr;const auto& o=d.input;
+    if (v.nStates!=ids.size()||v.nEnergies!=v.nStates||(v.nStates&&!v.states)||(v.nEnergies&&!v.energies)||
+        !v.geometry||uint64_t(v.nStates)*128+uint64_t(v.nEnergies)*48>kPayloadLimit) return false;
+    for (uint32_t i=0;i<v.nStates;++i) {const auto& s=v.states[i];const auto& e=v.energies[i];
+        if (s.id!=ids[i]||e.id!=s.id||!std::isfinite(s.time)||s.time<0||!finite(s.position)||!rotation(s.orientation)||
+            !finite(s.linearMomentum)||!finite(s.angularMomentum)||!nonnegative(e.kinetic)||!nonnegative(e.rigidKinetic)||
+            !nonnegative(e.internalKinetic)||!nonnegative(e.estimatedError)||
+            std::abs(e.kinetic-e.rigidKinetic-e.internalKinetic)>2e-9*std::max(1.,e.kinetic)) return false;}
+    if (!geometryChecked(v.geometry,ids,nullptr,nullptr,o.scene,o.chordTolerance,o.maxColliders,o.maxVertices)) return false;
+    const auto& g=*v.geometry;
+    const Span spans[]={{"motionBodies",g.bodies,g.nBodies,104},{"motionPieces",g.pieces,g.nPieces,48},
+        {"motionVertices",g.vertices,g.nVertices,24},{"motionTriangles",g.triangles,g.nTriangles,12},
+        {"motionStates",v.states,v.nStates,128},{"corotBodyEnergies",v.energies,v.nEnergies,48}};
     return pack(spans,table,payload);
 }
 inline bool subset(const uint64_t* values,uint32_t count,const std::vector<uint64_t>& ids) {
@@ -136,10 +196,31 @@ inline bool subset(const uint64_t* values,uint32_t count,const std::vector<uint6
     for (uint32_t i=0;i<count;++i) if ((i&&values[i-1]>=values[i])||!std::binary_search(ids.begin(),ids.end(),values[i])) return false;
     return true;
 }
+// ABI11: suspended/required replies carry only the required coverage rows;
+// no state was committed. Rows are per escaping body (suspended) or every body
+// (required query), id-ordered, closed axis-aligned bounds.
+inline bool suspended(const bsi_motion_step_view* ptr,const Step& d,const std::vector<uint64_t>& ids,
+                      std::vector<SectionInfo>& table,std::vector<uint8_t>& payload) {
+    if (!ptr||ptr->struct_size<offsetof(bsi_motion_step_view,coverageStatus)+sizeof(ptr->coverageStatus)) return false;
+    const auto& v=*ptr;const auto& o=d.input;
+    if (!same(v.scene,o.scene)||!same(v.request,o.request)||v.coverageStatus<2||v.coverageStatus>3||
+        (d.query?v.coverageStatus!=3:v.coverageStatus!=2)||(v.coverageStatus==3&&v.nCoverage!=ids.size())||
+        v.nStates||v.states||v.nSleeping||v.nWoken||v.nCoverage>ids.size()||(v.nCoverage&&!v.coverage)) return false;
+    for (uint32_t i=0;i<v.nCoverage;++i) {const auto& c=v.coverage[i];
+        if ((i&&v.coverage[i-1].id>=c.id)||!std::binary_search(ids.begin(),ids.end(),c.id)||
+            !finite(c.minimum)||!finite(c.maximum)||c.minimum[0]>=c.maximum[0]||
+            c.minimum[1]>=c.maximum[1]||c.minimum[2]>=c.maximum[2]) return false;}
+    const Span spans[]={{"motionCoverage",v.coverage,v.nCoverage,56}};
+    return pack(spans,table,payload);
+}
 inline bool result(const bsi_motion_step_view* ptr,const Step& d,const std::vector<uint64_t>& ids,
                    std::vector<SectionInfo>& table,std::vector<uint8_t>& payload) {
+    if (ptr&&ptr->struct_size>=offsetof(bsi_motion_step_view,coverageStatus)+sizeof(ptr->coverageStatus)&&
+        ptr->coverageStatus>=2) return suspended(ptr,d,ids,table,payload);
     if (!ptr||ptr->struct_size<offsetof(bsi_motion_step_view,fullFallback)+sizeof(ptr->fullFallback)) return false;
     const auto& v=*ptr; const auto& o=d.input;
+    if (ptr->struct_size>=offsetof(bsi_motion_step_view,coverageStatus)+sizeof(ptr->coverageStatus)&&
+        (v.coverageStatus>1||((o.coverageFlags&3u)&&v.coverageStatus!=1))) return false;
     if (!same(v.scene,o.scene)||!same(v.request,o.request)||v.nStates!=o.nStates||v.nStates!=ids.size()||
         (v.nStates&&!v.states)||!subset(v.sleeping,v.nSleeping,ids)||!subset(v.woken,v.nWoken,ids)) return false;
     for (uint32_t i=0;i<v.nStates;++i) {
@@ -177,4 +258,6 @@ inline void sections(json::Writer& w,const std::vector<SectionInfo>& table) {
 static_assert(sizeof(bsi_motion_report)==104&&sizeof(bsi_motion_source)==192&&sizeof(bsi_motion_box)==120&&
     sizeof(bsi_motion_state)==128&&sizeof(bsi_motion_force)==56&&sizeof(bsi_motion_body_geometry)==104&&
     sizeof(bsi_motion_piece)==48&&sizeof(bsi_motion_vertex)==24&&sizeof(bsi_motion_triangle)==12,"motion wire layout");
+static_assert(sizeof(bsi_motion_coverage_box)==48&&sizeof(bsi_motion_coverage)==56&&
+    sizeof(bsi_corot_body)==72&&sizeof(bsi_corot_velocity)==64&&sizeof(bsi_corot_body_energy)==48,"finite source wire layout");
 }} // namespace bsi::motion_wire

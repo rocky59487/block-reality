@@ -58,6 +58,12 @@ typedef struct bsi_motion_declare {
   double chordTolerance;
   uint32_t maxBodies, maxCells, maxColliders, maxVertices;
 } bsi_motion_declare;
+/* ABI11 wire records. A coverage box is the caller-declared known collision
+ * space (closed axis-aligned bounds); a coverage row names one body's required
+ * swept region in a suspended/required reply. */
+typedef struct bsi_motion_coverage_box { double minimum[3], maximum[3]; } bsi_motion_coverage_box;
+typedef struct bsi_motion_coverage { uint64_t id; double minimum[3], maximum[3]; } bsi_motion_coverage;
+
 typedef struct bsi_motion_step {
   uint32_t struct_size;
   bsi_world_stamp scene;
@@ -67,6 +73,12 @@ typedef struct bsi_motion_step {
   double dt, gravity[3], maxStep;
   uint32_t maxSubsteps, maxTrials, maxPairs, maxPoints, maxSurfaceTests, maxSweeps;
   uint8_t enableSleep;             /* 0 or 1; sleep cache is never durable state */
+  /* ABI11 tail; read only when struct_size covers coverageFlags. Opt-in:
+   * coverageFlags bit1 declares a coverage mask (nCoverage boxes, may be 0),
+   * bit0 requests the required-coverage query instead of committing a step.
+   * Both bits set, unknown bits or engines older than ABI11: PROTOCOL_ERROR. */
+  const bsi_motion_coverage_box* coverage; uint32_t nCoverage;
+  uint32_t coverageFlags;
 } bsi_motion_step;
 /* Read-only borrowed spans. Copy before successful replacement or close.
  * A rejected call preserves the previous view. Triangles index the full vertex
@@ -90,5 +102,12 @@ typedef struct bsi_motion_step_view {
   uint64_t substeps, trials, contactSolves, contactPoints, projectionSweeps;
   uint64_t wakeTrials, integratedBodies, equilibriumSolves;
   uint8_t fullFallback;
+  /* ABI11 tail; engines that predate it write struct_size up to fullFallback.
+   * coverageStatus: 0 = no coverage was declared or checked, 1 = declared mask
+   * covered every swept bound (step committed), 2 = suspended (states absent;
+   * coverage lists each escaping body's required swept box), 3 = required
+   * (query reply; coverage lists every body's required box). */
+  const bsi_motion_coverage* coverage; uint32_t nCoverage;
+  uint32_t coverageStatus;
 } bsi_motion_step_view;
 #endif

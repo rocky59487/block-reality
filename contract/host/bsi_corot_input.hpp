@@ -67,4 +67,23 @@ inline bool motion(const json::Value& b,const uint8_t* payload,size_t n,Motion& 
     o.bodies=d.bodies.data();o.velocities=d.velocities.data();o.terrain=d.terrain.data();o.chordTolerance=b.find("chordTolerance")->num;o.relativeTolerance=b.find("relativeTolerance")->num;o.absoluteTolerance=b.find("absoluteTolerance")->num;
     o.maxBodies=count(b,"maxBodies");o.maxCells=count(b,"maxCells");o.maxColliders=count(b,"maxColliders");o.maxVertices=count(b,"maxVertices");o.maxRefinements=count(b,"maxRefinements");o.maxSamples=count(b,"maxSamples");return true;
 }
+// ABI11 bsi.corot.rigid.source.export: same body/velocity records as the finite
+// declare, no terrain or scene (a packet is scene-independent).
+struct SourceExport {
+    bsi_rigid_source_export input{};
+    std::vector<bsi_corot_body> bodies;
+    std::vector<bsi_corot_velocity> velocities;
+};
+inline bool sourceExport(const json::Value& b,const uint8_t* payload,size_t n,SourceExport& d) {
+    auto& o=d.input;o.struct_size=sizeof(o);o.expected=fracture_wire::stamp(*b.find("expected"));o.fracture=fracture_wire::token(*b.find("fracture"));
+    o.format=count(b,"format");o.nBodies=count(b,"bodies");o.nVelocities=count(b,"velocities");
+    const uint64_t bytes=uint64_t(o.nBodies)*sizeof(bsi_corot_body)+uint64_t(o.nVelocities)*sizeof(bsi_corot_velocity);
+    if(bytes!=n||n>fracture_wire::kPayloadLimit||(n&&!payload)||!fracture_wire::nonzero(o.expected.domain))return false;
+    size_t offset=0;motion_wire::read(payload,offset,o.nBodies,d.bodies);motion_wire::read(payload,offset,o.nVelocities,d.velocities);
+    std::sort(d.bodies.begin(),d.bodies.end(),[](const auto& a,const auto& c){return a.id<c.id;});
+    o.bodies=d.bodies.data();o.velocities=d.velocities.data();
+    o.relativeTolerance=b.find("relativeTolerance")->num;o.absoluteTolerance=b.find("absoluteTolerance")->num;
+    o.maxRefinements=count(b,"maxRefinements");o.maxSamples=count(b,"maxSamples");
+    o.byteBudget=count(b,"byteBudget");o.allocationBudget=count(b,"allocationBudget");o.elementBudget=count(b,"elementBudget");return true;
+}
 }} // namespace bsi::corot_wire
