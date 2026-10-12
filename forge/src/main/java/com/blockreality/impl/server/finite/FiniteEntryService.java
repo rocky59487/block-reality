@@ -2,6 +2,7 @@ package com.blockreality.impl.server.finite;
 
 import com.blockreality.core.bsi.BsiContract;
 import com.blockreality.core.bsi.BsiCorot;
+import com.blockreality.core.bsi.BsiCorotFracture;
 import com.blockreality.core.bsi.BsiHeaders;
 import com.blockreality.core.bsi.BsiResponse;
 import com.blockreality.core.bsi.BsiVocabulary;
@@ -183,6 +184,27 @@ public final class FiniteEntryService {
         Objects.requireNonNull(level);
         FiniteEntryService service = requireService(level.getServer());
         return service.core.status(level.dimension().location().toString());
+    }
+
+    /**
+     * The gated fracture trigger (docs/FINITE_DOMAIN_ENTRY.md §6): resolve this
+     * dimension's committed domain, decode the durable vocabulary for the named
+     * material's id, and hand one failure rule to {@link FiniteFractureService#fracture}.
+     * A domain with no committed source is named-refused — fracture cannot run against
+     * nothing. Caller-controlled ids are not accepted here; each command mints a fresh
+     * request id, while the service replays a durable decision on a repeated id.
+     */
+    public static @Nonnull Receipt fracture(ServerLevel level, String material,
+                                            double damageT, double damageC, int budget)
+            throws IOException {
+        Objects.requireNonNull(level);
+        Objects.requireNonNull(material);
+        FiniteEntryService service = requireService(level.getServer());
+        String dimension = level.dimension().location().toString();
+        FiniteDomainId domain = service.core.requireSourcedDomain(dimension);
+        int materialId = service.core.fractureMaterialId(domain, material);
+        var rules = List.of(new BsiCorotFracture.Rule(materialId, 0L, 0.0, damageT, damageC, 0.0));
+        return FiniteFractureService.fracture(level, domain, rules, budget, UUID.randomUUID());
     }
 
     private static FiniteEntryService requireService(MinecraftServer server) {
@@ -458,6 +480,42 @@ public final class FiniteEntryService {
                 1.0, new double[] {0, -9.81, 0}, 1,
                 1e-4, 1e-3, 1e-3, 1.0, 1e-6, 1.0, 1e-8, 1e-4, 1 << 20, 0,
                 50, 4, 8, 25, 1, 4096, 8, 2, 8);
+
+        /**
+         * The fracture entry's domain check: admitted dimension plus adopted domain plus
+         * a committed source — nothing else can carry a fracture transaction.
+         */
+        FiniteDomainId requireSourcedDomain(String dimension) throws IOException {
+            entryGuard.run();
+            if (closed || !failure.isEmpty())
+                throw new IllegalStateException("Finite entry service is not available");
+            if (!admittedDimensions.contains(dimension))
+                throw new IOException("Dimension is not an admitted finite test domain " + dimension);
+            var domain = runtime.domain(dimension).orElseThrow(
+                    () -> new IOException("Dimension has no adopted finite domain " + dimension));
+            if (runtime.root(domain.id()).isEmpty())
+                throw new IOException("Finite domain has no committed source; bootstrap first "
+                        + dimension);
+            return domain.id();
+        }
+
+        /**
+         * Resolve a material name against the committed source's durable vocabulary —
+         * wire ids are engine-assigned, never hard-coded.
+         */
+        int fractureMaterialId(FiniteDomainId domain, String material) throws IOException {
+            FiniteSource source = runtime.source(domain).orElseThrow(
+                    () -> new IOException("Committed finite source is unreadable"));
+            int version = (int) JsonValue.parseStrict(source.vocabRequestJson()).exactI64("version");
+            var vocabulary =
+                    BsiVocabulary.decodeStored(JsonValue.parseStrict(source.vocabReplyJson()), version);
+            try {
+                return vocabulary.materialId(material);
+            } catch (IllegalArgumentException missing) {
+                throw new IOException("Material '" + material
+                        + "' is not in the durable vocabulary", missing);
+            }
+        }
 
         public String failure() { return failure; }
         @Override public void close() { closed = true; }

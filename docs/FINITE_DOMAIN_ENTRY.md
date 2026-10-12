@@ -130,6 +130,22 @@ retainLoadPath）、`relTol=1e-4`、`forceTol=1e-3`、`momentTol=1e-3`、`initia
 - `finite` literal 於 `BrPermissions` 掛 `LEVEL_OP`（含 mutating 子指令 → 整棵 literal
   OP 級，與既有表粒度一致）；`READ_ONLY_WHITELIST` 不變。
 
+### §6.5 fracture 入口（2026-10 回復原規格）
+
+原任務規格把 fracture 觸發列入本單元範圍；重建判準 §1 的「不做」誤排除了它，
+經審核回復——它正是實機 gate 的觸發點。凍結語意：
+
+- `/br finite fracture [material] [damageT] [damageC] [budget]`：
+  `FiniteEntryService.fracture` → `Core.requireSourcedDomain`（admitted＋adopted＋
+  committed source 三者缺一即具名拒絕）→ `Core.fractureMaterialId`（committed
+  source 的 durable `vocabReply` 用 `BsiVocabulary.decodeStored` 解出材料 id，
+  **引擎配置的 id 才是權威，不硬編**）→ 組一條
+  `Rule(material, 0, 0, damageT, damageC, 0)` →
+  `FiniteFractureService.fracture(level, domain, rules, budget, fresh requestId)`。
+- 參數預設：material `steel`、damageT/damageC `0.0`、budget `64`（上限 4096）。
+- material 不在 durable vocabulary → 具名拒絕；fracture 語意本身由 §9 凍結的
+  `FiniteFractureService`/`Driver` 承接，本入口不做任何 Java 側判定。
+
 ## §7 測試腿 ↔ 不變式對照（凍結）
 
 `forge/src/test/java/.../ForgeFiniteEntryTest.java`，沿用 `ForgeFiniteRuntimeTest`
@@ -150,6 +166,8 @@ harness（`@TempDir`、scripted lanes、AtomicBoolean 旗標；製造件經真 j
 | `mintRunsOnPrivateLaneThread` | 所有 lane 呼叫執行緒名為 `br-entry-lane-*`／`br-finite-lane-*`；caller thread 零 native |
 | `laneWithoutCorotRefuses` / `vocabRefusalRefuses` | `has("bsi.corot")` false／錯誤回覆 → 具名 IOException、無 commit、journal 不增長 |
 | `statusReportsDomainState` | status 於 adopted/waiting/sourced 各態回傳一致快照 |
+| `fractureRequiresAdoptedDomain` / `fractureRequiresCommittedSource` | §6.5：未 adopt／未 commit 的域具名拒絕，不發 fracture intent |
+| `fractureMaterialIdDecodesCommittedVocabulary` | §6.5：材料 id 由 durable vocabReply 解碼（steel→0、ground_rigid→8），未知材料具名拒絕 |
 | `axislessPieceRefusedAtCommit` | `declaration.axis()<0` 的 piece 在 `prepareBuild` admission 即被拒絕（footprint 驗證要求 axis≥0）——axis 不變式在 manufactured 層咬合，`unboundPlans` 的同名檢查為防禦性重複 |
 | 權限表 | `finite`→LEVEL_OP 經 `BrPermissionsTest` 枚舉測試＋privileged 名單斷言 |
 

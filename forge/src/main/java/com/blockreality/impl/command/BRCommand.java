@@ -15,6 +15,7 @@ import com.blockreality.impl.block.StructuralBlock;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -102,7 +103,24 @@ public final class BRCommand {
                         .executes(c -> reset(c.getSource())))
                 .then(lit("finite")
                         .then(Commands.literal("status").executes(c -> finiteStatus(c.getSource())))
-                        .then(Commands.literal("bootstrap").executes(c -> finiteBootstrap(c.getSource()))))
+                        .then(Commands.literal("bootstrap").executes(c -> finiteBootstrap(c.getSource())))
+                        .then(Commands.literal("fracture")
+                                .executes(c -> finiteFracture(c.getSource(), "steel", 0.0, 0.0, 64))
+                                .then(Commands.argument("material", StringArgumentType.word())
+                                        .executes(c -> finiteFracture(c.getSource(),
+                                                StringArgumentType.getString(c, "material"), 0.0, 0.0, 64))
+                                        .then(Commands.argument("damageT", DoubleArgumentType.doubleArg(0.0, 1.0))
+                                                .then(Commands.argument("damageC", DoubleArgumentType.doubleArg(0.0, 1.0))
+                                                        .executes(c -> finiteFracture(c.getSource(),
+                                                                StringArgumentType.getString(c, "material"),
+                                                                DoubleArgumentType.getDouble(c, "damageT"),
+                                                                DoubleArgumentType.getDouble(c, "damageC"), 64))
+                                                        .then(Commands.argument("budget", IntegerArgumentType.integer(0, 4096))
+                                                                .executes(c -> finiteFracture(c.getSource(),
+                                                                        StringArgumentType.getString(c, "material"),
+                                                                        DoubleArgumentType.getDouble(c, "damageT"),
+                                                                        DoubleArgumentType.getDouble(c, "damageC"),
+                                                                        IntegerArgumentType.getInteger(c, "budget")))))))))
                 .executes(c -> status(c.getSource())));
     }
 
@@ -561,6 +579,30 @@ public final class BRCommand {
             return 0;
         }
         return 0;
+    }
+
+    /**
+     * {@code /br finite fracture [material] [damageT] [damageC] [budget]} — the gated
+     * fracture trigger: one failure rule against the named vocabulary material, handed
+     * to the committed domain's fracture transaction. Reports the durable receipt's
+     * phase and request id; a refusal names its reason.
+     */
+    private static int finiteFracture(CommandSourceStack src, String material,
+                                      double damageT, double damageC, int budget) {
+        ServerLevel level = src.getLevel();
+        try {
+            var receipt = FiniteEntryService.fracture(level, material, damageT, damageC, budget);
+            var phase = com.blockreality.core.transaction.ConstructionTransaction.Phase.COMMITTED;
+            ChatFormatting colour = receipt.phase() == phase ? ChatFormatting.GREEN : ChatFormatting.RED;
+            var reason = receipt.reason();
+            line(src, "finite fracture " + receipt.phase() + " — tx " + receipt.request().id()
+                    + (reason == null || reason == com.blockreality.core.transaction
+                            .ConstructionTransaction.Reason.NONE ? "" : " (" + reason + ")"), colour);
+            return receipt.phase() == phase ? 1 : 0;
+        } catch (Exception failure) {
+            line(src, "finite fracture refused: " + failure.getMessage(), ChatFormatting.RED);
+            return 0;
+        }
     }
 
     private static void line(CommandSourceStack src, String text, ChatFormatting colour) {

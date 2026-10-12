@@ -564,4 +564,36 @@ class ForgeFiniteEntryTest {
         assertEquals(FiniteLaneWorker.Kind.SYNCED, sourced.laneEvent().kind());
         closeAll();
     }
+
+    // ---------------------------------------------------------------- fracture entry
+
+    @Test void fractureRequiresAdoptedDomain() throws Exception {
+        openCore();
+        var failure = assertThrows(IOException.class, () -> core.requireSourcedDomain(DIMENSION));
+        assertTrue(failure.getMessage().contains("no adopted finite domain"));
+        closeAll();
+    }
+
+    @Test void fractureRequiresCommittedSource() throws Exception {
+        openCore();
+        runtime.adoptDomain(DIMENSION);                     // adopted, never committed
+        var failure = assertThrows(IOException.class, () -> core.requireSourcedDomain(DIMENSION));
+        assertTrue(failure.getMessage().contains("no committed source"));
+        closeAll();
+    }
+
+    @Test void fractureMaterialIdDecodesCommittedVocabulary() throws Exception {
+        openCore();
+        mintPiece(STEEL, List.of(new BlockKey(1, 64, 1)));
+        fakeWorld.cells.put(new BlockKey(1, 64, 1), new FiniteObservation.Cell.Structural(STEEL));
+        var committed = assertInstanceOf(FiniteEntryService.Bootstrap.Committed.class,
+                core.bootstrap(DIMENSION));
+        // Ids are engine-assigned — the durable vocabulary reply is the only authority.
+        assertEquals(0, core.fractureMaterialId(committed.domain(), "steel"));
+        assertEquals(8, core.fractureMaterialId(committed.domain(), "ground_rigid"));
+        var failure = assertThrows(IOException.class,
+                () -> core.fractureMaterialId(committed.domain(), "obtainium"));
+        assertTrue(failure.getMessage().contains("not in the durable vocabulary"));
+        closeAll();
+    }
 }
