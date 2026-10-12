@@ -58,7 +58,10 @@ class LangKeysTest {
      * to a translation lookup — verifiable by grep, which is why the property is named
      * here rather than a prefix being excluded wholesale.
      */
-    private static final Set<String> NOT_LANG_KEYS = Set.of("br.sidecar", "br.engine");
+    private static final Set<String> NOT_LANG_KEYS = Set.of("br.sidecar", "br.engine",
+            // Hash domain-separation label inside FiniteCodec.fractureIntentHash — a durable
+            // input tuple tag, never a key the game asks a language file for.
+            "br.finite.fracture.intent");
 
     private static final Pattern LITERAL = Pattern.compile("\"(br\\.[a-z0-9_.]*)\"");
     private static final Pattern ENTRY = Pattern.compile("^ {2}\"([^\"]+)\": \"(.*)\",?$");

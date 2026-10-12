@@ -134,6 +134,8 @@ class ForgeFiniteRuntimeTest {
 
         @Override public boolean ready() { return true; }
 
+        @Override public boolean has(String capability) { return true; }
+
         static BsiResponse respond(String header) { return respond(header, new byte[0]); }
 
         static BsiResponse respond(String header, byte[] payload) {
