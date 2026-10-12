@@ -148,6 +148,38 @@ class FiniteFractureTest {
         assertThrows(IllegalArgumentException.class, () -> source.fracturePayload(new byte[7]));
     }
 
+    @Test void intentHashCountsLayersFromTheLayerSection() throws Exception {
+        var world = openWorld();
+        var domain = world.domain();
+        var committed = world.committed();
+        // 2 shell laws + 3 shell layers: a caller that derived the layer count from the
+        // law section (112/16=7) would hash a request frame staging never produces and
+        // refuse every shell world. Keep the two counts visibly different.
+        var source = FiniteSource.build(VOCAB_REQUEST, vocabReply("r2", 0),
+                List.of(GROUND, STEEL), List.of(new BsiFracture.Owner(
+                        new com.blockreality.api.geom.BlockKey(1, 64, 1), 1)),
+                java.util.Set.of(1), new byte[152],
+                new byte[2 * FiniteSource.SHELL_LAW_BYTES],
+                new byte[3 * FiniteSource.SHELL_LAYER_BYTES],
+                new byte[0], new byte[0], new byte[0], options176(domain.bsiDomain(), 0));
+        var rules = List.of(FractureFixtures.rule());
+        var requestId = new UUID(70, 99);
+        String header = BsiCorotFracture.prepare(BsiCorotFracture.prepareId(requestId),
+                committed.worldRevision(), source.options(),
+                source.materials().length / FiniteSource.MATERIAL_BYTES, 0, 0, 0,
+                requestId, rules.size(), 4, 2, 3);
+        byte[] frame = BsiFrame.encode(header,
+                source.fracturePayload(BsiCorotFracture.encodeRules(rules)));
+        var expected = FiniteCodec.fractureIntentHash(domain, committed.worldRevision(),
+                committed.historySequence(), source.sourceHash(), source.vocabHash(),
+                source.ownersHash(), requestId, ACTOR, "test/actor", 1, 1 << 20, 4096, 4096,
+                FiniteSource.sha256(frame));
+        var actual = FiniteFractureDriver.intentHash(domain, committed, source, requestId,
+                ACTOR, "test/actor", 1, 1 << 20, 4096, 4096, rules, 4);
+        assertEquals(expected, actual);
+        closeAll();
+    }
+
     // ---------------------------------------------------------------- wire + session
 
     @Test void fracturePrepareStoresDeterministicRequestFrame() throws Exception {

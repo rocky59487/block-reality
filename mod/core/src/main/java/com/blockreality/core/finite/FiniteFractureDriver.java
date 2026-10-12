@@ -89,7 +89,7 @@ public final class FiniteFractureDriver implements AutoCloseable {
                 source.loads().length / BsiCorot.LOAD_BYTES,
                 requestId, rules.size(), budget,
                 source.shellLaws().length / BsiCorot.SHELL_LAW_BYTES,
-                source.shellLaws().length / BsiCorot.SHELL_LAYER_BYTES);
+                source.shellLayers().length / BsiCorot.SHELL_LAYER_BYTES);
         byte[] frame = BsiFrame.encode(header, source.fracturePayload(ruleBytes));
         return FiniteCodec.fractureIntentHash(domain, committed.worldRevision(),
                 committed.historySequence(), source.sourceHash(), source.vocabHash(),
