@@ -22,7 +22,21 @@ import java.util.Objects;
 public record FiniteResult(FiniteBasis basis, boolean fullyConverged, List<Island> islands,
                            Map<String, BsiResponse.Section> sections, byte[] payload,
                            double loadFactor, java.util.UUID artifactNamespace,
-                           String generation, BsiFracture.Token token, Map<String, Long> limits) {
+                           String generation, BsiFracture.Token token, Map<String, Long> limits,
+                           ArcStep arc, com.blockreality.core.bsi.BsiCorot.Availability availability) {
+
+    /**
+     * The arc step scalars (design §7): {@code radius} is the accepted continuation step
+     * and {@code constraintResidual} the engine's own path-constraint residual. Present
+     * only on {@code corot.arc.advance} results; never computed in Java.
+     */
+    public record ArcStep(double radius, double constraintResidual) {
+        public ArcStep {
+            if (!(radius > 0) || !Double.isFinite(radius)
+                    || !Double.isFinite(constraintResidual) || constraintResidual < 0)
+                throw new IllegalArgumentException("invalid arc step");
+        }
+    }
 
     /**
      * One island verdict row (contract {@code bsi_corot_island_record}): the status enum is
@@ -53,6 +67,7 @@ public record FiniteResult(FiniteBasis basis, boolean fullyConverged, List<Islan
         Objects.requireNonNull(generation);
         if (!generation.matches("[0-9a-f]{16}")) throw new IllegalArgumentException("invalid finite generation");
         Objects.requireNonNull(token);
+        Objects.requireNonNull(availability);          // an empty census is honest; absent is not
         limits = Map.copyOf(limits);
     }
 

@@ -220,7 +220,8 @@ public final class FiniteCodec {
     /**
      * The versioned operation descriptor recorded at {@code finite/tx/<requestId>} (design §4.2).
      * Schema 1 ops: 1 createDomain, 2 bind (manufactured + legacy adoption), 3 retire,
-     * 4 observe, 5 commitRoot.
+     * 4 observe, 5 commitRoot (world boundary), 6 commitHistory (same-revision arc history,
+     * W3).
      */
     public sealed interface Operation {
         record CreateDomain(String dimension) implements Operation {
@@ -258,6 +259,15 @@ public final class FiniteCodec {
         record CommitRoot(FiniteRoot.Next next) implements Operation {
             public CommitRoot { java.util.Objects.requireNonNull(next); }
         }
+        /**
+         * W3 history-only commit (design §7): same worldRevision, historySequence+1,
+         * identical source, and a mandatory new checkpoint. Distinguished from
+         * {@link CommitRoot} so a history commit can never pretend the world changed,
+         * and a world-boundary commit can never pass for history.
+         */
+        record CommitHistory(FiniteRoot.Next next) implements Operation {
+            public CommitHistory { java.util.Objects.requireNonNull(next); }
+        }
     }
 
     static byte[] encodeOperation(Operation op) {
@@ -282,17 +292,36 @@ public final class FiniteCodec {
         } else if (op instanceof Operation.Observe) {
             out.u32(4);
         } else if (op instanceof Operation.CommitRoot commit) {
-            var next = commit.next();
-            out.u32(5).u64(next.worldRevision()).u64(next.historySequence()).ref(next.source());
-            var checkpoint = next.checkpoint();
-            if (checkpoint == null) out.u32(0);
-            else {
-                out.u32(1).ref(checkpoint.blob()).u32(checkpoint.format())
-                        .utf8(checkpoint.engineBuild()).utf8(checkpoint.contractSha256())
-                        .u64(checkpoint.byteBudget()).u64(checkpoint.allocationBudget()).u64(checkpoint.elementBudget());
-            }
+            out.u32(5);
+            encodeNext(out, commit.next());
+        } else if (op instanceof Operation.CommitHistory history) {
+            out.u32(6);
+            encodeNext(out, history.next());
         } else throw fail();
         return out.bytes();
+    }
+
+    private static void encodeNext(W out, FiniteRoot.Next next) {
+        out.u64(next.worldRevision()).u64(next.historySequence()).ref(next.source());
+        var checkpoint = next.checkpoint();
+        if (checkpoint == null) out.u32(0);
+        else {
+            out.u32(1).ref(checkpoint.blob()).u32(checkpoint.format())
+                    .utf8(checkpoint.engineBuild()).utf8(checkpoint.contractSha256())
+                    .u64(checkpoint.byteBudget()).u64(checkpoint.allocationBudget()).u64(checkpoint.elementBudget());
+        }
+    }
+
+    private static FiniteRoot.Next decodeNext(R r) {
+        long revision = r.i64(), sequence = r.i64();
+        var source = r.ref();
+        FiniteRoot.Checkpoint checkpoint = null;
+        long present = r.u32();
+        if (present == 1) {
+            checkpoint = new FiniteRoot.Checkpoint(r.ref(), (int) r.u32(), r.utf8(256), r.utf8(128),
+                    r.i64(), r.i64(), r.i64());
+        } else if (present != 0) throw fail();
+        return new FiniteRoot.Next(revision, sequence, source, checkpoint);
     }
 
     static Operation decodeOperation(byte[] data) {
@@ -327,15 +356,9 @@ public final class FiniteCodec {
         } else if (tag == 4) {
             op = new Operation.Observe();
         } else if (tag == 5) {
-            long revision = r.i64(), sequence = r.i64();
-            var source = r.ref();
-            FiniteRoot.Checkpoint checkpoint = null;
-            long present = r.u32();
-            if (present == 1) {
-                checkpoint = new FiniteRoot.Checkpoint(r.ref(), (int) r.u32(), r.utf8(256), r.utf8(128),
-                        r.i64(), r.i64(), r.i64());
-            } else if (present != 0) throw fail();
-            op = new Operation.CommitRoot(new FiniteRoot.Next(revision, sequence, source, checkpoint));
+            op = new Operation.CommitRoot(decodeNext(r));
+        } else if (tag == 6) {
+            op = new Operation.CommitHistory(decodeNext(r));
         } else throw fail();
         r.done();
         return op;

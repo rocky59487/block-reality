@@ -1,5 +1,7 @@
 package com.blockreality.core.finite;
 
+import com.blockreality.api.geom.BlockKey;
+import com.blockreality.core.bsi.BsiCorot;
 import com.blockreality.core.bsi.BsiFrame;
 import com.blockreality.core.bsi.BsiFracture;
 import com.blockreality.core.bsi.BsiResponse;
@@ -12,6 +14,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -251,5 +254,154 @@ class FiniteSessionTest {
                 domain.bsiDomain(), domain.artifactNamespace(), "0123456789abcdef"));
         assertNull(session.solve());
         assertEquals(FiniteSession.Step.DISABLED, session.step());
+    }
+
+    // ---------------------------------------------------------------- W3 arc advance
+
+    private static final BsiFracture.Token ARC_A =
+            new BsiFracture.Token(new UUID(0xA1, 0xA1), "aaaa1111aaaa1111");
+    private static final BsiFracture.Token ARC_B =
+            new BsiFracture.Token(new UUID(0xB2, 0xB2), "bbbb2222bbbb2222");
+    private static final BsiFracture.Token ARC_C =
+            new BsiFracture.Token(new UUID(0xC3, 0xC3), "cccc3333cccc3333");
+
+    private static String solveOk(String id, UUID domain, long revision, UUID ns,
+                                  BsiFracture.Token token, String generation, boolean converged) {
+        return "{\"bsi\":1,\"kind\":\"response\",\"id\":\"" + id + "\",\"method\":\"bsi.corot.solve\","
+                + "\"revision\":" + revision + ",\"status\":\"analyzed\","
+                + "\"basis\":{\"domain\":\"" + BsiFracture.hex(domain) + "\",\"revision\":" + revision + "},"
+                + "\"artifactNamespace\":\"" + BsiFracture.hex(ns) + "\","
+                + "\"generation\":\"" + generation + "\","
+                + "\"token\":{\"context\":\"" + BsiFracture.hex(token.context())
+                + "\",\"sequence\":\"" + token.sequence() + "\"},\"fullyConverged\":" + converged
+                + ",\"sections\":[]}";
+    }
+
+    @Test void solveThenArcAdvancesAndMintsLiveTokens() {
+        setup();
+        var lane = new ScriptedLane();
+        var session = openReady(lane);
+        lane.reply(solveOk("f2", domain.bsiDomain(), 4, domain.artifactNamespace(),
+                ARC_A, "0123456789abcdef", true));
+        assertNotNull(session.solve());
+
+        var options = CorotArcFixtures.arcOptions();
+        lane.reply(CorotArcFixtures.arcReply("f3", 4, domain.bsiDomain(), domain.artifactNamespace(),
+                        "fedcba9876543210", ARC_B, 1.25, 0.5, 1e-12),
+                CorotArcFixtures.payload(domain.bsiDomain(), 4));
+        var stepped = session.arcAdvance(options);
+        assertNotNull(stepped, () -> "arc refused: " + session.refusal());
+        assertTrue(stepped.fullyConverged());
+        assertEquals(ARC_B, stepped.token());
+        assertEquals(1.25, stepped.loadFactor(), 1e-12);
+        assertTrue(stepped.loadFactorReported());
+        assertNotNull(stepped.arc());
+        assertEquals(0.5, stepped.arc().radius(), 1e-12);
+        assertEquals(1e-12, stepped.arc().constraintResidual(), 1e-15);
+
+        // The wire carried an EMPTY payload and consumed the live token, not an older one.
+        var call = lane.calls.get(3);
+        assertEquals("bsi.corot.arc.advance", call.method());
+        assertEquals(0, call.payload().length);
+        var body = JsonValue.parseStrict(call.header()).objField("body");
+        assertEquals(BsiFracture.hex(ARC_A.context()),
+                body.objField("initialAnalysis").str("context", ""));
+        assertEquals(ARC_A.sequence(), body.objField("initialAnalysis").str("sequence", ""));
+
+        // The minted token feeds the next step: a second advance consumes ARC_B.
+        lane.reply(CorotArcFixtures.arcReply("f4", 4, domain.bsiDomain(), domain.artifactNamespace(),
+                        "aaaabbbbccccdddd", ARC_C, 1.5, 0.5, 0.0),
+                CorotArcFixtures.payload(domain.bsiDomain(), 4));
+        assertNotNull(session.arcAdvance(options));
+        body = JsonValue.parseStrict(lane.calls.get(4).header()).objField("body");
+        assertEquals(BsiFracture.hex(ARC_B.context()),
+                body.objField("initialAnalysis").str("context", ""));
+    }
+
+    @Test void arcRequiresConvergedLiveTokenAndRefusesEcho() {
+        setup();
+        var lane = new ScriptedLane();
+        var session = openReady(lane);
+        // Out of order: no live token yet.
+        assertNull(session.arcAdvance(CorotArcFixtures.arcOptions()));
+        assertEquals(FiniteSession.Step.DISABLED, session.step());
+
+        lane = new ScriptedLane();
+        session = openReady(lane);
+        // A non-converged solve is a valid answer but not an arc source.
+        lane.reply(solveOk("f2", domain.bsiDomain(), 4, domain.artifactNamespace(),
+                ARC_A, "0123456789abcdef", false));
+        assertNotNull(session.solve());
+        assertNull(session.arcAdvance(CorotArcFixtures.arcOptions()));
+        assertEquals(FiniteSession.Step.DISABLED, session.step());
+        assertTrue(session.refusal().contains("converged"));
+
+        // An engine that echoes the consumed token back mints nothing: protocol violation.
+        lane = new ScriptedLane();
+        session = openReady(lane);
+        lane.reply(solveOk("f2", domain.bsiDomain(), 4, domain.artifactNamespace(),
+                ARC_A, "0123456789abcdef", true));
+        assertNotNull(session.solve());
+        lane.reply(CorotArcFixtures.arcReply("f3", 4, domain.bsiDomain(), domain.artifactNamespace(),
+                        "fedcba9876543210", ARC_A, 1.25, 0.5, 1e-12),       // echo: same token
+                CorotArcFixtures.payload(domain.bsiDomain(), 4));
+        assertNull(session.arcAdvance(CorotArcFixtures.arcOptions()));
+        assertEquals(FiniteSession.Step.DISABLED, session.step());
+    }
+
+    @Test void nonzeroPrescribedPathIsRefusedBeforeTheWire() {
+        setup();
+        // Rebuild the source with one prescribed record carrying a nonzero displacement.
+        var prescribed = new byte[BsiCorot.PRESCRIBED_BYTES];
+        ByteBuffer.wrap(prescribed).order(ByteOrder.LITTLE_ENDIAN).putDouble(16, 0.01);
+        source = FiniteSource.build(VOCAB_REQUEST, vocabReply("r1", 0),
+                List.of(GROUND, STEEL),
+                List.of(new BsiFracture.Owner(new BlockKey(1, 64, 1), 1)),
+                Set.of(1), new byte[152], new byte[0], new byte[0], new byte[0], prescribed,
+                new byte[0], options176(domain.bsiDomain(), 4));
+        var lane = new ScriptedLane();
+        var session = openReady(lane);
+        lane.reply(solveOk("f2", domain.bsiDomain(), 4, domain.artifactNamespace(),
+                ARC_A, "0123456789abcdef", true));
+        assertNotNull(session.solve());
+        assertNull(session.arcAdvance(CorotArcFixtures.arcOptions()));
+        assertEquals(FiniteSession.Step.DISABLED, session.step());
+        assertTrue(session.refusal().contains("prescribed"));
+        assertEquals(3, lane.calls.size());                     // nothing was sent for the arc
+    }
+
+    @Test void engineErrorOnArcDisablesTheLane() {
+        setup();
+        var lane = new ScriptedLane();
+        var session = openReady(lane);
+        lane.reply(solveOk("f2", domain.bsiDomain(), 4, domain.artifactNamespace(),
+                ARC_A, "0123456789abcdef", true));
+        assertNotNull(session.solve());
+        lane.error("TOKEN_STALE");
+        assertNull(session.arcAdvance(CorotArcFixtures.arcOptions()));
+        assertEquals(FiniteSession.Step.DISABLED, session.step());
+    }
+
+    @Test void checkpointExportCarriesTheOpaqueBlobAndBasis() {
+        setup();
+        var lane = new ScriptedLane();
+        var session = openReady(lane);
+        lane.reply(solveOk("f2", domain.bsiDomain(), 4, domain.artifactNamespace(),
+                ARC_A, "0123456789abcdef", true));
+        assertNotNull(session.solve());
+        var blob = new byte[48];
+        lane.reply("{\"bsi\":1,\"kind\":\"response\",\"id\":\"f3\",\"method\":\"bsi.corot.checkpoint.export\","
+                        + "\"revision\":4,\"status\":\"exported\",\"basis\":{\"domain\":\""
+                        + BsiFracture.hex(domain.bsiDomain()) + "\",\"revision\":4},"
+                        + "\"format\":2,\"bytes\":48}",
+                blob);
+        var exported = session.exportCheckpoint(2, 1 << 20, 4096, 4096);
+        assertNotNull(exported, () -> "export refused: " + session.refusal());
+        assertEquals(2, exported.format());
+        assertArrayEquals(blob, exported.blob());
+        var call = lane.calls.get(3);
+        assertEquals("bsi.corot.checkpoint.export", call.method());
+        var body = JsonValue.parseStrict(call.header()).objField("body");
+        assertEquals(2, body.exactI64("format"));
     }
 }

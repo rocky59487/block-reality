@@ -117,17 +117,19 @@ class FiniteRegistryTest {
         var checkpointBlob = store.publish(new UUID(80, 2), FiniteCodec.KIND_CHECKPOINT, new byte[]{1, 2, 3, 4});
         var history = new FiniteRoot.Next(0, 1, sourceRef,
                 new FiniteRoot.Checkpoint(checkpointBlob, 1, "engine/1.5", "cd".repeat(32), 1 << 20, 4096, 4096));
-        var historyReq = request(9, new Operation.CommitRoot(history));
-        registry.applyCommitted(journal, commit(registry.prepareCommitRoot(historyReq, domainIdentity, history)));
+        // W3: same-revision history is its own operation, never a CommitRoot.
+        var historyReq = request(9, new Operation.CommitHistory(history));
+        registry.applyCommitted(journal, commit(registry.prepareCommitHistory(historyReq, domainIdentity, history)));
         assertEquals(1, registry.root(domainIdentity).orElseThrow().historySequence());
         assertEquals(checkpointBlob, registry.root(domainIdentity).orElseThrow().checkpoint().blob());
 
         // Same revision with a different source is refused — history-only requires identical source.
         var otherSource = FiniteFixtures.source(domain.id().bsiDomain(), 1);
         var otherRef = store.publish(new UUID(80, 3), FiniteCodec.KIND_SOURCE, otherSource.serialize());
-        var drift = new FiniteRoot.Next(0, 2, otherRef, null);
+        var drift = new FiniteRoot.Next(0, 2, otherRef,
+                new FiniteRoot.Checkpoint(checkpointBlob, 1, "engine/1.5", "cd".repeat(32), 1 << 20, 4096, 4096));
         assertThrows(IllegalArgumentException.class,
-                () -> registry.prepareCommitRoot(request(10, new Operation.CommitRoot(drift)), domainIdentity, drift));
+                () -> registry.prepareCommitHistory(request(10, new Operation.CommitHistory(drift)), domainIdentity, drift));
         // Skipping a history step is refused.
         var gap = new FiniteRoot.Next(1, 5, otherRef, null);
         assertThrows(IllegalArgumentException.class,

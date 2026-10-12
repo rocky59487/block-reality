@@ -121,6 +121,27 @@ final class BsiSections {
             case "facetSurfaces" -> BsiRecords.FACET_SURFACES_BYTES;
             case "facetSurfaces:f32" -> BsiRecords.FACET_SURFACES_F32_BYTES;
             case "attrsEcho" -> BsiRecords.ATTR_BYTES;
+            // The ABI10 finite sections (schema x-records): count*stride is pinned so a
+            // malformed directory can never smuggle a truncated or padded record block.
+            case "corotOptions" -> BsiCorot.OPTIONS_BYTES;
+            case "corotPhysical" -> 80;
+            case "corotIslands" -> BsiCorot.ISLAND_BYTES;
+            case "corotText" -> 1;
+            case "corotNodes" -> BsiCorot.NODE_BYTES;
+            case "corotMembers" -> BsiCorot.MEMBER_BYTES;
+            case "corotShells" -> BsiCorot.SHELL_BYTES;
+            case "corotJoints" -> BsiCorot.JOINT_BYTES;
+            case "corotSources" -> BsiCorot.SOURCE_BYTES;
+            case "corotSourceIndices" -> 4;
+            case "corotArtifacts" -> BsiCorot.ARTIFACT_BYTES;
+            case "corotArtifactMembers", "corotArtifactShells" -> 4;
+            case "corotProfiles" -> BsiCorot.PROFILE_BYTES;
+            case "corotFibers" -> BsiCorot.FIBER_BYTES;
+            case "corotStations" -> BsiCorot.STATION_BYTES;
+            case "corotPoints" -> BsiCorot.POINT_BYTES;
+            case "corotShellProfiles" -> BsiCorot.SHELL_PROFILE_BYTES;
+            case "corotShellLayers" -> BsiCorot.SHELL_LAYER_BYTES;
+            case "corotTensorPoints" -> BsiCorot.TENSOR_POINT_BYTES;
             default -> 0;
         };
     }

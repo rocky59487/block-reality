@@ -134,5 +134,22 @@
   "br.build.status.rate_limited": "請求過於頻繁，請稍候再重試。",
   "br.build.status.committed": "放置完成，材料與構件身分已保存。",
   "br.build.status.aborted": "施工已中止，世界與材料已還原。",
-  "br.build.status.rejected": "施工遭拒，未執行這筆施工。"
+  "br.build.status.rejected": "施工遭拒，未執行這筆施工。",
+  "br.finite.title": "有限元分析",
+  "br.finite.basis": "世界版本 %s · 歷史 %s",
+  "br.finite.partial": "未完全收斂——有一步未走到底",
+  "br.finite.load_factor": "載重因子 %s",
+  "br.finite.load_factor.missing": "未回報載重因子",
+  "br.finite.island": "島 %s：%s",
+  "br.finite.island.more": "…另有 %s 島",
+  "br.finite.status.converged": "收斂",
+  "br.finite.status.mechanism": "機構",
+  "br.finite.status.not_converged": "未收斂",
+  "br.finite.status.unsupported": "不支援",
+  "br.finite.status.inactive": "未啟用",
+  "br.finite.status.unknown": "未知狀態 %s",
+  "br.finite.material": "材料歷史：桿件 %s/%s、板件 %s/%s",
+  "br.finite.material.none": "無材料歷史回報",
+  "br.finite.arc": "靜態延續——半徑 %s、殘差 %s",
+  "br.finite.not_assessed": "尚未評估——無島結果"
 }

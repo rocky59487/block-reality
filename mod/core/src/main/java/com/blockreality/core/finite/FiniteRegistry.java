@@ -235,7 +235,8 @@ public final class FiniteRegistry {
         else if (op instanceof Operation.Bind bind) validateBind(byResource, allowed, bind, entry.request().id());
         else if (op instanceof Operation.Retire retire) validateRetire(byResource, allowed, retire, entry.request().id());
         else if (op instanceof Operation.Observe) validateObserve(byResource, allowed);
-        else if (op instanceof Operation.CommitRoot commit) validateCommit(byResource, allowed, commit, entry.request().id());
+        else if (op instanceof Operation.CommitRoot commit) validateCommit(byResource, allowed, commit.next(), entry.request().id(), false);
+        else if (op instanceof Operation.CommitHistory history) validateCommit(byResource, allowed, history.next(), entry.request().id(), true);
         else throw invalid();
         for (String key : byResource.keySet())
             if (!allowed.contains(key)) throw invalid();  // unexpected finite resource — fail closed
@@ -355,8 +356,20 @@ public final class FiniteRegistry {
         if (before == null || !after.equals(before.observed())) throw invalid();
     }
 
+    /**
+     * One shared root-change validator for both commit ops; {@code history} selects the
+     * W3 history-only policy (design §7):
+     *
+     * <ul>
+     *   <li>{@code CommitRoot} — genesis ({@code revision==0, sequence==0}, no committed
+     *       root) or a world boundary ({@code worldRevision+1, historySequence+1}).
+     *   <li>{@code CommitHistory} — requires a committed root, keeps
+     *       {@code worldRevision} unchanged, increments {@code historySequence} by exactly
+     *       one, names the identical source and must carry a new checkpoint.
+     * </ul>
+     */
     private void validateCommit(Map<String, Change> byResource, Set<String> allowed,
-                                Operation.CommitRoot commit, UUID requestId) {
+                                FiniteRoot.Next next, UUID requestId, boolean history) {
         String key = null;
         UUID bsi = null;
         for (var e : byResource.entrySet()) {
@@ -370,21 +383,23 @@ public final class FiniteRegistry {
         var change = byResource.get(key);
         if (!change.after().present()) throw invalid();
         var committed = roots.get(bsi);
-        var next = commit.next();
         var expected = new FiniteRoot(next.worldRevision(), next.historySequence(), next.source(), next.checkpoint(),
                 committed == null ? FiniteRoot.GENESIS_HASH : FiniteSource.sha256(FiniteCodec.encodeRoot(committed)),
                 requestId);
         var actual = FiniteCodec.decodeRoot(change.after().bytes());
         if (!expected.equals(actual)) throw invalid();
         if (committed == null) {
+            if (history) throw invalid();                // history has no root to advance
             if (next.worldRevision() != 0 || next.historySequence() != 0) throw invalid();
         } else {
             if (next.historySequence() != committed.historySequence() + 1) throw invalid();
             boolean sameWorld = next.worldRevision() == committed.worldRevision();
             boolean nextWorld = next.worldRevision() == committed.worldRevision() + 1;
-            if (!sameWorld && !nextWorld) throw invalid();
-            // A history-only commit must carry the identical source; a new world may carry a new one.
-            if (sameWorld && !next.source().equals(committed.source())) throw invalid();
+            if (history) {
+                // History-only: identical world, identical source, mandatory checkpoint.
+                if (!sameWorld || next.checkpoint() == null
+                        || !next.source().equals(committed.source())) throw invalid();
+            } else if (!nextWorld) throw invalid();      // same-revision work is CommitHistory
         }
         // The named objects must physically exist and decode before the authority moves.
         verifySourceRef(next.source());
@@ -483,9 +498,9 @@ public final class FiniteRegistry {
     }
 
     /**
-     * Propose a root commit. {@code next.worldRevision} is either the current revision
-     * (history-only: identical source required) or current+1 (new world). For the first
-     * commit both clocks must be zero.
+     * Propose a world-boundary root commit: the genesis commit ({@code revision 0,
+     * sequence 0}) or {@code worldRevision+1}/{@code historySequence+1} with a possibly
+     * new source. Same-revision history is {@link #prepareCommitHistory}, never this op.
      */
     public synchronized Prepared prepareCommitRoot(Request request, FiniteDomainId domain, FiniteRoot.Next next) {
         healthy(); ready(request);
@@ -494,6 +509,29 @@ public final class FiniteRegistry {
         var op = new Operation.CommitRoot(next);
         var changes = base(request, op);
         // Re-derive via the same validator so the intent carries exactly the chained root.
+        var committed = roots.get(domain.bsiDomain());
+        var root = new FiniteRoot(next.worldRevision(), next.historySequence(), next.source(), next.checkpoint(),
+                committed == null ? FiniteRoot.GENESIS_HASH : FiniteSource.sha256(FiniteCodec.encodeRoot(committed)),
+                request.id());
+        var key = rootKey(domain.bsiDomain());
+        var before = committed == null ? Value.missing() : Value.of(FiniteCodec.encodeRoot(committed));
+        changes.add(new Change(key, before, Value.of(FiniteCodec.encodeRoot(root))));
+        return prove(request, op, changes);
+    }
+
+    /**
+     * Propose a W3 history-only commit (design §7): {@code worldRevision} stays put,
+     * {@code historySequence} advances by exactly one, the source is the committed one and
+     * a new checkpoint slot is mandatory. The resulting {@code finite/root/<bsiDomain>}
+     * before-image is the committed root — the basis CAS: a prepared intent that no longer
+     * matches committed authority can never be applied.
+     */
+    public synchronized Prepared prepareCommitHistory(Request request, FiniteDomainId domain, FiniteRoot.Next next) {
+        healthy(); ready(request);
+        Objects.requireNonNull(next);
+        var current = requireCurrent(domain);
+        var op = new Operation.CommitHistory(next);
+        var changes = base(request, op);
         var committed = roots.get(domain.bsiDomain());
         var root = new FiniteRoot(next.worldRevision(), next.historySequence(), next.source(), next.checkpoint(),
                 committed == null ? FiniteRoot.GENESIS_HASH : FiniteSource.sha256(FiniteCodec.encodeRoot(committed)),
