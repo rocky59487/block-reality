@@ -62,11 +62,32 @@ final class FiniteJournalHost implements AtomicConstructionCoordinator.Host {
         this.bound = entry;
     }
 
+    /**
+     * True iff <em>every</em> change lives under {@code finite/} — the pure-finite
+     * transaction shape this host can serve. A mixed intent (finite plus world
+     * resources, e.g. a committed fracture) is deliberately not finite: routing it
+     * here would only fail closed in {@link #bind} on the foreign participant
+     * (doc §9.6).
+     */
     static boolean isFinite(Entry entry) {
         Intent intent = entry.intent();
         if (intent == null) return false;
         for (Change change : intent.changes())
-            if (change.resource().startsWith("finite/")) return true;
+            if (!change.resource().startsWith("finite/")) return false;
+        return true;
+    }
+
+    /**
+     * True iff any change carries fracture evidence ({@code finite/fracture/…}) — the
+     * durable signature of a {@code CommitFracture} intent. Such an entry routes to
+     * the fracture host through {@code FiniteFractureDriver.recoveryHost}, whether it
+     * is pure-finite (plan/root/tx only) or mixed with world participants (doc §9.6).
+     */
+    static boolean isFracture(Entry entry) {
+        Intent intent = entry.intent();
+        if (intent == null) return false;
+        for (Change change : intent.changes())
+            if (change.resource().startsWith("finite/fracture/")) return true;
         return false;
     }
 

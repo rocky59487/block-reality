@@ -700,4 +700,29 @@ public final class ConstructionService {
             }
         }
     }
+
+    // ---------------------------------------------------------------- fracture participant seam (FINITE_FRACTURE_TRANSACTION §9)
+
+    /**
+     * The canonical cell-image codec shared with the W4-B finite-fracture host —
+     * the same {@link CellStateImage} encode/decode/position rules construction
+     * participants use, exposed so the fracture world adapter cannot drift to a
+     * second codec (doc §9.2).
+     */
+    public static Value encodeCellImage(BlockState state) throws IOException { return CellStateImage.encode(state); }
+    public static BlockState decodeCellImage(Value value) throws IOException { return CellStateImage.decode(value); }
+    public static BlockPos cellPosition(String resource) throws IOException { return CellStateImage.position(resource); }
+
+    /**
+     * Persist the complete live NBT of the given chunks through the construction
+     * chunk participant — the durable before- or after-image the fracture host
+     * captures (doc §9.3): bounded positions, forced write, read-back verify, and
+     * the same "no pending image" refusal the construction checkpoint/flush uses.
+     */
+    public static void persistLiveChunkImages(ServerLevel level, Collection<ChunkPos> positions)
+            throws IOException {
+        if (positions == null || positions.isEmpty()) return;
+        ChunkFileParticipant participant = ChunkFileParticipant.bind(level);
+        participant.persist(participant.capture(level, positions));
+    }
 }

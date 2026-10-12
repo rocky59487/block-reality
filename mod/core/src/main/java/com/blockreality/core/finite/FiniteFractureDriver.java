@@ -155,6 +155,22 @@ public final class FiniteFractureDriver implements AutoCloseable {
         } finally { busy = false; }
     }
 
+    /**
+     * The same {@link Publication} {@link #recover} hands to this driver's coordinator,
+     * exposed for the shared-journal pending router (doc §9.6): a mixed fracture intent
+     * must be rolled back through the same finite fold + host delegation the execute
+     * path uses, never through the pure-finite host that would refuse its world
+     * resources. The returned host serves the pending entry exactly like
+     * {@link #recover(FiniteFractureHost)}'s own {@code coordinator.recover} call —
+     * {@code finite/…} from the journal fold, everything else via {@code host}.
+     * Routing only — this does not run recovery itself and does not set {@code busy}.
+     */
+    public synchronized AtomicConstructionCoordinator.Host recoveryHost(FiniteFractureHost host)
+            throws IOException {
+        if (closed) throw new IOException("Closed fracture driver");
+        return new Publication(host, null);
+    }
+
     public boolean ready() { return coordinator.ready(); }
 
     // ---------------------------------------------------------------- journal fold
