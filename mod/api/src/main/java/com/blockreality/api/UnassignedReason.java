@@ -48,6 +48,18 @@ public enum UnassignedReason {
      */
     FULLY_SUPPORTED("FULLY_SUPPORTED", false),
 
+    /** A block that carries no structural role — decoration, furniture, terrain fill. */
+    NON_STRUCTURAL("NON_STRUCTURAL", true),
+
+    /** A bulk (monolith) block with no support beneath it; it cannot carry loads. */
+    BULK_UNSUPPORTED("BULK_UNSUPPORTED", true),
+
+    /** A bulk (monolith) block resting on the ground; grounded but not an element. */
+    BULK_GROUND("BULK_GROUND", true),
+
+    /** The extraction layer refused this block (e.g. isolated single cell, bad geometry). */
+    REFUSED("REFUSED", true),
+
     /** A code this build does not know. Its blocks are still listed and still shown. */
     UNKNOWN("", false);
 

@@ -20,18 +20,18 @@ class NativeOnlyPacketGoldenTest {
             }
         }
         assertEquals(List.of(
-                "7fec71532b6ebae06e3eaaef7579c88582297828fc6691d448649a26fb30241e",
-                "7067a703995aacb07c2a6476be78c17edf5c57aa7ca17471816b6f57a872b2e6",
-                "8ec2cb2977040be02875990e35f83944ebe958c0d188a64cd1f8b29b2ed98864",
-                "55c4ba36772b13d58d2708400f40af893f2b2fd06300741fe0e262388d3e52f9",
-                "4ddd7a03c1890cae71cccfa5719b1ab5debbb7678132dce3c7ccfc5866d3ce2d",
-                "1ac66b341a73cd2585cda6b87f377bf6576bcb85b4d5eda102f8d56624520e77",
-                "d9d42af2a17424912bb256a62684fdf897073f547ed2993fd01f6aa104734036",
-                "e0812398fa2498bfb5f8d58e573ad6bd54623b0ac01587ffd09deec08193ead6",
-                "c358534acb0e7c3a25baa76e579b7ca2ed7aef92a985537598ccc26f369d777e",
-                "76898a43a4735d56fcdb225d3a223eb86979bdcc515fdc8167c2fb75d09e747a",
-                "c81db1ce6d44a126a9833119cbc6b826b79e57b8dae8e34ae56e7541c751e1bd",
-                "fd9373c49c1c8464050f670d964cda3ef4774ee1595e7ab9b973e6f78e6137d2"
+                "188bc189decc611c62f62393cf5b864a74ac33f731d94a10c95638ae960965c1",
+                "3e59f8cb240fcef382aea4d3b0a325b2cbcf6bb3f4012f452a19acfae0f8bdeb",
+                "d2e72890d8daa2e6098b1ec714d3a379280b5c45fa3c650c05a50694ff7a8c6c",
+                "bd555bcff47af01626da2423ad769f960d3bed935722289ffff2274505545af7",
+                "44536f274fc725b00c9e423f96021dd4d8d98414870a1ac8b2821fa41d6e6252",
+                "d3f8d3cd38eb080d5587e3483aad916a7efc0dc03cd33f55ca31bd77af2a1920",
+                "3fc19e2810e5fa7b29701f345e6e83acc65e3ef0875116359643f7b62775e4c9",
+                "0d966ff343fb6c6ca8f9c4b0ce264ae88ab7166b9442c6e6779ca1481060269f",
+                "45e1955b31b7cc66b9916885c6fd6897c637d3e5d9bf8765f2af569a3a138bb8",
+                "6953bbffc75e0b6ca15e4cb5696190cf1f319c28dacd73e93096b7d2607d02d5",
+                "4dad048f5acb7dfafc8bed2c76f66b74525614a73349d88629e2aff0f9fd7418",
+                "948905c503992ad75fb243b40ceb831defd884bc07459e0a8e061e02870b9963"
         ), hashes, "channel 11 payload bytes changed during legacy removal");
     }
 

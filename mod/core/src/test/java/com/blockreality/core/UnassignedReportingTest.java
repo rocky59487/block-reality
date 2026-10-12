@@ -44,7 +44,7 @@ class UnassignedReportingTest {
     @Test
     @DisplayName("N17-c: a code from a newer engine is UNKNOWN, not an exception")
     void anUnrecognisedCodeDegrades() {
-        assertSame(UnassignedReason.UNKNOWN, UnassignedReason.fromWire("BULK_UNSUPPORTED"));
+        assertSame(UnassignedReason.UNKNOWN, UnassignedReason.fromWire("FUTURE_CODE_X"));
         assertSame(UnassignedReason.UNKNOWN, UnassignedReason.fromWire(""));
         assertSame(UnassignedReason.UNKNOWN, UnassignedReason.fromWire(null));
     }
@@ -52,10 +52,10 @@ class UnassignedReportingTest {
     @Test
     @DisplayName("an unknown group still carries its blocks and can still be named")
     void anUnknownGroupKeepsItsPayload() {
-        UnassignedBlocks g = UnassignedBlocks.of("BULK_UNSUPPORTED", List.of(k(0, 64, 0)));
+        UnassignedBlocks g = UnassignedBlocks.of("FUTURE_CODE_X", List.of(k(0, 64, 0)));
         assertSame(UnassignedReason.UNKNOWN, g.reason());
         assertEquals(1, g.blocks().size());
-        assertEquals("BULK_UNSUPPORTED", g.label(),
+        assertEquals("FUTURE_CODE_X", g.label(),
                 "the raw token is kept so a log line can name what this build did not know");
         assertEquals("(no reason given)", UnassignedBlocks.of(null, List.of()).label());
     }
@@ -77,7 +77,9 @@ class UnassignedReportingTest {
     void extractionFailuresFormNoElement() {
         for (UnassignedReason r : List.of(UnassignedReason.RUN_TOO_SHORT,
                 UnassignedReason.PLATE_LONE, UnassignedReason.PLATE_STRIP,
-                UnassignedReason.PLATE_SOLID, UnassignedReason.PLATE_NO_FACET)) {
+                UnassignedReason.PLATE_SOLID, UnassignedReason.PLATE_NO_FACET,
+                UnassignedReason.NON_STRUCTURAL, UnassignedReason.BULK_UNSUPPORTED,
+                UnassignedReason.BULK_GROUND, UnassignedReason.REFUSED)) {
             assertTrue(r.formsNoElement(), r.name());
         }
     }
