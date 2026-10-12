@@ -15,7 +15,7 @@
 
 ![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A)
 ![Release v0.3c](https://img.shields.io/badge/release-v0.3c-3B82F6)
-![Verification](https://img.shields.io/badge/verification-330_engine_%2B_732_Java_checks_registered-blue)
+![Verification](https://img.shields.io/badge/verification-330_engine_%2B_747_Java_checks_registered-blue)
 [![License](https://img.shields.io/github/license/rocky59487/block-reality)](LICENSE)
 
 Block Reality is a structural analysis mod for Minecraft 1.20.1. Blocks placed in the
@@ -276,7 +276,7 @@ a gate that has run — is why this paragraph exists rather than a quieter omiss
 | | |
 |---|---|
 | Engine | `sidecar/verify.py`, 330 checks, all passing, each against a closed form, a solver-independent invariant, or a transport-equivalence oracle |
-| Java | 732 tests registered (561 core, 171 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real, and 42 cover in-process BSI engine integration |
+| Java | 747 tests registered (576 core, 171 Forge-side); 28 of them start `br-sidecar` and run FrameCore for real, and 42 cover in-process BSI engine integration |
 | Closed form | 31 non-zero references, worst relative error 1.2e-14; 10 zero references, worst absolute residual 1.5e-08. (Two earlier releases quoted 1.6e-10 here — that floor turned out to be the old wire's 10-digit truncation, not the engine) |
 | Transport | numbers cross as raw little-endian doubles in shared memory, never textualised; the JSON fallback prints 17 significant digits. Gate: three representative solves bit-identical across both transports |
 | Shell convergence | clamped square plate: span moment 1.75% at 8 elements down to 0.28% at 20, observed convergence order 2.06; recovered support moment 2.7% at 20 |

@@ -20,8 +20,9 @@ import java.nio.file.Path;
  * the conformance runner drives through ctypes on every run are the ones the game calls, so the
  * consumer's path is gated by the corpus rather than by a separate integration test nobody runs.
  *
- * <p>One call carries one frame in and one frame out. Calls on a handle are serialised here; the
- * engine is free to use threads inside a call and is told how many by the request.
+ * <p>One call carries one frame in and one frame out. All native entry is serialised across
+ * sessions and library paths: OpenBLAS thread settings are process-global. The engine is free
+ * to use threads inside a call and is told how many by the request.
  *
  * <p><b>This runs in the game's process.</b> A native crash takes the JVM with it — the cost
  * D-044 records rather than hides. What this class can do about it, it does: refuse an ABI it does
@@ -29,6 +30,9 @@ import java.nio.file.Path;
  * size it did not agree to.
  */
 public final class BsiNative implements AutoCloseable {
+
+    // Lock order: session monitor (when present), then this process-wide native boundary.
+    private static final Object NATIVE_CALL_MONITOR = new Object();
 
     /** Return codes of {@code bsi_capi_call}. */
     public static final int OK = 0, NEED_BIGGER = 2, PROTOCOL = 4, INVALID = 5;
@@ -68,26 +72,28 @@ public final class BsiNative implements AutoCloseable {
     }
 
     public static BsiNative open(Path library, String optionsJson, PipelineProfile profile) {
-        String path = library.toAbsolutePath().toString();
-        Lib lib;
-        try {
-            lib = Native.load(path, Lib.class);
-        } catch (UnsatisfiedLinkError | RuntimeException e) {
-            throw new EngineRefused("cannot load " + path + ": " + e.getMessage(), e);
+        synchronized (NATIVE_CALL_MONITOR) {
+            String path = library.toAbsolutePath().toString();
+            Lib lib;
+            try {
+                lib = Native.load(path, Lib.class);
+            } catch (UnsatisfiedLinkError | RuntimeException e) {
+                throw new EngineRefused("cannot load " + path + ": " + e.getMessage(), e);
+            }
+            int abi;
+            try {
+                abi = lib.bsi_capi_abi_version();
+            } catch (UnsatisfiedLinkError e) {
+                throw new EngineRefused(path + " exports no bsi_capi_abi_version: it is not a BSI engine", e);
+            }
+            if (abi != BsiContract.CAPI_ABI) {
+                throw new EngineRefused("engine speaks bsi_capi ABI " + abi + ", this build binds " + BsiContract.CAPI_ABI
+                        + " (" + path + ")");
+            }
+            Pointer h = lib.bsi_capi_open(optionsJson == null ? "{}" : optionsJson);
+            if (h == null) throw new EngineRefused("bsi_capi_open refused a session (" + path + ")");
+            return new BsiNative(lib, h, path, profile);
         }
-        int abi;
-        try {
-            abi = lib.bsi_capi_abi_version();
-        } catch (UnsatisfiedLinkError e) {
-            throw new EngineRefused(path + " exports no bsi_capi_abi_version: it is not a BSI engine", e);
-        }
-        if (abi != BsiContract.CAPI_ABI) {
-            throw new EngineRefused("engine speaks bsi_capi ABI " + abi + ", this build binds " + BsiContract.CAPI_ABI
-                    + " (" + path + ")");
-        }
-        Pointer h = lib.bsi_capi_open(optionsJson == null ? "{}" : optionsJson);
-        if (h == null) throw new EngineRefused("bsi_capi_open refused a session (" + path + ")");
-        return new BsiNative(lib, h, path, profile);
     }
 
     public String libraryPath() { return libraryPath; }
@@ -104,44 +110,49 @@ public final class BsiNative implements AutoCloseable {
      */
     public synchronized byte[] call(byte[] requestFrame) {
         if (closed) throw new IllegalStateException("engine session is closed");
-        for (int attempt = 0; attempt < 2; attempt++) {
-            LongByReference len = new LongByReference(), need = new LongByReference();
-            buffer.clear();
-            int rc;
-            try (var span = profile.begin(NATIVE_CALL)) {
-                span.add(REQUEST_BYTES, requestFrame.length);
-                rc = lib.bsi_capi_call(handle, requestFrame, requestFrame.length, buffer, buffer.capacity(), len, need);
-                if (rc == OK) span.add(REPLY_BYTES, len.getValue());
-                if (rc == NEED_BIGGER) span.add(BUFFER_GROWTH, 1);
-            }
-            if (rc == OK) {
-                try (var ignored = profile.begin(REPLY_COPY)) {
-                    byte[] out = new byte[(int) len.getValue()];
-                    buffer.position(0);
-                    buffer.get(out);
-                    return out;
+        synchronized (NATIVE_CALL_MONITOR) {
+            for (int attempt = 0; attempt < 2; attempt++) {
+                LongByReference len = new LongByReference(), need = new LongByReference();
+                buffer.clear();
+                int rc;
+                try (var span = profile.begin(NATIVE_CALL)) {
+                    span.add(REQUEST_BYTES, requestFrame.length);
+                    rc = lib.bsi_capi_call(handle, requestFrame, requestFrame.length, buffer, buffer.capacity(), len, need);
+                    if (rc == OK) span.add(REPLY_BYTES, len.getValue());
+                    if (rc == NEED_BIGGER) span.add(BUFFER_GROWTH, 1);
                 }
-            }
-            if (rc == NEED_BIGGER) {
-                long required = need.getValue();
-                if (required <= buffer.capacity() || required > (256L << 20)) {
-                    throw new EngineRefused("engine asked for " + required + " reply bytes; refusing");
+                if (rc == OK) {
+                    try (var ignored = profile.begin(REPLY_COPY)) {
+                        byte[] out = new byte[(int) len.getValue()];
+                        buffer.position(0);
+                        buffer.get(out);
+                        return out;
+                    }
                 }
-                buffer = ByteBuffer.allocateDirect((int) required + 4096).order(ByteOrder.LITTLE_ENDIAN);
-                continue;
+                if (rc == NEED_BIGGER) {
+                    long required = need.getValue();
+                    if (required <= buffer.capacity() || required > (256L << 20)) {
+                        throw new EngineRefused("engine asked for " + required + " reply bytes; refusing");
+                    }
+                    buffer = ByteBuffer.allocateDirect((int) required + 4096).order(ByteOrder.LITTLE_ENDIAN);
+                    continue;
+                }
+                if (rc == INVALID) throw new EngineRefused("engine session is no longer valid: " + lastError());
+                return null;   // PROTOCOL: the frame this side built is malformed
             }
-            if (rc == INVALID) throw new EngineRefused("engine session is no longer valid: " + lastError());
-            return null;   // PROTOCOL: the frame this side built is malformed
+            throw new EngineRefused("engine kept asking for a bigger reply buffer: " + lastError());
         }
-        throw new EngineRefused("engine kept asking for a bigger reply buffer: " + lastError());
     }
 
-    public String lastError() {
-        try {
-            String s = lib.bsi_capi_last_error(handle);
-            return s == null ? "" : s;
-        } catch (RuntimeException e) {
-            return "";
+    public synchronized String lastError() {
+        if (closed) return "";
+        synchronized (NATIVE_CALL_MONITOR) {
+            try {
+                String s = lib.bsi_capi_last_error(handle);
+                return s == null ? "" : s;
+            } catch (RuntimeException e) {
+                return "";
+            }
         }
     }
 
@@ -149,10 +160,12 @@ public final class BsiNative implements AutoCloseable {
     public synchronized void close() {
         if (closed) return;
         closed = true;
-        try {
-            lib.bsi_capi_close(handle);
-        } catch (RuntimeException | UnsatisfiedLinkError ignored) {
-            // closing twice, or after the library went away, must not throw into a shutdown hook
+        synchronized (NATIVE_CALL_MONITOR) {
+            try {
+                lib.bsi_capi_close(handle);
+            } catch (RuntimeException | UnsatisfiedLinkError ignored) {
+                // closing twice, or after the library went away, must not throw into a shutdown hook
+            }
         }
     }
 
