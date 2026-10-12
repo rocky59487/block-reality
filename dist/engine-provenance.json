@@ -1,48 +1,48 @@
 {
-  "contractSha256": "77d78df7a530a8db12e8eafd4db83baaf3c12082f0985668b835632178246e94",
+  "contractSha256": "6bd540a4379fc3e7ddabcf2dd54fb2d215ec738a76a562f40a80b8f63a0c97cd",
   "libraries": [
     {
       "platform": "windows-x86_64",
       "os": "windows",
       "arch": "x86_64",
       "file": "bsi_tectonic.dll",
-      "sha256": "328496b3fa3901d0d1d90bd03c39ca9b10e0900fa1506d680dfb1ed7deb18fa3",
-      "size": 34895360,
-      "engineVersion": "tectonic-2.0.0+ddaaa92",
+      "sha256": "6b5ea3bdf4cd45e167c165af1ef203d937693dd5d6fd4a020e3368cfc8ac663e",
+      "size": 35102720,
+      "engineVersion": "tectonic-2.0.0+380ed4c",
       "engine": "tectonic",
       "version": "2.0.0",
-      "buildSha": "ddaaa92",
-      "contractSha256": "77d78df7a530a8db12e8eafd4db83baaf3c12082f0985668b835632178246e94",
+      "buildSha": "380ed4c",
+      "contractSha256": "6bd540a4379fc3e7ddabcf2dd54fb2d215ec738a76a562f40a80b8f63a0c97cd",
       "releaseAsset": "tectonic2-2.0.0-windows-x86_64.zip",
-      "releaseAssetSha256": "09e9e77507c9fbe86956c49f6d8bdd4afdf14948a6e7b2c5f9f36cf26dc19038"
+      "releaseAssetSha256": "3a917543e3a89959ff39fb0b16d1e3c874baba2e01c8a28a81bf21d9c270a2d1"
     },
     {
       "platform": "linux-x86_64",
       "os": "linux",
       "arch": "x86_64",
       "file": "libbsi_tectonic.so",
-      "sha256": "e0b2b85a86ad9984b0347555504e8c9bec19c77e3132749ad883195bdbfe6b2a",
-      "size": 31334920,
-      "engineVersion": "tectonic-2.0.0+ddaaa92",
+      "sha256": "59ef74d0761deacf2469f6128b490d98b716511ba66ace56efdda1b19d1c1646",
+      "size": 31486472,
+      "engineVersion": "tectonic-2.0.0+380ed4c",
       "engine": "tectonic",
       "version": "2.0.0",
-      "buildSha": "ddaaa92",
-      "contractSha256": "77d78df7a530a8db12e8eafd4db83baaf3c12082f0985668b835632178246e94",
+      "buildSha": "380ed4c",
+      "contractSha256": "6bd540a4379fc3e7ddabcf2dd54fb2d215ec738a76a562f40a80b8f63a0c97cd",
       "releaseAsset": "tectonic2-2.0.0-linux-x86_64.zip",
-      "releaseAssetSha256": "ab6f265dcafcbdf5d82403618f537825f2b0b62520fedb90f3f6f1651de76884"
+      "releaseAssetSha256": "89a8535f377d39474892a1c0d289db666177b72d10977ac5b2a14d7ae6dcaa00"
     }
   ],
   "release": {
-    "sourceCommit": "ddaaa92c930393051b67e75f7ccfbd5224580b16",
+    "sourceCommit": "380ed4cd3e673fe0174c3f65e04d9bf9aa2e8352",
     "version": "2.0.0",
-    "sha256sums": "1fabe312e70478359c8afdb8514f205a046339690abfc638313f632895f8d6a3",
+    "sha256sums": "29072ca670da961880941397c113f0c12fcc0356bfab4129c8ea5a10ef9d3ebd",
     "assets": {
-      "tectonic2-2.0.0-linux-x86_64.zip": "ab6f265dcafcbdf5d82403618f537825f2b0b62520fedb90f3f6f1651de76884",
-      "tectonic2-2.0.0-source.tar.gz": "7bafe3948218ef53955971ed8cce11a9c6e80ec32d2c3241389d7f08b280ad0e",
-      "tectonic2-2.0.0-windows-x86_64.zip": "09e9e77507c9fbe86956c49f6d8bdd4afdf14948a6e7b2c5f9f36cf26dc19038"
+      "tectonic2-2.0.0-linux-x86_64.zip": "89a8535f377d39474892a1c0d289db666177b72d10977ac5b2a14d7ae6dcaa00",
+      "tectonic2-2.0.0-windows-x86_64.zip": "3a917543e3a89959ff39fb0b16d1e3c874baba2e01c8a28a81bf21d9c270a2d1",
+      "tectonic2-2.0.0-source.tar.gz": "ae1189ce949bdaef3ecdd7217793874cbf6d8ed31169d185f2a028977df14eb9"
     },
     "inventoryProfile": "sdk",
-    "sourceFiles": 10432,
+    "sourceFiles": 10454,
     "basis": "published release integrity; runtime hello is a separate platform gate"
   }
 }
