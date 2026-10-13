@@ -242,6 +242,21 @@ public final class FiniteRuntime implements AutoCloseable {
         armed = false;
     }
 
+    /**
+     * Resync the request clock after a committed fracture. The fracture driver's publish
+     * folds {@code FiniteRegistry.applyCommitted} directly (doc §5.2) — it never passes
+     * through {@link #committed}, so without this the next finite transaction's
+     * {@code baseRevision} is stale and the coordinator's CAS rejects it as
+     * PARTICIPANT_CONFLICT. Only advances: a replayed older entry cannot regress the clock.
+     */
+    void committedFracture(UUID requestId) throws IOException {
+        Entry entry = journal.verify(requestId).orElseThrow(
+                () -> new IOException("Committed finite record missing"));
+        if (entry.phase() != Phase.COMMITTED) return;
+        Long committed = orderOf(entry);
+        if (committed != null && committed > order) order = committed;
+    }
+
     /** Called by {@link FiniteJournalHost#publish} once the coordinator has decided COMMITTED. */
     void committed(Receipt receipt) throws IOException {
         try {

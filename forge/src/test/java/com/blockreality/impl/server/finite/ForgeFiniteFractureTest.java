@@ -502,7 +502,8 @@ class ForgeFiniteFractureTest {
                 List.of(new BsiFracture.Owner(anchor, 7)), new byte[0], new byte[0]);
         var session = FiniteSession.attach(new FractureTestFixtures.ProbeLane(), domain, source,
                 runtime.sessionGeneration() + 1);
-        return new FiniteFracture.Staged(plan, source, afterSource, requestFrame, wireFrame, session);
+        return new FiniteFracture.Staged(plan, source, afterSource, requestFrame, wireFrame,
+                session, null);
     }
 
     @Test void bornBodyWritesDurableRecord() throws Exception {
@@ -594,6 +595,25 @@ class ForgeFiniteFractureTest {
         assertTrue(resources.stream().anyMatch(r -> r.startsWith("finite/fracture/")),
                 resources::toString);
         assertTrue(resources.contains("cell/1/64/1"), resources::toString);
+        assertTrue(runtime.lane().awaitIdle(10_000));
+        closeAll();
+    }
+
+    @Test void fractureKeepsFiniteOrderInSync() throws Exception {
+        openFracture();
+        FiniteDomainId domain = adoptWorld();
+        UUID requestId = new UUID(41, 4);
+        scriptStaging(probe, domain, requestId);
+        world.commitProbe = () -> phaseOf(requestId);
+        Receipt receipt = core.fracture(domain, List.of(FractureTestFixtures.rule()), BUDGET,
+                requestId);
+        assertEquals(Phase.COMMITTED, receipt.phase());
+        // The fracture driver folds the registry directly, bypassing runtime.committed —
+        // the request clock must still advance or the next finite tx (bind/observe/
+        // commitSource) CAS-refuses with PARTICIPANT_CONFLICT.
+        Receipt followup = runtime.observeDomain(domain);
+        assertEquals(Phase.COMMITTED, followup.phase(),
+                () -> "follow-up observe refused: " + followup.reason());
         assertTrue(runtime.lane().awaitIdle(10_000));
         closeAll();
     }

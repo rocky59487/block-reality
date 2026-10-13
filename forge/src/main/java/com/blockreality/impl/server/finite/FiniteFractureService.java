@@ -406,6 +406,19 @@ public final class FiniteFractureService {
                 if (outcome.receipt().phase() == Phase.REJECTED)
                     log.accept("fracture rejected " + outcome.receipt().reason()
                             + " — " + driver().lastRejection());
+                if (outcome.receipt().phase() == Phase.COMMITTED) {
+                    runtime.committedFracture(requestId);
+                    var plan = outcome.plan();
+                    if (plan != null)
+                        log.accept("fracture result end=" + plan.end() + " steps=" + plan.steps()
+                                + " remaining=" + plan.remainingBlocks() + " beforeCells=" + plan.beforeCells()
+                                + " retired=" + plan.retiredOwnership().size()
+                                + " born=" + plan.bornBodies().size()
+                                + " loadLedger=" + plan.loadLedger().length + "B"
+                                + " corotFlags=" + plan.corotFlags()
+                                + " converged=" + plan.fullyConverged()
+                                + driver().lastFailureSummary());
+                }
                 // Re-establish the authority session asynchronously — the server thread
                 // never joins the posted sync (doc §9.5).
                 runtime.syncAll();

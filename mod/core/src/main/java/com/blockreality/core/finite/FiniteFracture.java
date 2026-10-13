@@ -50,12 +50,15 @@ public final class FiniteFracture {
      * durable commit lands, or close it.
      */
     public record Staged(FiniteFracturePlan plan, FiniteSource source, FiniteSource afterSource,
-                         byte[] requestFrame, byte[] wireFrame, FiniteSession session) {
+                         byte[] requestFrame, byte[] wireFrame, FiniteSession session,
+                         BsiCorotFracture.Prepared prepared) {
         public Staged {
             Objects.requireNonNull(plan); Objects.requireNonNull(source);
             Objects.requireNonNull(afterSource); Objects.requireNonNull(session);
             requestFrame = requestFrame.clone(); wireFrame = wireFrame.clone();
         }
+        /** The receipt the staging validated; may be null only on hand-built test stagings. */
+        public BsiCorotFracture.Prepared prepared() { return prepared; }
     }
 
     /**
@@ -132,7 +135,7 @@ public final class FiniteFracture {
                     prepared.remainingGeneration(), prepared.cells().size(),
                     prepared.retiredOwnership(), prepared.bornBodies(),
                     prepared.loadLedger(), prepared.archiveRecords());
-            return new Staged(plan, source, afterSource, requestFrame, wireFrame, session);
+            return new Staged(plan, source, afterSource, requestFrame, wireFrame, session, prepared);
         } catch (IOException | RuntimeException failure) {
             session.close();
             throw failure;

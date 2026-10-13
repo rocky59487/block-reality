@@ -56,6 +56,8 @@ public final class FiniteFractureDriver implements AutoCloseable {
     private boolean busy, closed;
     /** Why the last VALIDATION_REFUSED fired — the receipt carries only the reason enum. */
     private volatile String lastRejection = "";
+    /** Per-member failure/utilization digest of the last staged receipt — evidence, never authority. */
+    private volatile String lastFailureSummary = "";
 
     public FiniteFractureDriver(FileTransactionJournal journal, FiniteStore store,
                                 FiniteRegistry registry) {
@@ -108,6 +110,32 @@ public final class FiniteFractureDriver implements AutoCloseable {
     /** The captured detail of the most recent {@code VALIDATION_REFUSED}; empty if none. */
     public String lastRejection() { return lastRejection; }
 
+    /** The failure-field digest of the most recently staged receipt; empty when nothing staged. */
+    public String lastFailureSummary() { return lastFailureSummary; }
+
+    /**
+     * One line per remaining member (flags/station/utilization) plus the worst phase row —
+     * the wire receipt's own numbers, so logs say exactly how close each member came.
+     */
+    private static String failureSummary(BsiCorotFracture.Prepared p) {
+        var text = new StringBuilder(" members=[");
+        for (var f : p.failures())
+            text.append(text.length() > 10 ? "," : "").append('m').append(f.member())
+                    .append(":f").append(f.flags()).append("@st").append(f.station())
+                    .append(" u=").append(f.utilization());
+        text.append(']');
+        BsiCorotFracture.Phase peak = null;
+        for (var ph : p.phases())
+            if (peak == null || ph.utilization() > peak.utilization()) peak = ph;
+        if (peak != null)
+            text.append(" peak={cons").append(peak.constituent()).append(" st").append(peak.station())
+                    .append(" fib").append(peak.fiber()).append(" mode").append(peak.mode())
+                    .append(" v=").append(peak.value()).append('/').append(peak.limit())
+                    .append(" frac=").append(peak.fraction()).append('/').append(peak.requiredFraction())
+                    .append('}');
+        return text.toString();
+    }
+
     public synchronized Outcome execute(Request request, FiniteDomainId domain,
                                         List<BsiCorotFracture.Rule> rules, int budget,
                                         int format, long byteBudget, long allocationBudget,
@@ -115,6 +143,7 @@ public final class FiniteFractureDriver implements AutoCloseable {
                                         FiniteFractureHost host) throws IOException {
         enter();
         lastRejection = "";
+        lastFailureSummary = "";
         var publication = new Publication(host, domain);
         try {
             var receipt = coordinator.execute(request, bound -> {
@@ -145,6 +174,8 @@ public final class FiniteFractureDriver implements AutoCloseable {
                     throw new IllegalArgumentException("fracture proof namespace is reserved");
                 publication.plan = staged.plan();
                 publication.staged = staged;
+                if (staged.prepared() != null)
+                    lastFailureSummary = failureSummary(staged.prepared());
                 var changes = new ArrayList<>(prepared.changes());
                 changes.addAll(images);
                 return new Intent(bound, changes, List.of(), List.of());

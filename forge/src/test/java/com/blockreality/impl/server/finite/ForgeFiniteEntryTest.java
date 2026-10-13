@@ -223,6 +223,7 @@ class ForgeFiniteEntryTest {
                     if (!dimension.equals(DIMENSION)) throw new IOException("not loaded " + dimension);
                     return fakeWorld;
                 },
+                dimension -> Map.of(),
                 () -> {
                     laneOpens.incrementAndGet();
                     var lane = new ScriptedEntryLane();
@@ -242,6 +243,7 @@ class ForgeFiniteEntryTest {
         core.close();
         core = new FiniteEntryService.Core(runtime,
                 dimension -> fakeWorld,
+                dimension -> Map.of(),
                 () -> {
                     laneOpens.incrementAndGet();
                     var lane = new ScriptedEntryLane();
@@ -485,7 +487,8 @@ class ForgeFiniteEntryTest {
             }
         };
         core.close();
-        core = new FiniteEntryService.Core(runtime, dimension -> fakeWorld, mutating,
+        core = new FiniteEntryService.Core(runtime, dimension -> fakeWorld,
+                dimension -> Map.of(), mutating,
                 () -> {
                     if (!onServerThread.get()) throw new IllegalStateException("requires the server thread");
                     if (!entryOpen.get()) throw new IllegalStateException("finite entry is closed");
