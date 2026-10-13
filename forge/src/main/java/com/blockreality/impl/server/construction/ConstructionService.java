@@ -184,11 +184,13 @@ public final class ConstructionService {
             ServerLevel level = server.getLevel(ResourceKey.create(Registries.DIMENSION,loc));
             if (level == null) continue;
             UUID actor = null;
+            Set<UUID> pieceIds = new LinkedHashSet<>();
             for (BlockKey key : released) {
                 var owner = metadata.owner(dim,key);
                 if (owner.isPresent()) {
+                    pieceIds.add(owner.get());
                     var piece = metadata.piece(owner.get());
-                    if (piece.isPresent()) { actor = piece.get().actor(); break; }
+                    if (piece.isPresent() && actor == null) actor = piece.get().actor();
                 }
             }
             if (actor == null) continue;
@@ -202,7 +204,10 @@ public final class ConstructionService {
                 try {
                     Receipt receipt = coordinator.execute(request,ignored -> intent,
                             new Host(Entry.prepared(intent),false));
-                    if (receipt.phase() == Phase.COMMITTED) positions.clear();
+                    if (receipt.phase() == Phase.COMMITTED) {
+                        positions.clear();
+                        retireFiniteBindings(dim, pieceIds);
+                    }
                 } finally {
                     busy = false; ownedLevel = null; ownedCells = Set.of(); drainSnapshots();
                 }
@@ -211,6 +216,30 @@ public final class ConstructionService {
             }
         }
         pendingRetire.entrySet().removeIf(e -> e.getValue().isEmpty());
+    }
+
+    /**
+     * World-side removal must retire the finite artifact bindings too — a bound cell that
+     * goes air without a Retire op leaves the declared source permanently drifted.
+     * Bindings are named by pieceId; minted ownerIds are never reused.
+     */
+    private void retireFiniteBindings(String dim, Set<UUID> pieceIds) {
+        com.blockreality.impl.server.finite.FiniteRuntime finite =
+                com.blockreality.impl.server.finite.ForgeFiniteService.runtime(server);
+        if (finite == null) return;
+        var domain = finite.domain(dim);
+        if (domain.isEmpty()) return;
+        var domainId = domain.get().id();
+        Set<Long> ownerIds = new LinkedHashSet<>();
+        for (var binding : finite.activeBindings(domainId))
+            if (binding.pieceId() != null && pieceIds.contains(binding.pieceId()))
+                ownerIds.add(binding.ownerId());
+        if (ownerIds.isEmpty()) return;
+        try {
+            finite.retireArtifacts(domainId, ownerIds);
+        } catch (IOException problem) {
+            BlockRealityMod.LOG.warn("Finite binding retire failed in {}", dim, problem);
+        }
     }
 
     private static String retireHash(String dimension, Set<BlockKey> released) throws Exception {
