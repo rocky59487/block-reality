@@ -159,6 +159,17 @@ retainLoadPath）、`relTol=1e-4`、`forceTol=1e-3`、`momentTol=1e-3`、`initia
 - 附帶修復：fracture 錯誤回報攜帶完整 cause 鏈與原生 error code/message
   （先前被吞只剩外層訊息）。
 
+#### 2026-10-13 追記（test loads 入源，W5 前置）
+
+- `Spec.cellLoads` 不再恆空：`/br load <fxKn> <fyKn> <fzKn>` 對準星下結構格掛的
+  記憶體試驗荷重（牛頓、世界軸）於 bootstrap 時編碼為 64B `bsi_load` 記錄進入
+  committed source。荷重凍結於該 revision——改荷重要重跑 bootstrap 產生新 rev。
+- 只有落在**目前 bound cell** 上的荷重才入源；落在其他位置的荷重具名丟棄並記錄
+  （`finite bootstrap: dropped N test load(s) on unbound cells`），不悄悄改掛別格。
+- 動機：鋼/木米級構件自重永遠在彈性範圍內，沒有外加荷重 fracture 物理上
+  不可能觸發——無荷重的「collapse」只能靠 Java 裝。外加荷重是唯一誠實的
+  破壞來源，也是 W5 倒塌/碎塊鏈的輸入。
+
 ## §7 測試腿 ↔ 不變式對照（凍結）
 
 `forge/src/test/java/.../ForgeFiniteEntryTest.java`，沿用 `ForgeFiniteRuntimeTest`

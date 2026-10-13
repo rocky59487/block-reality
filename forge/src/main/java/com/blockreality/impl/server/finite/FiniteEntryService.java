@@ -4,6 +4,7 @@ import com.blockreality.core.bsi.BsiContract;
 import com.blockreality.core.bsi.BsiCorot;
 import com.blockreality.core.bsi.BsiCorotFracture;
 import com.blockreality.core.bsi.BsiHeaders;
+import com.blockreality.core.bsi.BsiRecords;
 import com.blockreality.core.bsi.BsiResponse;
 import com.blockreality.core.bsi.BsiVocabulary;
 import com.blockreality.core.diagnostics.PipelineProfile;
@@ -17,12 +18,15 @@ import com.blockreality.core.finite.FiniteSource;
 import com.blockreality.core.json.JsonValue;
 import com.blockreality.core.transaction.ConstructionTransaction.Phase;
 import com.blockreality.core.transaction.ConstructionTransaction.Receipt;
+import com.blockreality.api.geom.BlockKey;
 import com.blockreality.impl.BRConfig;
 import com.blockreality.impl.BlockRealityMod;
+import com.blockreality.impl.server.StructureManager;
 import com.blockreality.impl.server.construction.ConstructionService;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +40,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -102,7 +107,7 @@ public final class FiniteEntryService {
             BlockRealityMod.LOG.error(failure);
             return;
         }
-        core = new Core(runtime, this::levelWorld, laneSource(log()),
+        core = new Core(runtime, this::levelWorld, this::levelLoads, laneSource(log()),
                 this::entryGuard, admittedDimensions(), log(), session);
     }
 
@@ -119,6 +124,16 @@ public final class FiniteEntryService {
         ServerLevel level = server.getLevel(ResourceKey.create(Registries.DIMENSION, location));
         if (level == null) throw new IOException("Finite dimension is not loaded " + dimension);
         return new LevelFiniteWorld(level);
+    }
+
+    /** Per-dimension test loads from {@code /br load}; absent manager means no loads. */
+    private Map<BlockPos, double[]> levelLoads(String dimension) throws IOException {
+        ResourceLocation location = ResourceLocation.tryParse(dimension);
+        if (location == null) throw new IOException("Finite dimension is malformed " + dimension);
+        ServerLevel level = server.getLevel(ResourceKey.create(Registries.DIMENSION, location));
+        if (level == null) throw new IOException("Finite dimension is not loaded " + dimension);
+        StructureManager manager = StructureManager.of(level);
+        return manager == null ? Map.of() : manager.loads();
     }
 
     private static ForgeFiniteFractureHost.LaneSource laneSource(Consumer<String> log) {
@@ -257,8 +272,14 @@ public final class FiniteEntryService {
             FiniteObservation.World world(String dimension) throws IOException;
         }
 
+        /** In-memory test loads ({@code /br load}) per dimension, newtons in world axes. */
+        interface Loads {
+            Map<BlockPos, double[]> in(String dimension) throws IOException;
+        }
+
         private final FiniteRuntime runtime;
         private final Worlds worlds;
+        private final Loads loads;
         private final ForgeFiniteFractureHost.LaneSource lanes;
         private final Runnable entryGuard;
         private final Set<String> admittedDimensions;
@@ -267,11 +288,12 @@ public final class FiniteEntryService {
         private volatile String failure = "";
         private volatile boolean closed;
 
-        Core(FiniteRuntime runtime, Worlds worlds,
+        Core(FiniteRuntime runtime, Worlds worlds, Loads loads,
              ForgeFiniteFractureHost.LaneSource lanes, Runnable entryGuard,
              Set<String> admittedDimensions, Consumer<String> log, UUID session) {
             this.runtime = Objects.requireNonNull(runtime);
             this.worlds = Objects.requireNonNull(worlds);
+            this.loads = Objects.requireNonNull(loads);
             this.lanes = Objects.requireNonNull(lanes);
             this.entryGuard = Objects.requireNonNull(entryGuard);
             this.admittedDimensions = Set.copyOf(Objects.requireNonNull(admittedDimensions));
@@ -319,7 +341,7 @@ public final class FiniteEntryService {
                 vocabReply = committed.vocabReplyJson();
                 checkMaterialRoles(bindings, vocabRequest);
             }
-            var spec = buildSpec(vocabRequest, vocabReply, bindings);
+            var spec = buildSpec(vocabRequest, vocabReply, bindings, loads.in(dimension), log);
             var outcome = runtime.commitSource(domain, spec, gathered.observation());
             if (outcome instanceof FiniteRuntime.CommitOutcome.Decided decided
                     && decided.receipt().phase() == Phase.COMMITTED) {
@@ -427,7 +449,9 @@ public final class FiniteEntryService {
          * concrete-law field zeroed (the engine-verified fixture shape).
          */
         private static FiniteDomainSource.Spec buildSpec(String vocabRequestJson, String vocabReplyJson,
-                                                         List<ArtifactBinding> bindings) throws IOException {
+                                                         List<ArtifactBinding> bindings,
+                                                         Map<BlockPos, double[]> loads,
+                                                         Consumer<String> log) throws IOException {
             int version = (int) JsonValue.parseStrict(vocabRequestJson).exactI64("version");
             var vocabulary = BsiVocabulary.decodeStored(JsonValue.parseStrict(vocabReplyJson), version);
             var catalog = JsonValue.parseStrict(vocabRequestJson);
@@ -443,7 +467,41 @@ public final class FiniteEntryService {
                 materials = out.toByteArray();
             }
             return new FiniteDomainSource.Spec(vocabRequestJson, vocabReplyJson, "ground_rigid",
-                    materials, new byte[0], new byte[0], new byte[0], new byte[0], new byte[0], OPTIONS);
+                    materials, new byte[0], new byte[0], cellLoads(bindings, loads, log),
+                    new byte[0], new byte[0], OPTIONS);
+        }
+
+        /**
+         * Wire the in-memory {@code /br load} test loads as 64-byte {@code bsi_load}
+         * records. Only loads aimed at a currently bound cell travel; a load on any other
+         * position is dropped and logged, never silently applied to a different cell.
+         */
+        private static byte[] cellLoads(List<ArtifactBinding> bindings,
+                                        Map<BlockPos, double[]> loads,
+                                        Consumer<String> log) {
+            if (loads.isEmpty()) return new byte[0];
+            var bound = new TreeSet<String>();
+            for (ArtifactBinding binding : bindings)
+                for (BlockKey cell : binding.cells())
+                    bound.add(cell.x() + "," + cell.y() + "," + cell.z());
+            var kept = new ArrayList<BsiRecords.Load>();
+            var dropped = new ArrayList<BlockPos>();
+            for (var entry : loads.entrySet()) {
+                BlockPos p = entry.getKey();
+                double[] f = entry.getValue();
+                if (f == null || f.length < 3 || (f[0] == 0.0 && f[1] == 0.0 && f[2] == 0.0)
+                        || !bound.contains(p.getX() + "," + p.getY() + "," + p.getZ())) {
+                    dropped.add(p);
+                } else {
+                    kept.add(new BsiRecords.Load(p.getX(), p.getY(), p.getZ(), f[0], f[1], f[2]));
+                }
+            }
+            if (!dropped.isEmpty())
+                log.accept("finite bootstrap: dropped " + dropped.size()
+                        + " test load(s) on unbound cells " + dropped);
+            if (kept.isEmpty()) return new byte[0];
+            log.accept("finite bootstrap: " + kept.size() + " cell load record(s)");
+            return BsiRecords.encodeLoads(kept);
         }
 
         private static String wireMaterial(ArtifactBinding binding) throws IOException {
