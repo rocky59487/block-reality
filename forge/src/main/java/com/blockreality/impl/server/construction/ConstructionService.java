@@ -201,16 +201,17 @@ public final class ConstructionService {
                 var prepared = metadata.prepareEdit(request,dim,released,Set.of());
                 Intent intent = prepared.withParticipants(List.of());
                 busy = true; ownedLevel = level; ownedCells = Set.copyOf(positions); exclusionFailure = "";
+                boolean committed = false;
                 try {
                     Receipt receipt = coordinator.execute(request,ignored -> intent,
                             new Host(Entry.prepared(intent),false));
-                    if (receipt.phase() == Phase.COMMITTED) {
-                        positions.clear();
-                        retireFiniteBindings(dim, pieceIds);
-                    }
+                    if (receipt.phase() == Phase.COMMITTED) { positions.clear(); committed = true; }
                 } finally {
                     busy = false; ownedLevel = null; ownedCells = Set.of(); drainSnapshots();
                 }
+                // The finite entry guard refuses while construction is busy — retire the
+                // released pieces' artifact bindings only after the busy window closes.
+                if (committed) retireFiniteBindings(dim, pieceIds);
             } catch (Exception problem) {
                 BlockRealityMod.LOG.warn("Construction retire failed for cells in {}",dim,problem);
             }
