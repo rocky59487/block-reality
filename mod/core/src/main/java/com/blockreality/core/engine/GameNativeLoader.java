@@ -35,6 +35,18 @@ public final class GameNativeLoader {
      */
     public static InProcessEngine openEngine(String configured, Path root, int threads,
                                              Consumer<String> log, PipelineProfile profile) {
+        return openEngine(configured, root, threads, log, profile, true);
+    }
+
+    /**
+     * Same open, but {@code declareVocab=false} leaves the session at hello: the durable
+     * vocabulary mint must perform the real {@code bsi.vocab.declare} itself and capture
+     * the engine's reply — a second declare on a session that already declared is refused
+     * as VOCAB_ALREADY_DECLARED.
+     */
+    public static InProcessEngine openEngine(String configured, Path root, int threads,
+                                             Consumer<String> log, PipelineProfile profile,
+                                             boolean declareVocab) {
         EngineLocator.Located located = EngineLocator.locateFromSystem(configured, root, null);
         if (located.source() == EngineLocator.Source.NONE) {
             Path bundled = BundledNatives.ensure(root, BundledNatives.class::getResourceAsStream,
@@ -51,7 +63,7 @@ public final class GameNativeLoader {
         try {
             if (engine.status() != InProcessEngine.Status.READY)
                 throw new IllegalStateException("native handshake refused: " + engine.disabledReason());
-            if (!engine.declareVocabulary(GameVocabulary.declaration()))
+            if (declareVocab && !engine.declareVocabulary(GameVocabulary.declaration()))
                 throw new IllegalStateException("native game vocabulary refused: " + engine.disabledReason());
             log.accept("native engine READY: " + engine.engineName() + " " + engine.engineVersion()
                     + " contract=" + com.blockreality.core.bsi.BsiContract.sha256());

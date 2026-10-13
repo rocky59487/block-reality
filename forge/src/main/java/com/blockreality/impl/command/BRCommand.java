@@ -105,22 +105,40 @@ public final class BRCommand {
                         .then(Commands.literal("status").executes(c -> finiteStatus(c.getSource())))
                         .then(Commands.literal("bootstrap").executes(c -> finiteBootstrap(c.getSource())))
                         .then(Commands.literal("fracture")
-                                .executes(c -> finiteFracture(c.getSource(), "steel", 0.0, 0.0, 64))
+                                .executes(c -> finiteFracture(c.getSource(), "steel", 0.1, 0.0, 0.0, 0.5, 64))
                                 .then(Commands.argument("material", StringArgumentType.word())
                                         .executes(c -> finiteFracture(c.getSource(),
-                                                StringArgumentType.getString(c, "material"), 0.0, 0.0, 64))
-                                        .then(Commands.argument("damageT", DoubleArgumentType.doubleArg(0.0, 1.0))
-                                                .then(Commands.argument("damageC", DoubleArgumentType.doubleArg(0.0, 1.0))
+                                                StringArgumentType.getString(c, "material"), 0.1, 0.0, 0.0, 0.5, 64))
+                                        .then(Commands.argument("plastic", DoubleArgumentType.doubleArg(0.0))
+                                                .executes(c -> finiteFracture(c.getSource(),
+                                                        StringArgumentType.getString(c, "material"),
+                                                        DoubleArgumentType.getDouble(c, "plastic"), 0.0, 0.0, 0.5, 64))
+                                                .then(Commands.argument("damageT", DoubleArgumentType.doubleArg(0.0, 1.0))
                                                         .executes(c -> finiteFracture(c.getSource(),
                                                                 StringArgumentType.getString(c, "material"),
-                                                                DoubleArgumentType.getDouble(c, "damageT"),
-                                                                DoubleArgumentType.getDouble(c, "damageC"), 64))
-                                                        .then(Commands.argument("budget", IntegerArgumentType.integer(0, 4096))
+                                                                DoubleArgumentType.getDouble(c, "plastic"),
+                                                                DoubleArgumentType.getDouble(c, "damageT"), 0.0, 0.5, 64))
+                                                        .then(Commands.argument("damageC", DoubleArgumentType.doubleArg(0.0, 1.0))
                                                                 .executes(c -> finiteFracture(c.getSource(),
                                                                         StringArgumentType.getString(c, "material"),
+                                                                        DoubleArgumentType.getDouble(c, "plastic"),
                                                                         DoubleArgumentType.getDouble(c, "damageT"),
-                                                                        DoubleArgumentType.getDouble(c, "damageC"),
-                                                                        IntegerArgumentType.getInteger(c, "budget")))))))))
+                                                                        DoubleArgumentType.getDouble(c, "damageC"), 0.5, 64))
+                                                                .then(Commands.argument("fraction", DoubleArgumentType.doubleArg(0.0, 1.0))
+                                                                        .executes(c -> finiteFracture(c.getSource(),
+                                                                                StringArgumentType.getString(c, "material"),
+                                                                                DoubleArgumentType.getDouble(c, "plastic"),
+                                                                                DoubleArgumentType.getDouble(c, "damageT"),
+                                                                                DoubleArgumentType.getDouble(c, "damageC"),
+                                                                                DoubleArgumentType.getDouble(c, "fraction"), 64))
+                                                                        .then(Commands.argument("budget", IntegerArgumentType.integer(0, 4096))
+                                                                                .executes(c -> finiteFracture(c.getSource(),
+                                                                                        StringArgumentType.getString(c, "material"),
+                                                                                        DoubleArgumentType.getDouble(c, "plastic"),
+                                                                                        DoubleArgumentType.getDouble(c, "damageT"),
+                                                                                        DoubleArgumentType.getDouble(c, "damageC"),
+                                                                                        DoubleArgumentType.getDouble(c, "fraction"),
+                                                                                        IntegerArgumentType.getInteger(c, "budget")))))))))))
                 .executes(c -> status(c.getSource())));
     }
 
@@ -588,10 +606,12 @@ public final class BRCommand {
      * phase and request id; a refusal names its reason.
      */
     private static int finiteFracture(CommandSourceStack src, String material,
-                                      double damageT, double damageC, int budget) {
+                                      double plastic, double damageT, double damageC,
+                                      double fraction, int budget) {
         ServerLevel level = src.getLevel();
         try {
-            var receipt = FiniteEntryService.fracture(level, material, damageT, damageC, budget);
+            var receipt = FiniteEntryService.fracture(level, material, plastic,
+                    damageT, damageC, fraction, budget);
             var phase = com.blockreality.core.transaction.ConstructionTransaction.Phase.COMMITTED;
             ChatFormatting colour = receipt.phase() == phase ? ChatFormatting.GREEN : ChatFormatting.RED;
             var reason = receipt.reason();
@@ -600,7 +620,10 @@ public final class BRCommand {
                             .ConstructionTransaction.Reason.NONE ? "" : " (" + reason + ")"), colour);
             return receipt.phase() == phase ? 1 : 0;
         } catch (Exception failure) {
-            line(src, "finite fracture refused: " + failure.getMessage(), ChatFormatting.RED);
+            var detail = new StringBuilder(String.valueOf(failure.getMessage()));
+            for (Throwable cause = failure.getCause(); cause != null; cause = cause.getCause())
+                detail.append(" <- ").append(cause.getMessage());
+            line(src, "finite fracture refused: " + detail, ChatFormatting.RED);
             return 0;
         }
     }

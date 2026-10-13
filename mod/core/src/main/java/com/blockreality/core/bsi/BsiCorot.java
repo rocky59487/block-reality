@@ -261,7 +261,9 @@ public final class BsiCorot {
      */
     public static Identity checkAnalysis(BsiResponse response, String id, String method, long revision,
                                          UUID expectedDomain, long expectedRevision, UUID artifactNamespace) {
-        if (response == null || response.isError()) throw invalid("corot response refused");
+        if (response == null || response.isError())
+            throw invalid("corot response refused"
+                    + (response == null ? "" : " code=" + response.code() + " message=" + response.message()));
         var h = response.header();
         String expected = switch (method) {
             case "bsi.corot.solve" -> "analyzed";
@@ -295,7 +297,9 @@ public final class BsiCorot {
 
     public static Exported checkExport(BsiResponse response, String id, long revision,
                                        UUID expectedDomain, long expectedRevision) {
-        if (response == null || response.isError()) throw invalid("checkpoint export refused");
+        if (response == null || response.isError())
+            throw invalid("checkpoint export refused"
+                    + (response == null ? "" : " code=" + response.code() + " message=" + response.message()));
         var h = response.header();
         if (!"response".equals(h.str("kind", "")) || !"exported".equals(response.status())
                 || !"bsi.corot.checkpoint.export".equals(h.str("method", "")) || !id.equals(h.str("id", ""))

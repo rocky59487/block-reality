@@ -184,11 +184,13 @@ public final class ConstructionService {
             ServerLevel level = server.getLevel(ResourceKey.create(Registries.DIMENSION,loc));
             if (level == null) continue;
             UUID actor = null;
+            Set<UUID> pieceIds = new LinkedHashSet<>();
             for (BlockKey key : released) {
                 var owner = metadata.owner(dim,key);
                 if (owner.isPresent()) {
+                    pieceIds.add(owner.get());
                     var piece = metadata.piece(owner.get());
-                    if (piece.isPresent()) { actor = piece.get().actor(); break; }
+                    if (piece.isPresent() && actor == null) actor = piece.get().actor();
                 }
             }
             if (actor == null) continue;
@@ -199,18 +201,46 @@ public final class ConstructionService {
                 var prepared = metadata.prepareEdit(request,dim,released,Set.of());
                 Intent intent = prepared.withParticipants(List.of());
                 busy = true; ownedLevel = level; ownedCells = Set.copyOf(positions); exclusionFailure = "";
+                boolean committed = false;
                 try {
                     Receipt receipt = coordinator.execute(request,ignored -> intent,
                             new Host(Entry.prepared(intent),false));
-                    if (receipt.phase() == Phase.COMMITTED) positions.clear();
+                    if (receipt.phase() == Phase.COMMITTED) { positions.clear(); committed = true; }
                 } finally {
                     busy = false; ownedLevel = null; ownedCells = Set.of(); drainSnapshots();
                 }
+                // The finite entry guard refuses while construction is busy — retire the
+                // released pieces' artifact bindings only after the busy window closes.
+                if (committed) retireFiniteBindings(dim, pieceIds);
             } catch (Exception problem) {
                 BlockRealityMod.LOG.warn("Construction retire failed for cells in {}",dim,problem);
             }
         }
         pendingRetire.entrySet().removeIf(e -> e.getValue().isEmpty());
+    }
+
+    /**
+     * World-side removal must retire the finite artifact bindings too — a bound cell that
+     * goes air without a Retire op leaves the declared source permanently drifted.
+     * Bindings are named by pieceId; minted ownerIds are never reused.
+     */
+    private void retireFiniteBindings(String dim, Set<UUID> pieceIds) {
+        com.blockreality.impl.server.finite.FiniteRuntime finite =
+                com.blockreality.impl.server.finite.ForgeFiniteService.runtime(server);
+        if (finite == null) return;
+        var domain = finite.domain(dim);
+        if (domain.isEmpty()) return;
+        var domainId = domain.get().id();
+        Set<Long> ownerIds = new LinkedHashSet<>();
+        for (var binding : finite.activeBindings(domainId))
+            if (binding.pieceId() != null && pieceIds.contains(binding.pieceId()))
+                ownerIds.add(binding.ownerId());
+        if (ownerIds.isEmpty()) return;
+        try {
+            finite.retireArtifacts(domainId, ownerIds);
+        } catch (IOException problem) {
+            BlockRealityMod.LOG.warn("Finite binding retire failed in {}", dim, problem);
+        }
     }
 
     private static String retireHash(String dimension, Set<BlockKey> released) throws Exception {
@@ -303,13 +333,18 @@ public final class ConstructionService {
             if(StructureManager.of(actor.serverLevel()).gate().current().value()!=revision)
                 return new OfferReply(request.query(),Status.STALE,null);
             PlacementPlan plan=captured.plan();
-            if(metadata.owner(plan.dimension(),new BlockKey(plan.target().getX(),plan.target().getY(),plan.target().getZ())).isPresent())
+            if(metadata.owner(plan.dimension(),new BlockKey(plan.target().getX(),plan.target().getY(),plan.target().getZ())).isPresent()) {
+                BlockRealityMod.LOG.info("Placement preview refused CONFLICT target={} already owned",plan.target());
                 return new OfferReply(request.query(),Status.CONFLICT,null);
+            }
             if(!offers.put(actor,plan.offer(),server.getTickCount(),captured.retainedBytes(),new Offered(captured,revision)))
                 return new OfferReply(request.query(),Status.CAPACITY,null);
             Offer offer=new Offer(plan.offer(),journal.domain(),session,revision,plan.hash(),plan.dimension(),plan.target(),plan.product(),plan.axis(),plan.creative());
             return new OfferReply(request.query(),Status.READY,offer);
-        } catch(PlacementCapture.Refused refusal) {return new OfferReply(request.query(),refusal.status,null);}
+        } catch(PlacementCapture.Refused refusal) {
+            BlockRealityMod.LOG.info("Placement preview refused clicked={} face={} axis={}",request.clicked(),request.face(),request.axis(),refusal);
+            return new OfferReply(request.query(),refusal.status,null);
+        }
         catch(Exception failure) {
             BlockRealityMod.LOG.warn("Placement preview could not capture complete data",failure);
             return new OfferReply(request.query(),Status.INVALID,null);

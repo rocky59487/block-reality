@@ -128,6 +128,27 @@ public final class FiniteSession implements AutoCloseable {
     }
 
     /**
+     * Step 3 variant for a lane that already declared this exact durable vocabulary —
+     * a resync must not send a second {@code bsi.vocab.declare} to an engine session
+     * that already holds one (the contract refuses it). The stored durable reply is
+     * adopted directly: its mapping was proven by the original declare on this lane.
+     */
+    public boolean adoptStoredVocabulary() {
+        if (!ready(Step.NEW)) return false;
+        try {
+            int version = (int) JsonValue.parseStrict(source.vocabRequestJson()).exactI64("version");
+            var stored = BsiVocabulary.decodeStored(JsonValue.parseStrict(source.vocabReplyJson()), version);
+            if (!lane.adoptVocabulary(stored)) throw new IllegalArgumentException("vocabulary adoption refused");
+            vocabulary = stored;
+            step = Step.VOCABULARY;
+            return true;
+        } catch (IllegalArgumentException failure) {
+            refuse(failure.getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Step 4: declare the identical identified world — same vocabulary, same blocks, same
      * owners — so a later checkpoint import meets the contract's identical-world rule.
      */

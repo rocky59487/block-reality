@@ -86,6 +86,10 @@ public final class FiniteLaneWorker implements AutoCloseable {
 
     private static final class Holder {
         final Lane lane; FiniteSession session; FiniteBasis basis; String refusal = "";
+        /** Vocab hash already declared on this engine lane — a resync must not redeclare. */
+        String declaredVocab;
+        /** World declaration is also once-per-engine-session — a committed move reopens the lane. */
+        boolean worldDeclared;
         Holder(Lane lane) { this.lane = lane; }
     }
 
@@ -195,6 +199,29 @@ public final class FiniteLaneWorker implements AutoCloseable {
                 holder = new Holder(opened);
                 lanes.put(dimension, holder);
             }
+            // Vocabulary and world declarations are once-per-engine-session: a resync on
+            // a lane that already declared this durable vocab adopts the stored reply
+            // instead of sending a second bsi.vocab.declare the contract would refuse.
+            // A different durable vocab — or any world move after a declaration — can
+            // never be hosted on this lane, so reopen it BEFORE attaching a session.
+            if (holder.declaredVocab != null
+                    && (!source.vocabHash().equals(holder.declaredVocab) || holder.worldDeclared)) {
+                if (holder.session != null) { holder.session.close(); holder.session = null; }
+                try { holder.lane.closer().close(); } catch (Exception ignored) { }
+                lanes.remove(dimension);
+                Lane opened;
+                try { opened = factory.open(); }
+                catch (Exception failure) {
+                    emit(new LaneEvent(Kind.UNAVAILABLE, job.domain(), null, String.valueOf(failure.getMessage()))); return;
+                }
+                if (opened == null || !opened.lane().ready()) {
+                    if (opened != null) try { opened.closer().close(); } catch (Exception ignored) { }
+                    emit(new LaneEvent(Kind.UNAVAILABLE, job.domain(), null, "finite engine lane is not ready"));
+                    return;
+                }
+                holder = new Holder(opened);
+                lanes.put(dimension, holder);
+            }
             if (holder.session != null) holder.session.close();
             FiniteSession session;
             try {
@@ -202,9 +229,14 @@ public final class FiniteLaneWorker implements AutoCloseable {
             } catch (IllegalArgumentException failure) {
                 emit(new LaneEvent(Kind.UNAVAILABLE, job.domain(), null, String.valueOf(failure.getMessage()))); return;
             }
-            if (!session.declareVocabulary() || !session.declareWorld(basis.worldRevision())) {
+            boolean vocabOk = source.vocabHash().equals(holder.declaredVocab)
+                    ? session.adoptStoredVocabulary()
+                    : session.declareVocabulary();
+            if (vocabOk) holder.declaredVocab = source.vocabHash();
+            if (!vocabOk || !session.declareWorld(basis.worldRevision())) {
                 refuse(holder, job, session); return;
             }
+            holder.worldDeclared = true;
             if (checkpoint != null) {
                 byte[] blob = env.store().read(checkpoint.blob()).payload();
                 if (session.importCheckpoint(checkpoint, blob) == null) { refuse(holder, job, session); return; }

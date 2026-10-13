@@ -54,6 +54,8 @@ public final class FiniteFractureDriver implements AutoCloseable {
     private final FiniteFracture fracture;
     private final AtomicConstructionCoordinator coordinator;
     private boolean busy, closed;
+    /** Why the last VALIDATION_REFUSED fired — the receipt carries only the reason enum. */
+    private volatile String lastRejection = "";
 
     public FiniteFractureDriver(FileTransactionJournal journal, FiniteStore store,
                                 FiniteRegistry registry) {
@@ -103,12 +105,16 @@ public final class FiniteFractureDriver implements AutoCloseable {
      * journal prepare → participant writes → durable COMMITTED → registry fold →
      * host publish.
      */
+    /** The captured detail of the most recent {@code VALIDATION_REFUSED}; empty if none. */
+    public String lastRejection() { return lastRejection; }
+
     public synchronized Outcome execute(Request request, FiniteDomainId domain,
                                         List<BsiCorotFracture.Rule> rules, int budget,
                                         int format, long byteBudget, long allocationBudget,
                                         long elementBudget, String actorProvenance,
                                         FiniteFractureHost host) throws IOException {
         enter();
+        lastRejection = "";
         var publication = new Publication(host, domain);
         try {
             var receipt = coordinator.execute(request, bound -> {
@@ -119,10 +125,20 @@ public final class FiniteFractureDriver implements AutoCloseable {
                             host.sessionGeneration(), bound.id(), bound.actor(), actorProvenance,
                             host.engineBuild(), host.contractSha256());
                 } catch (FiniteFracture.NotQualified refused) {
+                    var p = refused.prepared();
+                    lastRejection = "fracture receipt not commit-qualified: end=" + p.end()
+                            + " pending=" + p.pending() + " flags=" + p.flags()
+                            + " corotFlags=" + p.corotFlags() + " converged=" + p.fullyConverged()
+                            + " steps=" + p.steps() + " remaining=" + p.remainingBlocks();
+                    var rethrown = new AtomicConstructionCoordinator.ValidationRefused();
+                    rethrown.addSuppressed(refused);
+                    throw rethrown;
+                }
+                if (!bound.planHash().equals(FiniteCodec.fractureIntentHash(staged.plan()))) {
+                    lastRejection = "fracture plan hash drifted: request=" + bound.planHash()
+                            + " staged=" + FiniteCodec.fractureIntentHash(staged.plan());
                     throw new AtomicConstructionCoordinator.ValidationRefused();
                 }
-                if (!bound.planHash().equals(FiniteCodec.fractureIntentHash(staged.plan())))
-                    throw new AtomicConstructionCoordinator.ValidationRefused();
                 var prepared = fracture.prepareFracture(bound, domain, staged);
                 var images = List.copyOf(host.prepareImages(bound, staged));
                 for (var change : images) if (finite(change.resource()))

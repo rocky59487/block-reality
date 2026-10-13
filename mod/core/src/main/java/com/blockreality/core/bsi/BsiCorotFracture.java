@@ -326,7 +326,8 @@ public final class BsiCorotFracture {
                                          UUID expectedDomain, long expectedRevision,
                                          UUID artifactNamespace, FractureWorld world,
                                          UUID requestId, int budget) {
-        if (response == null || response.isError()) throw invalid("corot fracture refused");
+        if (response == null || response.isError()) throw invalid("corot fracture refused"
+                + (response == null ? "" : " code=" + response.code() + " msg=" + response.message()));
         var h = response.header();
         if (!"response".equals(h.str("kind", "")) || !"prepared".equals(response.status())
                 || !"bsi.corot.fracture.prepare".equals(h.str("method", ""))
