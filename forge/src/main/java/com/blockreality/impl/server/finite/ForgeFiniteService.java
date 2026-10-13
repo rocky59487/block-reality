@@ -127,9 +127,11 @@ public final class ForgeFiniteService {
 
     private static FiniteLaneWorker.LaneFactory laneFactory(Consumer<String> log) {
         return () -> {
+            // Vocabulary stays undeclared at open: the finite session replays the durable
+            // bsi.vocab.declare itself and requires the reply to reproduce the stored mapping.
             InProcessEngine engine = GameNativeLoader.openEngine(BRConfig.INSTANCE.enginePath.get(),
                     FMLPaths.GAMEDIR.get().resolve("blockreality/engine"),
-                    BRConfig.INSTANCE.numThreads.get(), log, PipelineProfile.disabled());
+                    BRConfig.INSTANCE.numThreads.get(), log, PipelineProfile.disabled(), false);
             return new FiniteLaneWorker.Lane(FiniteLane.inProcess(engine), engine);
         };
     }

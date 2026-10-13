@@ -289,6 +289,7 @@ public final class ForgeFiniteFractureHost implements FiniteFractureHost {
                 var refused = new AtomicConstructionCoordinator.ValidationRefused();
                 refused.addSuppressed(new IOException("Uncapturable fracture mutation at "
                         + cellKey + ": " + String.join(",", blockers)));
+                log.accept("fracture refused: " + refused.getSuppressed()[0].getMessage());
                 throw refused;
             }
             var change = new Change(cellKey, live, Value.missing());
@@ -308,6 +309,7 @@ public final class ForgeFiniteFractureHost implements FiniteFractureHost {
                     && world.readCell(cellKey(body.position())).present()) {
                 var refused = new AtomicConstructionCoordinator.ValidationRefused();
                 refused.addSuppressed(new IOException("Born body anchor is occupied " + bodyKey));
+                log.accept("fracture refused: " + refused.getSuppressed()[0].getMessage());
                 throw refused;
             }
             var change = new Change(bodyKey, Value.missing(), Value.of(encodeBody(body)));

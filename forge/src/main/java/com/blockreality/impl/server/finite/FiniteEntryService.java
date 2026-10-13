@@ -123,9 +123,11 @@ public final class FiniteEntryService {
 
     private static ForgeFiniteFractureHost.LaneSource laneSource(Consumer<String> log) {
         return () -> {
+            // Vocabulary deliberately NOT declared at open: the mint lane performs the real
+            // bsi.vocab.declare itself so the durable source stores the engine's actual reply.
             InProcessEngine engine = GameNativeLoader.openEngine(BRConfig.INSTANCE.enginePath.get(),
                     FMLPaths.GAMEDIR.get().resolve("blockreality/engine"),
-                    BRConfig.INSTANCE.numThreads.get(), log, PipelineProfile.disabled());
+                    BRConfig.INSTANCE.numThreads.get(), log, PipelineProfile.disabled(), false);
             return new ForgeFiniteFractureHost.OpenedLane(FiniteLane.inProcess(engine), engine,
                     engine.engineName() + "/" + engine.engineVersion(), BsiContract.sha256());
         };
@@ -195,15 +197,23 @@ public final class FiniteEntryService {
      * request id, while the service replays a durable decision on a repeated id.
      */
     public static @Nonnull Receipt fracture(ServerLevel level, String material,
-                                            double damageT, double damageC, int budget)
+                                            double plastic, double damageT, double damageC,
+                                            double fraction, int budget)
             throws IOException {
         Objects.requireNonNull(level);
         Objects.requireNonNull(material);
+        // Engine-side validity (bsi_corot_fracture_adapter): at least one positive
+        // threshold and an area fraction in (0,1] — an all-zero rule is PROTOCOL_ERROR.
+        if (plastic <= 0 && damageT <= 0 && damageC <= 0)
+            throw new IOException("fracture rule needs at least one positive threshold");
+        if (fraction <= 0 || fraction > 1)
+            throw new IOException("fracture rule needs an area fraction in (0,1]");
         FiniteEntryService service = requireService(level.getServer());
         String dimension = level.dimension().location().toString();
         FiniteDomainId domain = service.core.requireSourcedDomain(dimension);
         int materialId = service.core.fractureMaterialId(domain, material);
-        var rules = List.of(new BsiCorotFracture.Rule(materialId, 0L, 0.0, damageT, damageC, 0.0));
+        var rules = List.of(new BsiCorotFracture.Rule(materialId, 0L, plastic,
+                damageT, damageC, fraction));
         return FiniteFractureService.fracture(level, domain, rules, budget, UUID.randomUUID());
     }
 
@@ -475,9 +485,11 @@ public final class FiniteEntryService {
             return holder.num(key, 0);
         }
 
-        /** The frozen options template (doc §4); the domain/revision stamp is re-derived at commit. */
+        /** The frozen options template (doc §4); the domain/revision stamp is re-derived at commit.
+         *  Flags = selfWeight | retainLoadPath | transferTopology — the last two are required by the
+         *  corot fracture preflight ("retained topology and stable load bindings required"). */
         private static final BsiCorot.Options OPTIONS = new BsiCorot.Options(new UUID(0, 0), 0,
-                1.0, new double[] {0, -9.81, 0}, 1,
+                1.0, new double[] {0, -9.81, 0}, 1 | 4 | 8,
                 1e-4, 1e-3, 1e-3, 1.0, 1e-6, 1.0, 1e-8, 1e-4, 1 << 20, 0,
                 50, 4, 8, 25, 1, 4096, 8, 2, 8);
 

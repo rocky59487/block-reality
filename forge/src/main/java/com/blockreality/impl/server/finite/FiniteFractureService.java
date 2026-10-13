@@ -75,8 +75,11 @@ public final class FiniteFractureService {
     static final UUID FRACTURE_ACTOR =
             UUID.nameUUIDFromBytes("blockreality/fracture-system".getBytes(StandardCharsets.UTF_8));
     static final int FRACTURE_FORMAT = 1;
-    static final long FRACTURE_BYTE_BUDGET = 1L << 20,
-            FRACTURE_ALLOCATION_BUDGET = 4096, FRACTURE_ELEMENT_BUDGET = 4096;
+    // Checkpoint budgets are recorded durably in each committed slot and replayed verbatim
+    // on import — allocation is BYTES (checkpoint_codec allocate()/n*width), so a real
+    // corot checkpoint needs MiB-scale headroom, not a few thousand bytes.
+    static final long FRACTURE_BYTE_BUDGET = 1L << 24,
+            FRACTURE_ALLOCATION_BUDGET = 1L << 24, FRACTURE_ELEMENT_BUDGET = 1L << 20;
 
     private final MinecraftServer server;
     private final UUID session = UUID.randomUUID();
@@ -168,9 +171,11 @@ public final class FiniteFractureService {
 
     private static ForgeFiniteFractureHost.LaneSource laneSource(Consumer<String> log) {
         return () -> {
+            // Vocabulary stays undeclared at open: the finite session replays the durable
+            // bsi.vocab.declare itself and requires the reply to reproduce the stored mapping.
             InProcessEngine engine = GameNativeLoader.openEngine(BRConfig.INSTANCE.enginePath.get(),
                     FMLPaths.GAMEDIR.get().resolve("blockreality/engine"),
-                    BRConfig.INSTANCE.numThreads.get(), log, PipelineProfile.disabled());
+                    BRConfig.INSTANCE.numThreads.get(), log, PipelineProfile.disabled(), false);
             return new ForgeFiniteFractureHost.OpenedLane(FiniteLane.inProcess(engine), engine,
                     engine.engineName() + "/" + engine.engineVersion(), BsiContract.sha256());
         };
@@ -398,6 +403,9 @@ public final class FiniteFractureService {
                         FRACTURE_BYTE_BUDGET, FRACTURE_ALLOCATION_BUDGET, FRACTURE_ELEMENT_BUDGET,
                         "server/fracture", host);
                 if (outcome.session() != null) outcome.session().close();
+                if (outcome.receipt().phase() == Phase.REJECTED)
+                    log.accept("fracture rejected " + outcome.receipt().reason()
+                            + " — " + driver().lastRejection());
                 // Re-establish the authority session asynchronously — the server thread
                 // never joins the posted sync (doc §9.5).
                 runtime.syncAll();

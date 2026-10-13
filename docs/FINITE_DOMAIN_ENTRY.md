@@ -135,16 +135,29 @@ retainLoadPath）、`relTol=1e-4`、`forceTol=1e-3`、`momentTol=1e-3`、`initia
 原任務規格把 fracture 觸發列入本單元範圍；重建判準 §1 的「不做」誤排除了它，
 經審核回復——它正是實機 gate 的觸發點。凍結語意：
 
-- `/br finite fracture [material] [damageT] [damageC] [budget]`：
+- `/br finite fracture [material] [plastic] [damageT] [damageC] [fraction] [budget]`：
   `FiniteEntryService.fracture` → `Core.requireSourcedDomain`（admitted＋adopted＋
   committed source 三者缺一即具名拒絕）→ `Core.fractureMaterialId`（committed
   source 的 durable `vocabReply` 用 `BsiVocabulary.decodeStored` 解出材料 id，
   **引擎配置的 id 才是權威，不硬編**）→ 組一條
-  `Rule(material, 0, 0, damageT, damageC, 0)` →
+  `Rule(material, 0, plastic, damageT, damageC, fraction)` →
   `FiniteFractureService.fracture(level, domain, rules, budget, fresh requestId)`。
-- 參數預設：material `steel`、damageT/damageC `0.0`、budget `64`（上限 4096）。
+- 參數預設：material `steel`、plastic `0.1`、damageT/damageC `0.0`、fraction `0.5`、
+  budget `64`（上限 4096）。
 - material 不在 durable vocabulary → 具名拒絕；fracture 語意本身由 §9 凍結的
   `FiniteFractureService`/`Driver` 承接，本入口不做任何 Java 側判定。
+
+#### 2026-10-13 追記（規格缺陷修訂，實機發現）
+
+- 原凍結 `Rule(material,0,0,damageT,damageC,0)` 對引擎恆非法：`minimumAreaFraction`
+  必須 `>0`（引擎 `detail_corot_failure::valid`），且三個閾值至少要一個 `>0`。
+  i9 實機回 `PROTOCOL_ERROR "invalid corot failure rule"` 證實。
+- 同場發現：鋼/木構件材的 certified law 是 **kind-0 雙線性塑性**——塑性律構件
+  上 `damageT/damageC>0` 的規則會被引擎以
+  `corot failure: criterion does not match constitutive law` 拒絕；塑性律只能用
+  `accumulatedPlastic` 閾值，故指令暴露 `plastic` 參數（原簽名根本無法表達）。
+- 附帶修復：fracture 錯誤回報攜帶完整 cause 鏈與原生 error code/message
+  （先前被吞只剩外層訊息）。
 
 ## §7 測試腿 ↔ 不變式對照（凍結）
 

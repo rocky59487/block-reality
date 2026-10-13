@@ -48,8 +48,12 @@ record PlacementCapture(ConstructionProtocol.Preview preview, PlacementPlan plan
                 || level.getChunkSource().getChunkNow(target.getX()>>4,target.getZ()>>4).getBlockEntitiesPos().contains(target))
             throw new Refused(CONFLICT);
         BlockState after=product.defaultBlockState().setValue(StructuralBlock.AXIS,StructuralBlock.Axis.values()[preview.axis()+1]);
-        if(before==after || !after.canSurvive(level,target) || !level.isUnobstructed(after,target,CollisionContext.of(actor)))
+        if(before==after || !after.canSurvive(level,target) || !level.isUnobstructed(after,target,CollisionContext.of(actor))) {
+            com.blockreality.impl.BlockRealityMod.LOG.info("Placement cell check refused target={} before={} after={} canSurvive={} unobstructed={}",
+                    target,before.getBlock(),after.getBlock(),after.canSurvive(level,target),
+                    level.isUnobstructed(after,target,CollisionContext.of(actor)));
             throw new Refused(CONFLICT);
+        }
         int slot=preview.hand()==InteractionHand.MAIN_HAND?actor.getInventory().selected:40;
         Value itemBefore=LivePlayerInventory.image(held);LivePlayerInventory.decode(itemBefore);
         Value itemAfter=actor.isCreative()?itemBefore:LivePlayerInventory.debitOne(itemBefore);

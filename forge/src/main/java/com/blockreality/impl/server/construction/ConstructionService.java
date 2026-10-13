@@ -303,13 +303,18 @@ public final class ConstructionService {
             if(StructureManager.of(actor.serverLevel()).gate().current().value()!=revision)
                 return new OfferReply(request.query(),Status.STALE,null);
             PlacementPlan plan=captured.plan();
-            if(metadata.owner(plan.dimension(),new BlockKey(plan.target().getX(),plan.target().getY(),plan.target().getZ())).isPresent())
+            if(metadata.owner(plan.dimension(),new BlockKey(plan.target().getX(),plan.target().getY(),plan.target().getZ())).isPresent()) {
+                BlockRealityMod.LOG.info("Placement preview refused CONFLICT target={} already owned",plan.target());
                 return new OfferReply(request.query(),Status.CONFLICT,null);
+            }
             if(!offers.put(actor,plan.offer(),server.getTickCount(),captured.retainedBytes(),new Offered(captured,revision)))
                 return new OfferReply(request.query(),Status.CAPACITY,null);
             Offer offer=new Offer(plan.offer(),journal.domain(),session,revision,plan.hash(),plan.dimension(),plan.target(),plan.product(),plan.axis(),plan.creative());
             return new OfferReply(request.query(),Status.READY,offer);
-        } catch(PlacementCapture.Refused refusal) {return new OfferReply(request.query(),refusal.status,null);}
+        } catch(PlacementCapture.Refused refusal) {
+            BlockRealityMod.LOG.info("Placement preview refused clicked={} face={} axis={}",request.clicked(),request.face(),request.axis(),refusal);
+            return new OfferReply(request.query(),refusal.status,null);
+        }
         catch(Exception failure) {
             BlockRealityMod.LOG.warn("Placement preview could not capture complete data",failure);
             return new OfferReply(request.query(),Status.INVALID,null);
