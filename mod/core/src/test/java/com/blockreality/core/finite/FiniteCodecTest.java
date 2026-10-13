@@ -1,6 +1,8 @@
 package com.blockreality.core.finite;
 
 import com.blockreality.core.finite.FiniteCodec.Operation;
+import com.blockreality.core.bsi.BsiCorotFracture;
+import com.blockreality.core.bsi.BsiFracture;
 import com.blockreality.api.geom.BlockKey;
 import java.util.List;
 import java.util.Set;
@@ -120,6 +122,36 @@ class FiniteCodecTest {
         var unknown = FiniteCodec.encodeOperation(ops.get(0));
         unknown[8] = 77; // value kind byte
         assertThrows(IllegalArgumentException.class, () -> FiniteCodec.decodeOperation(unknown));
+    }
+
+    @Test void fracturePlanRoundTripWithNonEmptyLedgers() {
+        var domain = FiniteFixtures.domainId(FiniteFixtures.DIMENSION);
+        var source = FiniteFixtures.source(domain.bsiDomain(), 0);
+        var sourceRef = new FiniteBlobRef(
+                FiniteSource.sha256(FiniteCodec.pack(FiniteCodec.KIND_SOURCE, source.serialize())),
+                FiniteCodec.pack(FiniteCodec.KIND_SOURCE, source.serialize()).length);
+        var checkpoint = new FiniteRoot.Checkpoint(sourceRef, 2, "engine/2.0",
+                "cd".repeat(32), 1 << 20, 16 << 20, 1 << 20);
+        var loadLedger = new byte[BsiCorotFracture.FRACTURE_LOAD_BYTES];
+        var archiveRecords = new byte[BsiCorotFracture.ARCHIVE_BYTES];
+        for (int i = 0; i < loadLedger.length; i++) loadLedger[i] = (byte) (i + 1);
+        for (int i = 0; i < archiveRecords.length; i++) archiveRecords[i] = (byte) (i + 3);
+        var plan = new FiniteFracturePlan(domain, new UUID(60, 60), new UUID(61, 61),
+                "test/actor",
+                new FiniteFracturePlan.Basis(0, 0, "a".repeat(64), "b".repeat(64), "c".repeat(64)),
+                new FiniteFracturePlan.After(1, 1, "d".repeat(64), sourceRef, checkpoint),
+                "e".repeat(64), "f".repeat(64),
+                new BsiFracture.Token(new UUID(0xF1, 0xF1), "f00df00df00df00d"),
+                3, 1, 4, 0, 0, -1, true, "aabbccddeeff0011", 4,
+                List.of(2L, 9L),
+                List.of(new BsiFracture.Owner(new BlockKey(5, 70, 5), 42)),
+                loadLedger, archiveRecords);
+        var decoded = FiniteFracturePlan.decode(plan.encode());
+        assertEquals(plan.planHash(), decoded.planHash());
+        assertArrayEquals(loadLedger, decoded.loadLedger());
+        assertArrayEquals(archiveRecords, decoded.archiveRecords());
+        assertEquals(plan.retiredOwnership(), decoded.retiredOwnership());
+        assertEquals(plan.bornBodies(), decoded.bornBodies());
     }
 
     @Test void headCacheRoundTripAndForeignDomainRefusal() {

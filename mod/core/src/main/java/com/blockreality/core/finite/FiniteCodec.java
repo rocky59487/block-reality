@@ -497,10 +497,11 @@ public final class FiniteCodec {
         for (int i = 0; i < born; i++) {
             bornBodies.add(new BsiFracture.Owner(new BlockKey(r.i32(), r.i32(), r.i32()), r.i64()));
         }
-        long ledger = r.u64(), archives = r.u64();
-        if (ledger > FiniteFracturePlan.MAX_LEDGER_BYTES
-                || archives > FiniteFracturePlan.MAX_LEDGER_BYTES) throw fail();
+        long ledger = r.u64();
+        if (ledger > FiniteFracturePlan.MAX_LEDGER_BYTES) throw fail();
         var loadLedger = r.raw((int) ledger);
+        long archives = r.u64();
+        if (archives > FiniteFracturePlan.MAX_LEDGER_BYTES) throw fail();
         var archiveRecords = r.raw((int) archives);
         var plan = new FiniteFracturePlan(domain, request, actor, provenance, before, after,
                 requestFrameHash, wireFrameHash, token,

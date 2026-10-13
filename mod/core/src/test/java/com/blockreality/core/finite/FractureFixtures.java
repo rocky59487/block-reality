@@ -66,6 +66,11 @@ final class FractureFixtures {
         return join(sections(bsiDomain, variant));
     }
 
+    /** Payload bytes over an explicit section set — callers may mutate {@link #sections} first. */
+    static byte[] payload(Map<String, byte[]> sections) {
+        return join(sections);
+    }
+
     /** All 38 sections of the receipt, in wire order — mutation legs edit these slices. */
     static LinkedHashMap<String, byte[]> sections(UUID bsiDomain, Variant variant) {
         var sections = new LinkedHashMap<String, byte[]>();
@@ -199,7 +204,11 @@ final class FractureFixtures {
 
     /** The strict-order {@code sections} array matching {@link #payload}. */
     static String directory(UUID bsiDomain, Variant variant) {
-        var sections = sections(bsiDomain, variant);
+        return directory(sections(bsiDomain, variant));
+    }
+
+    /** Directory over an explicit section set — callers may mutate {@link #sections} first. */
+    static String directory(Map<String, byte[]> sections) {
         var sb = new StringBuilder("[");
         int cursor = 0;
         for (int i = 0; i < ORDER.length; i++) {
@@ -259,6 +268,13 @@ final class FractureFixtures {
      */
     static String preparedHeader(UUID requestId, UUID bsiDomain, UUID namespace,
                                  Variant variant) {
+        return preparedHeader(requestId, bsiDomain, namespace, variant,
+                directory(bsiDomain, variant));
+    }
+
+    /** Prepared reply header over an explicit directory — for mutated section sets. */
+    static String preparedHeader(UUID requestId, UUID bsiDomain, UUID namespace,
+                                 Variant variant, String directoryJson) {
         return "{\"bsi\":1,\"kind\":\"response\",\"id\":\""
                 + BsiCorotFracture.prepareId(requestId)
                 + "\",\"method\":\"bsi.corot.fracture.prepare\",\"revision\":0,"
@@ -273,7 +289,7 @@ final class FractureFixtures {
                 + ",\"pending\":" + (variant == Variant.PENDING ? 0 : -1)
                 + ",\"fullyConverged\":true,"
                 + "\"remainingGeneration\":\"" + GENERATION + "\","
-                + "\"sections\":" + directory(bsiDomain, variant) + "}";
+                + "\"sections\":" + directoryJson + "}";
     }
 
     /** The {@code bsi.fracture.finish} reply for commit or discard. */

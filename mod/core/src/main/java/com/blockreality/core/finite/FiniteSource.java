@@ -51,6 +51,7 @@ public final class FiniteSource {
     public static final int GENERALIZED_LOAD_BYTES = 144;
     public static final int RULE_BYTES = 40;        // bsi_corot_failure_rule
     public static final int MAX_RULES = 4096;       // failure-rule declaration bound
+    private static final byte[] EMPTY = new byte[0];
 
     private final byte[] vocabRequest, vocabReply;
     private final byte[] blocks40, owners20;
@@ -396,9 +397,24 @@ public final class FiniteSource {
         for (var owner : prepared.remainingOwners())
             out.putInt(owner.position().x()).putInt(owner.position().y()).putInt(owner.position().z())
                     .putLong(owner.artifact());
+        // Cell loads target world positions: a load whose cell left the remaining body is a
+        // foreign force source to the next analysis — retire it with its cell.
+        var surviving = new java.util.HashSet<BlockKey>(prepared.remaining().size() * 2);
+        for (var cell : prepared.remaining()) surviving.add(new BlockKey(cell.x(), cell.y(), cell.z()));
+        var loadView = ByteBuffer.wrap(source.cellLoads).order(ByteOrder.LITTLE_ENDIAN);
+        var kept = ByteBuffer.allocate(source.cellLoads.length).order(ByteOrder.LITTLE_ENDIAN);
+        for (int at = 0; at + BsiRecords.LOAD_BYTES <= source.cellLoads.length; at += BsiRecords.LOAD_BYTES)
+            if (surviving.contains(new BlockKey(loadView.getInt(at), loadView.getInt(at + 4),
+                    loadView.getInt(at + 8))))
+                kept.put(source.cellLoads, at, BsiRecords.LOAD_BYTES);
+        var cellLoads = new byte[kept.position()];
+        kept.flip(); kept.get(cellLoads);
+        // Prescribed records address node indices and generalized loads address node/member
+        // indices — both renumber when the body changes. They belong to the solve that
+        // produced them, not to the surviving structure.
         return of(source.vocabRequest, source.vocabReply, blocks40, out.array(), source.materials,
-                source.shellLaws, source.shellLayers, source.cellLoads, source.prescribed,
-                source.loads, prepared.afterOptions(), rules, source.supportIds, null);
+                source.shellLaws, source.shellLayers, cellLoads, EMPTY,
+                EMPTY, prepared.afterOptions(), rules, source.supportIds, null);
     }
 
     /**

@@ -2,6 +2,7 @@ package com.blockreality.core.finite;
 
 import com.blockreality.core.bsi.BsiCorotFracture;
 import com.blockreality.core.bsi.BsiFrame;
+import com.blockreality.core.bsi.BsiRecords;
 import com.blockreality.core.bsi.BsiFracture;
 import com.blockreality.core.finite.FiniteCodec.Operation;
 import com.blockreality.core.finite.FiniteFracture.Staged;
@@ -57,11 +58,19 @@ class FiniteFractureTest {
 
     /** A domain + genesis root at revision 0 naming the two-block fixture source. */
     private World openWorld() throws IOException {
+        return openWorld(null);
+    }
+
+    /** {@link #openWorld()} naming a source built against the real domain — e.g. one
+     *  carrying cell loads. */
+    private World openWorld(java.util.function.Function<FiniteDomainId, FiniteSource> sourceFor)
+            throws IOException {
         var registry = open();
         registry.applyCommitted(journal, commit(registry.prepareCreateDomain(
                 request(1, new Operation.CreateDomain(DIMENSION)), DIMENSION)));
         var domain = registry.domain(DIMENSION).orElseThrow().id();
-        var source = FiniteFixtures.source(domain.bsiDomain(), 0);
+        var source = sourceFor != null ? sourceFor.apply(domain)
+                : FiniteFixtures.source(domain.bsiDomain(), 0);
         var sourceRef = store.publish(new UUID(80, 1), FiniteCodec.KIND_SOURCE, source.serialize());
         var genesis = new FiniteRoot.Next(0, 0, sourceRef, null);
         registry.applyCommitted(journal, commit(registry.prepareCommitRoot(
@@ -321,6 +330,74 @@ class FiniteFractureTest {
     }
 
     // ---------------------------------------------------------------- staging
+
+    /** A load on a cell that fracture removed must not survive into the after-source —
+     *  the engine would read it as a foreign force source. */
+    @Test void stagedAfterSourceRetiresLoadsWhoseCellWasRemoved() throws Exception {
+        var cellLoads = BsiRecords.encodeLoads(List.of(
+                new BsiRecords.Load(1, 64, 1, 0.0, -3.0e6, 0.0)));   // on the STEEL cell
+        var world = openWorld(domain -> FiniteSource.build(VOCAB_REQUEST, vocabReply("r1", 0),
+                List.of(GROUND, STEEL),
+                List.of(new BsiFracture.Owner(new com.blockreality.api.geom.BlockKey(1, 64, 1), 1)),
+                java.util.Set.of(1), new byte[152], new byte[0], new byte[0],
+                cellLoads, new byte[0], new byte[0], options176(domain.bsiDomain(), 0)));
+        var requestId = new UUID(70, 32);
+        var sections = FractureFixtures.sections(world.domain().bsiDomain(),
+                FractureFixtures.Variant.REMOVED);
+        // One fracture-load ledger record: 64-byte load echo + cell index 0 + group 1.
+        var ledger = java.nio.ByteBuffer.allocate(BsiCorotFracture.FRACTURE_LOAD_BYTES)
+                .order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        ledger.put(cellLoads).putInt(0).putInt(1);
+        sections.put("corotFractureLoads", ledger.array());
+        var lane = new FiniteSessionTestProbe();
+        lane.reply(vocabReply("f1", 0));
+        lane.reply(worldOk(world.domain(), 0));
+        lane.reply(FractureFixtures.preparedHeader(requestId, world.domain().bsiDomain(),
+                        world.domain().artifactNamespace(), FractureFixtures.Variant.REMOVED,
+                        FractureFixtures.directory(sections)),
+                FractureFixtures.payload(sections));
+        lane.reply(FractureFixtures.finishReply("f2", 0, requestId, world.domain().bsiDomain(),
+                world.domain().artifactNamespace(), true));
+        lane.reply(FractureFixtures.exportReply("f3", world.domain().bsiDomain(), 1, 1, 48),
+                new byte[48]);
+        var staged = stage(store, world.registry(), world, lane, requestId);
+        assertEquals(0, staged.afterSource().cellLoads().length);
+        staged.session().close();
+        closeAll();
+    }
+
+    /** The mirror image: a load on a surviving cell must be kept verbatim. */
+    @Test void stagedAfterSourceKeepsLoadsOnSurvivingCells() throws Exception {
+        var cellLoads = BsiRecords.encodeLoads(List.of(
+                new BsiRecords.Load(1, 64, 1, 0.0, -3.0e6, 0.0)));
+        var world = openWorld(domain -> FiniteSource.build(VOCAB_REQUEST, vocabReply("r1", 0),
+                List.of(GROUND, STEEL),
+                List.of(new BsiFracture.Owner(new com.blockreality.api.geom.BlockKey(1, 64, 1), 1)),
+                java.util.Set.of(1), new byte[152], new byte[0], new byte[0],
+                cellLoads, new byte[0], new byte[0], options176(domain.bsiDomain(), 0)));
+        var requestId = new UUID(70, 33);
+        var sections = FractureFixtures.sections(world.domain().bsiDomain(),
+                FractureFixtures.Variant.RETAINED);
+        var ledger = java.nio.ByteBuffer.allocate(BsiCorotFracture.FRACTURE_LOAD_BYTES)
+                .order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        ledger.put(cellLoads).putInt(0).putInt(0);
+        sections.put("corotFractureLoads", ledger.array());
+        var lane = new FiniteSessionTestProbe();
+        lane.reply(vocabReply("f1", 0));
+        lane.reply(worldOk(world.domain(), 0));
+        lane.reply(FractureFixtures.preparedHeader(requestId, world.domain().bsiDomain(),
+                        world.domain().artifactNamespace(), FractureFixtures.Variant.RETAINED,
+                        FractureFixtures.directory(sections)),
+                FractureFixtures.payload(sections));
+        lane.reply(FractureFixtures.finishReply("f2", 0, requestId, world.domain().bsiDomain(),
+                world.domain().artifactNamespace(), true));
+        lane.reply(FractureFixtures.exportReply("f3", world.domain().bsiDomain(), 1, 1, 48),
+                new byte[48]);
+        var staged = stage(store, world.registry(), world, lane, requestId);
+        assertArrayEquals(cellLoads, staged.afterSource().cellLoads());
+        staged.session().close();
+        closeAll();
+    }
 
     @Test void stageProducesConsistentPlanAndObjects() throws Exception {
         var world = openWorld();

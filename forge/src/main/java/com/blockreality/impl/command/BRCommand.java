@@ -8,6 +8,7 @@ import com.blockreality.core.engine.NativeGameRuntime;
 import com.blockreality.core.render.BucklingReadout;
 import com.blockreality.core.world.ArtifactAnalysisLinks;
 import com.blockreality.api.geom.BlockKey;
+import com.blockreality.impl.BlockRealityMod;
 import com.blockreality.impl.server.StructureManager;
 import com.blockreality.impl.server.finite.FiniteEntryService;
 import com.blockreality.impl.server.finite.FiniteLaneWorker;
@@ -623,6 +624,7 @@ public final class BRCommand {
             var detail = new StringBuilder(String.valueOf(failure.getMessage()));
             for (Throwable cause = failure.getCause(); cause != null; cause = cause.getCause())
                 detail.append(" <- ").append(cause.getMessage());
+            BlockRealityMod.LOG.warn("finite fracture refused", failure);
             line(src, "finite fracture refused: " + detail, ChatFormatting.RED);
             return 0;
         }
